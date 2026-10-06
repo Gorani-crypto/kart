@@ -2283,7 +2283,7 @@ function mpUpdate(dt){
     if(state==="race"&&!S.rail){ const ok=KARTS[+pr.k]||KARTS[0], dx=S.x-g.x, dz=S.z-g.z, d=Math.hypot(dx,dz), R=(KART.rad||1.15)+(ok.rad||1.15);
       if(d<R&&d>1e-3&&Math.abs(S.y-g.y)<6){ const nx=dx/d, nz=dz/d, mMe=KART.mass||1, mOt=ok.mass||1, share=mOt/(mMe+mOt); S.x+=nx*(R-d); S.z+=nz*(R-d);
         const ovx=+pr.vx||0, ovz=+pr.vz||0, rel=(S.vx-ovx)*nx+(S.vz-ovz)*nz;
-        if(rel<0&&(!g.bumpT||now-g.bumpT>350)){ g.bumpT=now; const imp=Math.min(10,-rel)*(.8+share)+2*share; S.vx+=nx*imp; S.vz+=nz*imp; const keep=1-.08*share; // 살짝 튕겨나가고 약간 감속 (무거운 상대일수록 크게) S.vx*=keep; S.vz*=keep; S.drifting=false;
+        if(rel<0&&(!g.bumpT||now-g.bumpT>350)){ g.bumpT=now; const imp=Math.min(10,-rel)*(.8+share)+2*share; S.vx+=nx*imp; S.vz+=nz*imp; const keep=1-.25*share; // 튕겨나가며 감속 (무거운 상대일수록 크게: 같은 무게 약 12%, 스쿠터→덤프 약 20%) S.vx*=keep; S.vz*=keep; S.drifting=false;
           S.shake=Math.max(S.shake,.25+share*.3); thud(); bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); } } }
     }
   mpRankT-=dt; if(mpRankT<=0){ mpRankT=.25; const rows=mpStandings(), me=rows.findIndex(r=>r.me);
