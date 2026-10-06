@@ -297,8 +297,15 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"giant", name:"바위 거인", desc:"3배 크기 거인. 무거워서 다 밀어냄 · 조향 최저", speed:1.36, accel:1.02, turn:.74, boost:1.3, mass:2.3, rad:2.35},
   {id:"dump", name:"덤프트럭", desc:"2배 크기. 가장 무거워 다 밀어냄 · 가장 느리지만 부스터 강함", speed:1.2, accel:.92, turn:.82, boost:1.38, mass:2.8, rad:2.4},
   {id:"truck", name:"초보운전 1톤 트럭", desc:"조금 무겁고 조금 느림. 뒤에 초보운전 스티커", speed:1.29, accel:1.2, turn:1.08, boost:1.27, mass:1.5},
-  {id:"roach", name:"바퀴벌레", desc:"빠르고 민첩 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.38, accel:1.38, turn:1.15, boost:1.22, mass:.75, fly:1.7}
+  {id:"roach", name:"바퀴벌레", desc:"빠르고 민첩 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.38, accel:1.38, turn:1.15, boost:1.22, mass:.75, fly:1.7},
+  {id:"trex", name:"티라노", desc:"2배 크기. 덤프트럭보다 느리지만 물기(Space/물기 버튼): 가벼운 상대일수록 크게 감속, 전차급부터는 못 물음", speed:1.12, accel:.9, turn:.8, boost:1.36, mass:2.6, rad:2.4, bite:true},
+  {id:"chair", name:"엔진 휠체어", desc:"엔진 달린 휠체어. 가속·조향 좋고 조금 가벼움", speed:1.27, accel:1.4, turn:1.25, boost:1.3, mass:.85},
+  {id:"bike", name:"슈퍼바이크", desc:"가장 빠르고 컨트롤도 좋음. 대신 벽·무거운 차에 세게 부딪히면 사람이 날아가서 걸어가 다시 타야 함", speed:1.89, accel:1.6, turn:1.25, boost:1.2, mass:.7, eject:true}
 ];
+// 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
+const SYN={tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
+function effKart(k,c){ return (c&&SYN[k.id]===c.id)?Object.assign({},k,{speed:k.speed*1.04,accel:k.accel*1.04,turn:k.turn*1.04,syn:true}):k; }
+
 
 const isTouch = matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
 let touchMode = matchMedia("(pointer: coarse)").matches; // 마지막 입력이 터치인지 (노트북은 키보드)
@@ -1158,7 +1165,7 @@ const CARS={};
   const turret=new THREE.Group(); turret.position.set(0,1.38,-.35); body.add(turret);
   turret.add(sideExtrude([[-1.4,0],[1.1,0],[1.7,.25],[1.2,.75],[-1.3,.8],[-1.6,.4]],2.2,sand2,.07));
   const mant=new THREE.Mesh(new THREE.BoxGeometry(.7,.45,.4),olive); mant.position.set(0,.38,1.55); turret.add(mant);
-  const barrelG=new THREE.Group(); barrelG.position.set(0,.4,1.6); turret.add(barrelG);
+  const barrelG=new THREE.Group(); barrelG.position.set(0,.4,1.6); barrelG.rotation.x=-.09; turret.add(barrelG); // 포신 약 5도 위로 (오르막에서 바닥을 쏘지 않게)
   const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.11,.14,3.6,14),olive); barrel.rotation.x=Math.PI/2; barrel.position.z=1.8; barrelG.add(barrel);
   const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,.7,14),sand2); sleeve.rotation.x=Math.PI/2; sleeve.position.z=1.6; barrelG.add(sleeve);
   const muzzle=new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,.3,14),olive); muzzle.rotation.x=Math.PI/2; muzzle.position.z=3.55; barrelG.add(muzzle);
@@ -1368,13 +1375,92 @@ function roachRun(rootObj,dt,v){
   const w=Math.sin(performance.now()*.004)*.04; for(const a of P.ant) a.rotation.z+=(w-(a.userData.w||0)); for(const a of P.ant) a.userData.w=w;
 }
 
+// --- 새 차들 2 ---
+// ===== 티라노 (2배 크기, 물기) =====
+(function(){
+  const root=new THREE.Group(), body=new THREE.Group(); root.add(body);
+  const skin=TOON({color:0x5f8a3a,flatShading:true}), skin2=TOON({color:0x4a6e2c,flatShading:true}), belly=Lam(0xd8c98a), dark=Lam(0x1c1d22), tooth=Lam(0xfafaf0), eyeM=Lam(0xffd21f);
+  const blob=(par,r,mat,x,y,z,sx,sy,sz)=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),mat); m.position.set(x,y,z); m.scale.set(sx,sy,sz); par.add(m); return m; };
+  const hipY=2.9, torso=new THREE.Group(); torso.name="tTorso"; torso.position.set(0,hipY,0); body.add(torso);
+  blob(torso,1.6,skin,0,.5,.4,1.0,1.0,1.7); blob(torso,1.1,belly,0,.05,.8,.8,.75,1.3);
+  for(let k=0;k<6;k++) blob(torso,.22,skin2,0,1.95-k*.05,1.8-k*.65,1,.7,1.2); // 등 돌기
+  // 목 + 머리 + 아래턱
+  const head=new THREE.Group(); head.name="tHead"; head.position.set(0,1.5,2.9); torso.add(head);
+  blob(head,.75,skin,0,.2,.5,1.0,.85,1.6); blob(head,.5,skin2,0,.55,.2,1.1,.5,1.2);
+  for(const sx of [1,-1]){ blob(head,.13,eyeM,sx*.55,.55,.55,1,1,1); blob(head,.07,dark,sx*.6,.55,.62,1,1,1); }
+  for(let k=0;k<7;k++) for(const sx of [1,-1]){ const t=new THREE.Mesh(new THREE.ConeGeometry(.07,.22,5),tooth); t.position.set(sx*(.42-k*.02),-.22,.95+k*.1-.3); t.rotation.x=Math.PI; head.add(t); }
+  const jaw=new THREE.Group(); jaw.name="tJaw"; jaw.position.set(0,-.2,.0); head.add(jaw);
+  blob(jaw,.6,skin2,0,-.15,.75,.95,.4,1.5);
+  for(let k=0;k<6;k++) for(const sx of [1,-1]){ const t=new THREE.Mesh(new THREE.ConeGeometry(.06,.2,5),tooth); t.position.set(sx*(.36-k*.02),.08,.55+k*.13); jaw.add(t); }
+  // 짧은 앞발
+  for(const sx of [1,-1]){ const a=new THREE.Mesh(new THREE.CylinderGeometry(.12,.1,.8,6),skin2); a.position.set(sx*.9,-.2,1.9); a.rotation.x=.9; torso.add(a); }
+  // 꼬리
+  const tail=new THREE.Group(); tail.name="tTail"; tail.position.set(0,.6,-1.9); torso.add(tail);
+  for(let k=0;k<6;k++) blob(tail,.75-k*.11,k%2?skin2:skin,0,-k*.12,-k*.75,1,.9,1.2);
+  // 다리
+  for(const [sd,sx] of [["L",1],["R",-1]]){ const leg=new THREE.Group(); leg.name="tLeg"+sd; leg.position.set(sx*1.05,hipY,-.1); body.add(leg);
+    blob(leg,.8,skin,0,-.5,0,.8,1.3,1.1); const knee=new THREE.Group(); knee.name="tKnee"+sd; knee.position.set(0,-1.5,.2); leg.add(knee);
+    blob(knee,.45,skin2,0,-.5,-.15,.8,1.2,.8); const foot=new THREE.Mesh(new THREE.BoxGeometry(.9,.3,1.3),skin2); foot.position.set(0,-1.25,.25); knee.add(foot);
+    for(const fx of [-.3,0,.3]){ const c=new THREE.Mesh(new THREE.ConeGeometry(.08,.3,5),tooth); c.position.set(fx,-1.25,.95); c.rotation.x=Math.PI/2; knee.add(c); } }
+  // 등의 안장 (캐릭터 자리)
+  const saddle=new THREE.Mesh(new THREE.BoxGeometry(1.2,.25,1.2),Lam(0x7a4a2a)); saddle.position.set(0,2.1,.6); torso.add(saddle);
+  const seat=new THREE.Group(); seat.position.set(0,2.2,.6); torso.add(seat);
+  const wheels=[new THREE.Group(),new THREE.Group()]; body.add(wheels[0],wheels[1]);
+  CARS.trex={paint:[skin,skin2],root,body,wheels,exhaust:[[.5,3.6,-2.6],[-.5,3.6,-2.6]],shadow:[2.6,5.4],camDist:15,camH:9,lookY:3,tagY:8.4,seat:{pos:[0,0,0],scale:.75,parent:seat},trex:true};
+})();
+function trexRun(rootObj,dt,v,bite){
+  const u=rootObj.userData; if(!u.tp){ u.tp={}; rootObj.traverse(o=>{ if(o.name&&o.name[0]==="t"&&o.name.length>2) u.tp[o.name]=o; }); u.ph=0; u.amp=0; }
+  const P=u.tp; if(!P.tTorso) return; const sp=Math.abs(v); u.amp=lerp(u.amp,clamp(sp/10,0,1),1-Math.exp(-5*dt)); u.ph+=dt*(2+sp*.13)*Math.PI*(sp>.5?1:0);
+  const a=u.amp, s=Math.sin(u.ph), c=Math.cos(u.ph);
+  P.tLegL.rotation.x=-s*.7*a; P.tLegR.rotation.x=s*.7*a; P.tKneeL.rotation.x=Math.max(0,c)*.9*a; P.tKneeR.rotation.x=Math.max(0,-c)*.9*a;
+  P.tTorso.position.y=2.9+Math.abs(s)*.35*a; P.tTorso.rotation.x=.08*a; P.tTail.rotation.y=Math.sin(u.ph*.5)*.25*a; P.tHead.rotation.x=-.05+Math.sin(u.ph*2)*.04*a;
+  P.tJaw.rotation.x=(bite>0?Math.sin(Math.min(1,bite/.5)*Math.PI)*.75:.05);
+}
+// ===== 엔진 휠체어 =====
+(function(){
+  const root=new THREE.Group(), body=new THREE.Group(); root.add(body);
+  const frame=new THREE.MeshStandardMaterial({color:0x8fa3b8,metalness:.6,roughness:.3}), seatM=Lam(0x2b3f7a), black=Lam(0x16171a), engM=Lam(0xd62f3a);
+  box(body,.9,.12,.8,seatM,0,.62,0); box(body,.9,.75,.1,seatM,0,1.05,-.42); // 좌석, 등받이
+  for(const sx of [1,-1]){ box(body,.05,.05,.8,frame,sx*.47,.82,0); box(body,.05,.7,.05,frame,sx*.47,.5,.38); box(body,.05,1.0,.05,frame,sx*.47,.95,-.42);
+    const h=box(body,.05,.05,.3,frame,sx*.42,1.45,-.55); // 손잡이
+    const big=new THREE.Group(); big.position.set(sx*.58,.55,-.1); body.add(big);
+    const tyre=new THREE.Mesh(new THREE.TorusGeometry(.5,.05,8,28),black); tyre.rotation.y=Math.PI/2; big.add(tyre);
+    const rim=new THREE.Mesh(new THREE.TorusGeometry(.45,.02,6,28),frame); rim.rotation.y=Math.PI/2; rim.position.x=sx*.06; big.add(rim);
+    for(let k=0;k<8;k++){ const sp=new THREE.Mesh(new THREE.BoxGeometry(.015,.9,.015),frame); sp.rotation.x=k/8*Math.PI; big.add(sp); }
+    const cast=new THREE.Mesh(new THREE.TorusGeometry(.1,.03,6,14),black); cast.rotation.y=Math.PI/2; cast.position.set(sx*.42,.12,.5); body.add(cast);
+    box(body,.25,.04,.18,frame,sx*.18,.2,.6); } // 발판
+  // 뒤에 단 엔진 + 배기관
+  box(body,.7,.45,.45,engM,0,.55,-.75); box(body,.6,.08,.5,black,0,.82,-.75);
+  for(let k=0;k<4;k++) box(body,.72,.03,.47,black,0,.4+k*.09,-.75);
+  for(const sx of [1,-1]){ cyl(body,.06,.5,chromeM,sx*.22,.45,-1.15,"z"); }
+  const wheels=[new THREE.Group(),new THREE.Group()]; body.add(wheels[0],wheels[1]);
+  CARS.chair={paint:[seatM,engM],root,body,wheels,exhaust:[[.22,.45,-1.42],[-.22,.45,-1.42]],shadow:[.8,1.4],camDist:6.2,tagY:2.9,seat:{pos:[0,.62,-.05],scale:.55}};
+})();
+// ===== 슈퍼바이크 =====
+(function(){
+  const root=new THREE.Group(), body=new THREE.Group(); root.add(body);
+  const red=new THREE.MeshStandardMaterial({color:0xd8102a,metalness:.4,roughness:.3}), black=Lam(0x111214), carbon=Lam(0x2a2c31), glass=new THREE.MeshStandardMaterial({color:0x6aa8d8,transparent:true,opacity:.55,metalness:.2,roughness:.1});
+  body.add(sideExtrude([[1.35,.55],[1.1,1.05],[.55,1.2],[-.25,1.05],[-.4,.55],[.4,.35],[1.2,.4]],.55,red,.08)); // 페어링
+  body.add(sideExtrude([[-.2,1.0],[-1.25,1.12],[-1.35,1.0],[-.4,.78]],.42,red,.06));                       // 꼬리
+  body.add(sideExtrude([[1.25,1.0],[.85,1.35],[.75,1.3],[1.05,.98]],.45,glass,.02));                         // 윈드스크린
+  box(body,.42,.08,.8,black,0,1.12,-.55); box(body,.5,.4,.7,carbon,0,.55,.2);                                   // 시트, 엔진
+  for(const sx of [1,-1]){ box(body,.05,.04,.35,carbon,sx*.32,1.18,.85); }                                     // 핸들
+  const fork=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,1.0,8),chromeM); fork.position.set(0,.75,1.2); fork.rotation.x=-.4; body.add(fork);
+  cyl(body,.08,.9,chromeM,.18,.55,-.8,"z");
+  const lamp=new THREE.Mesh(new THREE.CircleGeometry(.1,14),lampM); lamp.position.set(0,.85,1.38); body.add(lamp);
+  const wheels=[wheel(body,0,1.25,.36,carbon,.26),wheel(body,0,-1.0,.38,carbon,.26)];
+  CARS.bike={paint:[red],root,body,wheels,exhaust:[[.18,.55,-1.28]],shadow:[.6,2.2],camDist:6.8,tagY:3.0,seat:{pos:[0,1.0,-.35],scale:.6,pose:"scoot"},lean:true};
+})();
+
 const CHARS=[
   {id:"dotori", name:"도토리", desc:"주황 헬멧에 하늘색 고글", helmet:0xff7a1a, stripe:0xffffff, suit:0xfff1d6, glove:0xff7a1a, acc:"goggle"},
   {id:"bori", name:"보리", desc:"민트 헬멧에 곰 귀, 별 스티커", helmet:0x2ec4b6, stripe:0xffd21f, suit:0x334155, glove:0xffd21f, acc:"ears"},
   {id:"rider", name:"질주", desc:"흰 오픈페이스 헬멧, 검은 고글 마스크, 라이딩 재킷", helmet:0xf4f4f2, stripe:0xd62f3a, suit:0x1c1d22, glove:0x1c1d22, acc:"mask"},
   {id:"major", name:"포대장 짱돌", desc:"올리브 철모에 별, 콧수염, 전차 지휘관", helmet:0x5f6b3a, stripe:0xffd21f, suit:0x6b7445, glove:0x3b3a30, acc:"army"},
   {id:"kkwak", name:"꽥구리", desc:"오리 부리에 너구리 눈가면, 머리엔 빛나는 더듬이. 정체불명", helmet:0x8a7e9c, stripe:0x3a3446, suit:0xb7a8cf, glove:0xff9a3c, acc:"animal"},
-  {id:"kkami", name:"까미", desc:"새까만 얼굴에 노란 눈, 뾰족 귀 두 개", helmet:0x0b0b0c, stripe:0x0b0b0c, suit:0x151517, glove:0x0b0b0c, acc:"blackcat"}
+  {id:"kkami", name:"까미", desc:"새까만 얼굴에 노란 눈, 뾰족 귀 두 개", helmet:0x0b0b0c, stripe:0x0b0b0c, suit:0x151517, glove:0x0b0b0c, acc:"blackcat"},
+  {id:"sausage", name:"소세지 인간", desc:"통통한 소세지 몸, 구운 자국, 꼭지 매듭", helmet:0xd0644a, stripe:0x8a3a28, suit:0xd0644a, glove:0xd0644a, acc:"sausage"},
+  {id:"granny", name:"할머니", desc:"하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny"}
 ];
 function buildRider(ch,pose){
   const dark=Lam(0x2b2f3a), skin=Lam(0xffd9b3), helmM=Lam(ch.helmet), suitM=Lam(ch.suit), gloveM=Lam(ch.glove), stripeM=Lam(ch.stripe);
@@ -1395,8 +1481,10 @@ function buildRider(ch,pose){
   rider.userData.legs=legs;
   const head=new THREE.Group(); head.position.y=1.35; rider.add(head); rider.userData.head=head;
   const helm=new THREE.Mesh(new THREE.SphereGeometry(.72,24,18),helmM); helm.scale.set(1,.92,1); head.add(helm);
-  if(ch.acc!=="army"&&ch.acc!=="animal"&&ch.acc!=="blackcat"){ const stripe=new THREE.Mesh(new THREE.TorusGeometry(.6,.07,8,32,Math.PI),stripeM); stripe.rotation.y=Math.PI/2; stripe.position.y=.12; stripe.scale.set(1.12,1.12,1.12); head.add(stripe); }
-  if(ch.acc!=="animal"&&ch.acc!=="blackcat"){ const face=new THREE.Mesh(new THREE.SphereGeometry(.5,20,14),skin); face.position.set(0,-.1,.32); face.scale.set(1,.8,.6); head.add(face); }
+  if(ch.acc!=="army"&&ch.acc!=="animal"&&ch.acc!=="blackcat"&&ch.acc!=="sausage"&&ch.acc!=="granny"){ const stripe=new THREE.Mesh(new THREE.TorusGeometry(.6,.07,8,32,Math.PI),stripeM); stripe.rotation.y=Math.PI/2; stripe.position.y=.12; stripe.scale.set(1.12,1.12,1.12); head.add(stripe); }
+  if(ch.acc==="sausage") helm.scale.set(.82,1.4,.82);
+  if(ch.acc==="granny"){ helm.scale.set(1.02,.95,.95); helm.position.set(0,.08,-.12); }
+  if(ch.acc!=="animal"&&ch.acc!=="blackcat"&&ch.acc!=="sausage"){ const face=new THREE.Mesh(new THREE.SphereGeometry(.5,20,14),skin); face.position.set(0,-.1,.32); face.scale.set(1,.8,.6); head.add(face); }
   const eyes=ch.acc!=="mask"&&ch.acc!=="animal"&&ch.acc!=="blackcat";
   for(const sx of [1,-1]){
     if(eyes){ const eye=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),dark); eye.scale.set(.8,1.3,.5); eye.position.set(sx*.17,-.08,.62); head.add(eye); }
@@ -1422,6 +1510,20 @@ function buildRider(ch,pose){
     const peak=new THREE.Mesh(new THREE.BoxGeometry(.7,.05,.2),helmM); peak.position.set(0,.2,.66); head.add(peak);
     for(const sx of [1,-1]){ const sn=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.04,8),Lam(0x9aa3b2)); sn.rotation.z=Math.PI/2; sn.position.set(sx*.71,.08,.15); head.add(sn); }
   }
+  if(ch.acc==="sausage"){ // 소세지: 길쭉한 몸 + 구운 자국 + 꼭지 매듭 + 웃는 입
+    torso.scale.set(.9,1.45,.85); torso.position.y=.55;
+    for(let k=0;k<3;k++){ const gm=new THREE.Mesh(new THREE.BoxGeometry(.5,.05,.06),stripeM); gm.position.set(0,.55-k*.32,.6); gm.rotation.z=.5; head.add(gm); }
+    const knot=new THREE.Mesh(new THREE.ConeGeometry(.12,.3,6),stripeM); knot.position.set(0,1.08,0); knot.rotation.x=Math.PI; head.add(knot);
+    const tie=new THREE.Mesh(new THREE.TorusGeometry(.07,.03,6,12),Lam(0xf4f0e0)); tie.position.set(0,.98,0); tie.rotation.x=Math.PI/2; head.add(tie);
+    const sm=new THREE.Mesh(new THREE.TorusGeometry(.12,.025,6,14,Math.PI),dark); sm.position.set(0,-.3,.6); sm.rotation.z=Math.PI; head.add(sm);
+    for(const sx of [1,-1]){ const ck=new THREE.Mesh(new THREE.SphereGeometry(.07,8,6),Lam(0xff8a7a)); ck.scale.set(1.3,.7,.4); ck.position.set(sx*.32,-.2,.55); head.add(ck); } }
+  if(ch.acc==="granny"){ // 할머니: 쪽머리 + 동그란 안경 + 미소
+    const bun=new THREE.Mesh(new THREE.SphereGeometry(.28,14,10),helmM); bun.position.set(0,.55,-.45); head.add(bun);
+    const pin=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,.6,6),Lam(0x8a5a2a)); pin.position.set(0,.6,-.48); pin.rotation.z=1.2; head.add(pin);
+    for(const sx of [1,-1]){ const g=new THREE.Mesh(new THREE.TorusGeometry(.13,.025,6,18),Lam(0x8a6a3a)); g.position.set(sx*.19,-.05,.66); head.add(g); }
+    const br=new THREE.Mesh(new THREE.BoxGeometry(.12,.025,.025),Lam(0x8a6a3a)); br.position.set(0,-.03,.68); head.add(br);
+    const sm=new THREE.Mesh(new THREE.TorusGeometry(.09,.02,6,12,Math.PI),dark); sm.position.set(0,-.3,.6); sm.rotation.z=Math.PI; head.add(sm);
+    const scarf=new THREE.Mesh(new THREE.TorusGeometry(.38,.1,8,20),stripeM); scarf.rotation.x=Math.PI/2; scarf.position.y=.85; rider.add(scarf); }
   if(ch.acc==="blackcat"){ // 검은 둥근 얼굴 + 뾰족한 귀 두 개 + 노란 눈 (그림 그대로)
     helm.scale.set(1.12,.9,.95);
     for(const sx of [1,-1]){ const ear=new THREE.Mesh(new THREE.ConeGeometry(.26,.42,4),helmM); ear.position.set(sx*.46,.66,0); ear.rotation.z=sx*-.35; ear.scale.set(1,1,.6); head.add(ear);
@@ -1507,7 +1609,7 @@ const S={}; let KART=KARTS[0];
 function resetKart(){
   const i=TR.N-14;
   Object.assign(S,{x:TR.P[i].x,z:TR.P[i].z,y:TR.Y[i],vy:0,grounded:true,gy:TR.Y[i],slope:0,pitch:0,h:Math.atan2(TR.T[i].x,TR.T[i].z),vx:0,vz:0,yaw:0,
-    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,items:0,boostT:0,instT:0,instWin:0,chute:false,kickHint:false,inTun:false,
+    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,items:0,boostT:0,instT:0,instWin:0,ej:null,biteT:0,chute:false,kickHint:false,inTun:false,
     idx:i,prog:i,onBranch:null,offroad:false,steerVis:0,shake:0,air:0});
 }
 function nearest(x,z,hint){
@@ -1647,6 +1749,7 @@ function physics(dt, controls){
     const sg=Math.sign(d), push=Math.abs(d)-lim;
     S.x-=n.x*sg*push; S.z-=n.z*sg*push;
     const vn=S.vx*n.x+S.vz*n.z;
+    if(Math.sign(vn)===sg&&KART.eject&&Math.abs(vn)>13) ejectRider(-n.x*sg,-n.z*sg,Math.abs(vn));
     if(Math.sign(vn)===sg){S.vx-=n.x*vn*1.4;S.vz-=n.z*vn*1.4; S.vx*=.88; S.vz*=.88; S.shake=Math.min(.5,Math.abs(vn)*.04); if(Math.abs(vn)>4) thud(); if(S.drifting){S.drifting=false;S.gripRamp=0;}}
   }
 
@@ -1703,8 +1806,8 @@ function carThumb(k,ch,col){
   const c=CARS[k.id], par=c.root.parent, rot=c.root.rotation.y; paintMats(c.paint,c.paintDef,col);
   const old=c.rider&&c.rider.parent?c.rider:null, oldPar=old?old.parent:null; if(old) oldPar.remove(old);
   const tmp=buildRider(ch,c.seat.pose); tmp.position.set(...c.seat.pos); tmp.scale.setScalar(c.seat.scale); (c.seat.parent||c.body).add(tmp);
-  c.root.rotation.y=0; const big=k.id==="tank"?1.55:k.id==="giant"?2.2:k.id==="dump"?2.1:k.id==="roach"?1.3:k.id==="truck"?1.1:1;
-  const url=shot(c.root,[5.4*big,3.0*big,6.6*big],[0,(k.id==="giant"?1.4:k.id==="dump"?1.2:.8)*big,0]);
+  c.root.rotation.y=0; const big=k.id==="tank"?1.55:k.id==="giant"?2.2:k.id==="dump"?2.1:k.id==="roach"?1.3:k.id==="truck"?1.1:k.id==="trex"?2.1:k.id==="chair"?.8:1;
+  const url=shot(c.root,[5.4*big,3.0*big,6.6*big],[0,(k.id==="giant"?1.4:k.id==="dump"||k.id==="trex"?1.25:.8)*big,0]);
   tmp.parent.remove(tmp); if(old) oldPar.add(old);
   c.root.rotation.y=rot; if(par) par.add(c.root);
   paintMats(c.paint,c.paintDef,c===CAR?selColor:0);
@@ -1739,8 +1842,8 @@ try{ selTrack=Math.min(TRACKS.length-1,parseInt(localStorage.getItem("kartrebuil
 function renderOptions(){
   $("trackOpts").innerHTML=TRACKS.map((t,i)=>`<button class="opt" type="button" id="trk-${t.id}" aria-pressed="${i===selTrack}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>trackThumb(t))}"><b>${t.name}</b><span>${t.desc}</span>${t.records?`<span class="stat">랭킹 1위 ${t.records[0].name} ${fmtT(t.records[0].t)}</span>`:""}</button>`).join("");
   $("kartOpts").innerHTML=KARTS.map((k,i)=>{const top=Math.round(CONFIG.maxSpeed*k.speed*CONFIG.kmh), bst=Math.round(CONFIG.maxSpeed*k.speed*(k.boost||CONFIG.boostRatio)*CONFIG.kmh);
-    return `<button class="opt" type="button" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span><span class="stat">최고 ${top} · 부스터 ${bst} km/h</span><span class="bar"><i style="width:${Math.round(k.speed/1.5*100)}%"></i></span></button>`;}).join("");
-  $("charOpts").innerHTML=CHARS.map((c,i)=>`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="${i===selChar}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>charThumb(c))}"><b><span class="dot" style="background:#${c.helmet.toString(16).padStart(6,"0")}"></span>${c.name}</b><span>${c.desc}</span></button>`).join("");
+    return `<button class="opt" type="button" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span><span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
+  $("charOpts").innerHTML=CHARS.map((c,i)=>`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="${i===selChar}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>charThumb(c))}"><b><span class="dot" style="background:#${c.helmet.toString(16).padStart(6,"0")}"></span>${c.name}</b><span>${c.desc}</span>${SYN[KARTS[selKart].id]===c.id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}</button>`).join("");
   $("colorOpts").innerHTML=swatchesHTML(); $("colorOpts").querySelectorAll(".sw").forEach(b=>b.addEventListener("click",()=>{ setColor(+b.dataset.i); renderOptions(); }));
   $("charOpts").querySelectorAll("button.opt").forEach(b=>b.addEventListener("click",()=>{selChar=+b.dataset.i; try{localStorage.setItem("kartrebuild.char",String(selChar));}catch(_){} renderOptions();}));
   $("trackOpts").querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{selTrack=+b.dataset.i; try{localStorage.setItem("kartrebuild.track",String(selTrack));}catch(_){} renderOptions();}));
@@ -1852,8 +1955,9 @@ function groundAt(x,z){ const {P,Y,N,NR}=TR; let b=0,bd=1e9; for(let i=0;i<N;i+=
     return {y:0,d,kind:"plain",ch,side}; }
   return {y:Y[b],d}; }
 function fireShell(){
+  if(KART.id==="trex"){ trexBite(); return; }
   if(KART.id!=="tank"||FX.cool>0||state==="menu") return;
-  FX.cool=1.4; FX.recoil=1; FX.flash=1;
+  FX.cool=3; FX.recoil=1; FX.flash=1;
   kart.updateMatrixWorld(true); const tip=new THREE.Vector3(0,0,CAR.muzzleZ); CAR.barrelG.localToWorld(tip);
   const dir=new THREE.Vector3(0,0,1).transformDirection(CAR.barrelG.matrixWorld);
   const m=new THREE.Mesh(shellG,shellM); m.position.copy(tip); scene.add(m);
@@ -2023,8 +2127,8 @@ function loadBest(){ bestEver=null; try{const v=localStorage.getItem(bestKey());
 
 function startRace(){
   initAudio(); if(TR) resetDestruction();
-  loadTrack(selTrack); resetDestruction(); KART=KARTS[selKart]; paintKart(KART); attachRider(CHARS[selChar]); loadBest(); bestLap=null;
-  const fb=document.getElementById("fireBtn"); if(fb) fb.hidden=KART.id!=="tank";
+  loadTrack(selTrack); resetDestruction(); KART=effKart(KARTS[selKart],CHARS[selChar]); if(KART.syn) setTimeout(()=>toast("시너지! 성능 +4%","#ffcf2e"),INTRO*1000); paintKart(KART); attachRider(CHARS[selChar]); loadBest(); bestLap=null;
+  const fb=document.getElementById("fireBtn"); if(fb){ fb.hidden=!(KART.id==="tank"||KART.id==="trex"); fb.textContent=KART.id==="trex"?"물기":"포탄"; }
   resetKart(); resetMissions(); kart.visible=true; updUpg(); state="countdown"; countT=3.2+INTRO; raceT=0; lapStart=0; lap=1; laps=[]; cp1=cp2=false; prevIdx=S.prog;
   clearSkids();
   $("menu").hidden=true; $("finish").hidden=true; $("count").hidden=true;
@@ -2049,6 +2153,49 @@ function finishRace(){
   if(MP.racing) mpFinish();
   setTimeout(()=>{ if(state==="finish") $("finish").hidden=false; },900);
 }
+// ===== 슈퍼바이크: 세게 부딪히면 사람이 날아감 → 걸어가서 다시 타야 함 =====
+function ejectRider(nx,nz,power){
+  if(!KART.eject||S.ej||!CAR.rider) return;
+  const rd=CAR.rider; rd.updateMatrixWorld(true); const wp=new THREE.Vector3(); rd.getWorldPosition(wp);
+  scene.attach(rd); const sp=Math.hypot(S.vx,S.vz);
+  S.ej={x:wp.x,y:wp.y,z:wp.z,vx:S.vx*.55+nx*Math.min(14,power*.4),vy:7+Math.min(10,power*.25),vz:S.vz*.55+nz*Math.min(14,power*.4),h:S.h,ground:false,t:0,idx:S.idx,told:false,spin:(Math.random()<.5?-1:1)*(6+Math.random()*4)};
+  S.drifting=false; S.boostT=0; S.instT=0; S.shake=Math.max(S.shake,.8); thud(); toast("앗! 사람이 날아갔다!","#ff7a1a");
+  if(sp>1){ S.vx*=.6; S.vz*=.6; }
+}
+function updEject(dt,controls){
+  const E=S.ej; if(!E) return; E.t+=dt;
+  S.vx*=Math.exp(-2.2*dt); S.vz*=Math.exp(-2.2*dt); // 주인 잃은 오토바이는 미끄러지다 멈춤
+  E.idx=nearest(E.x,E.z,E.idx); const i=E.idx, p=TR.P[i], n=TR.NR[i], gy=TR.Y[i];
+  if(!E.ground){ E.vy-=CONFIG.gravity*dt; E.x+=E.vx*dt; E.y+=E.vy*dt; E.z+=E.vz*dt;
+    if(E.y<=gy){ E.y=gy; E.ground=true; E.vy=0; thud(); } }
+  else { const k=Math.exp(-5*dt); E.vx*=k; E.vz*=k; E.x+=E.vx*dt; E.z+=E.vz*dt; E.y=gy;
+    if(Math.hypot(E.vx,E.vz)<1.5&&controls){ // 걸어서 오토바이로
+      const steer=(input.left?1:0)-(input.right?1:0); E.h+=steer*2.6*dt; const fw=(input.accel?8:0)-(input.brake?4:0);
+      E.x+=Math.sin(E.h)*fw*dt; E.z+=Math.cos(E.h)*fw*dt; E.walk=(E.walk||0)+Math.abs(fw)*dt;
+      if(!E.told){ E.told=true; toast(touchMode?"오토바이로 걸어가서 다시 타세요!":"↑ ←→ 로 걸어가서 오토바이에 다시 타세요!","#ffcf2e"); toastTimer=2.4; } } }
+  const d=(E.x-p.x)*n.x+(E.z-p.z)*n.z, lim=TR.HW+(TR.def.walls?.5:(TR.def.runoff||2.4)); if(Math.abs(d)>lim){ const sg=Math.sign(d); E.x-=n.x*sg*(Math.abs(d)-lim); E.z-=n.z*sg*(Math.abs(d)-lim); }
+  const rd=CAR.rider; if(rd){ rd.position.set(E.x,E.y+(E.ground?.15:0),E.z);
+    if(!E.ground){ rd.rotation.x+=E.spin*dt; rd.rotation.z+=E.spin*.5*dt; }
+    else { rd.rotation.set(0,E.h,0); rd.position.y+=Math.abs(Math.sin((E.walk||0)*3))*.15; } }
+  // 다시 타기
+  if(E.ground&&E.t>.6&&Math.hypot(E.x-S.x,E.z-S.z)<2.8&&Math.hypot(S.vx,S.vz)<4){ const st=CAR.seat, par=st.parent||CAR.body; par.add(rd); rd.position.set(...st.pos); rd.rotation.set(0,0,0); rd.scale.setScalar(st.scale); S.ej=null; S.h=Math.atan2(TR.T[S.idx].x,TR.T[S.idx].z); toast("다시 탑승!","#46e08a"); beep(880,.12,.2); }
+}
+// ===== 티라노: 물기 (온라인에서 앞에 있는 상대를 물면 가벼울수록 감속, 전차급 무게부터는 못 물음) =====
+function trexBite(){
+  if(FX.cool>0||state==="menu") return; FX.cool=3; S.biteT=.5; thud(); S.shake=Math.max(S.shake,.2);
+  if(typeof MP==="undefined"||!MP||!MP.racing) return;
+  let best=null, bd=9; const fx=Math.sin(S.h), fz=Math.cos(S.h);
+  for(const [peer,g] of MP.ghosts){ if(!g.obj.visible) continue; const dx=g.x-S.x, dz=g.z-S.z, d=Math.hypot(dx,dz); if(d<bd&&(dx*fx+dz*fz)/Math.max(d,.01)>.35){ bd=d; best=peer; } }
+  if(best){ MP.biteSeq=(MP.biteSeq||0)+1; mpSend({bi:[MP.biteSeq,best]}); const g=MP.ghosts.get(best); bumpFx(g.x,g.y+2,g.z); toast("콱!","#ffffff"); }
+}
+function bittenByTrex(){
+  const m=KART.mass||1;
+  if(m>=1.9){ toast("티라노가 물려 했지만 너무 단단하다!","#46e08a"); S.shake=Math.max(S.shake,.2); return; }
+  const keep=1-clamp(.8-.32*m,.15,.6); S.vx*=keep; S.vz*=keep; S.drifting=false; S.boostT=0; S.shake=Math.max(S.shake,.6); thud();
+  toast("티라노에게 물렸다!","#ff4d6d"); if(typeof bumpFx==="function") bumpFx(S.x,S.y+1.5,S.z);
+  if(KART.eject&&m<1) ejectRider(Math.cos(S.h),-Math.sin(S.h),12);
+}
+
 function LAPS(){ return (TR&&TR.def.laps)||CONFIG.laps; }
 function fmtT(t){ const m=Math.floor(t/60), x=t-m*60; return m+":"+(x<10?"0":"")+x.toFixed(2); }
 function rankHTML(myT){ const R=TR.def.records; if(!R) return ""; const rows=R.map(r=>({n:r.name,t:r.t,me:false})); rows.push({n:"나 (이번 기록)",t:myT,me:true}); rows.sort((a,b)=>a.t-b.t);
@@ -2190,7 +2337,7 @@ function mpRender(){
     const img=document.createElement("img"); img.alt=""; img.src=safeThumb(()=>carThumb(kt,ch,+pr.cl||0));
     const tag=document.createElement("span"); tag.className="tag"+(isH?" host":pr.rd?" ok":""); tag.textContent=racing?"주행 중":isH?"방장":pr.rd?"준비 완료":"대기 중";
     const b=document.createElement("b"); b.textContent=(me?"나 · ":"")+(cleanName(pr.n)||"라이더");
-    const sm=document.createElement("small"); sm.textContent=kt.name+" · "+ch.name;
+    const sm=document.createElement("small"); sm.textContent=(SYN[kt.id]===ch.id?"★ ":"")+kt.name+" · "+ch.name;
     cell.append(img,tag,b,sm); G.appendChild(cell); }
   const htr=host?(+host.presence.tr||0):selTrack;
   $m("mpTrackHint").textContent=amHost?"(방장이 골라요)":"· 방장이 고르는 중";
@@ -2219,7 +2366,7 @@ $m("mpGo").addEventListener("click",()=>{
 /* 경기 */
 function mpStartRace(g){
   const tr=Math.max(0,Math.min(TRACKS.length-1,+g.tr||0)); selTrack=tr;
-  MP.racing=true; MP.finished=false; MP.shotSeen={}; MP.lastShot=null; MP.raceId=String(g.id); MP.slot=Math.max(0,g.ps.indexOf(MP.myPeer)); MP.ps=g.ps.slice(); MP.ready=false; MP.finishTold.clear();
+  MP.racing=true; MP.finished=false; MP.shotSeen={}; MP.biteSeen={}; MP.lastShot=null; MP.raceId=String(g.id); MP.slot=Math.max(0,g.ps.indexOf(MP.myPeer)); MP.ps=g.ps.slice(); MP.ready=false; MP.finishTold.clear();
   $m("mpLobby").hidden=true; mpClearGhosts();
   startRace();
   // 출발선 자리: 4줄로 나란히, 뒤로 한 칸씩
@@ -2271,7 +2418,7 @@ function shellHitMe(s){ const m=KART.mass||1, hv=Math.hypot(s.v.x,s.v.z)||1, dx=
   const fly=KART.fly||1, push=clamp(11/m,2,14)*fly, lift=clamp(10/m,2.2,12)*(fly>1?1.25:1), keep=1-clamp(.22/m,.06,.38);
   S.vx=S.vx*keep+dx*push; S.vz=S.vz*keep+dz*push; S.vy=Math.max(S.vy,lift); S.y+=.15; S.grounded=false; S.drifting=false;
   S.h+=(Math.random()<.5?-1:1)*clamp(.5/m,.05,.7)*(fly>1?2:1); S.shake=Math.max(S.shake,clamp(.9/m,.25,.9));
-  toast(m>=1.6?"포탄 맞음! (끄떡없다)":"포탄 맞음!","#ff7a1a"); }
+  toast(m>=1.6?"포탄 맞음! (끄떡없다)":"포탄 맞음!","#ff7a1a"); if(KART.eject) ejectRider(dx,dz,20); }
 // 부딪힐 때 튀는 별 + 먼지
 function bumpFx(x,y,z){ const p=new THREE.Vector3(x,y,z); for(let k=0;k<7;k++){ const a=Math.random()*Math.PI*2; puff(p.clone(),.9+Math.random()*.8,.45,new THREE.MeshBasicMaterial({color:k%2?0xffe066:0xffffff,transparent:true,opacity:1,depthWrite:false}),new THREE.Vector3(Math.cos(a)*7,3+Math.random()*4,Math.sin(a)*7)); }
   puff(p.clone(),2.2,.35,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.7,depthWrite:false})); }
@@ -2285,6 +2432,9 @@ function mpUpdate(dt){
   const wallNow=Date.now();
   for(const p of mpList()){ if(p.peer===MP.myPeer) continue; const pr=p.presence; if(pr.rid!==MP.raceId||!(pr.st==="race"||pr.st==="done")||pr.x===undefined){ const g0=MP.ghosts.get(p.peer); if(g0) g0.obj.visible=false; continue; }
     const g=mpGhost(p.peer,pr); g.obj.visible=true;
+    const BS=MP.biteSeen||(MP.biteSeen={}); if(BS[p.peer]===undefined) BS[p.peer]=Array.isArray(pr.bi)?pr.bi[0]:0;
+    if(Array.isArray(pr.bi)&&pr.bi[0]!==BS[p.peer]){ BS[p.peer]=pr.bi[0]; g.biteT=.5; if(pr.bi[1]===MP.myPeer) bittenByTrex(); }
+    if(g.key.startsWith("trex.")){ trexRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0),g.biteT||0); g.biteT=Math.max(0,(g.biteT||0)-dt); }
     const SS=MP.shotSeen||(MP.shotSeen={}); if(SS[p.peer]===undefined) SS[p.peer]=Array.isArray(pr.fs)?pr.fs[0]:0; // 이전 판 포탄은 무시
     if(Array.isArray(pr.fs)&&pr.fs.length===7){ const seen=SS[p.peer]; if(pr.fs[0]!==seen){ MP.shotSeen[p.peer]=pr.fs[0];
       const f=pr.fs.map(Number); const sm=new THREE.Mesh(shellG,shellM); sm.position.set(f[1],f[2],f[3]); scene.add(sm); FX.shells.push({m:sm,v:new THREE.Vector3(f[4],f[5],f[6]),t:0,life:3,power:0,remote:true}); cannonSnd&&boomSnd(Math.hypot(f[1]-S.x,f[3]-S.z)); } } const age=Math.min(.3,Math.max(0,(wallNow-(p.at||wallNow))/1000));
@@ -2298,7 +2448,7 @@ function mpUpdate(dt){
         const ovx=+pr.vx||0, ovz=+pr.vz||0, rel=(S.vx-ovx)*nx+(S.vz-ovz)*nz;
         if(rel<0&&(!g.bumpT||now-g.bumpT>350)){ g.bumpT=now; const imp=(Math.min(10,-rel)*(.8+share)+2*share)*(share>.5?fly:1); S.vx+=nx*imp; S.vz+=nz*imp;
           const side=Math.sign(Math.sin(S.h)*nz-Math.cos(S.h)*nx)||1; S.h+=side*share*(fly>1?.9:.18); if(fly>1&&share>.5){ S.vy=Math.max(S.vy,3.5*share*fly); S.grounded=false; } const keep=1-.25*share; // 튕겨나가며 감속 (무거운 상대일수록 크게: 같은 무게 약 12%, 스쿠터→덤프 약 20%) S.vx*=keep; S.vz*=keep; S.drifting=false;
-          S.shake=Math.max(S.shake,.25+share*.3); thud(); bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); } } }
+          S.shake=Math.max(S.shake,.25+share*.3); thud(); if(KART.eject&&share>.5&&-rel>5) ejectRider(nx,nz,-rel); bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); } } }
     }
   mpRankT-=dt; if(mpRankT<=0){ mpRankT=.25; const rows=mpStandings(), me=rows.findIndex(r=>r.me);
     const el=$m("mpRank"); el.innerHTML=""; const top=document.createElement("div"); top.className="r1"; top.textContent=(me+1)+"위"; const sm=document.createElement("small"); sm.textContent=" / "+rows.length; top.appendChild(sm); el.appendChild(top);
@@ -2315,7 +2465,7 @@ function frame(now){
   while(acc>=STEP){
     const controls=state==="race";
     if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(countT<=0){state="race"; $("count").hidden=true; toast("GO!","#ffcf2e"); beep(1320,.35);}}
-    if(state!=="menu") fsNow=physics(STEP, controls);
+    if(state!=="menu"){ fsNow=physics(STEP, controls&&!S.ej); if(S.ej) updEject(STEP,controls); }
     if(state==="race"){raceT+=STEP; lapCheck(); if(input.fire&&!prev.fire) fireShell(); if(input.lock&&!prev.lock){ S.lock=!S.lock; toast(S.lock?"정지 고정":"고정 해제","#ffffff"); const lb=document.getElementById("lockBtn"); if(lb) lb.classList.toggle("hint",S.lock); } }
     for(const k in input) prev[k]=input[k];
     acc-=STEP;
@@ -2337,13 +2487,14 @@ function render(dt){
     const tgt=S.drifting?clamp(-S.dYaw*.42,-.75,.75):clamp(-S.yaw*.32,-.4,.4);
     body.rotation.z=lerp(body.rotation.z,tgt*(fsNow>2?1:0),1-Math.exp(-8*dt));
     CAR.root.rotation.y=lerp(CAR.root.rotation.y,S.drifting?S.driftDir*.28:0,1-Math.exp(-6*dt));
-    const rd=CAR.rider; if(rd){ rd.rotation.z=lerp(rd.rotation.z,tgt*.35,1-Math.exp(-8*dt));
+    const rd=CAR.rider; if(rd&&!S.ej){ rd.rotation.z=lerp(rd.rotation.z,tgt*.35,1-Math.exp(-8*dt));
       const L=rd.userData.legs; if(L){ const inL=S.drifting&&S.driftDir>0, inR=S.drifting&&S.driftDir<0;
         L.L.rotation.z=lerp(L.L.rotation.z,inL?.95:0,1-Math.exp(-10*dt)); L.L.rotation.x=lerp(L.L.rotation.x,inL?-.5:0,1-Math.exp(-10*dt));
         L.R.rotation.z=lerp(L.R.rotation.z,inR?-.95:0,1-Math.exp(-10*dt)); L.R.rotation.x=lerp(L.R.rotation.x,inR?-.5:0,1-Math.exp(-10*dt)); } } }
   else body.rotation.z=lerp(body.rotation.z, clamp(-S.yaw*.06,-.12,.12)*(fsNow>0?1:0), .15);
   body.position.y=S.offroad&&Math.abs(fsNow)>3?Math.sin(performance.now()*.05)*.04:0;
   if(CAR.roach) roachRun(CAR.root,dt,state==="menu"?0:fsNow);
+  if(CAR.trex){ trexRun(CAR.root,dt,state==="menu"?0:fsNow,S.biteT||0); S.biteT=Math.max(0,(S.biteT||0)-dt); }
   if(CAR.giant){ const st=giantRun(CAR.root,dt,state==="menu"?0:fsNow,S.yaw||0); body.rotation.z*=.5; if(st!==undefined){ const ph=Math.sign(st); if(CAR.lastStep!==undefined&&ph!==CAR.lastStep&&Math.abs(fsNow)>4&&state==="race"){ thud(); S.shake=Math.max(S.shake,.18); } CAR.lastStep=ph; } }
   const steer=(input.left?1:0)-(input.right?1:0);
   S.steerVis=lerp(S.steerVis,state==="race"?steer*.4:0,.2);
@@ -2367,21 +2518,22 @@ function render(dt){
   } else if(state==="countdown"&&countT>3.2-.6){
     // 정면에서 시작해 차 주위를 돌아 뒤쪽 추격 시점으로
     const u=clamp(1-(countT-(3.2-.6))/(INTRO+.6),0,1), e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
-    const big_=CAR.giant||CAR.id==="dump", ang=S.h+Math.PI*e, dist=lerp(big_?14:5.2,CAR.camDist,e), hgt=lerp(big_?6:1.5,CAR.camH||CAM_H,e);
+    const big_=CAR.giant||CAR.id==="dump"||CAR.id==="trex", ang=S.h+Math.PI*e, dist=lerp(big_?14:5.2,CAR.camDist,e), hgt=lerp(big_?6:1.5,CAR.camH||CAM_H,e);
     camera.position.set(S.x+Math.sin(ang)*dist, S.y+hgt, S.z+Math.cos(ang)*dist);
-    const look=lerp(0,CAM_LOOK,e); camera.lookAt(S.x+Math.sin(S.h)*look, S.y+lerp((CAR.giant||CAR.id==="dump")?4.5:1.1,CAR.lookY||.9,e), S.z+Math.cos(S.h)*look);
+    const look=lerp(0,CAM_LOOK,e); camera.lookAt(S.x+Math.sin(S.h)*look, S.y+lerp((CAR.giant||CAR.id==="dump"||CAR.id==="trex")?4.5:1.1,CAR.lookY||.9,e), S.z+Math.cos(S.h)*look);
     cam.x=camera.position.x; cam.y=camera.position.y; cam.z=camera.position.z; cam.yaw=S.h;
   } else {
-    while(S.h-cam.yaw>Math.PI) cam.yaw+=Math.PI*2; while(S.h-cam.yaw<-Math.PI) cam.yaw-=Math.PI*2;
-    cam.yaw=lerp(cam.yaw,S.h,1-Math.exp(-(S.rail?9:4.5)*dt));
+    const F_=S.ej?S.ej:S, FH_=S.ej?S.ej.h:S.h;
+    while(FH_-cam.yaw>Math.PI) cam.yaw+=Math.PI*2; while(FH_-cam.yaw<-Math.PI) cam.yaw-=Math.PI*2;
+    cam.yaw=lerp(cam.yaw,FH_,1-Math.exp(-(S.rail?9:4.5)*dt));
     const base=CONFIG.maxSpeed*KART.speed;
     const dist=CAR.camDist+clamp(fsNow/base,0,1.4)*.9;
-    const tx=S.x-Math.sin(cam.yaw)*dist, tz=S.z-Math.cos(cam.yaw)*dist;
+    const tx=F_.x-Math.sin(cam.yaw)*dist, tz=F_.z-Math.cos(cam.yaw)*dist;
     const k=1-Math.exp(-(S.rail?24:10)*dt);
-    cam.x=lerp(cam.x,tx,k); cam.z=lerp(cam.z,tz,k); cam.y=lerp(cam.y,S.y+(CAR.camH||CAM_H),1-Math.exp(-6*dt));
+    cam.x=lerp(cam.x,tx,k); cam.z=lerp(cam.z,tz,k); cam.y=lerp(cam.y,F_.y+(CAR.camH||CAM_H),1-Math.exp(-6*dt));
     S.shake*=Math.exp(-8*dt);
     camera.position.set(cam.x+(Math.random()-.5)*S.shake, cam.y+(Math.random()-.5)*S.shake, cam.z);
-    camera.lookAt(S.x+Math.sin(cam.yaw)*CAM_LOOK*(CAR.giant?2:1), S.y+(CAR.lookY||.9), S.z+Math.cos(cam.yaw)*CAM_LOOK*(CAR.giant?2:1));
+    camera.lookAt(F_.x+Math.sin(cam.yaw)*CAM_LOOK*(CAR.giant?2:1), F_.y+(CAR.lookY||.9), F_.z+Math.cos(cam.yaw)*CAM_LOOK*(CAR.giant?2:1));
   }
   const targetFov=70+(S.rail?16:S.boostT>0?7:S.instT>0?3:0);
   camera.fov=lerp(camera.fov,targetFov,.08); camera.updateProjectionMatrix();
