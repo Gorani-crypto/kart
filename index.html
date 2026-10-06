@@ -114,6 +114,21 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 .mp-p.me{border-color:rgba(255,255,255,.5)}
 .mp-note{font-size:13px;color:var(--ink-dim);line-height:1.6}
 .mp-sec{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--ink-dim)}
+.mp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.mp-slot{position:relative;border-radius:12px;border:1px solid var(--panel-line);background:rgba(255,255,255,.04);padding:6px 6px 8px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.mp-slot img{width:100%;aspect-ratio:1.6;object-fit:cover;border-radius:8px;background:rgba(255,255,255,.06);display:block}
+.mp-slot.empty{border-style:dashed;opacity:.45;justify-content:center;align-items:center;min-height:110px;font-size:12px;color:var(--ink-dim);font-weight:700}
+.mp-slot.me{border-color:#ffcf2e;box-shadow:0 0 0 1px #ffcf2e inset}
+.mp-slot.ok{border-color:#46e08a}
+.mp-slot b{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-slot small{font-size:11px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-slot .tag{position:absolute;top:10px;left:10px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(14,22,48,.85);color:var(--ink-dim)}
+.mp-slot .tag.ok{color:#46e08a}.mp-slot .tag.host{color:#ffcf2e}
+.mp-pick{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.mp-pick button{flex:0 0 auto;width:96px;font:700 12px var(--body);color:var(--ink);background:rgba(255,255,255,.05);border:2px solid var(--panel-line);border-radius:10px;padding:4px;cursor:pointer;display:flex;flex-direction:column;gap:3px;align-items:center}
+.mp-pick button img{width:100%;aspect-ratio:1.6;object-fit:cover;border-radius:6px;display:block}
+.mp-pick button[aria-pressed="true"]{border-color:#ffcf2e;background:rgba(255,207,46,.12)}
+@media (max-width:520px){ .mp-grid{gap:5px} .mp-slot b{font-size:11px} .mp-slot small{display:none} .mp-pick button{width:80px} }
 #mpRank{min-width:120px}
 #mpRank .r1{font-family:var(--display);font-size:24px;line-height:1}
 #mpRank .r1 small{font-size:14px;color:var(--ink-dim)}
@@ -180,13 +195,13 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
     </div>
     <div id="mpRoomBox" hidden style="display:flex;flex-direction:column;gap:12px">
       <div class="mp-sec" id="mpRoomTitle">방 1 · 참가자</div>
-      <div class="mp-list" id="mpList"></div>
+      <div class="mp-grid" id="mpList"></div>
       <div class="mp-sec">트랙 <span id="mpTrackHint"></span></div>
       <div class="mp-chips" id="mpTracks"></div>
-      <div class="mp-sec">내 카트</div>
-      <div class="mp-chips" id="mpKarts"></div>
-      <div class="mp-sec">내 캐릭터</div>
-      <div class="mp-chips" id="mpChars"></div>
+      <div class="mp-sec">내 차량 바꾸기</div>
+      <div class="mp-pick" id="mpKarts"></div>
+      <div class="mp-sec">내 캐릭터 바꾸기</div>
+      <div class="mp-pick" id="mpChars"></div>
       <p class="mp-note" id="mpStatus"></p>
       <div class="row"><button class="btn" id="mpGo" type="button">준비</button><button class="btn ghost" id="mpLeave" type="button">대기실 나가기</button></div>
     </div>
@@ -1976,7 +1991,7 @@ try{ MP.nick=localStorage.getItem("kartrebuild.nick")||""; MP.code=localStorage.
 if(!MP.nick) MP.nick="라이더"+Math.floor(100+Math.random()*900);
 $m("mpName").value=MP.nick; $m("mpCode").value=MP.code;
 
-function mpOpen(){ $m("menu").hidden=true; $m("finish").hidden=true; $m("mpLobby").hidden=false; mpRender(); }
+function mpOpen(){ MP.lobbySig=null; $m("menu").hidden=true; $m("finish").hidden=true; $m("mpLobby").hidden=false; mpRender(); }
 function mpPresBase(){ return {v:1,n:MP.nick,ch:selChar,k:selKart,rd:MP.ready?1:0,jt:MP.jt,tr:selTrack}; }
 function mpSend(extra){ if(!MP.joined) return; NETA.pres(Object.assign(mpPresBase(),extra||{})); }
 
@@ -2020,34 +2035,39 @@ function mpPeers(list){
 function mpRender(){
   $m("mpJoinBox").hidden=MP.joined; $m("mpRoomBox").hidden=!MP.joined; if(!MP.joined) return;
   const L=mpList(), host=mpHost(), amHost=mpIsHost();
+  const sig=JSON.stringify([MP.code,MP.myPeer,MP.ready,selKart,selChar,selTrack,host&&host.peer,L.map(p=>[p.peer,p.presence.n,p.presence.k,p.presence.ch,p.presence.rd,p.presence.st,p.presence.tr,p.presence.jt])]);
+  if(sig===MP.lobbySig) return; MP.lobbySig=sig; // 바뀐 게 없으면 다시 그리지 않음 (버튼 누르는 중 깜빡임 방지)
   $m("mpRoomTitle").textContent="방 "+MP.code+" · 참가자 "+L.length+"명";
-  $m("mpList").innerHTML="";
-  for(const p of L){ const pr=p.presence, me=p.peer===MP.myPeer, ch=CHARS[+pr.ch]||CHARS[0], kt=KARTS[+pr.k]||KARTS[0];
-    const row=document.createElement("div"); row.className="mp-p"+(me?" me":"");
-    const dot=document.createElement("span"); dot.className="dot"; dot.style.background=hexCol(ch.helmet);
-    const nm=document.createElement("div"); const b=document.createElement("b"); b.textContent=cleanName(pr.n)||"라이더"; const sm=document.createElement("small"); sm.textContent=(me?"나 · ":"")+kt.name+" · "+ch.name; nm.append(b,sm);
-    const st=document.createElement("span"); const isH=host&&p.peer===host.peer, racing=pr.st==="race";
-    st.className="st"+(isH?" host":pr.rd?" ok":""); st.textContent=racing?"주행 중":isH?"방장":pr.rd?"준비 완료":"대기";
-    row.append(dot,nm,st); $m("mpList").appendChild(row); }
+  const G=$m("mpList"); G.innerHTML="";
+  const seats=L.slice().sort((a,b)=>((+a.presence.jt||0)-(+b.presence.jt||0))||(a.peer<b.peer?-1:1)).slice(0,8);
+  for(let i=0;i<8;i++){ const p=seats[i], cell=document.createElement("div");
+    if(!p){ cell.className="mp-slot empty"; cell.textContent="빈 자리"; G.appendChild(cell); continue; }
+    const pr=p.presence, me=p.peer===MP.myPeer, ch=CHARS[+pr.ch]||CHARS[0], kt=KARTS[+pr.k]||KARTS[0], isH=host&&p.peer===host.peer, racing=pr.st==="race";
+    cell.className="mp-slot"+(me?" me":"")+(!isH&&pr.rd?" ok":"");
+    const img=document.createElement("img"); img.alt=""; img.src=safeThumb(()=>carThumb(kt,ch));
+    const tag=document.createElement("span"); tag.className="tag"+(isH?" host":pr.rd?" ok":""); tag.textContent=racing?"주행 중":isH?"방장":pr.rd?"준비 완료":"대기 중";
+    const b=document.createElement("b"); b.textContent=(me?"나 · ":"")+(cleanName(pr.n)||"라이더");
+    const sm=document.createElement("small"); sm.textContent=kt.name+" · "+ch.name;
+    cell.append(img,tag,b,sm); G.appendChild(cell); }
   const htr=host?(+host.presence.tr||0):selTrack;
   $m("mpTrackHint").textContent=amHost?"(방장이 골라요)":"· 방장이 고르는 중";
   $m("mpTracks").innerHTML=""; TRACKS.forEach((t,i)=>{ const b=document.createElement("button"); b.type="button"; b.textContent=t.name; b.setAttribute("aria-pressed",String(i===(amHost?selTrack:htr))); b.disabled=!amHost;
     b.onclick=()=>{ selTrack=i; try{localStorage.setItem("kartrebuild.track",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpTracks").appendChild(b); });
-  $m("mpKarts").innerHTML=""; KARTS.forEach((k,i)=>{ const b=document.createElement("button"); b.type="button"; b.textContent=k.name; b.setAttribute("aria-pressed",String(i===selKart));
+  $m("mpKarts").innerHTML=""; KARTS.forEach((k,i)=>{ const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=safeThumb(()=>carThumb(k,CHARS[selChar])); const t=document.createElement("span"); t.textContent=k.name; b.append(im,t); b.setAttribute("aria-pressed",String(i===selKart));
     b.onclick=()=>{ selKart=i; try{localStorage.setItem("kartrebuild.kart",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpKarts").appendChild(b); });
-  $m("mpChars").innerHTML=""; CHARS.forEach((c,i)=>{ const b=document.createElement("button"); b.type="button"; b.textContent=c.name; b.setAttribute("aria-pressed",String(i===selChar));
+  $m("mpChars").innerHTML=""; CHARS.forEach((c,i)=>{ const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=safeThumb(()=>charThumb(c)); const t=document.createElement("span"); t.textContent=c.name; b.append(im,t); b.setAttribute("aria-pressed",String(i===selChar));
     b.onclick=()=>{ selChar=i; try{localStorage.setItem("kartrebuild.char",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpChars").appendChild(b); });
   const go=$m("mpGo"), others=L.filter(p=>p.peer!==MP.myPeer&&p.presence.st!=="race"), notReady=others.filter(p=>!p.presence.rd).length, inRace=L.filter(p=>p.presence.st==="race").length;
-  if(amHost){ go.textContent="출발!"; go.disabled=false;
-    $m("mpStatus").textContent=L.length<2?"아직 혼자예요. 이 페이지를 친구에게 공유하고 방 번호 "+MP.code+"로 들어오라고 하세요. 혼자 출발해도 돼요."
-      :notReady?"준비 안 된 사람이 "+notReady+"명 있어요. 준비한 사람만 같이 출발해요.":"모두 준비 완료! 출발을 누르세요.";
+  if(amHost){ go.textContent=notReady?"준비 기다리는 중 ("+(others.length-notReady)+"/"+others.length+")":"출발!"; go.disabled=notReady>0;
+    $m("mpStatus").textContent=L.length<2?"아직 혼자예요. 링크를 친구에게 보내고 방 번호 "+MP.code+"로 들어오라고 하세요. 혼자 출발해도 돼요."
+      :notReady?"모두 준비해야 출발할 수 있어요. 아직 "+notReady+"명이 준비 전이에요.":"모두 준비 완료! 출발을 누르세요.";
     if(inRace) $m("mpStatus").textContent+=" ("+inRace+"명은 아직 주행 중)"; }
   else { go.textContent=MP.ready?"준비 취소":"준비"; go.disabled=false;
     $m("mpStatus").textContent=inRace&&!MP.ready?"지금 다른 경기가 진행 중이에요. 준비해 두면 다음 판에 같이 출발해요.":MP.ready?"방장이 출발시키면 바로 시작해요.":"준비를 누르면 방장이 출발시킬 때 같이 달려요."; }
 }
 $m("mpGo").addEventListener("click",()=>{
   if(!MP.joined) return;
-  if(mpIsHost()){ const L=mpList(); const ps=[MP.myPeer,...L.filter(p=>p.peer!==MP.myPeer&&p.presence.rd&&p.presence.st!=="race").map(p=>p.peer)].slice(0,8);
+  if(mpIsHost()){ const L=mpList(); if(L.some(p=>p.peer!==MP.myPeer&&p.presence.st!=="race"&&!p.presence.rd)) return; const ps=[MP.myPeer,...L.filter(p=>p.peer!==MP.myPeer&&p.presence.rd&&p.presence.st!=="race").map(p=>p.peer)].slice(0,8);
     const g={id:MP.myPeer+":"+Date.now(),tr:selTrack,ps}; MP.seenGo.add(g.id); mpSend({go:g}); mpStartRace(g); }
   else { MP.ready=!MP.ready; mpSend(); mpRender(); }
 });
