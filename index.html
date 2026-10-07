@@ -211,7 +211,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0228</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0232</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -2274,9 +2274,13 @@ function botBump(b,o,now){ const dx=b.x-o.x, dz=b.z-o.z, d=Math.hypot(dx,dz), R=
   const mMe=Math.pow(b.K.mass||1,1.5), mOt=Math.pow(o.mass||1,1.5), share=mOt/(mMe+mOt), fly=b.K.fly||1, imp=(Math.min(10,-rel)*(.8+share)+2*share)*(share>.5?fly:1);
   b.v*=1-.25*share; botImpulse(b,nx*imp,nz*imp); b.spin+=(Math.random()<.5?-1:1)*share*(fly>1?.9:.25); if(fly>1&&share>.5){ b.vy=Math.max(b.vy,3.5*share*fly); b.y=Math.max(b.y,.05); } if(share>.6&&-rel>8) botVoice(b,0);
   if(near) bumpFx((b.x+o.x)/2,b.wy+1.2,(b.z+o.z)/2); }
+// 포탄 맞음: 감속(가벼운 차 30% ~ 무거운 차 7%), 옆으로 밀리는 힘(가벼운 차는 가드레일까지)
+function shellLoss(m){ return clamp(.24/m,.06,.3); }
+function shellLat(m){ return clamp(23*Math.pow(1/m,1.35),3,34); }
+function shellSide(x,z,s,n){ const p=s.m.position, off=(x-p.x)*n.x+(z-p.z)*n.z; if(Math.abs(off)>.8) return Math.sign(off); const pv=s.v.x*n.x+s.v.z*n.z; return Math.abs(pv)>3?Math.sign(pv):(Math.random()<.5?-1:1); }
 function botShellHit(b,s){ if(b.shieldT>0) return; const m=b.K.mass||1, hv=Math.hypot(s.v.x,s.v.z)||1, dx=s.v.x/hv, dz=s.v.z/hv, fly=b.K.fly||1;
-  const push=clamp(11/m,2,14)*fly, lift=clamp(10/m,2.2,12)*(fly>1?1.25:1), keep=1-clamp(.22/m,.06,.38);
-  b.v*=keep; botImpulse(b,dx*push,dz*push); b.vy=Math.max(b.vy,lift); b.y=Math.max(b.y,.15); b.spin+=(Math.random()<.5?-1:1)*clamp(.5/m,.05,.7)*(fly>1?2:1); botVoice(b,0); }
+  const lift=clamp(10/m,2.2,12)*(fly>1?1.25:1), keep=1-shellLoss(m), n=TR.NR[b.idx], sg=shellSide(b.x,b.z,s,n);
+  b.v*=keep; b.vo+=sg*shellLat(m)*fly; b.vy=Math.max(b.vy,lift); b.y=Math.max(b.y,.15); b.spin+=(Math.random()<.5?-1:1)*clamp(.5/m,.05,.7)*(fly>1?2:1); botVoice(b,0); }
 function botBitten(b){ const m=b.K.mass||1; if(m>=1.9||b.shieldT>0) return; b.v*=1-clamp(.8-.32*m,.15,.6); b.boostT=0; b.superT=0; bumpFx(b.x,b.wy+1.5,b.z); botVoice(b,0); }
 // 나를 밀어내는 계산 (상대 카트 / AI 봇 공통)
 function bumpMe(o,now){
@@ -2912,8 +2916,8 @@ function mpClearGhosts(){ for(const g of MP.ghosts.values()) scene.remove(g.obj)
 
 // 포탄에 맞음: 가벼울수록 크게 들썩이고 포탄 방향으로 날아가며 느려짐, 무거우면 살짝 들썩하고 그대로
 function shellHitMe(s){ if(S.shieldT>0){ toast("보호막이 막았다!","#7fd8ff"); return; } voice("bad"); const m=KART.mass||1, hv=Math.hypot(s.v.x,s.v.z)||1, dx=s.v.x/hv, dz=s.v.z/hv;
-  const fly=KART.fly||1, push=clamp(11/m,2,14)*fly, lift=clamp(10/m,2.2,12)*(fly>1?1.25:1), keep=1-clamp(.22/m,.06,.38);
-  S.vx=S.vx*keep+dx*push; S.vz=S.vz*keep+dz*push; S.vy=Math.max(S.vy,lift); S.y+=.15; S.grounded=false; S.drifting=false;
+  const fly=KART.fly||1, lift=clamp(10/m,2.2,12)*(fly>1?1.25:1), keep=1-shellLoss(m), n=TR.NR[S.idx], sg=shellSide(S.x,S.z,s,n), lat=shellLat(m)*fly;
+  S.vx=S.vx*keep+n.x*sg*lat+dx*2; S.vz=S.vz*keep+n.z*sg*lat+dz*2; S.vy=Math.max(S.vy,lift); S.y+=.15; S.grounded=false; S.drifting=false; /* 가벼울수록 옆 가드레일까지 날아감 */
   S.h+=(Math.random()<.5?-1:1)*clamp(.5/m,.05,.7)*(fly>1?2:1); S.shake=Math.max(S.shake,clamp(.9/m,.25,.9));
   toast(m>=1.6?"포탄 맞음! (끄떡없다)":"포탄 맞음!","#ff7a1a"); if(KART.eject) ejectRider(dx,dz,20); }
 // 부딪힐 때 튀는 별 + 먼지
