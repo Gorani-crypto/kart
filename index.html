@@ -207,7 +207,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0201</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0205</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -365,7 +365,12 @@ if (isTouch){
 /* ===== 렌더러 / 씬 ===== */
 const canvas = document.getElementById("game");
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+const PR={max:Math.min(window.devicePixelRatio||1,2),cur:0,acc:0,n:0,slow:0,fast:0};
+PR.cur=Math.min(PR.max,(window.devicePixelRatio||1)>1.5&&matchMedia("(pointer: coarse)").matches?1.5:PR.max); renderer.setPixelRatio(PR.cur);
+function perfTick(dt){ PR.acc+=dt; PR.n++; if(PR.acc<1) return; const ft=PR.acc/PR.n; PR.acc=0; PR.n=0; /* 1초 평균 프레임 시간 */
+  if(ft>1/45){ PR.slow++; PR.fast=0; } else if(ft<1/58){ PR.fast++; PR.slow=0; } else { PR.slow=0; PR.fast=0; }
+  let nx=PR.cur; if(PR.slow>=2&&PR.cur>.75){ nx=Math.max(.75,PR.cur-.25); PR.slow=0; } else if(PR.fast>=6&&PR.cur<PR.max){ nx=Math.min(PR.max,PR.cur+.25); PR.fast=0; }
+  if(nx!==PR.cur){ PR.cur=nx; renderer.setPixelRatio(nx); resize(); } }
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x8fd3ff);
 scene.fog = new THREE.Fog(0xd6f0ff, 260, 820);
@@ -2164,7 +2169,7 @@ function boomSnd(dist){ if(!SND.ctx||!SND.on) return; const c=SND.ctx,t=c.curren
 
 /* ===== 속도선 연출 ===== */
 const sfx=document.getElementById("speedfx"), sctx=sfx.getContext("2d");
-function sizeSfx(){ const d=Math.min(window.devicePixelRatio||1,1.5); sfx.width=Math.round(innerWidth*d); sfx.height=Math.round(innerHeight*d); }
+function sizeSfx(){ const d=Math.min(window.devicePixelRatio||1,1); sfx.width=Math.round(innerWidth*d); sfx.height=Math.round(innerHeight*d); }
 addEventListener("resize",sizeSfx); sizeSfx();
 let sfxI=0;
 function drawSpeedFx(dt){
@@ -2308,10 +2313,11 @@ const RE={t:null,done:false,dnf:false};
 function raceEndReset(){ RE.t=null; RE.done=false; RE.dnf=false; const el=document.getElementById("endCount"); if(el) el.hidden=true; }
 function raceEndTick(dt){
   if(RE.done||!TR||!(state==="race"||state==="finish")) return;
+  RE.chk=(RE.chk||0)-dt; if(RE.t===null&&RE.chk>0) return; if(RE.t===null) RE.chk=.2;
   const rows=MP.racing?mpStandings():soloStandings(); if(RE.t===null&&rows.some(r=>r.ft)) RE.t=10;
   if(RE.t===null) return; RE.t-=dt;
   let el=document.getElementById("endCount"); if(!el){ el=document.createElement("div"); el.id="endCount"; el.style.cssText="position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:30;pointer-events:none;text-align:center;color:#fff;font:900 22px sans-serif;text-shadow:0 3px 10px rgba(0,0,0,.55)"; document.body.appendChild(el); }
-  const all=rows.every(r=>r.ft); el.hidden=all||CER.on; el.innerHTML='🏁 1등 골인! 남은 시간<div style="font-size:64px;line-height:1;color:#ffcf2e">'+Math.max(0,Math.ceil(RE.t))+'</div>';
+  const all=rows.every(r=>r.ft), sec=Math.max(0,Math.ceil(RE.t)); el.hidden=all||CER.on; if(el.dataset.s!==String(sec)){ el.dataset.s=sec; el.innerHTML='🏁 1등 골인! 남은 시간<div style="font-size:64px;line-height:1;color:#ffcf2e">'+sec+'</div>'; }
   if(RE.t>0&&!all) return;
   RE.done=true; el.hidden=true;
   if(state==="race"){ RE.dnf=true; state="finish"; S.boostT=0; S.superT=0; $("finTotal").textContent="완주 못 함"; $("finSub").textContent=TR.def.name+" · 시간 초과"; $("finLaps").innerHTML=""; toast("시간 종료!","#ff7a1a"); voice("bad",0);
@@ -2615,15 +2621,16 @@ function setupMinimap(){
   for(const p of [...TR.P,...TR.branches.flatMap(b=>b.P)]){minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minZ=Math.min(minZ,p.z);maxZ=Math.max(maxZ,p.z);}
   const sc=200/Math.max(maxX-minX,maxZ-minZ);
   MMB={x:x=>20+(x-minX)*sc+(200-(maxX-minX)*sc)/2, y:z=>20+(z-minZ)*sc+(200-(maxZ-minZ)*sc)/2};
+  const c=document.createElement("canvas"); c.width=240; c.height=240; const g=c.getContext("2d"), X=MMB.x, Yf=MMB.y, P=TR.P; g.lineJoin="round";
+  g.beginPath(); for(let i=0;i<P.length;i+=2){ const p=P[i]; i?g.lineTo(X(p.x),Yf(p.z)):g.moveTo(X(p.x),Yf(p.z)); } g.closePath();
+  g.strokeStyle="rgba(255,255,255,.9)"; g.lineWidth=10; g.stroke(); g.strokeStyle="#4a4f5c"; g.lineWidth=6; g.stroke();
+  for(const b of TR.branches){ g.beginPath(); b.P.forEach((q,i)=>i?g.lineTo(X(q.x),Yf(q.z)):g.moveTo(X(q.x),Yf(q.z))); g.strokeStyle="rgba(255,255,255,.9)"; g.lineWidth=6; g.stroke(); g.strokeStyle="#ffcf2e"; g.lineWidth=3; g.stroke(); }
+  g.fillStyle="#ffcf2e"; g.fillRect(X(P[0].x)-7,Yf(P[0].z)-2,14,4); MMB.bg=c;
 }
 function drawMinimap(){
   const X=MMB.x, Yf=MMB.y, P=TR.P;
-  mx.clearRect(0,0,240,240); mx.lineJoin="round";
-  mx.beginPath(); P.forEach((p,i)=>i?mx.lineTo(X(p.x),Yf(p.z)):mx.moveTo(X(p.x),Yf(p.z))); mx.closePath();
-  mx.strokeStyle="rgba(255,255,255,.9)"; mx.lineWidth=10; mx.stroke(); mx.strokeStyle="#4a4f5c"; mx.lineWidth=6; mx.stroke();
-  for(const b of TR.branches){ mx.beginPath(); b.P.forEach((q,i)=>i?mx.lineTo(X(q.x),Yf(q.z)):mx.moveTo(X(q.x),Yf(q.z)));
-    mx.strokeStyle="rgba(255,255,255,.9)"; mx.lineWidth=6; mx.stroke(); mx.strokeStyle="#ffcf2e"; mx.lineWidth=3; mx.stroke(); }
-  mx.fillStyle="#ffcf2e"; mx.fillRect(X(P[0].x)-7,Yf(P[0].z)-2,14,4);
+  const now=performance.now(); if(now-(MMB.t||0)<50) return; MMB.t=now;
+  mx.clearRect(0,0,240,240); if(MMB.bg) mx.drawImage(MMB.bg,0,0);
   for(const b of BOT.list){ mx.beginPath(); mx.arc(X(b.x),Yf(b.z),6,0,Math.PI*2); mx.fillStyle=hexCol((CHARS[b.c.ch]||CHARS[0]).helmet); mx.fill(); mx.lineWidth=2; mx.strokeStyle="rgba(255,255,255,.8)"; mx.stroke(); }
   if(MP.racing) for(const g of MP.ghosts.values()) if(g.obj.visible){ mx.beginPath(); mx.arc(X(g.x),Yf(g.z),6,0,Math.PI*2); mx.fillStyle=g.col; mx.fill(); mx.lineWidth=2; mx.strokeStyle="rgba(255,255,255,.8)"; mx.stroke(); }
   mx.beginPath(); mx.arc(X(S.x),Yf(S.z),8,0,Math.PI*2); mx.fillStyle="#"+CHAR.helmet.toString(16).padStart(6,"0"); mx.fill(); mx.lineWidth=3; mx.strokeStyle="#fff"; mx.stroke();
@@ -2706,7 +2713,9 @@ function chatOpenRace(){ if(!MP.joined) return; let b=document.getElementById("r
   for(const k in input) input[k]=false; b.hidden=false; setTimeout(()=>document.getElementById("rcIn").focus(),30); }
 function mpOpen(){ MP.lobbySig=null; $m("menu").hidden=true; $m("finish").hidden=true; $m("mpLobby").hidden=false; mpRender(); }
 function mpPresBase(){ return {v:1,n:MP.nick,ch:selChar,k:selKart,cl:selColor,rd:MP.ready?1:0,jt:MP.jt,tr:selTrack,ai:botsPres()}; }
-function mpSend(extra){ if(!MP.joined) return; NETA.pres(Object.assign(mpPresBase(),extra||{})); }
+function mpSend(extra){ if(!MP.joined) return; const full=Object.assign(mpPresBase(),extra||{}), last=MP.sent||(MP.sent={}), d={}; let n=0;
+  for(const k in full){ const v=full[k]; if(v===undefined) continue; const j=(v!==null&&typeof v==="object")?JSON.stringify(v):v; if(last[k]!==j){ last[k]=j; d[k]=v; n++; } }
+  if(n) NETA.pres(d); }
 
 $m("mpBtn").addEventListener("click",()=>{ initAudio(); mpOpen(); });
 $m("mpBack").addEventListener("click",()=>{ $m("mpLobby").hidden=true; openMenu(); });
@@ -2720,7 +2729,7 @@ $m("mpJoin").addEventListener("click",async()=>{ unlockSpeech();
   const joined=await NETA.join("kart-room-"+code,mpPeers);
   b.disabled=false; b.textContent="입장";
   if(!joined){ alertNote("대기실에 들어가지 못했어요. 잠시 후 다시 시도해 주세요. (회사·학교 와이파이에서는 막힐 수 있어요)"); return; }
-  MP.joined=true; CHAT.seen={}; mpSend(); mpRender(); $("chatBtn").hidden=false;
+  MP.joined=true; CHAT.seen={}; MP.sent={}; mpSend(); mpRender(); $("chatBtn").hidden=false;
 });
 function alertNote(t){ let n=$m("mpJoinNote"); if(!n){ n=document.createElement("p"); n.className="mp-note"; n.id="mpJoinNote"; n.style.color="#ffcf2e"; $m("mpJoinBox").appendChild(n); } n.textContent=t; }
 $m("mpLeave").addEventListener("click",()=>{ mpLeaveRoom(); $m("mpLobby").hidden=true; openMenu(); });
@@ -2861,7 +2870,7 @@ let mpRankT=0;
 function mpUpdate(dt){
   if(!MP.joined) return;
   const now=performance.now();
-  if(MP.racing&&now-MP.lastSend>66){ const meOn=!MP.finished&&(state==="race"||state==="countdown");
+  if(MP.racing&&now-MP.lastSend>100){ const meOn=!MP.finished&&(state==="race"||state==="countdown");
     if(meOn||BOT.list.length){ MP.lastSend=now; const r=v=>Math.round(v*100)/100; mpSend(meOn?{st:"race",rid:MP.raceId,x:r(S.x),y:r(S.y),z:r(S.z),h:r(S.h),vx:r(S.vx),vz:r(S.vz),ro:r(S.roll||0),pg:Math.round(mpProgress()*1000)/1000,bt:S.boostT>0||S.instT>0?1:0,sd:S.shieldT>0?1:0,gb:S.superT>0?1:0}:{}); } }
   if(!MP.racing) return;
   const wallNow=Date.now();
@@ -2908,7 +2917,7 @@ function frame(now){
     for(const k in input) prev[k]=input[k];
     acc-=STEP;
   }
-  updateFX(dt); mpUpdate(dt); botsUpdate(dt); raceEndTick(dt); hudVoice.hidden=state!=="countdown"||CER.on; render(dt); drawSpeedFx(dt); updateAudio(fsNow);
+  perfTick(dt); updateFX(dt); mpUpdate(dt); botsUpdate(dt); raceEndTick(dt); hudVoice.hidden=state!=="countdown"||CER.on; render(dt); drawSpeedFx(dt); updateAudio(fsNow);
   requestAnimationFrame(frame);
 }
 
