@@ -257,7 +257,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
         <button class="btn" id="rCreate" type="button">＋ 방 만들기</button>
         <button class="btn ghost" id="rBack" type="button">← 처음으로</button>
         <div class="mp-sec" style="margin-top:6px">소리 설정</div>
-        <div class="vrow"><span>🎵 배경음악</span><input type="range" id="vol_bgm" min="0" max="100" value="80"><b id="volt_bgm">80</b></div>
+        <div class="vrow"><span>🎵 배경음악</span><input type="range" id="vol_bgm" min="0" max="100" value="100"><b id="volt_bgm">100</b></div>
         <div class="vrow"><span>💥 효과음</span><input type="range" id="vol_sfx" min="0" max="100" value="80"><b id="volt_sfx">80</b></div>
         <div class="vrow"><span>🗣️ 캐릭터 음성</span><input type="range" id="vol_voice" min="0" max="100" value="100"><b id="volt_voice">100</b></div>
       </div>
@@ -284,7 +284,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0405</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0408</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -3077,7 +3077,7 @@ function bgmStep(st,t){ const TH=bgmTheme(), race=state==="race"||state==="count
   const a=ch[ARP[s16]%3]+12+(ARP[s16]===3?12:0); if(d!=="soft"||s16%2===0) bgmNote(TH.arp,mf(a),t,d==="soft"?.5:.09,race?.06:.045,TH.af);
   if(d==="epic"&&s16===0){ for(const n of ch) bgmNote("sawtooth",mf(n),t,1.6,.025,900); }
   if(race&&bar%4>=2){ const m=TH.mel[s16]; if(m>=0) bgmNote(TH.lead,mf(ch[0]+m),t,.2,.055,TH.lf); } }
-function bgmTick(){ const c=SND.ctx; if(!c||!BGM.gain) return; BGM.gain.gain.setTargetAtTime(SND.on?.26*SVOL.v*VOL3.bgm:0,c.currentTime,.25); const TH=bgmTheme(), race=state==="race"||state==="countdown", spb=60/(TH.bpm*(race?1.06:.92))/4;
+function bgmTick(){ const c=SND.ctx; if(!c||!BGM.gain) return; BGM.gain.gain.setTargetAtTime(SND.on?.5*SVOL.v*VOL3.bgm:0,c.currentTime,.25); const TH=bgmTheme(), race=state==="race"||state==="countdown", spb=60/(TH.bpm*(race?1.06:.92))/4;
   while(BGM.next<c.currentTime+.3){ if(BGM.next<c.currentTime) BGM.next=c.currentTime+.02; bgmStep(BGM.step,BGM.next); BGM.next+=spb; BGM.step=(BGM.step+1)%128; } }
 function bgmStart(){ initAudio(); if(!SND.ctx||BGM.on) return; BGM.on=true; BGM.gain=SND.ctx.createGain(); BGM.gain.gain.value=0; BGM.gain.connect(SND.ctx.destination); BGM.next=SND.ctx.currentTime+.15; BGM.step=0; BGM.timer=setInterval(bgmTick,60); }
 function bgmNotice(){ let n=document.getElementById("bgmNote"); if(!n){ n=document.createElement("div"); n.id="bgmNote"; n.style.cssText="position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:120;background:rgba(14,22,48,.92);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:9px 14px;font:800 14px sans-serif;pointer-events:none;transition:opacity .5s;max-width:92vw;text-align:center"; document.body.appendChild(n); }
@@ -3131,7 +3131,7 @@ setInterval(()=>{ if(!MP.joined||!NETA.announce) return; if(!mpIsHost()){ if(MP.
   const L=mpList(); NETA.announce(MP.code,{t:MP.roomTitle||("방 "+MP.code),lk:MP.roomPw?1:0,pwh:MP.roomPw||"",n:L.filter(p=>!p.bot).length,ai:L.filter(p=>p.bot).length,tr:selTrack,st:MP.racing?"race":"lobby",h:MP.nick}); MP.announced=true; },4000);
 // 소리 켜기/끄기 · 크기
 const SVOL={v:.8}; try{ const v=localStorage.getItem("kartrebuild.vol"); if(v!==null) SVOL.v=Math.max(0,Math.min(1,+v)); }catch(_){}
-const VOL3={bgm:.8,sfx:.8,voice:1}; try{ const v=JSON.parse(localStorage.getItem("kartrebuild.vol3")||"null"); if(v) for(const k in VOL3) if(typeof v[k]==="number") VOL3[k]=Math.max(0,Math.min(1,v[k])); }catch(_){}
+const VOL3={bgm:1,sfx:.8,voice:1}; try{ const v=JSON.parse(localStorage.getItem("kartrebuild.vol3")||"null"); if(v) for(const k in VOL3) if(typeof v[k]==="number") VOL3[k]=Math.max(0,Math.min(1,v[k])); }catch(_){}
 for(const k of ["bgm","sfx","voice"]){ const e=document.getElementById("vol_"+k); if(e) e.addEventListener("input",ev=>{ VOL3[k]=(+ev.target.value)/100; try{ localStorage.setItem("kartrebuild.vol3",JSON.stringify(VOL3)); }catch(_){} initAudio(); applyVol(); if(k==="sfx") beep(880,.08,.2); }); e.addEventListener("change",()=>{ if(k==="voice"){ initAudio(); voiceTest(); } }); }
 function applyVol(){ if(SND.master) SND.master.gain.value=.6*SVOL.v*VOL3.sfx; for(const k of ["bgm","sfx","voice"]){ const e=document.getElementById("vol_"+k); if(e){ e.value=Math.round(VOL3[k]*100); const t=document.getElementById("volt_"+k); if(t) t.textContent=Math.round(VOL3[k]*100); } } $m("sndVol").value=Math.round(SVOL.v*100); $m("sndVolTxt").textContent=Math.round(SVOL.v*100); $m("sndToggle").textContent=SND.on?"🔊 소리 켜짐":"🔇 소리 꺼짐"; const hb=document.getElementById("sndBtn"); if(hb) hb.textContent=SND.on?"소리 켜짐":"소리 꺼짐"; }
 $m("sndVol").addEventListener("input",e=>{ SVOL.v=(+e.target.value)/100; try{ localStorage.setItem("kartrebuild.vol",String(SVOL.v)); }catch(_){} initAudio(); applyVol(); });
