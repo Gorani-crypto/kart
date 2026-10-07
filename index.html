@@ -161,7 +161,9 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 .cer-count{align-self:flex-end;font-size:12px;font-weight:800;color:var(--ink-dim)}
 .cer-count::after{content:"초 뒤 닫혀요"}
 @media (max-aspect-ratio:1/1){ .cer{align-items:flex-start} .cer-panel{width:100%;max-height:40vh;padding:12px} .cer-panel h1{font-size:24px} .cer-row{padding:5px 8px} }
-#mpRank{min-width:120px}
+#mpRank{min-width:120px;text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 8px rgba(0,0,0,.5)}
+.panel.rankbox{background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#mpRank ol{color:#fff!important}
 #mpRank .r1{font-family:var(--display);font-size:24px;line-height:1}
 #mpRank .r1 small{font-size:14px;color:var(--ink-dim)}
 #mpRank ol{margin:6px 0 0;padding:0 0 0 18px;font-size:12px;font-weight:700;color:var(--ink-dim);max-width:150px}
@@ -175,7 +177,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
   <div class="panel"><div class="lap">LAP <span id="lap">1</span><small id="lapTotal">/2</small></div></div>
   <div class="hud-row"><button class="panel" id="sndBtn" type="button">소리 켜짐</button><button class="panel" id="hudMenuBtn" type="button">메뉴</button></div>
   <div class="panel"><div class="time" id="time">0:00.00</div><div class="best" id="best">BEST —</div></div>
-  <div class="panel" hidden><div id="mpRank"></div></div>
+  <div class="panel rankbox" hidden><div id="mpRank"></div></div>
   <div class="panel" hidden><div class="best" id="upg" style="color:var(--helmet)"></div></div>
 </div>
 <div class="hud" id="hud-tr">
@@ -196,7 +198,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2207</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2215</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -238,7 +240,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
       <div class="mp-sec">내 차 색상</div>
       <div class="swatches" id="mpColors"></div>
       <p class="mp-note" id="mpStatus"></p>
-      <div class="row"><button class="btn" id="mpGo" type="button">준비</button><button class="btn ghost" id="mpBot" type="button">🤖 AI 추가</button><button class="btn ghost" id="mpLeave" type="button">대기실 나가기</button></div>
+      <div class="row"><button class="btn" id="mpGo" type="button">준비</button><button class="btn ghost" id="mpBot" type="button">🤖 AI 추가</button><button class="btn ghost" id="mpVoice" type="button">🔊 음성 테스트</button><button class="btn ghost" id="mpLeave" type="button">대기실 나가기</button></div>
     </div>
   </div>
 </div>
@@ -493,7 +495,9 @@ function buildTrack(def){
     group.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xf2f2f2,side:THREE.DoubleSide}))); }
   for(const b of tr.branches){
     if(b.same){ group.add(ribbon(b.P,b.NR,b.Y,false,0,b.hw,.06,()=>roadC)); const rail=new THREE.Color(0xd8d0c2), rail2=new THREE.Color(0xbfb6a6);
-      group.add(wallMesh(b.P,b.NR,b.Y,b.Y,new Array(b.M).fill(0),b.M-1,b.hw+.8,i=>(i<6||i>b.M-8)?null:((Math.floor(i/5)%2)?rail:rail2))); continue; }
+      const mainD=(x,z)=>{ let bd=1e9,bi=0; for(let k=0;k<N;k++){ const dd=(P[k].x-x)**2+(P[k].z-z)**2; if(dd<bd){bd=dd;bi=k;} } return Math.abs((x-P[bi].x)*NR[bi].x+(z-P[bi].z)*NR[bi].z); };
+      const onMain=(k,sd)=>{ const o=b.hw+.8; for(const m of [k,Math.min(b.M-1,k+1)]){ if(mainD(b.P[m].x+b.NR[m].x*sd*o,b.P[m].z+b.NR[m].z*sd*o)<HW+2.2) return true; } return false; };
+      group.add(wallMesh(b.P,b.NR,b.Y,b.Y,new Array(b.M).fill(0),b.M-1,b.hw+.8,(i,sd)=>(i<6||i>b.M-8||onMain(i,sd))?null:((Math.floor(i/5)%2)?rail:rail2))); continue; }
     group.add(ribbon(b.P,b.NR,b.Y,false,0,b.hw,.09,()=>brick));
     group.add(ribbon(b.P,b.NR,b.Y,false,b.hw,b.hw+1,.1,i=>(Math.floor(i/3)%2?yel:blk)));
   }
@@ -1772,7 +1776,7 @@ function physics(dt, controls){
   // 도로 찾기 (본선 + 샛길 중 가장 안쪽)
   S.idx=nearest(S.x,S.z,S.idx);
   let n=NR[S.idx], p=P[S.idx], hw=TR.HW;
-  let d=(S.x-p.x)*n.x+(S.z-p.z)*n.z, score=Math.abs(d)-hw, onB=null, prog=S.idx, onBj=0;
+  let d=(S.x-p.x)*n.x+(S.z-p.z)*n.z, score=Math.abs(d)-hw, onB=null, prog=S.idx, onBj=0; const mainAbs=Math.abs(d);
   for(const b of TR.branches){
     let j=0,bd=1e9; for(let k=0;k<b.M;k++){const q=b.P[k],dd=(q.x-S.x)**2+(q.z-S.z)**2; if(dd<bd){bd=dd;j=k;}}
     const q=b.P[j], bn=b.NR[j], bt=b.T[j];
@@ -1784,7 +1788,7 @@ function physics(dt, controls){
   if(onB&&score<-1&&onBj>onB.M*.75) S.idx=onB.b; // 지름길 끝: 본선 위치를 합류 지점으로 넘김
   let margin=TR.margin;
   for(const b of TR.branches){ const da=(S.idx-b.a+N)%N, db=(b.b-S.idx+N)%N; if(da<50||db<50||(N-da)<6||(N-db)<6) margin=16; }
-  if(onB&&score<-1&&onB.same&&onBj>6&&onBj<onB.M-8) margin=.5; // 숨은 지름길 안: 가드레일
+  if(onB&&score<-1&&onB.same&&onBj>6&&onBj<onB.M-8&&mainAbs>TR.HW+1) margin=.5; /* 본선 도로 위에선 지름길 벽 없음 */ // 숨은 지름길 안: 가드레일
   if(onB&&onB!==S.onBranch&&score<-1&&(!onB.same||onBj>8)) toast(onB.name+"!","#ffcf2e");
   S.onBranch=(score<-1&&(!onB||!onB.same||onBj>8||S.onBranch===onB))?onB:(onB?S.onBranch:null);
   S.prog=prog;
@@ -2173,7 +2177,7 @@ function drawSpeedFx(dt){
 /* ===== AI 봇: 'AI 추가' 한 번에 한 대. 혼자 달리기와 온라인 대전 모두 참가. 부딪힘·포탄·물기·거인 돌진 모두 받음 ===== */
 const BOT_NAMES=["번개","깡통","뚜벅","쌩쌩","콩콩","모래","바람","찌릿"];
 const BOT={cfg:[],list:[],meshes:new Map(),on:false,t:0,seq:0,cf:null,cfTR:null,rankT:0,lastRank:0,cerDone:false,finT:null};
-const BUMPT={}; const BOT_SPD=1.4; // AI 속도 배율
+const BUMPT={}; const BOT_SPD=1.3; // AI 속도 배율
 function botPid(c){ return (MP.joined&&MP.myPeer?MP.myPeer+"#ai":"ai")+c.id; }
 function humanCount(){ return MP.joined?mpList().filter(p=>!p.bot).length:1; }
 function botAdd(){ if(BOT.cfg.length+humanCount()>=8){ toast("자리가 꽉 찼어요 (최대 8대)","#ffcf2e"); return false; }
@@ -2184,7 +2188,7 @@ function botCurve(){ if(BOT.cfTR===TR&&BOT.cf) return BOT.cf; const N=TR.N, T=TR
   for(let i=0;i<N;i++){ let mx=0; for(const L of [10,22,36]){ const j=(i+L)%N, a=Math.acos(clamp(T[i].x*T[j].x+T[i].z*T[j].z,-1,1)); mx=Math.max(mx,a*30/(L+8)); } f[i]=clamp(1-mx*.28,.72,1); }
   const g=new Float32Array(N); for(let i=0;i<N;i++){ let m=1; for(let k=0;k<45;k+=3) m=Math.min(m,f[(i+k)%N]); g[i]=m; } // 미리 감속
   BOT.cf=g; BOT.cfTR=TR; return g; }
-function botMake(c,slot){ const N=TR.N, i0=N-14, hw=(TR.def.hw||12), lane=Math.min(3.4,(hw*2-4)/4), col=slot%4, row=Math.floor(slot/4), lat=(col-1.5)*lane, back=row*8;
+function botMake(c,slot){ const N=TR.N, i0=N-14, hw=(TR.def.hw||12), lane=(hw*2-4)/4, col=slot%4, row=Math.floor(slot/4), lat=(col-1.5)*lane, back=row*13;
   const seg=Math.hypot(TR.P[(i0+1)%N].x-TR.P[i0].x,TR.P[(i0+1)%N].z-TR.P[i0].z)||1.4, K=effKart(KARTS[c.k]||KARTS[0],CHARS[c.ch]);
   const b={c,id:botPid(c),K,p:(i0-back/seg+N)%N,off:lat,lane:lat,v:0,vo:0,y:0,vy:0,lapN:-1,ft:null,boostT:0,superT:0,items:0,gauge:Math.random()*5,shieldT:0,spin:0,
     skill:.935+Math.random()*.065,corner:.9+Math.random()*.2,itemRate:.9+Math.random()*.2,wob:.3+Math.random()*.45,errT:8+Math.random()*20,vt0:0,ph:Math.random()*6.28,cd:3+Math.random()*3,biteT:0,fsSeq:0,fs:null,biSeq:0,bi:null,startB:Math.random()<.55,x:0,z:0,wy:0,h:0,vx:0,vz:0};
@@ -2333,6 +2337,7 @@ function startRace(){
   clearSkids();
   $("menu").hidden=true; $("finish").hidden=true; $("count").hidden=true;
   for(const k in input) input[k]=false; botsSpawn(); raceEndReset();
+  if(!MP.racing&&BOT.list.length){ const i=TR.N-14, lane=((TR.def.hw||12)*2-4)/4, T=TR.T[i], n=TR.NR[i], lat=-1.5*lane; S.x+=n.x*lat; S.z+=n.z*lat; S.idx=S.prog=prevIdx=nearest(S.x,S.z,i); cam.x=S.x-Math.sin(S.h)*10; cam.z=S.z-Math.cos(S.h)*10; }
   cam.x=S.x-Math.sin(S.h)*10; cam.z=S.z-Math.cos(S.h)*10; cam.y=S.y+5; cam.yaw=S.h;
 }
 function openMenu(){ if(MP.racing){ mpToLobby(); return; } botsClear(); raceEndReset(); endCeremony(); $m("mpRank").parentNode.hidden=true; state="menu"; $("finish").hidden=true; $("count").hidden=true; $("menu").hidden=false; renderOptions(); }
@@ -2345,6 +2350,9 @@ $("againBtn").addEventListener("click",()=>{ if(MP.racing) mpToLobby(); else sta
 $("menuBtn").addEventListener("click",()=>{ if(MP.racing) mpLeaveRoom(); openMenu(); });
 { const hb=document.getElementById("hubBack"); if(hb&&window.parent===window) hb.hidden=true; if(hb) hb.addEventListener("click",()=>{ mpLeaveRoom(); if(!NETA.close()) location.href="./"; }); }
 $("hudMenuBtn").addEventListener("click",openMenu);
+const hudVoice=document.createElement("button"); hudVoice.type="button"; hudVoice.className="btn ghost"; hudVoice.id="hudVoice"; hudVoice.textContent="🔊 음성 테스트";
+hudVoice.style.cssText="position:fixed;right:12px;top:232px;z-index:40;background:rgba(14,22,48,.85);color:#fff;border:1px solid rgba(255,255,255,.35)"; hudVoice.hidden=true; document.body.appendChild(hudVoice);
+hudVoice.addEventListener("click",()=>{ initAudio(); voiceTest(); });
 
 function finishRace(){
   state="finish";
@@ -2735,6 +2743,7 @@ function mpRender(){
   else { go.textContent=MP.ready?"준비 취소":"준비"; go.disabled=false;
     $m("mpStatus").textContent=inRace&&!MP.ready?"지금 다른 경기가 진행 중이에요. 준비해 두면 다음 판에 같이 출발해요.":MP.ready?"방장이 출발시키면 바로 시작해요.":"준비를 누르면 방장이 출발시킬 때 같이 달려요."; }
 }
+$m("mpVoice").addEventListener("click",()=>{ initAudio(); voiceTest(); });
 $m("mpBot").addEventListener("click",()=>{ if(!MP.joined) return; if(botAdd()){ mpSend(); MP.lobbySig=null; mpRender(); } });
 $m("mpGo").addEventListener("click",()=>{
   unlockSpeech(); if(!MP.joined) return;
@@ -2750,8 +2759,8 @@ function mpStartRace(g){
   $m("mpLobby").hidden=true; mpClearGhosts();
   startRace();
   // 출발선 자리: 4줄로 나란히, 뒤로 한 칸씩
-  const i=TR.N-14, hw=(TR.def.hw||12), lane=Math.min(3.4,(hw*2-4)/4), col=MP.slot%4, row=Math.floor(MP.slot/4);
-  const lat=(col-1.5)*lane, back=row*8, T=TR.T[i], NRv=TR.NR[i];
+  const i=TR.N-14, hw=(TR.def.hw||12), lane=(hw*2-4)/4, col=MP.slot%4, row=Math.floor(MP.slot/4);
+  const lat=(col-1.5)*lane, back=row*13, T=TR.T[i], NRv=TR.NR[i];
   S.x+=NRv.x*lat-T.x*back; S.z+=NRv.z*lat-T.z*back; S.gy=S.y; S.prog=nearest(S.x,S.z,i); S.idx=S.prog; prevIdx=S.prog;
   cam.x=S.x-Math.sin(S.h)*10; cam.z=S.z-Math.cos(S.h)*10; cam.yaw=S.h;
   $m("mpRank").parentNode.hidden=false;
@@ -2853,7 +2862,7 @@ function frame(now){
     for(const k in input) prev[k]=input[k];
     acc-=STEP;
   }
-  updateFX(dt); mpUpdate(dt); botsUpdate(dt); raceEndTick(dt); render(dt); drawSpeedFx(dt); updateAudio(fsNow);
+  updateFX(dt); mpUpdate(dt); botsUpdate(dt); raceEndTick(dt); hudVoice.hidden=state!=="countdown"||CER.on; render(dt); drawSpeedFx(dt); updateAudio(fsNow);
   requestAnimationFrame(frame);
 }
 
