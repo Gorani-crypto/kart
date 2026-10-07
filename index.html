@@ -212,7 +212,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0320</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0322</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -300,8 +300,8 @@ const CONFIG = {
   maxSpeed: 36.72,        // 기본 최고속도 (m/s, 기본 카트 기준)
   boostRatio: 1.27,    // 부스터 최고속도 = 기본 x 비율
   instRatio: 1.03,     // 순간부스터 최고속도 = 기본 x 비율
-  accel: 24,           // 기본 가속
-  boostAccel: 20,      // 부스터 중 가속
+  accel: 20.5,           // 기본 가속
+  boostAccel: 17,      // 부스터 중 가속
   instAccel: 8,        // 순간부스터 중 가속 (부드럽게)
   brake: 32,
   reverseMax: 8,
@@ -346,7 +346,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"dump", name:"덤프트럭", desc:"2배 크기. 가장 무거워 다 밀어냄 · 가장 느리지만 부스터가 가장 빠르고 4.5초로 김", speed:1.2, accel:.92, turn:.82, boost:1.5, boostTime:4.5, gaugeMul:.8, mass:3.4, rad:2.4, ram:1},
   {id:"truck", name:"초보운전 1톤 트럭", desc:"묵직하고 조금 느림 · 부스터 빠르고 4초로 김. 뒤에 초보운전 스티커", speed:1.29, accel:1.2, turn:1.08, boost:1.4, boostTime:4, gaugeMul:.8, mass:2.0, ram:.5},
   {id:"roach", name:"바퀴벌레", desc:"빠르고 민첩 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.38, accel:1.38, turn:1.15, boost:1.22, mass:.75, fly:1.7},
-  {id:"trex", name:"티라노", desc:"2배 크기. 꼬리치기(Space/꼬리 버튼, 10초마다): 뒤쪽 넓은 범위의 차를 무게 상관없이 양옆 가드레일로 날려버림 · 기본속도 빠르지만 부스터 효과는 작음", speed:1.41, accel:.9, turn:.8, boost:1.15, mass:2.6, rad:2.4, bite:true},
+  {id:"trex", name:"티라노", desc:"2배 크기. 꼬리치기(Space/꼬리 버튼, 10초마다): 뒤쪽 넓은 범위의 차를 무게 상관없이 양옆 가드레일로 날려버림", speed:1.18, accel:.9, turn:.8, boost:1.36, mass:2.6, rad:2.4, bite:true},
   {id:"chair", name:"엔진 휠체어", desc:"엔진 달린 휠체어. 가속·조향 좋고 조금 가벼움", speed:1.27, accel:1.4, turn:1.25, boost:1.3, mass:.85},
   {id:"bike", name:"슈퍼바이크", desc:"가장 빠르고 컨트롤도 좋음. 대신 벽·무거운 차에 세게 부딪히면 사람이 날아가서 걸어가 다시 타야 함", speed:1.89, accel:1.6, turn:1.25, boost:1.2, mass:.7, eject:true}
 ];
