@@ -207,7 +207,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0220</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0223</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -221,6 +221,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
       <kbd>Space</kbd><span>포탄 발사 (전차) · 꼬리치기 (티라노)</span>
       <kbd>F</kbd><span>정지 고정 켜기/끄기 (제자리에서 방향만 돌림)</span>
       <kbd>드리프트 직후 ↑</kbd><span>↑를 떼었다 다시 누르면 순간부스터</span>
+      <kbd>GO ±0.5초 ↑</kbd><span>출발 부스터 (↑를 떼었다가 GO 타이밍에 누르기 · 폰은 부스터 버튼)</span>
       <kbd>R / Esc</kbd><span>재시작 / 메뉴</span>
     </div>
     <div class="row"><button class="btn" id="startBtn">출발</button><button class="btn ghost" id="botAddBtn" type="button">🤖 AI 추가</button><button class="btn ghost" id="botClrBtn" type="button">AI 빼기</button><button class="btn ghost" id="voiceBtn" type="button">🔊 음성 테스트</button><button class="btn" id="mpBtn" type="button">온라인 대전</button><button class="btn ghost" id="hubBack" type="button">← 미니게임방</button></div>
@@ -2058,7 +2059,7 @@ function groundAt(x,z){ const {P,Y,N,NR}=TR; let b=0,bd=1e9; for(let i=0;i<N;i+=
     if(d<=ed+c.blockW) return {y:Y[b],d,kind:"block",ch,side};
     return {y:0,d,kind:"plain",ch,side}; }
   return {y:Y[b],d}; }
-const SHELL_V=48, SHELL_G=24; // 포탄: 느리게 쏘아 올려 포물선으로 떨어짐
+const SHELL_V=18, SHELL_G=24; // 약 20m 앞에 떨어짐 // 포탄: 느리게 쏘아 올려 포물선으로 떨어짐
 function fireShell(){
   if(KART.id==="trex"){ trexTail(); return; }
   if(KART.id!=="tank"||FX.cool>0||state==="menu") return;
@@ -2066,7 +2067,7 @@ function fireShell(){
   kart.updateMatrixWorld(true); const tip=new THREE.Vector3(0,0,CAR.muzzleZ); CAR.barrelG.localToWorld(tip);
   const dir=new THREE.Vector3(0,0,1).transformDirection(CAR.barrelG.matrixWorld);
   const m=new THREE.Mesh(shellG,shellM); m.position.copy(tip); scene.add(m);
-  const sp=SHELL_V*(1+.25*FX.range); FX.shells.push({m,v:dir.multiplyScalar(sp).add(new THREE.Vector3(S.vx,13,S.vz)),t:0,life:4,power:FX.power});
+  const sp=SHELL_V*(1+.25*FX.range); FX.shells.push({m,v:dir.multiplyScalar(sp).add(new THREE.Vector3(S.vx,11,S.vz)),t:0,life:4,power:FX.power});
   muzzleFlash.position.copy(tip); muzzleFlash.rotation.set(0,S.h,0);
   for(let k=0;k<5;k++) puff(tip.clone().add(new THREE.Vector3((Math.random()-.5),(Math.random()-.5),(Math.random()-.5))),.7,0.9,smokeM(),new THREE.Vector3((Math.random()-.5)*3,1+Math.random(),(Math.random()-.5)*3));
   S.shake=Math.max(S.shake,.25); cannonSnd();
@@ -2293,7 +2294,7 @@ function botTargets(b){ const out=[]; if(state==="race"&&!S.rail) out.push({kind
   if(MP.racing) for(const [peer,g] of MP.ghosts) if(g.obj.visible) out.push({kind:"peer",peer,x:g.x,y:g.y,z:g.z}); return out; }
 function botWeapon(b){ const K=b.K; if(b.cd>0||b.ft||!(K.id==="tank"||K.id==="trex")) return; const fx=Math.sin(b.h), fz=Math.cos(b.h);
   if(K.id==="trex"){ const R=K.rad||2.4; if(!botTargets(b).some(t=>tailZone(t.x,t.z,b.x,b.z,b.h,R,1.2))) return; }
-  let best=null, bd=K.id==="tank"?85:60; for(const t of botTargets(b)){ const dx=t.x-b.x, dz=t.z-b.z, d=Math.hypot(dx,dz); if(d<bd&&(K.id==="trex"||(d>12&&(dx*fx+dz*fz)/Math.max(d,.01)>.93))){ bd=d; best=t; } }
+  let best=null, bd=K.id==="tank"?32:60; for(const t of botTargets(b)){ const dx=t.x-b.x, dz=t.z-b.z, d=Math.hypot(dx,dz); if(d<bd&&(K.id==="trex"||(d>8&&(dx*fx+dz*fz)/Math.max(d,.01)>.9))){ bd=d; best=t; } }
   if(!best) return; b.cd=3+Math.random()*2.5;
   if(K.id==="trex"){ const R=K.rad||2.4; b.biteT=.6; b.cd=10; if(Math.hypot(b.x-S.x,b.z-S.z)<80) thud(); tailHitLocal(b.x,b.z,b.h,R,b.id);
     const q=v=>Math.round(v*100)/100; b.twSeq=(b.twSeq||0)+1; b.tw=[b.twSeq,q(b.x),q(b.z),q(b.h),R]; return; }
@@ -2943,9 +2944,9 @@ function frame(now){
   let dt=Math.min(.05,(now-last)/1000); last=now; acc+=dt;
   while(acc>=STEP){
     const controls=state==="race";
-    if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(edge("boost")&&countT<=.5) S.startTap=true;
+    if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(edge(touchMode?"boost":"accel")&&countT<=.5) S.startTap=true;
       if(countT<=0){state="race"; $("count").hidden=true; toast("GO!","#ffcf2e"); beep(1320,.35); S.shieldT=5; if(S.startTap) startBoost(); botsGo(); }}
-    if(state==="race"&&!S.startUsed&&raceT<.5&&edge("boost")) startBoost();
+    if(state==="race"&&!S.startUsed&&raceT<.5&&edge(touchMode?"boost":"accel")) startBoost(); /* 컴퓨터는 ↑ 키, 폰은 부스터 버튼 */
     if(S.shieldT>0) S.shieldT=Math.max(0,S.shieldT-STEP);
     if(state!=="menu"){ fsNow=physics(STEP, controls&&!S.ej); if(S.ej) updEject(STEP,controls); }
     if(state==="race"){raceT+=STEP; lapCheck(); if(input.fire&&!prev.fire) fireShell(); if(input.lock&&!prev.lock){ S.lock=!S.lock; toast(S.lock?"정지 고정":"고정 해제","#ffffff"); const lb=document.getElementById("lockBtn"); if(lb) lb.classList.toggle("hint",S.lock); } }
