@@ -117,6 +117,10 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 .mp-chips{display:flex;flex-wrap:wrap;gap:6px}
 .mp-chips button{font:700 13px var(--body);padding:7px 11px;border-radius:999px;border:1px solid var(--panel-line);background:rgba(255,255,255,.05);color:var(--ink);cursor:pointer}
 .mp-chips button[aria-pressed="true"]{background:var(--ink);color:#101a3a;border-color:var(--ink)}
+#mpTracks button{display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:12px;padding:6px 8px;width:112px}
+#mpTracks button img{width:96px;height:72px;display:block;border-radius:8px;background:rgba(0,0,0,.25)}
+#mpTracks button span{font-size:12px;line-height:1.2;text-align:center}
+@media (max-width:520px){ #mpTracks button{width:92px} #mpTracks button img{width:76px;height:57px} }
 .mp-chips button:disabled{opacity:.55;cursor:default}
 .mp-list{display:flex;flex-direction:column;gap:6px}
 .mp-p{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--panel-line);font-size:14px}
@@ -207,7 +211,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0223</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0225</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -2747,6 +2751,19 @@ function chatOpenRace(){ if(!MP.joined) return; let b=document.getElementById("r
     const go=()=>{ const v=document.getElementById("rcIn"); chatSend(v.value); v.value=""; b.hidden=true; v.blur(); };
     document.getElementById("rcSend").onclick=go; document.getElementById("rcIn").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); go(); } else if(e.key==="Escape"){ b.hidden=true; e.target.blur(); } e.stopPropagation(); }); }
   for(const k in input) input[k]=false; b.hidden=false; setTimeout(()=>document.getElementById("rcIn").focus(),30); }
+// 트랙 경로 썸네일 (제어점을 부드럽게 이어 그림, 출발점 표시)
+const TRACK_THUMB={};
+function trackThumb(def){ if(TRACK_THUMB[def.id]) return TRACK_THUMB[def.id];
+  const c=document.createElement("canvas"); c.width=192; c.height=144; const x=c.getContext("2d"), C=def.ctrl, n=C.length, pts=[];
+  for(let i=0;i<n;i++){ const p0=C[(i-1+n)%n], p1=C[i], p2=C[(i+1)%n], p3=C[(i+2)%n]; for(let k=0;k<8;k++){ const t=k/8, t2=t*t, t3=t2*t;
+    const f=(a,b,cc,d)=>.5*((2*b)+(-a+cc)*t+(2*a-5*b+4*cc-d)*t2+(-a+3*b-3*cc+d)*t3); pts.push([f(p0[0],p1[0],p2[0],p3[0]),f(p0[1],p1[1],p2[1],p3[1])]); } }
+  let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9; for(const [a,b] of pts){ x0=Math.min(x0,a); x1=Math.max(x1,a); z0=Math.min(z0,b); z1=Math.max(z1,b); }
+  const sc=Math.min(170/(x1-x0||1),122/(z1-z0||1)), ox=(192-(x1-x0)*sc)/2, oz=(144-(z1-z0)*sc)/2, X=a=>ox+(a-x0)*sc, Z=b=>oz+(b-z0)*sc;
+  x.lineJoin="round"; x.lineCap="round"; x.beginPath(); pts.forEach(([a,b],i)=>i?x.lineTo(X(a),Z(b)):x.moveTo(X(a),Z(b))); x.closePath();
+  x.strokeStyle="rgba(255,255,255,.95)"; x.lineWidth=7; x.stroke(); x.strokeStyle=def.night?"#2b3a6b":"#4a4f5c"; x.lineWidth=4; x.stroke();
+  for(const br of def.branches||[]){ x.beginPath(); x.moveTo(X(br.s[0]),Z(br.s[1])); for(const m of br.mids||[]) x.lineTo(X(m[0]),Z(m[1])); x.lineTo(X(br.e[0]),Z(br.e[1])); x.strokeStyle="#ffcf2e"; x.lineWidth=3; x.stroke(); }
+  x.fillStyle="#ff4d6d"; x.beginPath(); x.arc(X(C[0][0]),Z(C[0][1]),5,0,Math.PI*2); x.fill(); x.strokeStyle="#fff"; x.lineWidth=2; x.stroke();
+  return TRACK_THUMB[def.id]=c.toDataURL(); }
 function mpOpen(){ MP.lobbySig=null; $m("menu").hidden=true; $m("finish").hidden=true; $m("mpLobby").hidden=false; mpRender(); }
 function mpPresBase(){ return {v:1,n:MP.nick,ch:selChar,k:selKart,cl:selColor,rd:MP.ready?1:0,jt:MP.jt,tr:selTrack,ai:botsPres()}; }
 function mpSend(extra){ if(!MP.joined) return; const full=Object.assign(mpPresBase(),extra||{}), last=MP.sent||(MP.sent={}), d={}; let n=0;
@@ -2814,7 +2831,7 @@ function mpRender(){
     G.appendChild(cell); }
   const htr=host?(+host.presence.tr||0):selTrack;
   $m("mpTrackHint").textContent=amHost?"(방장이 골라요)":"· 방장이 고르는 중";
-  $m("mpTracks").innerHTML=""; TRACKS.forEach((t,i)=>{ const b=document.createElement("button"); b.type="button"; b.textContent=t.name; b.setAttribute("aria-pressed",String(i===(amHost?selTrack:htr))); b.disabled=!amHost;
+  $m("mpTracks").innerHTML=""; TRACKS.forEach((t,i)=>{ const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=trackThumb(t); const sp=document.createElement("span"); sp.textContent=t.name+((t.laps||CONFIG.laps)===1?" · 1바퀴":""); b.append(im,sp); b.setAttribute("aria-pressed",String(i===(amHost?selTrack:htr))); b.disabled=!amHost;
     b.onclick=()=>{ selTrack=i; try{localStorage.setItem("kartrebuild.track",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpTracks").appendChild(b); });
   $m("mpKarts").innerHTML=""; KARTS.forEach((k,i)=>{ const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=safeThumb(()=>carThumb(k,CHARS[selChar],i===selKart?selColor:0)); const t=document.createElement("span"); t.textContent=k.name; b.append(im,t); b.setAttribute("aria-pressed",String(i===selKart));
     b.style.position="relative"; b.appendChild(kInfoIcon(k));
