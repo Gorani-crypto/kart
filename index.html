@@ -212,7 +212,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0308</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0313</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -342,7 +342,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"kart", name:"오렌지 루키", desc:"가속·조향 좋음 · 아주 가벼워서 잘 날아감 · 부스터 2초지만 부스터 중에 한 번 더 쓰면 2단 부스터(시속 400km)", speed:1.3, accel:1.45, turn:1.22, boost:1.25, boostTime:2, dual:true, mass:.8, fly:1.7},
   {id:"scoot", name:"배달 스쿠터", desc:"가속·조향 최고 · 최고속도 최저, 가장 가벼움", speed:1.26, accel:1.55, turn:1.32, boost:1.24, mass:.65},
   {id:"tank", name:"전차", desc:"느리지만 무거워서 다 밀어냄 + 포탄 발사 (Space / 포탄 버튼)", speed:1.17, accel:1.0, turn:.92, boost:1.3, mass:1.9},
-  {id:"giant", name:"바위 거인", desc:"3배 크기 거인. 느리고 부스터도 천천히 차지만, 부스터 쓰면 5초 동안 점점 빨라져 2초 500km · 3초 700km · 4초부터 시속 1000km · 그때 닿는 차는 전부 튕겨냄", speed:1.09, accel:1.02, turn:.74, boost:1.3, mass:2.3, rad:2.35, gaugeMul:.6, superBoost:true},
+  {id:"giant", name:"바위 거인", desc:"3배 크기 거인. 느리고 부스터도 천천히 차지만, 부스터 쓰면 5초 동안 점점 빨라져 2초 500km · 3초 700km · 4초부터 시속 800km · 몸이 달아오름 · 그때 닿는 차는 전부 튕겨냄", speed:1.09, accel:1.02, turn:.74, boost:1.3, mass:2.3, rad:2.35, gaugeMul:.6, superBoost:true},
   {id:"dump", name:"덤프트럭", desc:"2배 크기. 가장 무거워 다 밀어냄 · 가장 느리지만 부스터가 가장 빠르고 4.5초로 김", speed:1.2, accel:.92, turn:.82, boost:1.5, boostTime:4.5, gaugeMul:.8, mass:3.4, rad:2.4, ram:1},
   {id:"truck", name:"초보운전 1톤 트럭", desc:"묵직하고 조금 느림 · 부스터 빠르고 4초로 김. 뒤에 초보운전 스티커", speed:1.29, accel:1.2, turn:1.08, boost:1.4, boostTime:4, gaugeMul:.8, mass:2.0, ram:.5},
   {id:"roach", name:"바퀴벌레", desc:"빠르고 민첩 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.38, accel:1.38, turn:1.15, boost:1.22, mass:.75, fly:1.7},
@@ -353,10 +353,10 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
 // 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
 const SYN={tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
 const DUAL_V=400/5.8; // 오렌지 루키 2단 부스터 최고속도
-const SUPER_T=5, SUPER_V=1000/5.8, CHUTE_V=500/5.8; // 낙하산 활공: 모든 차 시속 500km // 거인 돌진: 5초, 서서히 올라 4초에 시속 1000km
-// 거인 돌진 속도 곡선 (지수적으로 상승): 0초 현재속도 → 2초 500 → 3초 700 → 4초 1000km/h 유지
+const SUPER_T=5, SUPER_V=800/5.8, CHUTE_V=500/5.8; // 낙하산 활공: 모든 차 시속 500km // 거인 돌진: 5초, 서서히 올라 4초에 시속 800km
+// 거인 돌진 속도 곡선 (지수적으로 상승): 0초 현재속도 → 2초 500 → 3초 700 → 4초 800km/h 유지
 function superRamp(e,v0){ const K=5.8, a=Math.min(v0*K,480), seg=(x0,x1,t)=>x0*Math.pow(x1/x0,clamp(t,0,1));
-  const kmh=e<2?seg(a,500,e/2):e<3?seg(500,700,e-2):e<4?seg(700,1000,e-3):1000; return kmh/K; }
+  const kmh=e<2?seg(a,500,e/2):e<3?seg(500,700,e-2):e<4?seg(700,800,e-3):800; return kmh/K; }
 function effKart(k,c){ return (c&&SYN[k.id]===c.id)?Object.assign({},k,{speed:k.speed*1.04,accel:k.accel*1.04,turn:k.turn*1.04,syn:true}):k; }
 
 
@@ -1704,6 +1704,17 @@ const fireMats=[0xffe066,0xffb020,0xff6a1a,0xff3b14].map(c=>new THREE.MeshBasicM
 function meteorEmbers(x,y,z,h,prog,vx,vz){ vx=vx||0; vz=vz||0; const n=Math.random()<prog*1.2?1:0, fx=Math.sin(h), fz=Math.cos(h); for(let k=0;k<n;k++){ const side=(Math.random()-.5)*6, back=Math.random()*3-1;
   puff(new THREE.Vector3(x+fz*side-fx*back,y+2+Math.random()*6,z-fx*side-fz*back),.35+Math.random()*.5*prog,.35+Math.random()*.3,fireMats[Math.floor(Math.random()*4)].clone(),new THREE.Vector3(vx*.8+fz*side*1.5,3+Math.random()*4,vz*.8-fx*side*1.5)); } }
 const myMeteor=makeMeteor();
+// 거인 몸 달아오름: 돌진하는 동안 점점 빨갛게 → 끝나면 증기를 뿜으며 원래 색으로
+const HOT=new THREE.Color(0xb81800), HOT2=new THREE.Color(0xff6a00), steamM=()=>new THREE.MeshBasicMaterial({color:0xdfe6ea,transparent:true,opacity:.8,depthWrite:false});
+function heatObj(root,heat){ const walk=o=>{ if(o.userData&&(o.userData.legs||o.userData.head)) return; /* 타고 있는 캐릭터는 그대로 */ heatOne(o,heat); for(const c of o.children) walk(c); }; walk(root); }
+function heatOne(o,heat){ { if(!o.isMesh||!o.material||Array.isArray(o.material)||!o.material.emissive) return; const m=o.material;
+    if(!m.userData.baseE){ m.userData.baseE=m.emissive.clone(); m.userData.baseI=m.emissiveIntensity; }
+    m.emissive.copy(m.userData.baseE).lerp(HOT,Math.min(1,heat*1.3)).lerp(HOT2,Math.max(0,heat-.55)/.45*.7); m.emissiveIntensity=m.userData.baseI+heat*.75; } }
+function heatTick(st,root,superOn,dt,x,y,z){ const was=st.heat||0; if(superOn){ st.heat=Math.min(1,was+dt/4); st.cool=0; } else if(was>0){ st.heat=Math.max(0,was-dt/2.6); st.cool=(st.cool||0)+dt;
+    if(Math.random()<.85&&Math.hypot(x-S.x,z-S.z)<160) for(let q=0;q<2;q++) puff(new THREE.Vector3(x+(Math.random()-.5)*6,y+3+Math.random()*7,z+(Math.random()-.5)*6),1.8+Math.random()*2.2,1.1+Math.random()*.7,steamM(),new THREE.Vector3((Math.random()-.5)*3,5+Math.random()*4,(Math.random()-.5)*3));
+    if(st.heat===0){ st.cool=0; } }
+  if(st.heat!==was||superOn) heatObj(root,st.heat); }
+const myHeat={heat:0};
 let body=CARS.blue.body, wheels=CARS.blue.wheels, flames=CARS.blue.flames, CAR=CARS.blue, CHAR=CHARS[0];
 const riderCache={};
 function attachRider(ch){ CHAR=ch; if(typeof updateMyTag==="function") setTimeout(updateMyTag,0); const st=CAR.seat, par=st.parent||CAR.body; if(CAR.rider&&CAR.rider.parent) CAR.rider.parent.remove(CAR.rider); const key=CAR.id+'.'+ch.id; const rd=riderCache[key]||(riderCache[key]=buildRider(ch,st.pose)); rd.position.set(...st.pos); rd.scale.setScalar(st.scale); rd.rotation.set(0,0,0); par.add(rd); CAR.rider=rd; }
@@ -2264,7 +2275,7 @@ let sfxI=0;
 function drawSpeedFx(dt){
   const base=CONFIG.maxSpeed*KART.speed, sp=Math.abs(fsNow);
   let target=clamp((sp-base*.8)/(base*.5),0,1)*.7;
-  if(S.superT>0) target=Math.max(target,.15+1.1*clamp((sp*5.8-200)/800,0,1)); else if(S.boostT>0) target=Math.max(target,.85); else if(S.instT>0) target=Math.max(target,.6);
+  if(S.superT>0) target=Math.max(target,.15+1.1*clamp((sp*5.8-200)/600,0,1)); else if(S.boostT>0) target=Math.max(target,.85); else if(S.instT>0) target=Math.max(target,.6);
   if(S.rail) target=1.25;
   if(state!=="race"&&state!=="finish") target=0;
   sfxI=lerp(sfxI,target,1-Math.exp(-8*dt));
@@ -2402,7 +2413,7 @@ function botsUpdate(dt){
   for(const b of BOT.list){ const g=mpGhost(b.id,{k:b.c.k,ch:b.c.ch,cl:b.c.cl,n:b.c.n,x:b.x,y:b.wy,z:b.z},BOT.meshes); g.obj.visible=true; g.x=b.x; g.y=b.wy; g.z=b.z;
     g.obj.position.set(b.x,b.wy,b.z); g.obj.rotation.set(b.y>0?-.15:0,b.h,b.y>0?b.spin*.2:0);
     if(b.shieldT>0&&!g.shield){ g.shield=makeShield(); const R=(b.K.rad||1.15)*2.4+.6; g.shield.scale.setScalar(R); g.shield.position.y=R*.45; g.obj.add(g.shield); } if(g.shield) g.shield.visible=b.shieldT>0;
-    const sp=Math.abs(b.v); if(g.key.startsWith("trex.")) trexRun(g.obj,dt,sp,b.biteT); else if(g.key.startsWith("giant.")){ giantRun(g.obj,dt,sp,0); if(b.superT>0&&!g.meteor){ g.meteor=makeMeteor(); g.obj.add(g.meteor); } if(g.meteor){ const pp=b.superT>0?Math.max(.08,clamp((sp*5.8-200)/600,0,1)):0; meteorUpd(g.meteor,pp,dt); if(pp>.1&&Math.hypot(b.x-S.x,b.z-S.z)<150) meteorEmbers(b.x,b.wy,b.z,b.h,pp); } } else if(g.key.startsWith("roach.")) roachRun(g.obj,dt,sp); }
+    const sp=Math.abs(b.v); if(g.key.startsWith("trex.")) trexRun(g.obj,dt,sp,b.biteT); else if(g.key.startsWith("giant.")){ giantRun(g.obj,dt,sp,0); if(b.superT>0&&!g.meteor){ g.meteor=makeMeteor(); g.obj.add(g.meteor); } heatTick(g.heatSt||(g.heatSt={heat:0}),g.obj,b.superT>0,dt,b.x,b.wy,b.z); if(g.meteor){ const pp=b.superT>0?Math.max(.08,clamp((sp*5.8-200)/600,0,1)):0; meteorUpd(g.meteor,pp,dt); if(pp>.1&&Math.hypot(b.x-S.x,b.z-S.z)<150) meteorEmbers(b.x,b.wy,b.z,b.h,pp); } } else if(g.key.startsWith("roach.")) roachRun(g.obj,dt,sp); }
   // 혼자 달리기: 순위판 + 시상식
   if(!MP.racing){ BOT.rankT-=dt; if(BOT.rankT<=0){ BOT.rankT=.25; const rows=soloStandings(), me=rows.findIndex(r=>r.me); rankRender(rows);
       if(state==="race"){ if(BOT.lastRank>1&&me===0&&raceT>4) voice("first",0); BOT.lastRank=me+1; } }
@@ -2782,11 +2793,11 @@ function updateMyTag(){ if(typeof MP==="undefined"||!MP||typeof kart==="undefine
   const nm=cleanName(MP.nick); if(!nm) return; myTag=mpTag(nm,hexCol(CHAR.helmet)); myTag.position.y=CAR.tagY||(CAR.giant?9.6:CAR.id==="tank"?4.4:3.1); kart.add(myTag); }
 // 차량 설명 말풍선: 썸네일 오른쪽 위 ⓘ 에 마우스를 올리거나(폰은 누르면) 표시
 const KTIP={blue:"균형형 · 모든 능력이 무난함",gold:"최고속도형 · 가속·조향은 조금 둔함",kart:"가벼움 · 부스터 중 한 번 더 = 2단 부스터 400km",scoot:"가속·조향 최고 · 가장 가벼움",tank:"무거움 · 포물선 포탄 (약 40m)",
-  giant:"부스터 쓰면 4초 만에 시속 1000km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
+  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
 function kInfoIcon(k){ const s=document.createElement("span"); s.className="kinfo"; s.textContent="i"; s.setAttribute("aria-label",k.name+" 설명");
   const show=()=>{ let t=document.getElementById("kTip"); if(!t){ t=document.createElement("div"); t.id="kTip"; document.body.appendChild(t); }
     t.innerHTML=""; const b=document.createElement("b"); b.textContent=k.name; const d=document.createElement("div"); d.className="one"; d.textContent=KTIP[k.id]||k.desc||""; t.append(b,d);
-    const KM=CONFIG.maxSpeed*CONFIG.kmh, base=q=>q.speed*KM, top=q=>q.superBoost?1000:q.dual?400:q.speed*(q.boost||CONFIG.boostRatio)*KM;
+    const KM=CONFIG.maxSpeed*CONFIG.kmh, base=q=>q.speed*KM, top=q=>q.superBoost?800:q.dual?400:q.speed*(q.boost||CONFIG.boostRatio)*KM;
     const stats=[["기본속도","#ffb36b",base,v=>Math.round(v)+"km"],["최고속도","#ff4d3a",top,v=>Math.round(v)+"km"],["가속",'#ffcf2e',q=>q.accel],["조향","#46e08a",q=>q.turn],["게이지 충전","#3ee6ff",q=>q.gaugeMul||1,v=>v===1?"보통":"×"+v],["부스터 시간","#7fd8ff",q=>q.superBoost?SUPER_T:(q.boostTime||CONFIG.boostTime),v=>v+"초"],["무게","#b98cff",q=>q.mass||1,v=>String(v)]];
     for(const [lab,col,fn,fmtv] of stats){ const vals=KARTS.map(fn).filter(v=>v<900), lo=Math.min(...vals), hi=Math.max(...vals), v=fn(k), p=v>=900?1:.15+.85*(v-lo)/((hi-lo)||1);
       const row=document.createElement("div"); row.className="bar"; const l=document.createElement("span"); l.textContent=lab; const tr=document.createElement("i"), fl=document.createElement("em"); fl.style.width=Math.round(Math.min(1,p)*100)+"%"; fl.style.background=col; tr.appendChild(fl); row.append(l,tr);
@@ -2967,6 +2978,7 @@ function mpGhost(peer,pr,map){ map=map||MP.ghosts;
   const c=CARS[kid], obj=new THREE.Group(); obj.rotation.order="YXZ";
   const mine=c.rider, mp=mine&&mine.parent; if(mp) mp.remove(mine);
   const root=c.root.clone(true); if(mp) mp.add(mine);
+  if(kid==="giant") root.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)){ o.material=o.material.clone(); delete o.material.userData.baseE; } });
   if(c.paint){ const pm=c.paint.map(m=>m.clone()); paintMats(pm,c.paintDef,cl); root.traverse(o=>{ if(o.isMesh){ const i=c.paint.indexOf(o.material); if(i>=0) o.material=pm[i]; } }); }
   // 좌석에 상대 캐릭터 앉히기
   const st=c.seat; let seatPar=root; if(st.parent){ root.traverse(o=>{ if(o.userData.seatPar) seatPar=o; }); } else { root.traverse(o=>{ if(o.userData.isBody) seatPar=o; }); }
@@ -3008,7 +3020,7 @@ function mpUpdate(dt){
     const tx=(+pr.x)+(+pr.vx||0)*age, tz=(+pr.z)+(+pr.vz||0)*age, ty=+pr.y||0, th=+pr.h||0;
     if(!g.init||Math.hypot(tx-g.x,tz-g.z)>40){ g.x=tx; g.z=tz; g.y=ty; g.h=th; g.init=true; }
     const k=1-Math.exp(-14*dt); g.x+=(tx-g.x)*k; g.z+=(tz-g.z)*k; g.y+=(ty-g.y)*k; let dh=th-g.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; g.h+=dh*k;
-    g.obj.position.set(g.x,g.y,g.z); g.obj.rotation.set(0,g.h,-(+pr.ro||0)); if(g.key.startsWith("giant.")){ const gsp=Math.hypot(+pr.vx||0,+pr.vz||0); giantRun(g.obj,dt,gsp,0); if(pr.gb&&!g.meteor){ g.meteor=makeMeteor(); g.obj.add(g.meteor); } if(g.meteor){ const pp=pr.gb?Math.max(.08,clamp((gsp*5.8-200)/800,0,1)):0; meteorUpd(g.meteor,pp,dt); if(pp>.1&&Math.hypot(g.x-S.x,g.z-S.z)<150) meteorEmbers(g.x,g.y,g.z,g.h,pp); } } if(g.key.startsWith("roach.")) roachRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0));
+    g.obj.position.set(g.x,g.y,g.z); g.obj.rotation.set(0,g.h,-(+pr.ro||0)); if(g.key.startsWith("giant.")){ const gsp=Math.hypot(+pr.vx||0,+pr.vz||0); giantRun(g.obj,dt,gsp,0); if(pr.gb&&!g.meteor){ g.meteor=makeMeteor(); g.obj.add(g.meteor); } heatTick(g.heatSt||(g.heatSt={heat:0}),g.obj,!!pr.gb,dt,g.x,g.y,g.z); if(g.meteor){ const pp=pr.gb?Math.max(.08,clamp((gsp*5.8-200)/600,0,1)):0; meteorUpd(g.meteor,pp,dt); if(pp>.1&&Math.hypot(g.x-S.x,g.z-S.z)<150) meteorEmbers(g.x,g.y,g.z,g.h,pp); } } if(g.key.startsWith("roach.")) roachRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0));
     // 부딪힘: 서로 밀어냄 (각자 자기 카트만 움직임)
     { const ok=KARTS[+pr.k]||KARTS[0]; bumpMe({id:p.peer,x:g.x,y:g.y,z:g.z,vx:+pr.vx||0,vz:+pr.vz||0,mass:ok.mass||1,rad:ok.rad||1.15,gb:!!pr.gb,ram:ok.ram||0},now); }
     }
@@ -3073,7 +3085,7 @@ function render(dt){
   if(chute.visible){ S.chuteVis=Math.min(1,(S.chuteVis||0)+dt*4); const k=CAR.giant?2.6:(KART.id==="tank"?1.3:1); chute.scale.setScalar(k*(.25+.75*S.chuteVis)); chute.position.y=CAR.giant?14:5.2; chute.rotation.set(-S.pitch*.8+Math.sin(performance.now()*.0021)*.06,0,Math.sin(performance.now()*.003)*.08); } else S.chuteVis=0;
   const fl=S.boostT>0||S.instT>0;
   flameM.color.setHex(S.stackT>0?0xff4fd8:S.instT>0&&S.boostT<=0?0xffd23a:(S.boostT>0?0x3ee6ff:0xff7a1a));
-  const flk=S.stackT>0?2.6:S.superT>0?.6+2.4*clamp((Math.abs(fsNow)*5.8-200)/800,0,1):S.boostT>0?1.8:1.1; for(const f of flames){f.visible=fl; f.scale.set(1,1,flk*(0.8+Math.random()*.4));}
+  const flk=S.stackT>0?2.6:S.superT>0?.6+2.4*clamp((Math.abs(fsNow)*5.8-200)/600,0,1):S.boostT>0?1.8:1.1; for(const f of flames){f.visible=fl; f.scale.set(1,1,flk*(0.8+Math.random()*.4));}
   skidTimer-=dt;
   if(!S.rail&&S.grounded&&(S.drifting||Math.abs(slide)>.25)&&Math.abs(fsNow)>6&&skidTimer<=0&&state!=="menu"){
     skidTimer=.025; const c=Math.cos(S.h), s=Math.sin(S.h);
@@ -3103,7 +3115,8 @@ function render(dt){
     camera.position.set(cam.x+(Math.random()-.5)*S.shake, cam.y+(Math.random()-.5)*S.shake, cam.z);
     camera.lookAt(F_.x+Math.sin(cam.yaw)*CAM_LOOK*(CAR.giant?2:1), F_.y+(CAR.lookY||.9), F_.z+Math.cos(cam.yaw)*CAM_LOOK*(CAR.giant?2:1));
   }
-  const sprog=S.superT>0?clamp((Math.abs(fsNow)*5.8-200)/800,0,1):0; /* 거인 돌진 진행도 (속도 따라 서서히) */
+  const sprog=S.superT>0?clamp((Math.abs(fsNow)*5.8-200)/600,0,1):0; /* 거인 돌진 진행도 (속도 따라 서서히) */
+  if(CAR.giant){ heatTick(myHeat,CAR.root,S.superT>0,dt,S.x,S.y,S.z); }
   if(myMeteor.parent!==kart) kart.add(myMeteor); meteorUpd(myMeteor,S.superT>0?Math.max(.08,sprog):0,dt); if(sprog>0) meteorEmbers(S.x,S.y,S.z,S.h,sprog,S.vx,S.vz);
   if(sprog>0) S.shake=Math.max(S.shake,.04+.3*sprog*sprog);
   const targetFov=70+(S.rail?16:S.superT>0?4+26*sprog*sprog:S.boostT>0?7:S.instT>0?3:0);
