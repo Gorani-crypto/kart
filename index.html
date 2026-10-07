@@ -2158,7 +2158,7 @@ function ejectRider(nx,nz,power){
   if(!KART.eject||S.ej||!CAR.rider) return;
   const rd=CAR.rider; rd.updateMatrixWorld(true); const wp=new THREE.Vector3(); rd.getWorldPosition(wp);
   scene.attach(rd); const sp=Math.hypot(S.vx,S.vz);
-  S.ej={x:wp.x,y:wp.y,z:wp.z,vx:S.vx*.55+nx*Math.min(14,power*.4),vy:7+Math.min(10,power*.25),vz:S.vz*.55+nz*Math.min(14,power*.4),h:S.h,ground:false,t:0,idx:S.idx,told:false,spin:(Math.random()<.5?-1:1)*(6+Math.random()*4)};
+  S.ej={x:wp.x,y:wp.y,z:wp.z,vx:S.vx*.35+nx*Math.min(8,power*.3),vy:5+Math.min(4,power*.1),vz:S.vz*.35+nz*Math.min(8,power*.3),h:S.h,ground:false,t:0,idx:S.idx,told:false,spin:(Math.random()<.5?-1:1)*(6+Math.random()*4)};
   S.drifting=false; S.boostT=0; S.instT=0; S.shake=Math.max(S.shake,.8); thud(); toast("앗! 사람이 날아갔다!","#ff7a1a");
   if(sp>1){ S.vx*=.6; S.vz*=.6; }
 }
@@ -2168,17 +2168,17 @@ function updEject(dt,controls){
   E.idx=nearest(E.x,E.z,E.idx); const i=E.idx, p=TR.P[i], n=TR.NR[i], gy=TR.Y[i];
   if(!E.ground){ E.vy-=CONFIG.gravity*dt; E.x+=E.vx*dt; E.y+=E.vy*dt; E.z+=E.vz*dt;
     if(E.y<=gy){ E.y=gy; E.ground=true; E.vy=0; thud(); } }
-  else { const k=Math.exp(-8*dt); E.vx*=k; E.vz*=k; E.x+=E.vx*dt; E.z+=E.vz*dt; E.y=gy;
-    if(Math.hypot(E.vx,E.vz)<2.5){ // 일어나서 자동으로 오토바이까지 걸어감 (종종걸음)
-      E.rest=(E.rest||0)+dt; if(E.rest>.25){ const want=Math.atan2(S.x-E.x,S.z-E.z); let dh=want-E.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; E.h+=dh*Math.min(1,8*dt);
-        const fw=Math.min(10,Math.hypot(S.x-E.x,S.z-E.z)*3+2); E.x+=Math.sin(E.h)*fw*dt; E.z+=Math.cos(E.h)*fw*dt; E.walk=(E.walk||0)+fw*dt;
+  else { const k=Math.exp(-12*dt); E.vx*=k; E.vz*=k; E.x+=E.vx*dt; E.z+=E.vz*dt; E.y=gy;
+    if(Math.hypot(E.vx,E.vz)<2.5||E.t>.9){ // 일어나서 자동으로 오토바이까지 걸어감 (종종걸음)
+      E.rest=(E.rest||0)+dt; if(E.rest>.1){ const want=Math.atan2(S.x-E.x,S.z-E.z); let dh=want-E.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; E.h+=dh*Math.min(1,8*dt);
+        const fw=Math.max(6,Math.hypot(S.x-E.x,S.z-E.z)/Math.max(.15,1.9-E.t)); /* 2초 안에 복귀하도록 속도 조절 */ E.x+=Math.sin(E.h)*fw*dt; E.z+=Math.cos(E.h)*fw*dt; E.walk=(E.walk||0)+fw*dt;
         if(!E.told){ E.told=true; toast("오토바이로 돌아가는 중…","#ffcf2e"); toastTimer=1.8; } } } }
   const d=(E.x-p.x)*n.x+(E.z-p.z)*n.z, lim=TR.HW+(TR.def.walls?.5:(TR.def.runoff||2.4)); if(Math.abs(d)>lim){ const sg=Math.sign(d); E.x-=n.x*sg*(Math.abs(d)-lim); E.z-=n.z*sg*(Math.abs(d)-lim); }
   const rd=CAR.rider; if(rd){ rd.position.set(E.x,E.y+(E.ground?.15:0),E.z);
     if(!E.ground){ rd.rotation.x+=E.spin*dt; rd.rotation.z+=E.spin*.5*dt; }
     else { rd.rotation.set(0,E.h,0); rd.position.y+=Math.abs(Math.sin((E.walk||0)*3))*.15; } }
   // 다시 타기
-  if(E.ground&&E.t>.6&&Math.hypot(E.x-S.x,E.z-S.z)<2.8&&Math.hypot(S.vx,S.vz)<4){ const st=CAR.seat, par=st.parent||CAR.body; par.add(rd); rd.position.set(...st.pos); rd.rotation.set(0,0,0); rd.scale.setScalar(st.scale); S.ej=null; S.h=Math.atan2(TR.T[S.idx].x,TR.T[S.idx].z); toast("다시 탑승!","#46e08a"); beep(880,.12,.2); }
+  if((E.ground&&E.t>.6&&Math.hypot(E.x-S.x,E.z-S.z)<2.8)||E.t>=2){ /* 늦어도 2초면 다시 탑승 */ const st=CAR.seat, par=st.parent||CAR.body; par.add(rd); rd.position.set(...st.pos); rd.rotation.set(0,0,0); rd.scale.setScalar(st.scale); S.ej=null; S.h=Math.atan2(TR.T[S.idx].x,TR.T[S.idx].z); toast("다시 탑승!","#46e08a"); beep(880,.12,.2); }
 }
 // ===== 티라노: 물기 (온라인에서 앞에 있는 상대를 물면 가벼울수록 감속, 전차급 무게부터는 못 물음) =====
 function trexBite(){
