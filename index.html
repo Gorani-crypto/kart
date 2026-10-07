@@ -183,7 +183,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2015</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2020</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -199,7 +199,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
       <kbd>드리프트 직후 ↑</kbd><span>↑를 떼었다 다시 누르면 순간부스터</span>
       <kbd>R / Esc</kbd><span>재시작 / 메뉴</span>
     </div>
-    <div class="row"><button class="btn" id="startBtn">혼자 출발</button><button class="btn" id="mpBtn" type="button">온라인 대전</button><button class="btn ghost" id="hubBack" type="button">← 미니게임방</button></div>
+    <div class="row"><button class="btn" id="startBtn">혼자 출발</button><button class="btn ghost" id="voiceBtn" type="button">🔊 음성 테스트</button><button class="btn" id="mpBtn" type="button">온라인 대전</button><button class="btn ghost" id="hubBack" type="button">← 미니게임방</button></div>
   </div>
 </div>
 
@@ -386,12 +386,12 @@ const TRACKS = [
     ctrl:[[-164,-335,8],[55,-335,8],[78,-251,6],[82,-136,1],[122,-69,0],[174,-87,0],[190,-178,0],[237,-237,0],[318,-233,0],[350,-160,0],[360,-18,2],[437,40,5],[519,95,8],[529,255,8],[484,350,8],[73,368,8],[-364,364,8],[-473,302,6],[-514,186,3],[-524,40,0],[-564,-40,0],[-628,-81,0],[-615,-135,0],[-542,-138,0],[-473,-117,1],[-433,-182,3],[-433,-309,7],[-419,-374,8],[-350,-378,8],[-309,-335,8]],
     river:[[-130,247],[-125,624],[-156,1170]],
     decorate:decorateVillage },
-  { id:"sky", name:"구름 위 하늘길", desc:"7km · 손가락 헤어핀 5연속 · 짧아진 600km/h 공중터널 · 지그재그 10연속(가운데 지름길)", hw:16, N:5500,
+  { id:"sky", name:"구름 위 하늘길", desc:"7km · 손가락 헤어핀 5연속 · 짧아진 600km/h 공중터널 · 지그재그 9연속(숨은 지름길 2곳) · 굽이길", hw:16, N:5500,
     sky:0x6fc3ff, ground:0x86d46a, walls:true, style:"village", overpass:3.5,
-    ctrl:[[0,0,0],[0,-120,0],[0,-390,0],[4,-422,0],[32,-452,0],[60,-422,0],[64,-250,0],[68,-218,0],[96,-188,0],[124,-218,0],[128,-390,0],[132,-422,0],[160,-452,0],[188,-422,0],[192,-250,0],[196,-218,0],[224,-188,0],[252,-218,0],[256,-390,0],[260,-422,0],[288,-452,0],[316,-422,0],[320,-250,0],[384,-250,1],[430,-330,3],[452,-420,7],[507,-497,14],[611,-471,30],[728,-510,45],[858,-471,48],[962,-380,44],[1001,-250,40],[1060,-228,27],[1125,-212,15],[1165,-190,6],[1170,-168,2],[1130,-150,0],[950,-150,0],[934,-144,0],[922,-126,0],[934,-108,0],[950,-102,0],[1130,-102,0],[1146,-96,0],[1158,-78,0],[1146,-60,0],[1130,-54,0],[950,-54,0],[934,-48,0],[922,-30,0],[934,-12,0],[950,-6,0],[1130,-6,0],[1146,0,0],[1158,18,0],[1146,36,0],[1130,42,0],[950,42,0],[934,48,0],[922,66,0],[934,84,0],[950,90,0],[1130,90,0],[1146,96,0],[1158,114,0],[1146,132,0],[1130,138,0],[950,138,0],[934,144,0],[922,162,0],[934,180,0],[950,186,0],[1130,186,0],[1146,192,0],[1158,210,0],[1146,228,0],[1130,234,0],[950,234,0],[934,240,0],[922,258,0],[934,276,0],[950,282,0],[1130,282,0],[1146,288,0],[1158,306,0],[1146,324,0],[1130,330,0],[950,330,0],[880,365,0],[800,395,0],[728,419,0],[611,380,0],[494,416,0],[377,385,5],[260,390,7],[143,390,7],[52,364,3],[-26,286,0],[-42,156,0],[-16,65,0]],
+    ctrl:[[0,0,0],[0,-120,0],[0,-390,0],[4,-422,0],[32,-452,0],[60,-422,0],[64,-250,0],[68,-218,0],[96,-188,0],[124,-218,0],[128,-390,0],[132,-422,0],[160,-452,0],[188,-422,0],[192,-250,0],[196,-218,0],[224,-188,0],[252,-218,0],[256,-390,0],[260,-422,0],[288,-452,0],[316,-422,0],[320,-250,0],[384,-250,1],[430,-330,3],[452,-420,7],[507,-497,14],[611,-471,30],[728,-510,45],[858,-471,48],[962,-380,44],[1001,-250,40],[1060,-228,27],[1125,-212,15],[1165,-190,6],[1170,-168,2],[1130,-150,0],[950,-150,0],[934,-144,0],[922,-126,0],[934,-108,0],[950,-102,0],[1130,-102,0],[1146,-96,0],[1158,-78,0],[1146,-60,0],[1130,-54,0],[950,-54,0],[934,-48,0],[922,-30,0],[934,-12,0],[950,-6,0],[1130,-6,0],[1146,0,0],[1158,18,0],[1146,36,0],[1130,42,0],[950,42,0],[934,48,0],[922,66,0],[934,84,0],[950,90,0],[1130,90,0],[1146,96,0],[1158,114,0],[1146,132,0],[1130,138,0],[950,138,0],[934,144,0],[922,162,0],[934,180,0],[950,186,0],[1130,186,0],[1146,192,0],[1158,210,0],[1146,228,0],[1130,234,0],[950,234,0],[934,240,0],[922,258,0],[934,276,0],[950,282,0],[1130,282,0],[1168,300,0],[1176,345,0],[1140,386,0],[1070,402,0],[1000,384,0],[930,408,0],[855,390,0],[780,414,0],[700,404,0],[611,380,0],[494,416,0],[377,385,5],[260,390,7],[143,390,7],[52,364,3],[-26,286,0],[-42,156,0],[-16,65,0]],
     tube:{from:[507,-497],to:[1001,-250],R:9},
-    branches:[{name:"지름길",s:[1015, -102],e:[1065, -6],mids:[[1040, -54]],hw:10}],
-    wallGaps:[[1026,-102,24],[1040,-54,20],[1054,-6,24]],
+    branches:[{name: "지름길", s: [1000, -102], e: [1000, -54], mids: [[1040, -78.0]], hw: 7, same:true}, {name: "지름길", s: [1000, -6], e: [1000, 42], mids: [[1040, 18.0]], hw: 7, same:true}],
+    wallGaps:[[1040, -78.0, 9.5], [1040, 18.0, 9.5]],
     river:[[195,234],[203,546],[182,988]],
     decorate:decorateSky },
   { id:"city", name:"하늘섬 빌딩숲", desc:"2.9km · 빌딩 사이를 누비는 지그재그 공중도로 · 전차로는 뭔가 다를지도", hw:16, N:2200,
@@ -449,14 +449,14 @@ function buildTrack(def){
     const c=new THREE.CatmullRomCurve3(pts,false,"centripetal"), M=Math.round(c.getLength()/1.4);
     const BP=[],BT=[],BN=[],BY=[];
     for(let i=0;i<M;i++){const t=c.getTangentAt(i/(M-1)).normalize();BP.push(c.getPointAt(i/(M-1)));BT.push(t);BN.push(V3(t.z,0,-t.x));BY.push(0);}
-    tr.branches.push({name:b.name,a,b:e,span:(e-a+N)%N,P:BP,T:BT,NR:BN,Y:BY,M,hw:b.hw});
+    tr.branches.push({name:b.name,a,b:e,span:(e-a+N)%N,P:BP,T:BT,NR:BN,Y:BY,M,hw:b.hw,same:!!b.same});
   }
 
   // 도로 메시
   const asphalt=new THREE.Color(0x4a4f5c), red=new THREE.Color(0xe8344a), white=new THREE.Color(0xf4f4f4),
         yel=new THREE.Color(0xffcf2e), blk=new THREE.Color(0x22242a), brick=new THREE.Color(0x9a6a4a), plank=new THREE.Color(0x8a6a50);
   const roadC=def.style==="village"?new THREE.Color(0x56627e):asphalt;
-  const NT=f=>i=>(def.city||flag[i]===4||flag[(i+1)%N]===4||flag[i]===5||flag[(i+1)%N]===5)?null:f(i);
+  const NT=f=>(i,sd)=>(def.city||flag[i]===4||flag[(i+1)%N]===4||flag[i]===5||flag[(i+1)%N]===5)?null:f(i,sd);
   group.add(ribbon(P,NR,Y,true,0,HW,.05,NT(i=>flag[i]===2?((Math.floor(i/2)%2)?yel:blk):(flag[i]===1?plank:roadC))));
   if(def.style==="village"){
     const side=new THREE.Color(0xe7dcc6), side2=new THREE.Color(0xd5c7aa);
@@ -478,6 +478,8 @@ function buildTrack(def){
     const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));
     group.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xf2f2f2,side:THREE.DoubleSide}))); }
   for(const b of tr.branches){
+    if(b.same){ group.add(ribbon(b.P,b.NR,b.Y,false,0,b.hw,.06,()=>roadC)); const rail=new THREE.Color(0xd8d0c2), rail2=new THREE.Color(0xbfb6a6);
+      group.add(wallMesh(b.P,b.NR,b.Y,b.Y,new Array(b.M).fill(0),b.M-1,b.hw+.8,i=>(i<6||i>b.M-8)?null:((Math.floor(i/5)%2)?rail:rail2))); continue; }
     group.add(ribbon(b.P,b.NR,b.Y,false,0,b.hw,.09,()=>brick));
     group.add(ribbon(b.P,b.NR,b.Y,false,b.hw,b.hw+1,.1,i=>(Math.floor(i/3)%2?yel:blk)));
   }
@@ -485,8 +487,8 @@ function buildTrack(def){
   if(def.walls){
     const stone=new THREE.Color(0xd8d0c2), stone2=new THREE.Color(0xbfb6a6), rail=new THREE.Color(0xd9553b), rail2=new THREE.Color(0xf4f4f4);
     const vil=def.style==="village", sal=new THREE.Color(0xe8977a), cream=new THREE.Color(0xf3e6c8), conc=new THREE.Color(0xcfd2d8), conc2=new THREE.Color(0xbfc3ca);
-    const WG=i=>(def.wallGaps||[]).some(g=>Math.hypot(P[i].x-g[0],P[i].z-g[1])<g[2]);
-    group.add(wallMesh(P,NR,Y,YB,flag,N,HW+1.6,NT(i=>WG(i)?null:flag[i]===3?((Math.floor(i/8)%2)?conc:conc2):flag[i]===1?((Math.floor(i/3)%2)?rail:rail2):vil?((Math.floor(i/5)%2)?sal:cream):((Math.floor(i/6)%2)?stone:stone2))));
+    const WG=(i,sd)=>(def.wallGaps||[]).some(g=>Math.hypot(P[i].x+NR[i].x*sd*(HW+1.6)-g[0],P[i].z+NR[i].z*sd*(HW+1.6)-g[1])<g[2]);
+    group.add(wallMesh(P,NR,Y,YB,flag,N,HW+1.6,NT((i,sd)=>WG(i,sd)?null:flag[i]===3?((Math.floor(i/8)%2)?conc:conc2):flag[i]===1?((Math.floor(i/3)%2)?rail:rail2):vil?((Math.floor(i/5)%2)?sal:cream):((Math.floor(i/6)%2)?stone:stone2))));
   }
   // 출발선
   { const c=document.createElement("canvas"); c.width=128; c.height=16; const x=c.getContext("2d");
@@ -535,8 +537,8 @@ function ribbon(PP,NN,YY,closed,inner,outer,yo,colorFn){
 function wallMesh(P,NR,Y,YB,flag,N,off,colorFn){
   const pos=[],col=[];
   for(let i=0;i<N;i++){
-    const j=(i+1)%N,c=colorFn(i); if(!c) continue;
-    for(const s of [1,-1]){
+    const j=(i+1)%N;
+    for(const s of [1,-1]){ const c=colorFn(i,s); if(!c) continue;
       const a=P[i].clone().addScaledVector(NR[i],s*off), b=P[j].clone().addScaledVector(NR[j],s*off);
       const ya=Math.min(Y[i],YB[i])-(flag[i]===1||flag[i]===3?.9:2), yb=Math.min(Y[j],YB[j])-(flag[j]===1||flag[j]===3?.9:2);
       const ta=Math.max(Y[i],YB[i])+1.3, tb=Math.max(Y[j],YB[j])+1.3;
@@ -1758,10 +1760,11 @@ function physics(dt, controls){
     if(sc<score){score=sc;n=bn;p=q;hw=b.hw;d=bdl;onB=b;onBj=j;prog=(b.a+Math.round(j/(b.M-1)*b.span))%N;}
   }
   if(onB&&score<-1&&onBj>onB.M*.75) S.idx=onB.b; // 지름길 끝: 본선 위치를 합류 지점으로 넘김
-  let margin=TR.margin; if(TR.wallGapSet&&TR.wallGapSet.has(S.idx)) margin=40;
+  let margin=TR.margin;
   for(const b of TR.branches){ const da=(S.idx-b.a+N)%N, db=(b.b-S.idx+N)%N; if(da<50||db<50||(N-da)<6||(N-db)<6) margin=16; }
-  if(onB&&onB!==S.onBranch&&score<-1) toast(onB.name+"!","#ffcf2e");
-  S.onBranch=score<-1?onB:(onB?S.onBranch:null);
+  if(onB&&score<-1&&onB.same&&onBj>6&&onBj<onB.M-8) margin=.5; // 숨은 지름길 안: 가드레일
+  if(onB&&onB!==S.onBranch&&score<-1&&(!onB.same||onBj>8)) toast(onB.name+"!","#ffcf2e");
+  S.onBranch=(score<-1&&(!onB||!onB.same||onBj>8||S.onBranch===onB))?onB:(onB?S.onBranch:null);
   S.prog=prog;
   if(TR.tube&&!S.rail&&controls!==undefined){ const da=(S.idx-TR.tube.a+N)%N; if(da<25){ S.rail=true; S.railV=Math.max(fs,10); S.railD=TR.arc[S.idx]; S.roll=0; toast("공중터널!","#3ee6ff"); } }
   S.offroad=!TR.def.walls&&Math.abs(d)>hw+.4;
@@ -2162,6 +2165,8 @@ function startRace(){
 }
 function openMenu(){ if(MP.racing){ mpToLobby(); return; } state="menu"; $("finish").hidden=true; $("count").hidden=true; $("menu").hidden=false; renderOptions(); }
 $("startBtn").addEventListener("click",startRace);
+{ const vb=document.getElementById("voiceBtn"); if(vb) vb.addEventListener("click",()=>{ initAudio(); voiceTest(); });
+  const row=vb&&vb.parentNode; if(row&&!document.getElementById("voiceInfo")){ const p=document.createElement("p"); p.id="voiceInfo"; p.className="keys"; p.style.margin="0"; p.style.color="var(--ink-dim)"; p.style.fontSize="12px"; row.parentNode.insertBefore(p,row.nextSibling); } }
 $("againBtn").addEventListener("click",()=>{ if(MP.racing) mpToLobby(); else startRace(); });
 $("menuBtn").addEventListener("click",()=>{ if(MP.racing) mpLeaveRoom(); openMenu(); });
 { const hb=document.getElementById("hubBack"); if(hb&&window.parent===window) hb.hidden=true; if(hb) hb.addEventListener("click",()=>{ mpLeaveRoom(); if(!NETA.close()) location.href="./"; }); }
@@ -2266,7 +2271,12 @@ function loadVoices(){ try{ koVoices=speechSynthesis.getVoices().filter(v=>/^ko/
 if(window.speechSynthesis){ loadVoices(); try{ speechSynthesis.addEventListener("voiceschanged",loadVoices); }catch(_){} }
 function pickVoice(g){ if(!koVoices.length) return null; const male=/InJoon|Minsu|Hyunsu|Jun|Bong|male|남/i, fem=/SunHi|Heami|Yuna|Sora|Jimin|female|여|Google/i;
   return koVoices.find(v=>g==="m"?male.test(v.name):fem.test(v.name))||koVoices[0]; }
-function unlockSpeech(){ try{ if(window.speechSynthesis&&!VOICE.unlocked){ VOICE.unlocked=true; const u=new SpeechSynthesisUtterance(" "); u.volume=0; speechSynthesis.speak(u); } }catch(_){} }
+function unlockSpeech(){ try{ if(window.speechSynthesis&&!VOICE.unlocked){ VOICE.unlocked=true; loadVoices(); const u=new SpeechSynthesisUtterance("출발"); u.lang="ko-KR"; u.volume=.01; u.rate=2; speechSynthesis.resume(); speechSynthesis.speak(u); } }catch(_){} }
+// 실제로 말하기 (일부 브라우저는 cancel 직후 speak가 씹혀서 살짝 늦게)
+function speakNow(text,c,vol){ const ss=window.speechSynthesis; if(!ss) return false; loadVoices();
+  const u=new SpeechSynthesisUtterance(text.replace(/~/g,"")); u.lang="ko-KR"; const v=pickVoice(c.g); if(v) u.voice=v; u.pitch=c.p; u.rate=c.r; u.volume=vol==null?1:vol;
+  const go=()=>{ try{ ss.resume(); ss.speak(u); }catch(_){} };
+  if(ss.speaking||ss.pending){ ss.cancel(); setTimeout(go,90); } else go(); return true; }
 // 말풍선 (카트 위)
 const BUBBLES=[];
 function makeBubble(text){ const c=document.createElement("canvas"); c.width=512; c.height=128; const x=c.getContext("2d");
@@ -2279,8 +2289,12 @@ function makeBubble(text){ const c=document.createElement("canvas"); c.width=512
 function showBubble(parent,text,y){ for(let i=BUBBLES.length-1;i>=0;i--) if(BUBBLES[i].s.parent===parent){ parent.remove(BUBBLES[i].s); BUBBLES.splice(i,1); }
   const s=makeBubble(text); s.position.y=y; parent.add(s); BUBBLES.push({s,t:0,life:2.6}); }
 function updBubbles(dt){ for(let i=BUBBLES.length-1;i>=0;i--){ const b=BUBBLES[i]; b.t+=dt; const k=b.t/b.life; b.s.material.opacity=k>.8?(1-k)/.2:1; b.s.scale.set(6.4*(k<.08?k/.08:1),1.6*(k<.08?k/.08:1),1); if(k>=1){ if(b.s.parent) b.s.parent.remove(b.s); b.s.material.map.dispose(); b.s.material.dispose(); BUBBLES.splice(i,1); } } }
-function sayLine(text,c){ showBubble(kart,text,(CAR.tagY||3.1)+1.6); if(!window.speechSynthesis||!SND.on) return;
-  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text.replace(/~/g,"")); u.lang="ko-KR"; const v=pickVoice(c.g); if(v) u.voice=v; u.pitch=c.p; u.rate=c.r; u.volume=1; speechSynthesis.speak(u); }catch(_){} }
+function sayLine(text,c){ showBubble(kart,text,(CAR.tagY||3.1)+1.6); if(!SND.on) return; try{ speakNow(text,c); }catch(_){} }
+// 메뉴의 음성 테스트 (손가락으로 누른 순간 재생되어야 폰에서도 소리가 남)
+function voiceTest(){ const c=VO[(CHARS[selChar]||CHARS[0]).id]||VO.dotori, out=document.getElementById("voiceInfo");
+  if(!window.speechSynthesis){ if(out) out.textContent="이 브라우저는 음성 읽기를 지원하지 않아요. 카카오톡 안에서 열었다면 크롬이나 사파리로 열어 주세요."; return; }
+  VOICE.unlocked=true; const line=c.bad[Math.floor(Math.random()*c.bad.length)]; speakNow(line,c);
+  setTimeout(()=>{ loadVoices(); if(out) out.textContent=koVoices.length?("한국어 음성 "+koVoices.length+"개 사용 가능 · “"+line+"”"):"기기에 한국어 음성이 안 보여요. 소리가 안 나면 휴대폰 설정 › 텍스트 음성 변환(TTS)에서 한국어를 설치해 주세요. 무음 모드도 확인해 주세요."; },400); }
 function voice(kind,minGap){ const c=VO[CHAR.id]; if(!c||state==="menu") return; const now=performance.now(); if(now-VOICE.t<(minGap||2800)) return; VOICE.t=now;
   const pool=kind==="first"?c.first.concat(CARVO[KART.id]||[]):c.bad; let text=pool[Math.floor(Math.random()*pool.length)]; if(text===VOICE.last&&pool.length>1) text=pool[(pool.indexOf(text)+1)%pool.length]; VOICE.last=text;
   sayLine(text,c); if(typeof MP!=="undefined"&&MP&&MP.racing&&typeof mpSend==="function"){ VOICE.seq++; mpSend({vo:[VOICE.seq,text.slice(0,40)]}); } }
@@ -2438,7 +2452,7 @@ function mpSend(extra){ if(!MP.joined) return; NETA.pres(Object.assign(mpPresBas
 
 $m("mpBtn").addEventListener("click",()=>{ initAudio(); mpOpen(); });
 $m("mpBack").addEventListener("click",()=>{ $m("mpLobby").hidden=true; openMenu(); });
-$m("mpJoin").addEventListener("click",async()=>{
+$m("mpJoin").addEventListener("click",async()=>{ unlockSpeech();
   const nm=cleanName($m("mpName").value), code=String($m("mpCode").value||"1").replace(/[^0-9A-Za-z가-힣_-]/g,"").slice(0,12)||"1";
   MP.nick=nm||MP.nick; MP.code=code; updateMyTag(); try{ localStorage.setItem("kartrebuild.nick",MP.nick); localStorage.setItem("kartrebuild.room",code); }catch(_){}
   const b=$m("mpJoin"); b.disabled=true; b.textContent="연결 중…"; $m("mpStatus").textContent="";
@@ -2508,7 +2522,7 @@ function mpRender(){
     $m("mpStatus").textContent=inRace&&!MP.ready?"지금 다른 경기가 진행 중이에요. 준비해 두면 다음 판에 같이 출발해요.":MP.ready?"방장이 출발시키면 바로 시작해요.":"준비를 누르면 방장이 출발시킬 때 같이 달려요."; }
 }
 $m("mpGo").addEventListener("click",()=>{
-  if(!MP.joined) return;
+  unlockSpeech(); if(!MP.joined) return;
   if(mpIsHost()){ const L=mpList(); if(L.some(p=>p.peer!==MP.myPeer&&p.presence.st!=="race"&&!p.presence.rd)) return; const ps=[MP.myPeer,...L.filter(p=>p.peer!==MP.myPeer&&p.presence.rd&&p.presence.st!=="race").map(p=>p.peer)].slice(0,8);
     const g={id:MP.myPeer+":"+Date.now(),tr:selTrack,ps}; MP.seenGo.add(g.id); mpSend({go:g}); mpStartRace(g); }
   else { MP.ready=!MP.ready; mpSend(); mpRender(); }
