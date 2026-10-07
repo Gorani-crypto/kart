@@ -196,7 +196,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2156</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2207</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -207,7 +207,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
       <kbd>↑ / ↓</kbd><span>가속 / 브레이크</span>
       <kbd>Shift</kbd><span>드리프트 (누르고 있는 만큼 미끄러짐)</span>
       <kbd>Ctrl</kbd><span>부스터 사용</span>
-      <kbd>Space</kbd><span>포탄 발사 (전차)</span>
+      <kbd>Space</kbd><span>포탄 발사 (전차) · 꼬리치기 (티라노)</span>
       <kbd>F</kbd><span>정지 고정 켜기/끄기 (제자리에서 방향만 돌림)</span>
       <kbd>드리프트 직후 ↑</kbd><span>↑를 떼었다 다시 누르면 순간부스터</span>
       <kbd>R / Esc</kbd><span>재시작 / 메뉴</span>
@@ -327,7 +327,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"dump", name:"덤프트럭", desc:"2배 크기. 가장 무거워 다 밀어냄 · 가장 느리지만 부스터 강함", speed:1.2, accel:.92, turn:.82, boost:1.38, mass:2.8, rad:2.4},
   {id:"truck", name:"초보운전 1톤 트럭", desc:"조금 무겁고 조금 느림. 뒤에 초보운전 스티커", speed:1.29, accel:1.2, turn:1.08, boost:1.27, mass:1.5},
   {id:"roach", name:"바퀴벌레", desc:"빠르고 민첩 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.38, accel:1.38, turn:1.15, boost:1.22, mass:.75, fly:1.7},
-  {id:"trex", name:"티라노", desc:"2배 크기. 덤프트럭보다 느리지만 물기(Space/물기 버튼): 가벼운 상대일수록 크게 감속, 전차급부터는 못 물음", speed:1.12, accel:.9, turn:.8, boost:1.36, mass:2.6, rad:2.4, bite:true},
+  {id:"trex", name:"티라노", desc:"2배 크기. 꼬리치기(Space/꼬리 버튼, 10초마다): 뒤쪽 넓은 범위의 차를 무게 상관없이 양옆 가드레일로 날려버림", speed:1.18, accel:.9, turn:.8, boost:1.36, mass:2.6, rad:2.4, bite:true},
   {id:"chair", name:"엔진 휠체어", desc:"엔진 달린 휠체어. 가속·조향 좋고 조금 가벼움", speed:1.27, accel:1.4, turn:1.25, boost:1.3, mass:.85},
   {id:"bike", name:"슈퍼바이크", desc:"가장 빠르고 컨트롤도 좋음. 대신 벽·무거운 차에 세게 부딪히면 사람이 날아가서 걸어가 다시 타야 함", speed:1.89, accel:1.6, turn:1.25, boost:1.2, mass:.7, eject:true}
 ];
@@ -1454,7 +1454,7 @@ function trexRun(rootObj,dt,v,bite){
   const a=u.amp, s=Math.sin(u.ph), c=Math.cos(u.ph);
   P.tLegL.rotation.x=-s*.7*a; P.tLegR.rotation.x=s*.7*a; P.tKneeL.rotation.x=Math.max(0,c)*.9*a; P.tKneeR.rotation.x=Math.max(0,-c)*.9*a;
   P.tTorso.position.y=2.9+Math.abs(s)*.35*a; P.tTorso.rotation.x=.08*a; P.tTail.rotation.y=Math.sin(u.ph*.5)*.25*a; P.tHead.rotation.x=-.05+Math.sin(u.ph*2)*.04*a;
-  P.tJaw.rotation.x=(bite>0?Math.sin(Math.min(1,bite/.5)*Math.PI)*.75:.05);
+  P.tJaw.rotation.x=.05; if(bite>0){ const u=1-bite/.6; P.tTail.rotation.y=Math.sin(u*Math.PI*3)*1.35*(1-u*.4); P.tTorso.rotation.y=Math.sin(u*Math.PI*3)*-.15; } else P.tTorso.rotation.y=0;
 }
 // ===== 엔진 휠체어 =====
 (function(){
@@ -1652,7 +1652,7 @@ const S={}; let KART=KARTS[0];
 function resetKart(){
   const i=TR.N-14;
   Object.assign(S,{x:TR.P[i].x,z:TR.P[i].z,y:TR.Y[i],vy:0,grounded:true,gy:TR.Y[i],slope:0,pitch:0,h:Math.atan2(TR.T[i].x,TR.T[i].z),vx:0,vz:0,yaw:0,
-    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,items:0,boostT:0,superT:0,instT:0,instWin:0,ej:null,shieldT:0,startTap:false,startUsed:false,biteT:0,chute:false,kickHint:false,inTun:false,
+    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,gLock:false,items:0,boostT:0,superT:0,instT:0,instWin:0,ej:null,shieldT:0,startTap:false,startUsed:false,biteT:0,chute:false,kickHint:false,inTun:false,
     idx:i,prog:i,onBranch:null,offroad:false,steerVis:0,shake:0,air:0});
 }
 function nearest(x,z,hint){
@@ -1739,12 +1739,14 @@ function physics(dt, controls){
   const keep=Math.exp(-grip*dt), ls2=ls*keep, eff=S.drifting?C.driftEff:0.85;
   fs=(fs>=0?1:-1)*Math.sqrt(fs*fs+(ls*ls-ls2*ls2)*eff); ls=ls2;
 
-  if(ground&&fs>8&&S.gauge<100&&!(S.superT>0)){ // 거인 돌진 중엔 게이지 안 참 (드리프트는 가능)
+  if(S.gLock&&!(controls&&input.drift)){ S.gLock=false; S.gauge=0; } /* 드리프트 키를 떼야 새 게이지 시작 */
+  if(ground&&fs>8&&S.gauge<100&&!(S.superT>0)&&!S.gLock){ /* 거인 돌진 중엔 게이지 안 참 (드리프트는 가능) */
     if(S.drifting&&Math.abs(ls)>2) S.gauge+=Math.abs(yaw)*dt*clamp(fs/base,.4,1.2)*C.gaugePerRad*(K.gaugeMul||1);
     else if(Math.abs(ls)>3) S.gauge+=Math.abs(ls)*dt*.6*(K.gaugeMul||1);
     if(S.gauge>=100) S.gauge=100; }
-  if(S.gauge>=100&&S.items<2){ S.gauge=0; S.items++; toast("부스터 +1","#3ee6ff"); beep(1320,.12,.15);
-  }
+  if(S.gauge>=100){ S.gauge=0; S.gLock=true;
+    if(S.items<2){ S.items++; toast("부스터 +1","#3ee6ff"); beep(1320,.12,.15); }
+    else { toast("부스터 2개 꽉 참 · 게이지 초기화!","#ff7a1a"); beep(300,.18,.15); } }
   let usedTap=false;
   if(S.instWin>0){ S.instWin-=dt;
     const tap=edge("accel")||(touchMode&&edge("boost"));
@@ -2006,7 +2008,7 @@ function groundAt(x,z){ const {P,Y,N,NR}=TR; let b=0,bd=1e9; for(let i=0;i<N;i+=
     return {y:0,d,kind:"plain",ch,side}; }
   return {y:Y[b],d}; }
 function fireShell(){
-  if(KART.id==="trex"){ trexBite(); return; }
+  if(KART.id==="trex"){ trexTail(); return; }
   if(KART.id!=="tank"||FX.cool>0||state==="menu") return;
   FX.cool=3; FX.recoil=1; FX.flash=1;
   kart.updateMatrixWorld(true); const tip=new THREE.Vector3(0,0,CAR.muzzleZ); CAR.barrelG.localToWorld(tip);
@@ -2185,7 +2187,7 @@ function botCurve(){ if(BOT.cfTR===TR&&BOT.cf) return BOT.cf; const N=TR.N, T=TR
 function botMake(c,slot){ const N=TR.N, i0=N-14, hw=(TR.def.hw||12), lane=Math.min(3.4,(hw*2-4)/4), col=slot%4, row=Math.floor(slot/4), lat=(col-1.5)*lane, back=row*8;
   const seg=Math.hypot(TR.P[(i0+1)%N].x-TR.P[i0].x,TR.P[(i0+1)%N].z-TR.P[i0].z)||1.4, K=effKart(KARTS[c.k]||KARTS[0],CHARS[c.ch]);
   const b={c,id:botPid(c),K,p:(i0-back/seg+N)%N,off:lat,lane:lat,v:0,vo:0,y:0,vy:0,lapN:-1,ft:null,boostT:0,superT:0,items:0,gauge:Math.random()*5,shieldT:0,spin:0,
-    skill:.86+Math.random()*.16,corner:.6+Math.random()*.9,itemRate:.7+Math.random()*.7,wob:.3+Math.random()*.45,errT:8+Math.random()*20,vt0:0,ph:Math.random()*6.28,cd:3+Math.random()*3,biteT:0,fsSeq:0,fs:null,biSeq:0,bi:null,startB:Math.random()<.55,x:0,z:0,wy:0,h:0,vx:0,vz:0};
+    skill:.935+Math.random()*.065,corner:.9+Math.random()*.2,itemRate:.9+Math.random()*.2,wob:.3+Math.random()*.45,errT:8+Math.random()*20,vt0:0,ph:Math.random()*6.28,cd:3+Math.random()*3,biteT:0,fsSeq:0,fs:null,biSeq:0,bi:null,startB:Math.random()<.55,x:0,z:0,wy:0,h:0,vx:0,vz:0};
   botPose(b); return b; }
 function botsClear(){ for(const g of BOT.meshes.values()) scene.remove(g.obj); BOT.meshes.clear(); BOT.list=[]; BOT.on=false; }
 function botsSpawn(){ botsClear(); BOT.cerDone=false; BOT.finT=null; BOT.lastRank=0; BOT.t=0;
@@ -2203,7 +2205,7 @@ function botSnap(b){ return {id:b.id,x:b.x,y:b.wy,z:b.z,vx:b.vx,vz:b.vz,mass:b.K
 function giantSide(x,z,o,i){ const n=TR.NR[i|0]; return Math.sign((x-o.x)*n.x+(z-o.z)*n.z)||(Math.random()<.5?-1:1); }
 function botBump(b,o,now){ const dx=b.x-o.x, dz=b.z-o.z, d=Math.hypot(dx,dz), R=(b.K.rad||1.15)+(o.rad||1.15);
   if(!(d<R&&d>1e-3&&Math.abs(b.wy-o.y)<6)) return; const nx=dx/d, nz=dz/d;
-  { const t=TR.T[b.idx], n=TR.NR[b.idx], sh=R-d; b.off+=(nx*n.x+nz*n.z)*sh; b.p+=(nx*t.x+nz*t.z)*sh/1.4; if(b.p<0) b.p+=TR.N; }
+  { const t=TR.T[b.idx], n=TR.NR[b.idx], sh=R-d; b.off+=(nx*n.x+nz*n.z)*sh; b.p+=(nx*t.x+nz*t.z)*sh/1.4; if(b.p<0){ b.p+=TR.N; b.lapN--; } else if(b.p>=TR.N){ b.p-=TR.N; b.lapN++; } }
   const rel=(b.vx-o.vx)*nx+(b.vz-o.vz)*nz, bt=b.bt||(b.bt={}); if(rel>=0||(bt[o.id]&&now-bt[o.id]<350)) return; bt[o.id]=now;
   const near=Math.hypot(b.x-S.x,b.z-S.z)<60;
   if(b.superT>0){ if(near) bumpFx((b.x+o.x)/2,b.wy+1.5,(b.z+o.z)/2); return; }
@@ -2235,10 +2237,11 @@ function botTargets(b){ const out=[]; if(state==="race"&&!S.rail) out.push({kind
   for(const o of BOT.list) if(o!==b) out.push({kind:"bot",b:o,x:o.x,y:o.wy,z:o.z});
   if(MP.racing) for(const [peer,g] of MP.ghosts) if(g.obj.visible) out.push({kind:"peer",peer,x:g.x,y:g.y,z:g.z}); return out; }
 function botWeapon(b){ const K=b.K; if(b.cd>0||b.ft||!(K.id==="tank"||K.id==="trex")) return; const fx=Math.sin(b.h), fz=Math.cos(b.h);
-  let best=null, bd=K.id==="tank"?85:9; for(const t of botTargets(b)){ const dx=t.x-b.x, dz=t.z-b.z, d=Math.hypot(dx,dz); if(d<bd&&d>(K.id==="tank"?12:0)&&(dx*fx+dz*fz)/Math.max(d,.01)>(K.id==="tank"?.93:.35)){ bd=d; best=t; } }
+  if(K.id==="trex"){ const R=K.rad||2.4; if(!botTargets(b).some(t=>tailZone(t.x,t.z,b.x,b.z,b.h,R,1.2))) return; }
+  let best=null, bd=K.id==="tank"?85:60; for(const t of botTargets(b)){ const dx=t.x-b.x, dz=t.z-b.z, d=Math.hypot(dx,dz); if(d<bd&&(K.id==="trex"||(d>12&&(dx*fx+dz*fz)/Math.max(d,.01)>.93))){ bd=d; best=t; } }
   if(!best) return; b.cd=3+Math.random()*2.5;
-  if(K.id==="trex"){ b.biteT=.5; if(Math.hypot(b.x-S.x,b.z-S.z)<60) thud();
-    if(best.kind==="me"){ if(S.shieldT<=0) bittenByTrex(); } else if(best.kind==="bot") botBitten(best.b); else { b.biSeq++; b.bi=[b.biSeq,best.peer]; } return; }
+  if(K.id==="trex"){ const R=K.rad||2.4; b.biteT=.6; b.cd=10; if(Math.hypot(b.x-S.x,b.z-S.z)<80) thud(); tailHitLocal(b.x,b.z,b.h,R,b.id);
+    const q=v=>Math.round(v*100)/100; b.twSeq=(b.twSeq||0)+1; b.tw=[b.twSeq,q(b.x),q(b.z),q(b.h),R]; return; }
   const d=bd, tt=d/95, dx=(best.x-b.x)/d, dz=(best.z-b.z)/d, sx=b.x+dx*3, sz=b.z+dz*3, sy=b.wy+2.4;
   const v=new THREE.Vector3(dx*95+b.vx*.3,4.9*tt+(best.y+1-sy)/tt,dz*95+b.vz*.3);
   const m=new THREE.Mesh(shellG,shellM); m.position.set(sx,sy,sz); scene.add(m); FX.shells.push({m,v,t:0,life:2.5,power:0,remote:true,src:b.id});
@@ -2247,13 +2250,13 @@ function botWeapon(b){ const K=b.K; if(b.cd>0||b.ft||!(K.id==="tank"||K.id==="tr
 function botsUpdate(dt){
   if(!BOT.list.length||!TR) return; const N=TR.N, C=CONFIG, cf=botCurve(), now=performance.now(), going=BOT.on&&(state==="race"||state==="finish"), L=LAPS();
   if(going) BOT.t+=dt;
-  for(const b of BOT.list){ const K=b.K, base=C.maxSpeed*K.speed*BOT_SPD, i=Math.floor(b.p)%N;
+  for(const b of BOT.list){ const K=b.K, base=C.maxSpeed*(1.3*.9+K.speed*.1)*BOT_SPD, i=Math.floor(b.p)%N; /* AI는 차 성능 차이를 거의 안 받음 → 실력 차이만 */
     if(going){
       b.shieldT=Math.max(0,b.shieldT-dt); b.superT=Math.max(0,b.superT-dt); b.boostT=Math.max(0,b.boostT-dt); b.cd=Math.max(0,b.cd-dt); b.biteT=Math.max(0,b.biteT-dt);
       if(!b.ft&&b.v>8&&!(b.superT>0)){ b.gauge+=dt*(K.gaugeMul||1)*b.itemRate; if(b.gauge>=12){ b.gauge=Math.random()*2; if(b.items<2) b.items++; } }
       if(b.items>0&&b.boostT<=0&&cf[i]>.97&&Math.random()<dt*.4){ b.items--; if(K.superBoost){ b.boostT=b.superT=SUPER_T; } else b.boostT=C.boostTime; }
       let vt=base*b.skill*(1-(1-cf[i])*b.corner);
-      b.errT-=dt; if(b.errT<=0){ b.errT=10+Math.random()*25*(b.skill-.8)*6; if(Math.random()>(b.skill-.84)*4){ b.v*=.72; b.vo+=(Math.random()<.5?-1:1)*6; b.spin+=(Math.random()<.5?-1:1)*.35; } } // 가끔 실수 (실력 낮을수록 자주)
+      b.errT-=dt; if(b.errT<=0){ b.errT=15+Math.random()*20; if(Math.random()>(b.skill-.94)*14){ b.v*=.88; b.vo+=(Math.random()<.5?-1:1)*4; b.spin+=(Math.random()<.5?-1:1)*.25; } } // 가끔 실수 (실력 낮을수록 자주)
       if(TR.gapSet&&TR.gapSet.has(i)){ vt=CHUTE_V; b.v=CHUTE_V; }
       else if(b.superT>0) vt=Math.max(base*(K.boost||C.boostRatio),SUPER_V*.65*Math.pow(clamp((cf[i]-.72)/.28,0,1),3)); // 봇은 굽은 길에선 알아서 늦춤
       else if(b.boostT>0||(TR.boostSet&&TR.boostSet.has(i))) vt=Math.max(vt,base*(K.boost||C.boostRatio));
@@ -2268,7 +2271,7 @@ function botsUpdate(dt){
     if(Math.abs(b.off)>lim){ const sg=Math.sign(b.off); b.off=sg*lim; if(b.vo*sg>0){ if(Math.abs(b.vo)>8){ b.v*=.85; if(Math.hypot(b.x-S.x,b.z-S.z)<60) thud(); } b.vo=-b.vo*.3; } }
     const j=(i+1)%N, seg=Math.hypot(TR.P[j].x-TR.P[i].x,TR.P[j].z-TR.P[i].z)||1.4; b.p+=b.v*dt/seg;
     if(b.p>=N){ b.p-=N; b.lapN++; if(b.lapN>=L&&!b.ft){ b.ft=Math.max(.01,BOT.t); if(!MP.racing) toast(b.c.n+" 골인!","#ffcf2e"); } }
-    if(b.p<0) b.p+=N;
+    if(b.p<0){ b.p+=N; b.lapN--; }
     if(b.y>0||b.vy>0){ b.vy-=C.gravity*dt; b.y+=b.vy*dt; if(b.y<=0){ b.y=0; b.vy=0; } }
     b.spin*=Math.exp(-2.5*dt); botPose(b); }
   // 부딪힘: 봇끼리, 나와 봇, 온라인 상대와 내 봇
@@ -2309,7 +2312,7 @@ function rankRender(rows){ const me=rows.findIndex(r=>r.me), el=$m("mpRank"); el
 // 온라인: 내 봇 정보를 내 접속 정보에 실어 보냄
 function botsPres(){ if(!BOT.cfg.length) return null; const q=v=>Math.round(v*100)/100;
   return BOT.cfg.map(c=>{ const o={id:c.id,n:c.n,ch:c.ch,k:c.k,cl:c.cl,st:"lobby"}; const b=MP.racing&&BOT.list.find(x=>x.c===c);
-    if(b) Object.assign(o,{st:b.ft?"done":"race",rid:MP.raceId,x:q(b.x),y:q(b.wy),z:q(b.z),h:q(b.h),vx:q(b.vx),vz:q(b.vz),ro:0,pg:Math.round(botPg(b)*1000)/1000,bt:b.boostT>0?1:0,sd:b.shieldT>0?1:0,gb:b.superT>0?1:0,ft:b.ft?Math.round(b.ft*100)/100:null,fs:b.fs,bi:b.bi,vo:b.vo||null});
+    if(b) Object.assign(o,{st:b.ft?"done":"race",rid:MP.raceId,x:q(b.x),y:q(b.wy),z:q(b.z),h:q(b.h),vx:q(b.vx),vz:q(b.vz),ro:0,pg:Math.round(botPg(b)*1000)/1000,bt:b.boostT>0?1:0,sd:b.shieldT>0?1:0,gb:b.superT>0?1:0,ft:b.ft?Math.round(b.ft*100)/100:null,fs:b.fs,tw:b.tw||null,vo:b.vq||null});
     return o; }); }
 function botInfoText(){ return BOT.cfg.length?("AI "+BOT.cfg.length+"대: "+BOT.cfg.map(c=>c.n.replace(/^AI /,"")+"("+(KARTS[c.k]||KARTS[0]).name+")").join(", ")):"AI 없음"; }
 
@@ -2325,7 +2328,7 @@ function loadBest(){ bestEver=null; try{const v=localStorage.getItem(bestKey());
 function startRace(){
   initAudio(); unlockSpeech(); endCeremony(); if(TR) resetDestruction();
   loadTrack(selTrack); resetDestruction(); KART=effKart(KARTS[selKart],CHARS[selChar]); if(KART.syn) setTimeout(()=>toast("시너지! 성능 +4%","#ffcf2e"),INTRO*1000); paintKart(KART); attachRider(CHARS[selChar]); loadBest(); bestLap=null;
-  const fb=document.getElementById("fireBtn"); if(fb){ fb.hidden=!(KART.id==="tank"||KART.id==="trex"); fb.textContent=KART.id==="trex"?"물기":"포탄"; }
+  const fb=document.getElementById("fireBtn"); if(fb){ fb.hidden=!(KART.id==="tank"||KART.id==="trex"); fb.textContent=KART.id==="trex"?"꼬리치기":"포탄"; }
   resetKart(); resetMissions(); kart.visible=true; updUpg(); state="countdown"; countT=3.2+INTRO; raceT=0; lapStart=0; lap=1; laps=[]; cp1=cp2=false; prevIdx=S.prog;
   clearSkids();
   $("menu").hidden=true; $("finish").hidden=true; $("count").hidden=true;
@@ -2387,14 +2390,21 @@ function updEject(dt,controls){
   if((E.ground&&E.t>2.8&&Math.hypot(E.x-S.x,E.z-S.z)<2.8)||E.t>=4.2){ /* 늦어도 4초면 다시 탑승 */ const st=CAR.seat, par=st.parent||CAR.body; par.add(rd); rd.position.set(...st.pos); rd.rotation.set(0,0,0); rd.scale.setScalar(st.scale); S.ej=null; S.h=Math.atan2(TR.T[S.idx].x,TR.T[S.idx].z); toast("다시 탑승!","#46e08a"); beep(880,.12,.2); }
 }
 // ===== 티라노: 물기 (온라인에서 앞에 있는 상대를 물면 가벼울수록 감속, 전차급 무게부터는 못 물음) =====
-function trexBite(){
-  if(FX.cool>0||state==="menu") return; FX.cool=3; S.biteT=.5; thud(); S.shake=Math.max(S.shake,.2);
-  let best=null, bd=9; const fx=Math.sin(S.h), fz=Math.cos(S.h);
-  let bb=null; for(const b of BOT.list){ const dx=b.x-S.x, dz=b.z-S.z, d=Math.hypot(dx,dz); if(d<bd&&(dx*fx+dz*fz)/Math.max(d,.01)>.35){ bd=d; bb=b; } }
-  if(typeof MP==="undefined"||!MP||!MP.racing){ if(bb){ botBitten(bb); toast("콱!","#ffffff"); } return; }
-  for(const [peer,g] of MP.ghosts){ if(!g.obj.visible) continue; const dx=g.x-S.x, dz=g.z-S.z, d=Math.hypot(dx,dz); if(d<bd&&(dx*fx+dz*fz)/Math.max(d,.01)>.35){ bd=d; best=peer; } }
-  if(!best&&bb){ botBitten(bb); toast("콱!","#ffffff"); return; }
-  if(best){ MP.biteSeq=(MP.biteSeq||0)+1; mpSend({bi:[MP.biteSeq,best]}); const g=MP.ghosts.get(best); bumpFx(g.x,g.y+2,g.z); toast("콱!","#ffffff"); }
+// 꼬리치기 범위: 티라노 뒤쪽, 폭 = 티라노 몸 폭의 3배
+function tailZone(px,pz,x,z,h,rad,vr){ const dx=px-x, dz=pz-z, al=dx*Math.sin(h)+dz*Math.cos(h), lat=dx*Math.cos(h)-dz*Math.sin(h); return al<rad*.6+vr&&al>-(rad*4+3)-vr&&Math.abs(lat)<=rad*3+vr; }
+function flingMe(src,msg){ const sg=giantSide(S.x,S.z,src,S.idx), n=TR.NR[S.idx]; S.vx=S.vx*.6+n.x*sg*34; S.vz=S.vz*.6+n.z*sg*34; S.vy=Math.max(S.vy,7); S.y+=.2; S.grounded=false; S.drifting=false; S.boostT=0;
+  S.h+=sg*.8; S.shake=Math.max(S.shake,.9); thud(); bumpFx(S.x,S.y+1.5,S.z); toast(msg,"#ff4d6d"); voice("bad",0); if(KART.eject) ejectRider(n.x*sg,n.z*sg,30); }
+function botFling(b,src){ const sg=giantSide(b.x,b.z,src,b.idx); b.v*=.6; b.vo=sg*34; b.vy=Math.max(b.vy,7); b.y=Math.max(b.y,.05); b.spin=sg*2.4; botVoice(b,0); if(Math.hypot(b.x-S.x,b.z-S.z)<60){ bumpFx(b.x,b.wy+1.5,b.z); thud(); } }
+// 내가(또는 상대가) 꼬리치기를 했을 때: 맞은 쪽이 각자 자기 차를 날림
+function tailHitLocal(x,z,h,rad,srcId){ const src={x,z}; let hit=0;
+  if(srcId!=="me"&&state==="race"&&!S.rail&&tailZone(S.x,S.z,x,z,h,rad,KART.rad||1.15)){ if(S.shieldT>0) toast("보호막이 막았다!","#7fd8ff"); else flingMe(src,"티라노 꼬리에 맞아 날아갔다!"); hit++; }
+  for(const b of BOT.list){ if(b.id===srcId||b.shieldT>0) continue; if(tailZone(b.x,b.z,x,z,h,rad,b.K.rad||1.15)){ botFling(b,src); hit++; } } return hit; }
+function trexTail(){
+  if(FX.cool>0||state!=="race") return; FX.cool=10; S.biteT=.6; thud(); S.shake=Math.max(S.shake,.3); toast("꼬리치기!","#ffcf2e");
+  const R=KART.rad||2.4; let hit=tailHitLocal(S.x,S.z,S.h,R,"me");
+  if(typeof MP!=="undefined"&&MP&&MP.racing){ const q=v=>Math.round(v*100)/100; MP.twSeq=(MP.twSeq||0)+1; mpSend({tw:[MP.twSeq,q(S.x),q(S.z),q(S.h),R]});
+    for(const g of MP.ghosts.values()) if(g.obj.visible&&tailZone(g.x,g.z,S.x,S.z,S.h,R,1.5)){ bumpFx(g.x,g.y+1.5,g.z); hit++; } }
+  if(hit) setTimeout(()=>toast("꼬리치기 명중! ×"+hit,"#46e08a"),300);
 }
 function bittenByTrex(){
   if(S.shieldT>0){ toast("보호막이 막았다!","#7fd8ff"); return; }
@@ -2494,7 +2504,7 @@ function voiceOther(ch,k,kind,idx,dist){ if(!SND.on||state==="menu"||dist>VOICE_
   const c=VO[(CHARS[+ch]||CHARS[0]).id]; if(!c) return; const pool=kind?c.first.concat(CARVO[(KARTS[+k]||KARTS[0]).id]||[]):c.bad, text=pool[Math.max(0,Math.min(pool.length-1,+idx||0))]; if(!text) return;
   VOICE.ot=now; try{ if(SND.ctx&&SIG[c.id]&&dist<VOICE_NEAR*.6) SIG[c.id](); speakNow(text,c,clamp(1-dist/VOICE_NEAR,.25,1)); }catch(_){} }
 function botVoice(b,kind){ const now=performance.now(); if(now-(b.voT||0)<4000) return; b.voT=now; const c=VO[(CHARS[b.c.ch]||CHARS[0]).id]; if(!c) return;
-  const pool=kind?c.first.concat(CARVO[(KARTS[b.c.k]||KARTS[0]).id]||[]):c.bad, idx=Math.floor(Math.random()*pool.length); b.voSeq=(b.voSeq||0)+1; b.vo=[b.voSeq,kind?1:0,idx];
+  const pool=kind?c.first.concat(CARVO[(KARTS[b.c.k]||KARTS[0]).id]||[]):c.bad, idx=Math.floor(Math.random()*pool.length); b.voSeq=(b.voSeq||0)+1; b.vq=[b.voSeq,kind?1:0,idx];
   voiceOther(b.c.ch,b.c.k,kind,idx,Math.hypot(b.x-S.x,b.z-S.z)); }
 
 // ===== 시상식 (경기 끝나고 10초) =====
@@ -2736,7 +2746,7 @@ $m("mpGo").addEventListener("click",()=>{
 /* 경기 */
 function mpStartRace(g){
   const tr=Math.max(0,Math.min(TRACKS.length-1,+g.tr||0)); selTrack=tr;
-  MP.racing=true; MP.finished=false; MP.shotSeen={}; MP.biteSeen={}; MP.lastShot=null; MP.cerDone=false; MP.lastRank=0; MP.raceId=String(g.id); MP.slot=Math.max(0,g.ps.indexOf(MP.myPeer)); MP.ps=g.ps.slice(); MP.ready=false; MP.finishTold.clear();
+  MP.racing=true; MP.finished=false; MP.shotSeen={}; MP.biteSeen={}; MP.twSeen={}; MP.lastShot=null; MP.cerDone=false; MP.lastRank=0; MP.raceId=String(g.id); MP.slot=Math.max(0,g.ps.indexOf(MP.myPeer)); MP.ps=g.ps.slice(); MP.ready=false; MP.finishTold.clear();
   $m("mpLobby").hidden=true; mpClearGhosts();
   startRace();
   // 출발선 자리: 4줄로 나란히, 뒤로 한 칸씩
@@ -2804,7 +2814,8 @@ function mpUpdate(dt){
     const g=mpGhost(p.peer,pr); g.obj.visible=true; g.pr=pr;
     if(Array.isArray(pr.vo)){ if(g.voSeq===undefined) g.voSeq=pr.vo[0]; else if(pr.vo[0]!==g.voSeq){ g.voSeq=pr.vo[0]; voiceOther(pr.ch,pr.k,+pr.vo[1],pr.vo[2],Math.hypot(g.x-S.x,g.z-S.z)); } }
     const BS=MP.biteSeen||(MP.biteSeen={}); if(BS[p.peer]===undefined) BS[p.peer]=Array.isArray(pr.bi)?pr.bi[0]:0;
-    if(Array.isArray(pr.bi)&&pr.bi[0]!==BS[p.peer]){ BS[p.peer]=pr.bi[0]; g.biteT=.5; if(pr.bi[1]===MP.myPeer) bittenByTrex(); else { const bb=BOT.list.find(b=>b.id===pr.bi[1]); if(bb) botBitten(bb); } }
+    const TW=MP.twSeen||(MP.twSeen={}); if(TW[p.peer]===undefined) TW[p.peer]=Array.isArray(pr.tw)?pr.tw[0]:0;
+    if(Array.isArray(pr.tw)&&pr.tw.length>=5&&pr.tw[0]!==TW[p.peer]){ TW[p.peer]=pr.tw[0]; g.biteT=.6; if(Math.hypot(g.x-S.x,g.z-S.z)<80) thud(); tailHitLocal(+pr.tw[1],+pr.tw[2],+pr.tw[3],clamp(+pr.tw[4]||2.4,1,3),p.peer); }
     if(pr.sd&&!g.shield){ g.shield=makeShield(); const kk=KARTS[+pr.k]||KARTS[0], R=(kk.rad||1.15)*2.4+.6; g.shield.scale.setScalar(R); g.shield.position.y=R*.45; g.obj.add(g.shield); }
     if(g.shield) g.shield.visible=!!pr.sd;
     if(g.key.startsWith("trex.")){ trexRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0),g.biteT||0); g.biteT=Math.max(0,(g.biteT||0)-dt); }
