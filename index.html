@@ -59,6 +59,31 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--sky);color:var(-
 #inst{top:calc(50% + 40px);left:50%;transform:translateX(-50%);font-weight:800;font-size:14px;letter-spacing:.06em;padding:6px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--boost);color:var(--boost)}
 
 /* overlays */
+.tcard{width:min(560px,100%);align-items:center;text-align:center;gap:18px;padding:30px 24px}
+.ttl{font-family:var(--display);font-size:clamp(40px,9vw,64px);margin:0;line-height:1;letter-spacing:.02em}
+.tsub{margin:0;color:var(--ink-dim);font-weight:700}
+.tbtns{display:flex;gap:12px;width:100%;flex-wrap:wrap}
+.tbig{flex:1 1 200px;font-size:20px;padding:20px 14px;display:flex;flex-direction:column;gap:4px;align-items:center}
+.tbig small{font-size:12px;font-weight:700;opacity:.75}
+.tbig.alt{background:#3ee6ff;color:#0b1430}
+.tsnd{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+.tsnd input[type=range]{width:140px;accent-color:#ffcf2e} #sndVolTxt{min-width:26px;font-weight:800}
+.rcard{width:min(900px,100%)}
+.rwrap{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.rleft{flex:0 0 220px;display:flex;flex-direction:column;gap:10px}
+.rright{flex:1 1 320px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.rlist{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto}
+.room{display:flex;gap:10px;align-items:center;border:1px solid var(--panel-line);border-radius:12px;padding:8px;background:rgba(255,255,255,.04);cursor:pointer;text-align:left;color:var(--ink);font:inherit}
+.room:hover{border-color:#ffcf2e} .room.full{opacity:.5;cursor:not-allowed}
+.room img{width:80px;height:60px;border-radius:8px;background:rgba(0,0,0,.25);flex:0 0 auto}
+.room .ri{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px} .room b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.room small{color:var(--ink-dim);font-size:12px} .room .rn{font-family:var(--display);font-size:20px;flex:0 0 auto}
+.room .tg{display:inline-block;font-size:11px;font-weight:800;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.12);margin-left:4px}
+.room .tg.race{background:#ff7a1a;color:#111}
+.rempty{color:var(--ink-dim);font-weight:700;padding:20px;text-align:center;border:1px dashed var(--panel-line);border-radius:12px}
+.in2{display:flex;gap:6px} .in2 input{flex:1;min-width:0}
+.mcard{width:min(420px,100%)}
+@media (max-width:640px){ .rleft{flex:1 1 100%} }
 .overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:16px;background:rgba(10,16,38,.55)}
 .card{width:min(720px,100%);max-height:100%;overflow:auto;background:#101a3a;border:1px solid var(--panel-line);border-radius:16px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--helmet)}
@@ -210,9 +235,51 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 <div class="hud" id="count" hidden></div>
 <div class="hud" id="inst" hidden>지금! 순간부스터</div>
 
-<div class="overlay" id="menu">
+<div class="overlay" id="titleScr">
+  <div class="card tcard">
+    <div class="eyebrow" id="titleVer">카트 리빌드</div>
+    <h1 class="ttl">카트 리빌드</h1>
+    <p class="tsub">드리프트 · 부스터 · 12대의 차 · 8명의 캐릭터</p>
+    <div class="tbtns"><button class="btn tbig" id="goSingle" type="button">🏁 싱글 플레이<small>혼자 또는 AI와 달리기</small></button><button class="btn tbig alt" id="goOnline" type="button">🌐 온라인 대전<small>방을 만들거나 들어가기</small></button></div>
+    <div class="tsnd"><button class="btn ghost" id="sndToggle" type="button">🔊 소리 켜짐</button><input type="range" id="sndVol" min="0" max="100" value="80" aria-label="소리 크기"><span id="sndVolTxt">80</span><button class="btn ghost" id="titleVoice" type="button">🔊 음성 테스트</button><button class="btn ghost" id="titleHub" type="button">← 미니게임방</button></div>
+  </div>
+</div>
+<div class="overlay" id="roomScr" hidden>
+  <div class="card rcard">
+    <div class="eyebrow">ONLINE · 방 목록</div>
+    <h1>온라인 대전</h1>
+    <div class="rwrap">
+      <div class="rleft">
+        <div class="mp-field"><label for="rNick">닉네임</label><input id="rNick" maxlength="10" placeholder="닉네임을 정해 주세요" autocomplete="off"></div>
+        <button class="btn" id="rNickSave" type="button">닉네임 정하기</button>
+        <p class="mp-note" id="rNickNote">닉네임을 정해야 방에 들어갈 수 있어요.</p>
+        <button class="btn" id="rCreate" type="button">＋ 방 만들기</button>
+        <button class="btn ghost" id="rBack" type="button">← 처음으로</button>
+      </div>
+      <div class="rright">
+        <div class="mp-sec">만들어진 방 <span id="rCount"></span></div>
+        <div id="rList" class="rlist"></div>
+        <div id="rFallback" hidden class="mp-field"><label for="rCode">방 번호로 들어가기</label><div class="in2"><input id="rCode" maxlength="12" placeholder="방 번호" autocomplete="off"><button class="btn ghost" id="rCodeGo" type="button">입장</button></div><p class="mp-note">여기서는 방 목록을 볼 수 없어요. 친구와 같은 방 번호를 입력하세요.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="rModal" hidden>
+  <div class="card mcard">
+    <div class="eyebrow" id="rmEye">방 만들기</div>
+    <h1 id="rmTitle">새 방</h1>
+    <div id="rmCreate" style="display:flex;flex-direction:column;gap:10px">
+      <div class="mp-field"><label for="rmName">방 제목</label><input id="rmName" maxlength="20" placeholder="예) 한 판 붙자" autocomplete="off"></div>
+      <div class="mp-field"><label for="rmPw">비밀번호 (선택)</label><input id="rmPw" maxlength="12" placeholder="비워 두면 누구나 들어와요" autocomplete="off"></div>
+    </div>
+    <div id="rmJoin" hidden class="mp-field"><label for="rmPw2">비밀번호</label><input id="rmPw2" maxlength="12" placeholder="비밀번호 입력" autocomplete="off"></div>
+    <p class="mp-note" id="rmNote"></p>
+    <div class="row"><button class="btn" id="rmOk" type="button">만들기</button><button class="btn ghost" id="rmCancel" type="button">취소</button></div>
+  </div>
+</div>
+<div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0331</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0343</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -229,7 +296,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
       <kbd>GO ±0.5초 ↑</kbd><span>출발 부스터 (↑를 떼었다가 GO 타이밍에 누르기 · 폰은 부스터 버튼)</span>
       <kbd>R / Esc</kbd><span>재시작 / 메뉴</span>
     </div>
-    <div class="row"><button class="btn" id="startBtn">출발</button><button class="btn ghost" id="botAddBtn" type="button">🤖 AI 추가</button><button class="btn ghost" id="botClrBtn" type="button">AI 빼기</button><button class="btn ghost" id="voiceBtn" type="button">🔊 음성 테스트</button><button class="btn" id="mpBtn" type="button">온라인 대전</button><button class="btn ghost" id="hubBack" type="button">← 미니게임방</button></div>
+    <div class="row"><button class="btn ghost" id="menuHome" type="button">← 처음으로</button><button class="btn" id="startBtn">출발</button><button class="btn ghost" id="botAddBtn" type="button">🤖 AI 추가</button><button class="btn ghost" id="botClrBtn" type="button">AI 빼기</button><button class="btn ghost" id="voiceBtn" type="button">🔊 음성 테스트</button><button class="btn" id="mpBtn" type="button">온라인 대전</button><button class="btn ghost" id="hubBack" type="button">← 미니게임방</button></div>
   </div>
 </div>
 
@@ -2040,7 +2107,7 @@ function initAudio(){
   if(SND.ctx){ SND.ctx.resume&&SND.ctx.resume(); return; }
   const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
   const ctx=new AC(); SND.ctx=ctx;
-  const master=ctx.createGain(); master.gain.value=.6; master.connect(ctx.destination); SND.master=master;
+  const master=ctx.createGain(); master.gain.value=.6*(typeof SVOL!=="undefined"?SVOL.v:1); master.connect(ctx.destination); SND.master=master;
   // 엔진: 낮은 톱니파 2개(살짝 어긋나게) + 서브 사인 → 부드러운 클리핑 → 저역 필터 → 폭발 맥동
   const shaper=ctx.createWaveShaper(); const curve=new Float32Array(1024); for(let i=0;i<1024;i++){const x=i/512-1; curve[i]=Math.tanh(x*2.2);} shaper.curve=curve;
   const eF=ctx.createBiquadFilter(); eF.type="lowpass"; eF.frequency.value=300; eF.Q.value=.8;
@@ -2104,7 +2171,7 @@ function updateAudio(fs){
   SND.jet.g.gain.setTargetAtTime(on&&(boosting||S.rail)?(S.rail?.16:.07):0,t,.1);
   SND.grass.g.gain.setTargetAtTime(on&&S.offroad&&sp>3?.25:0,t,.05);
 }
-$("sndBtn").addEventListener("click",()=>{SND.on=!SND.on; $("sndBtn").textContent=SND.on?"소리 켜짐":"소리 꺼짐"; initAudio();});
+$("sndBtn").addEventListener("click",()=>{SND.on=!SND.on; initAudio(); applyVol();});
 
 
 
@@ -2486,7 +2553,7 @@ $("botAddBtn").addEventListener("click",()=>{ botAdd(); botInfoUpd(); }); $("bot
 { const vb=document.getElementById("voiceBtn"); if(vb) vb.addEventListener("click",()=>{ initAudio(); voiceTest(); });
   const row=vb&&vb.parentNode; if(row&&!document.getElementById("voiceInfo")){ const p=document.createElement("p"); p.id="voiceInfo"; p.className="keys"; p.style.margin="0"; p.style.color="var(--ink-dim)"; p.style.fontSize="12px"; row.parentNode.insertBefore(p,row.nextSibling); } }
 $("againBtn").addEventListener("click",()=>{ if(MP.racing) mpToLobby(); else startRace(); });
-$("menuBtn").addEventListener("click",()=>{ if(MP.racing) mpLeaveRoom(); openMenu(); });
+$("menuBtn").addEventListener("click",()=>{ if(MP.racing){ if(MP.announced&&NETA.announce) NETA.announce(MP.code,null); MP.announced=false; mpLeaveRoom(); openTitle(); return; } openMenu(); });
 { const hb=document.getElementById("hubBack"); if(hb&&window.parent===window) hb.hidden=true; if(hb) hb.addEventListener("click",()=>{ mpLeaveRoom(); if(!NETA.close()) location.href="./"; }); }
 $("hudMenuBtn").addEventListener("click",openMenu);
 const hudVoice=document.createElement("button"); hudVoice.type="button"; hudVoice.className="btn ghost"; hudVoice.id="hudVoice"; hudVoice.textContent="🔊 음성 테스트";
@@ -2622,7 +2689,7 @@ const SIG={
 function unlockSpeech(){ try{ if(window.speechSynthesis&&!VOICE.unlocked){ VOICE.unlocked=true; loadVoices(); const u=new SpeechSynthesisUtterance("출발"); u.lang="ko-KR"; u.volume=.01; u.rate=2; speechSynthesis.resume(); speechSynthesis.speak(u); } }catch(_){} }
 // 실제로 말하기 (일부 브라우저는 cancel 직후 speak가 씹혀서 살짝 늦게)
 function speakNow(text,c,vol){ const ss=window.speechSynthesis; if(!ss) return false; loadVoices();
-  const u=new SpeechSynthesisUtterance(text.replace(/~/g,"")); u.lang="ko-KR"; const v=pickVoice(c); if(v) u.voice=v; u.pitch=c.p; u.rate=c.r; u.volume=vol==null?1:vol;
+  const u=new SpeechSynthesisUtterance(text.replace(/~/g,"")); u.lang="ko-KR"; const v=pickVoice(c); if(v) u.voice=v; u.pitch=c.p; u.rate=c.r; u.volume=(vol==null?1:vol)*SVOL.v;
   const go=()=>{ try{ ss.resume(); ss.speak(u); }catch(_){} };
   if(ss.speaking||ss.pending){ ss.cancel(); setTimeout(go,90); } else go(); return true; }
 // 말풍선 (카트 위)
@@ -2787,6 +2854,13 @@ const NETA=(()=>{
         return true; }catch(e){ console.warn(e); return false; } },
     pres(p){ if(!myRef) return; const u={}; for(const k in p){ if(p[k]!==undefined) u[k]=p[k]; } myRef.update(u).catch(e=>console.warn(e)); },
     leave(){ clearInterval(hbT); hbT=0; if(roomRef) roomRef.off(); if(myRef){ try{ myRef.onDisconnect().cancel(); }catch(_){} myRef.remove().catch(()=>{}); } myRef=null; roomRef=null; peers=new Map(); onP=null; },
+    // 방 목록: 각 방의 방장이 kart/rooms/__lobby/peers/{uid}_lobby_{방코드} 에 방 정보를 올림
+    watchRooms(cb){ let ref=null, stop=false; init().then(ok=>{ if(!ok||stop) return; ref=db.ref("kart/rooms/__lobby/peers");
+        ref.on("value",snap=>{ const v=snap.val()||{}, now=Date.now()+offset, out=[]; for(const k in v){ const e=v[k]; if(!e||typeof e!=="object"||!e.code) continue; if(typeof e.hb==="number"&&now-e.hb>40000) continue; out.push(Object.assign({key:k},e)); } cb(out); },err=>{ console.warn(err); cb([]); }); });
+      return ()=>{ stop=true; if(ref) ref.off(); }; },
+    announce(code,meta){ if(!db||!uid) return; const r=db.ref("kart/rooms/__lobby/peers/"+uid+"_lobby_"+String(code).replace(/[.#$\[\]\/]/g,"_"));
+      if(!meta){ r.remove().catch(()=>{}); return; } try{ r.onDisconnect().remove(); }catch(_){}
+      r.set(Object.assign({},meta,{code:String(code),hb:firebase.database.ServerValue.TIMESTAMP})).catch(e=>console.warn(e)); },
     close(){ return false; }
   };
 })();
@@ -2796,7 +2870,7 @@ var MP={joined:false, racing:false, code:"1", nick:"", myPeer:null, peers:[], re
 const $m=id=>document.getElementById(id);
 const hexCol=n=>"#"+n.toString(16).padStart(6,"0");
 const cleanName=s=>String(s||"").replace(/[\u0000-\u001f]/g,"").trim().slice(0,10);
-try{ MP.nick=localStorage.getItem("kartrebuild.nick")||""; MP.code=localStorage.getItem("kartrebuild.room")||"1"; }catch(_){}
+try{ MP.nick=localStorage.getItem("kartrebuild.nick")||""; MP.code=localStorage.getItem("kartrebuild.room")||"1"; MP.nickSet=localStorage.getItem("kartrebuild.nickset")==="1"&&!!MP.nick; }catch(_){}
 if(!MP.nick) MP.nick="라이더"+Math.floor(100+Math.random()*900);
 $m("mpName").value=MP.nick; $m("mpCode").value=MP.code; updateMyTag();
 
@@ -2853,14 +2927,66 @@ function trackThumb(def){ if(TRACK_THUMB[def.id]) return TRACK_THUMB[def.id];
   for(const br of def.branches||[]){ x.beginPath(); x.moveTo(X(br.s[0]),Z(br.s[1])); for(const m of br.mids||[]) x.lineTo(X(m[0]),Z(m[1])); x.lineTo(X(br.e[0]),Z(br.e[1])); x.strokeStyle="#ffcf2e"; x.lineWidth=3; x.stroke(); }
   x.fillStyle="#ff4d6d"; x.beginPath(); x.arc(X(C[0][0]),Z(C[0][1]),5,0,Math.PI*2); x.fill(); x.strokeStyle="#fff"; x.lineWidth=2; x.stroke();
   return TRACK_THUMB[def.id]=c.toDataURL(); }
+// ===== 첫 화면 / 방 목록 =====
+const ROOMS={unsub:null,list:[],pending:null};
+function showScr(id){ for(const k of ["titleScr","roomScr","rModal","menu","mpLobby","finish"]){ const e=document.getElementById(k); if(e) e.hidden=k!==id; } }
+function openTitle(){ if(ROOMS.unsub){ ROOMS.unsub(); ROOMS.unsub=null; } state="menu"; showScr("titleScr"); const hb=document.getElementById("hubBack"); $m("titleHub").hidden=!hb||getComputedStyle(hb).display==="none"||hb.hidden; }
+function nickOK(){ return !!cleanName(MP.nickSet?MP.nick:""); }
+function roomsRender(){ const L=$m("rList"); const fb=!NETA.watchRooms; if(fb) L.innerHTML=""; $m("rFallback").hidden=!fb; if(fb){ $m("rCount").textContent=""; return; }
+  const by=new Map(); for(const r of ROOMS.list){ if(!r||!r.code) continue; const o=by.get(r.code); if(!o||(+r.hb||0)>(+o.hb||0)) by.set(r.code,r); }
+  const list=[...by.values()].sort((a,b)=>String(a.code)<String(b.code)?-1:1); const sig=JSON.stringify([ROOMS.loaded,list.map(r=>[r.code,r.t,r.lk,r.n,r.ai,r.tr,r.st,r.h])]); if(sig===ROOMS.sig&&L.childElementCount) return; ROOMS.sig=sig; L.innerHTML=""; $m("rCount").textContent="· "+list.length+"개";
+  if(!list.length){ const e=document.createElement("div"); e.className="rempty"; e.textContent=ROOMS.loaded?"아직 만들어진 방이 없어요. 방을 만들어 보세요!":"방 목록을 불러오는 중…"; L.appendChild(e); return; }
+  for(const r of list){ const n=Math.max(0,+r.n||0), ai=Math.max(0,+r.ai||0), full=n+ai>=8, tr=TRACKS[Math.max(0,Math.min(TRACKS.length-1,+r.tr||0))];
+    const b=document.createElement("button"); b.type="button"; b.className="room"+(full?" full":""); const im=document.createElement("img"); im.alt=""; im.src=trackThumb(tr);
+    const ri=document.createElement("div"); ri.className="ri"; const t=document.createElement("b"); t.textContent=(r.lk?"🔒 ":"")+(String(r.t||"").replace(/[\u0000-\u001f]/g,"").slice(0,20)||("방 "+r.code));
+    const st=document.createElement("span"); st.className="tg"+(r.st==="race"?" race":""); st.textContent=r.st==="race"?"경기 중":"대기 중"; t.appendChild(st);
+    const sm=document.createElement("small"); sm.textContent="맵: "+tr.name+(r.h?" · 방장 "+cleanName(r.h):""); ri.append(t,sm);
+    const rn=document.createElement("div"); rn.className="rn"; rn.textContent=n+(ai?"+"+ai:"")+"/8"; rn.title=ai?("사람 "+n+"명 + AI "+ai+"대"):("사람 "+n+"명");
+    b.append(im,ri,rn); b.onclick=()=>{ if(full){ toastNote("방이 꽉 찼어요"); return; } tryJoin(r); }; L.appendChild(b); } }
+function toastNote(t){ $m("rNickNote").textContent=t; $m("rNickNote").style.color="#ffcf2e"; }
+function openRooms(){ showScr("roomScr"); $m("rNick").value=MP.nickSet?MP.nick:""; nickUI(); ROOMS.loaded=false; ROOMS.list=[]; ROOMS.sig=null; roomsRender();
+  if(NETA.watchRooms&&!ROOMS.unsub){ NETA.avail().then(ok=>{ if(!ok){ $m("rList").innerHTML='<div class="rempty">온라인 서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요.</div>'; return; }
+    ROOMS.unsub=NETA.watchRooms((list)=>{ ROOMS.loaded=true; ROOMS.list=list||[]; if(!$m("roomScr").hidden) roomsRender(); }); }); } }
+function nickUI(){ const ok=nickOK(); $m("rNickNote").style.color=""; $m("rNickNote").textContent=ok?("✓ "+MP.nick+" (으)로 들어가요"):"닉네임을 정해야 방에 들어갈 수 있어요."; $m("rNickSave").textContent=ok?"닉네임 바꾸기":"닉네임 정하기"; }
+async function pwHash(code,pw){ const t=new TextEncoder().encode("kart:"+code+":"+pw); try{ const h=await crypto.subtle.digest("SHA-256",t); return [...new Uint8Array(h)].slice(0,12).map(x=>x.toString(16).padStart(2,"0")).join(""); }catch(_){ let x=2166136261; for(const c of t){ x^=c; x=Math.imul(x,16777619)>>>0; } return "f"+x.toString(16); } }
+function openModal(mode,r){ showScr("rModal"); $m("roomScr").hidden=false; ROOMS.pending=r||null; $m("rmNote").textContent=""; $m("rmCreate").hidden=mode!=="create"; $m("rmJoin").hidden=mode!=="join";
+  $m("rmEye").textContent=mode==="create"?"방 만들기":"비밀번호"; $m("rmTitle").textContent=mode==="create"?"새 방":(String(r&&r.t||"방").slice(0,20)); $m("rmOk").textContent=mode==="create"?"만들기":"입장";
+  $m("rmName").value=mode==="create"?(MP.nick+"의 방"):""; $m("rmPw").value=""; $m("rmPw2").value=""; ROOMS.mode=mode; setTimeout(()=>(mode==="create"?$m("rmName"):$m("rmPw2")).focus(),50); }
+function closeModal(){ $m("rModal").hidden=true; }
+async function tryJoin(r){ if(!nickOK()){ toastNote("먼저 왼쪽에서 닉네임을 정해 주세요!"); $m("rNick").focus(); return; } if(r.lk){ openModal("join",r); return; } enterRoom(String(r.code),String(r.t||""),""); }
+function enterRoom(code,title,pwh){ if(ROOMS.unsub){ ROOMS.unsub(); ROOMS.unsub=null; } closeModal(); $m("roomScr").hidden=true; MP.roomTitle=title||("방 "+code); MP.roomPw=pwh||""; $m("mpName").value=MP.nick; $m("mpCode").value=code; mpOpen(); $m("mpJoin").click(); }
+$m("goSingle").addEventListener("click",()=>{ initAudio(); unlockSpeech(); openMenu(); });
+$m("goOnline").addEventListener("click",()=>{ initAudio(); unlockSpeech(); openRooms(); });
+$m("menuHome").addEventListener("click",()=>openTitle());
+$m("rBack").addEventListener("click",()=>openTitle());
+$m("titleHub").addEventListener("click",()=>{ const hb=document.getElementById("hubBack"); if(hb) hb.click(); });
+$m("titleVoice").addEventListener("click",()=>{ initAudio(); voiceTest(); });
+$m("rNickSave").addEventListener("click",()=>{ const v=cleanName($m("rNick").value); if(!v){ toastNote("닉네임을 입력해 주세요"); return; } MP.nick=v; MP.nickSet=true; updateMyTag(); try{ localStorage.setItem("kartrebuild.nick",v); localStorage.setItem("kartrebuild.nickset","1"); }catch(_){} nickUI(); });
+$m("rNick").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $m("rNickSave").click(); } });
+$m("rCreate").addEventListener("click",()=>{ if(!nickOK()){ toastNote("먼저 닉네임을 정해 주세요!"); $m("rNick").focus(); return; } openModal("create"); });
+$m("rmCancel").addEventListener("click",()=>closeModal());
+$m("rmOk").addEventListener("click",async()=>{
+  if(ROOMS.mode==="create"){ const title=String($m("rmName").value||"").replace(/[\u0000-\u001f]/g,"").trim().slice(0,20)||(MP.nick+"의 방"), pw=String($m("rmPw").value||"").trim(); const code="r"+Math.random().toString(36).slice(2,8); enterRoom(code,title,pw?await pwHash(code,pw):""); }
+  else { const r=ROOMS.pending; if(!r) return; const h=await pwHash(String(r.code),String($m("rmPw2").value||"").trim()); if(h!==r.pwh){ $m("rmNote").textContent="비밀번호가 달라요."; $m("rmNote").style.color="#ff6b6b"; return; } enterRoom(String(r.code),String(r.t||""),h); } });
+for(const id of ["rmName","rmPw","rmPw2"]) $m(id).addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $m("rmOk").click(); } });
+$m("rCodeGo").addEventListener("click",()=>{ if(!nickOK()){ toastNote("먼저 닉네임을 정해 주세요!"); return; } const c=String($m("rCode").value||"").replace(/[^0-9A-Za-z가-힣_-]/g,"").slice(0,12); if(!c) return; enterRoom(c,"방 "+c,""); });
+// 방장이 방 목록에 방 정보를 올림 (4초마다)
+setInterval(()=>{ if(!MP.joined||!NETA.announce) return; if(!mpIsHost()){ if(MP.announced){ NETA.announce(MP.code,null); MP.announced=false; } return; }
+  const L=mpList(); NETA.announce(MP.code,{t:MP.roomTitle||("방 "+MP.code),lk:MP.roomPw?1:0,pwh:MP.roomPw||"",n:L.filter(p=>!p.bot).length,ai:L.filter(p=>p.bot).length,tr:selTrack,st:MP.racing?"race":"lobby",h:MP.nick}); MP.announced=true; },4000);
+// 소리 켜기/끄기 · 크기
+const SVOL={v:.8}; try{ const v=localStorage.getItem("kartrebuild.vol"); if(v!==null) SVOL.v=Math.max(0,Math.min(1,+v)); }catch(_){}
+function applyVol(){ if(SND.master) SND.master.gain.value=.6*SVOL.v; $m("sndVol").value=Math.round(SVOL.v*100); $m("sndVolTxt").textContent=Math.round(SVOL.v*100); $m("sndToggle").textContent=SND.on?"🔊 소리 켜짐":"🔇 소리 꺼짐"; const hb=document.getElementById("sndBtn"); if(hb) hb.textContent=SND.on?"소리 켜짐":"소리 꺼짐"; }
+$m("sndVol").addEventListener("input",e=>{ SVOL.v=(+e.target.value)/100; try{ localStorage.setItem("kartrebuild.vol",String(SVOL.v)); }catch(_){} initAudio(); applyVol(); });
+$m("sndToggle").addEventListener("click",()=>{ SND.on=!SND.on; initAudio(); applyVol(); });
+setTimeout(()=>{ const ey=document.querySelector("#menu .eyebrow"); if(ey) $m("titleVer").textContent=ey.textContent.replace(/^.*?버전/,"버전"); applyVol(); openTitle(); },0);
 function mpOpen(){ MP.lobbySig=null; $m("menu").hidden=true; $m("finish").hidden=true; $m("mpLobby").hidden=false; mpRender(); }
-function mpPresBase(){ return {v:1,n:MP.nick,ch:selChar,k:selKart,cl:selColor,rd:MP.ready?1:0,jt:MP.jt,tr:selTrack,ai:botsPres()}; }
+function mpPresBase(){ return {v:1,rt:MP.roomTitle||null,n:MP.nick,ch:selChar,k:selKart,cl:selColor,rd:MP.ready?1:0,jt:MP.jt,tr:selTrack,ai:botsPres()}; }
 function mpSend(extra){ if(!MP.joined) return; const full=Object.assign(mpPresBase(),extra||{}), last=MP.sent||(MP.sent={}), d={}; let n=0;
   for(const k in full){ const v=full[k]; if(v===undefined) continue; const j=(v!==null&&typeof v==="object")?JSON.stringify(v):v; if(last[k]!==j){ last[k]=j; d[k]=v; n++; } }
   if(n) NETA.pres(d); }
 
-$m("mpBtn").addEventListener("click",()=>{ initAudio(); mpOpen(); });
-$m("mpBack").addEventListener("click",()=>{ $m("mpLobby").hidden=true; openMenu(); });
+$m("mpBtn").addEventListener("click",()=>{ initAudio(); openRooms(); });
+$m("mpBack").addEventListener("click",()=>{ $m("mpLobby").hidden=true; openTitle(); });
 $m("mpJoin").addEventListener("click",async()=>{ unlockSpeech();
   const nm=cleanName($m("mpName").value), code=String($m("mpCode").value||"1").replace(/[^0-9A-Za-z가-힣_-]/g,"").slice(0,12)||"1";
   MP.nick=nm||MP.nick; MP.code=code; updateMyTag(); try{ localStorage.setItem("kartrebuild.nick",MP.nick); localStorage.setItem("kartrebuild.room",code); }catch(_){}
@@ -2874,7 +3000,7 @@ $m("mpJoin").addEventListener("click",async()=>{ unlockSpeech();
   MP.joined=true; CHAT.seen={}; MP.sent={}; mpSend(); mpRender(); $("chatBtn").hidden=false;
 });
 function alertNote(t){ let n=$m("mpJoinNote"); if(!n){ n=document.createElement("p"); n.className="mp-note"; n.id="mpJoinNote"; n.style.color="#ffcf2e"; $m("mpJoinBox").appendChild(n); } n.textContent=t; }
-$m("mpLeave").addEventListener("click",()=>{ mpLeaveRoom(); $m("mpLobby").hidden=true; openMenu(); });
+$m("mpLeave").addEventListener("click",()=>{ if(MP.announced&&NETA.announce) NETA.announce(MP.code,null); MP.announced=false; mpLeaveRoom(); MP.roomTitle=""; MP.roomPw=""; $m("mpLobby").hidden=true; openRooms(); });
 function mpLeaveRoom(){ botsClear(); CHAT.log=[]; CHAT.seen={}; chatRender(); const cb=document.getElementById("chatBtn"); if(cb) cb.hidden=true; if(MP.joined) NETA.leave(); MP.joined=false; MP.racing=false; MP.peers=[]; MP.myPeer=null; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기"; }
 
 /* 참가자 목록 */
@@ -2885,6 +3011,7 @@ function mpPeers(list){
   { const ex=[]; for(const p of list){ ex.push(p); const pr=p.presence; if(pr&&Array.isArray(pr.ai)) pr.ai.slice(0,7).forEach((a,k)=>{ if(!a||typeof a!=="object") return;
       ex.push({peer:p.peer+"#ai"+(+a.id||k),bot:true,owner:p.peer,sameTab:false,isMe:false,at:p.at,presence:Object.assign({},a,{v:1,rd:1,jt:(+pr.jt||0)+1+k,tr:pr.tr,ai:null,go:null})}); }); } list=ex; }
   MP.peers=list; for(const p of list) if(p.sameTab) MP.myPeer=p.peer; chatRecv(list);
+  if(!MP.roomTitle){ const h0=list.find(p=>p.presence&&p.presence.rt); if(h0) MP.roomTitle=String(h0.presence.rt).slice(0,20); }
   const host=mpHost(), early=performance.now()-MP.joinAt<2500;
   // 방장의 출발 신호
   if(host&&host.presence.go&&typeof host.presence.go==="object"){ const g=host.presence.go, gid=String(g.id||"");
@@ -2903,7 +3030,7 @@ function mpRender(){
   const L=mpList(), host=mpHost(), amHost=mpIsHost();
   const sig=JSON.stringify([BOT.cfg.length,MP.code,MP.myPeer,MP.ready,selKart,selChar,selColor,selTrack,host&&host.peer,L.map(p=>[p.peer,p.presence.n,p.presence.k,p.presence.ch,p.presence.cl,p.presence.rd,p.presence.st,p.presence.tr,p.presence.jt])]);
   if(sig===MP.lobbySig) return; MP.lobbySig=sig; // 바뀐 게 없으면 다시 그리지 않음 (버튼 누르는 중 깜빡임 방지)
-  $m("mpRoomTitle").textContent="방 "+MP.code+" · 참가자 "+L.length+"명";
+  $m("mpRoomTitle").textContent=(MP.roomTitle||("방 "+MP.code))+(MP.roomPw?" 🔒":"")+" · 참가자 "+L.length+"명";
   const G=$m("mpList"); G.innerHTML="";
   const seats=L.slice().sort((a,b)=>((+a.presence.jt||0)-(+b.presence.jt||0))||(a.peer<b.peer?-1:1)).slice(0,8);
   for(let i=0;i<8;i++){ const p=seats[i], cell=document.createElement("div");
@@ -3060,7 +3187,10 @@ function frame(now){
     for(const k in input) prev[k]=input[k];
     acc-=STEP;
   }
-  perfTick(dt); cullTick(dt); aimTick(); updateFX(dt); mpUpdate(dt); botsUpdate(dt); raceEndTick(dt); hudVoice.hidden=state!=="countdown"||CER.on; render(dt); drawSpeedFx(dt); updateAudio(fsNow);
+  perfTick(dt); cullTick(dt); aimTick();
+  { let hn=document.getElementById("skillHint"); const show=state==="race"&&raceT<15&&(KART.id==="tank"||KART.id==="trex")&&!CER.on;
+    if(show&&!hn){ hn=document.createElement("div"); hn.id="skillHint"; hn.style.cssText="position:fixed;left:50%;top:15%;transform:translateX(-50%);z-index:30;pointer-events:none;background:rgba(14,22,48,.72);color:#fff;font:800 14px sans-serif;padding:8px 14px;border-radius:12px;text-align:center;transition:opacity .6s;max-width:92vw"; document.body.appendChild(hn); }
+    if(hn){ if(show){ hn.textContent=KART.id==="tank"?(touchMode?"💥 포탄 버튼을 꾹 눌러 거리 조절 → 떼면 발사":"💥 Space 꾹 눌러 포탄 거리 조절 → 떼면 발사"):(touchMode?"🦖 꼬리치기 버튼: 뒤에 붙은 차를 가드레일로 날려버림 (10초마다)":"🦖 Space: 꼬리치기 — 뒤에 붙은 차를 가드레일로 날려버림 (10초마다)"); } hn.style.opacity=show?(raceT>13?String((15-raceT)/2):"1"):"0"; } } updateFX(dt); mpUpdate(dt); botsUpdate(dt); raceEndTick(dt); hudVoice.hidden=state!=="countdown"||CER.on; render(dt); drawSpeedFx(dt); updateAudio(fsNow);
   requestAnimationFrame(frame);
 }
 
