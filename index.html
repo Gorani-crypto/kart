@@ -2168,11 +2168,11 @@ function updEject(dt,controls){
   E.idx=nearest(E.x,E.z,E.idx); const i=E.idx, p=TR.P[i], n=TR.NR[i], gy=TR.Y[i];
   if(!E.ground){ E.vy-=CONFIG.gravity*dt; E.x+=E.vx*dt; E.y+=E.vy*dt; E.z+=E.vz*dt;
     if(E.y<=gy){ E.y=gy; E.ground=true; E.vy=0; thud(); } }
-  else { const k=Math.exp(-5*dt); E.vx*=k; E.vz*=k; E.x+=E.vx*dt; E.z+=E.vz*dt; E.y=gy;
-    if(Math.hypot(E.vx,E.vz)<1.5&&controls){ // 걸어서 오토바이로
-      const steer=(input.left?1:0)-(input.right?1:0); E.h+=steer*2.6*dt; const fw=(input.accel?8:0)-(input.brake?4:0);
-      E.x+=Math.sin(E.h)*fw*dt; E.z+=Math.cos(E.h)*fw*dt; E.walk=(E.walk||0)+Math.abs(fw)*dt;
-      if(!E.told){ E.told=true; toast(touchMode?"오토바이로 걸어가서 다시 타세요!":"↑ ←→ 로 걸어가서 오토바이에 다시 타세요!","#ffcf2e"); toastTimer=2.4; } } }
+  else { const k=Math.exp(-8*dt); E.vx*=k; E.vz*=k; E.x+=E.vx*dt; E.z+=E.vz*dt; E.y=gy;
+    if(Math.hypot(E.vx,E.vz)<2.5){ // 일어나서 자동으로 오토바이까지 걸어감 (종종걸음)
+      E.rest=(E.rest||0)+dt; if(E.rest>.25){ const want=Math.atan2(S.x-E.x,S.z-E.z); let dh=want-E.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; E.h+=dh*Math.min(1,8*dt);
+        const fw=Math.min(10,Math.hypot(S.x-E.x,S.z-E.z)*3+2); E.x+=Math.sin(E.h)*fw*dt; E.z+=Math.cos(E.h)*fw*dt; E.walk=(E.walk||0)+fw*dt;
+        if(!E.told){ E.told=true; toast("오토바이로 돌아가는 중…","#ffcf2e"); toastTimer=1.8; } } } }
   const d=(E.x-p.x)*n.x+(E.z-p.z)*n.z, lim=TR.HW+(TR.def.walls?.5:(TR.def.runoff||2.4)); if(Math.abs(d)>lim){ const sg=Math.sign(d); E.x-=n.x*sg*(Math.abs(d)-lim); E.z-=n.z*sg*(Math.abs(d)-lim); }
   const rd=CAR.rider; if(rd){ rd.position.set(E.x,E.y+(E.ground?.15:0),E.z);
     if(!E.ground){ rd.rotation.x+=E.spin*dt; rd.rotation.z+=E.spin*.5*dt; }
