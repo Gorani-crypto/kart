@@ -1,4 +1,17 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>잘남 카트 온라인</title><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>잘남 카트 온라인</title><script>
+// 카카오톡 안의 간이 브라우저면 크롬/사파리로 다시 열기 (음성 기능이 막혀 있어서)
+(function(){ if(!/KAKAOTALK/i.test(navigator.userAgent)) return;
+  var ext="kakaotalk://web/openExternal?url="+encodeURIComponent(location.href), tried=false;
+  try{ tried=sessionStorage.getItem("kakaoExt")==="1"; sessionStorage.setItem("kakaoExt","1"); }catch(e){}
+  if(!tried) setTimeout(function(){ location.href=ext; },60);
+  (function(){ setTimeout(function show(){ if(!document.body) return setTimeout(show,300);
+    var d=document.createElement("div"); d.style.cssText="position:fixed;left:8px;right:8px;top:8px;z-index:99;background:#ffd21f;color:#111;border-radius:12px;padding:10px 12px;font:700 13px sans-serif;display:flex;gap:8px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.3)";
+    d.innerHTML='<span style="flex:1">카카오톡 안에서는 캐릭터 음성이 안 나와요. 크롬·사파리로 열어 주세요.</span>';
+    var a=document.createElement("a"); a.href=ext; a.textContent="열기"; a.style.cssText="background:#111;color:#fff;padding:6px 10px;border-radius:8px;text-decoration:none";
+    var x=document.createElement("button"); x.textContent="✕"; x.style.cssText="background:none;border:0;font:700 16px sans-serif;cursor:pointer"; x.onclick=function(){ d.remove(); };
+    d.appendChild(a); d.appendChild(x); document.body.appendChild(d); },1500); })();
+})();
+</script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
 <title>카트 리빌드</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gothic+A1:wght@500;700;800&display=swap">
@@ -183,7 +196,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2020</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2023</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
