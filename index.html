@@ -211,7 +211,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0225</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0228</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -341,9 +341,9 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"kart", name:"오렌지 루키", desc:"가속·조향 좋음 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.3, accel:1.45, turn:1.22, boost:1.25, mass:.8, fly:1.7},
   {id:"scoot", name:"배달 스쿠터", desc:"가속·조향 최고 · 최고속도 최저, 가장 가벼움", speed:1.26, accel:1.55, turn:1.32, boost:1.24, mass:.65},
   {id:"tank", name:"전차", desc:"느리지만 무거워서 다 밀어냄 + 포탄 발사 (Space / 포탄 버튼)", speed:1.17, accel:1.0, turn:.92, boost:1.3, mass:1.9},
-  {id:"giant", name:"바위 거인", desc:"3배 크기 거인. 느리고 부스터도 천천히 차지만, 부스터 쓰면 시속 1000km로 6초 · 그때 닿는 차는 전부 튕겨냄", speed:1.09, accel:1.02, turn:.74, boost:1.3, mass:2.3, rad:2.35, gaugeMul:.6, superBoost:true},
-  {id:"dump", name:"덤프트럭", desc:"2배 크기. 가장 무거워 다 밀어냄 · 가장 느리지만 부스터 강함", speed:1.2, accel:.92, turn:.82, boost:1.38, mass:2.8, rad:2.4},
-  {id:"truck", name:"초보운전 1톤 트럭", desc:"조금 무겁고 조금 느림. 뒤에 초보운전 스티커", speed:1.29, accel:1.2, turn:1.08, boost:1.27, mass:1.5},
+  {id:"giant", name:"바위 거인", desc:"3배 크기 거인. 느리고 부스터도 천천히 차지만, 부스터 쓰면 시속 800km로 6초 · 그때 닿는 차는 전부 튕겨냄", speed:1.09, accel:1.02, turn:.74, boost:1.3, mass:2.3, rad:2.35, gaugeMul:.6, superBoost:true},
+  {id:"dump", name:"덤프트럭", desc:"2배 크기. 가장 무거워 다 밀어냄 · 가장 느리지만 부스터가 가장 빠르고 4.5초로 김", speed:1.2, accel:.92, turn:.82, boost:1.5, boostTime:4.5, mass:3.4, rad:2.4},
+  {id:"truck", name:"초보운전 1톤 트럭", desc:"묵직하고 조금 느림 · 부스터 빠르고 4초로 김. 뒤에 초보운전 스티커", speed:1.29, accel:1.2, turn:1.08, boost:1.4, boostTime:4, mass:2.0},
   {id:"roach", name:"바퀴벌레", desc:"빠르고 민첩 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.38, accel:1.38, turn:1.15, boost:1.22, mass:.75, fly:1.7},
   {id:"trex", name:"티라노", desc:"2배 크기. 꼬리치기(Space/꼬리 버튼, 10초마다): 뒤쪽 넓은 범위의 차를 무게 상관없이 양옆 가드레일로 날려버림", speed:1.18, accel:.9, turn:.8, boost:1.36, mass:2.6, rad:2.4, bite:true},
   {id:"chair", name:"엔진 휠체어", desc:"엔진 달린 휠체어. 가속·조향 좋고 조금 가벼움", speed:1.27, accel:1.4, turn:1.25, boost:1.3, mass:.85},
@@ -351,7 +351,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
 ];
 // 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
 const SYN={tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
-const SUPER_T=6, SUPER_V=1000/5.8, CHUTE_V=500/5.8; // 낙하산 활공: 모든 차 시속 500km // 거인 돌진: 6초, 시속 1000km
+const SUPER_T=6, SUPER_V=800/5.8, CHUTE_V=500/5.8; // 낙하산 활공: 모든 차 시속 500km // 거인 돌진: 6초, 시속 800km
 function effKart(k,c){ return (c&&SYN[k.id]===c.id)?Object.assign({},k,{speed:k.speed*1.04,accel:k.accel*1.04,turn:k.turn*1.04,syn:true}):k; }
 
 
@@ -1805,7 +1805,7 @@ function physics(dt, controls){
   if(S.instWin>0){ S.instWin-=dt;
     const tap=edge("accel")||(touchMode&&edge("boost"));
     if(controls&&tap&&fs>8){S.instT=C.instTime;S.instWin=0;usedTap=true;toast("순간 부스터!","#ffcf2e"); warp(false);} }
-  if(controls&&!usedTap&&edge("boost")&&S.items>0){S.items--; if(K.superBoost){ S.boostT=SUPER_T; S.superT=SUPER_T; toast("거인 돌진! 시속 1000km","#ff7a1a"); S.shake=Math.max(S.shake,.6); thud(); } else { S.boostT=C.boostTime; toast("부스터!","#3ee6ff"); } warp(true);}
+  if(controls&&!usedTap&&edge("boost")&&S.items>0){S.items--; if(K.superBoost){ S.boostT=SUPER_T; S.superT=SUPER_T; toast("거인 돌진! 시속 800km","#ff7a1a"); S.shake=Math.max(S.shake,.6); thud(); } else { S.boostT=K.boostTime||C.boostTime; toast("부스터!","#3ee6ff"); } warp(true);}
   S.superT=Math.max(0,S.superT-dt); S.boostT=Math.max(0,S.boostT-dt); S.instT=Math.max(0,S.instT-dt);
 
   S.vx=fx*fs+rx*ls; S.vz=fz*fs+rz*ls;
@@ -2063,7 +2063,7 @@ function groundAt(x,z){ const {P,Y,N,NR}=TR; let b=0,bd=1e9; for(let i=0;i<N;i+=
     if(d<=ed+c.blockW) return {y:Y[b],d,kind:"block",ch,side};
     return {y:0,d,kind:"plain",ch,side}; }
   return {y:Y[b],d}; }
-const SHELL_V=18, SHELL_G=24; // 약 20m 앞에 떨어짐 // 포탄: 느리게 쏘아 올려 포물선으로 떨어짐
+const SHELL_V=31, SHELL_G=24; // 약 40m 앞에 떨어짐 // 포탄: 느리게 쏘아 올려 포물선으로 떨어짐
 function fireShell(){
   if(KART.id==="trex"){ trexTail(); return; }
   if(KART.id!=="tank"||FX.cool>0||state==="menu") return;
@@ -2298,7 +2298,7 @@ function botTargets(b){ const out=[]; if(state==="race"&&!S.rail) out.push({kind
   if(MP.racing) for(const [peer,g] of MP.ghosts) if(g.obj.visible) out.push({kind:"peer",peer,x:g.x,y:g.y,z:g.z}); return out; }
 function botWeapon(b){ const K=b.K; if(b.cd>0||b.ft||!(K.id==="tank"||K.id==="trex")) return; const fx=Math.sin(b.h), fz=Math.cos(b.h);
   if(K.id==="trex"){ const R=K.rad||2.4; if(!botTargets(b).some(t=>tailZone(t.x,t.z,b.x,b.z,b.h,R,1.2))) return; }
-  let best=null, bd=K.id==="tank"?32:60; for(const t of botTargets(b)){ const dx=t.x-b.x, dz=t.z-b.z, d=Math.hypot(dx,dz); if(d<bd&&(K.id==="trex"||(d>8&&(dx*fx+dz*fz)/Math.max(d,.01)>.9))){ bd=d; best=t; } }
+  let best=null, bd=K.id==="tank"?55:60; for(const t of botTargets(b)){ const dx=t.x-b.x, dz=t.z-b.z, d=Math.hypot(dx,dz); if(d<bd&&(K.id==="trex"||(d>8&&(dx*fx+dz*fz)/Math.max(d,.01)>.9))){ bd=d; best=t; } }
   if(!best) return; b.cd=3+Math.random()*2.5;
   if(K.id==="trex"){ const R=K.rad||2.4; b.biteT=.6; b.cd=10; if(Math.hypot(b.x-S.x,b.z-S.z)<80) thud(); tailHitLocal(b.x,b.z,b.h,R,b.id);
     const q=v=>Math.round(v*100)/100; b.twSeq=(b.twSeq||0)+1; b.tw=[b.twSeq,q(b.x),q(b.z),q(b.h),R]; return; }
@@ -2314,7 +2314,7 @@ function botsUpdate(dt){
     if(going){
       b.shieldT=Math.max(0,b.shieldT-dt); b.superT=Math.max(0,b.superT-dt); b.boostT=Math.max(0,b.boostT-dt); b.cd=Math.max(0,b.cd-dt); b.biteT=Math.max(0,b.biteT-dt);
       if(!b.ft&&b.v>8&&!(b.superT>0)){ b.gauge+=dt*(K.gaugeMul||1)*b.itemRate; if(b.gauge>=12){ b.gauge=Math.random()*2; if(b.items<2) b.items++; } }
-      if(b.items>0&&b.boostT<=0&&cf[i]>.97&&Math.random()<dt*.4){ b.items--; if(K.superBoost){ b.boostT=b.superT=SUPER_T; } else b.boostT=C.boostTime; }
+      if(b.items>0&&b.boostT<=0&&cf[i]>.97&&Math.random()<dt*.4){ b.items--; if(K.superBoost){ b.boostT=b.superT=SUPER_T; } else b.boostT=K.boostTime||C.boostTime; }
       let vt=base*b.skill*(1-(1-cf[i])*b.corner);
       b.errT-=dt; if(b.errT<=0){ b.errT=15+Math.random()*20; if(Math.random()>(b.skill-.94)*14){ b.v*=.88; b.vo+=(Math.random()<.5?-1:1)*4; b.spin+=(Math.random()<.5?-1:1)*.25; } } // 가끔 실수 (실력 낮을수록 자주)
       if(TR.gapSet&&TR.gapSet.has(i)){ vt=CHUTE_V; b.v=CHUTE_V; }
