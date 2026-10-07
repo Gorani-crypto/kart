@@ -145,9 +145,9 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 .mp-slot .tag{position:absolute;top:10px;left:10px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(14,22,48,.85);color:var(--ink-dim)}
 .mp-slot .tag.ok{color:#46e08a}.mp-slot .tag.host{color:#ffcf2e}
 .kinfo{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(14,22,48,.85);color:#fff;font:900 12px/20px sans-serif;text-align:center;cursor:help;border:1px solid rgba(255,255,255,.5);z-index:2}
-#kTip{position:fixed;z-index:200;width:220px;max-width:240px;background:rgba(14,22,48,.96);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 10px;font:600 12px/1.45 sans-serif;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#kTip{position:fixed;z-index:200;width:260px;max-width:92vw;background:rgba(14,22,48,.96);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:8px 10px;font:600 12px/1.45 sans-serif;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 #kTip b{display:block;font-size:13px;color:#ffcf2e;margin-bottom:3px} #kTip .one{margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#kTip .bar{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;line-height:15px;min-height:15px;color:#b9c6e8} #kTip .bar span{width:46px;flex:0 0 auto;display:block;line-height:15px} #kTip .bar i{flex:1;height:7px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;display:block} #kTip .bar em{display:block;height:100%;border-radius:4px}
+#kTip .bar{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;line-height:15px;min-height:15px;color:#b9c6e8} #kTip .bar span{width:62px;flex:0 0 auto;display:block;line-height:15px} #kTip .bar b.nv{display:block;width:50px;margin:0;text-align:right;font-size:11px;color:#fff;flex:0 0 auto} #kTip .bar i{flex:1;height:7px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;display:block} #kTip .bar em{display:block;height:100%;border-radius:4px}
 .mp-chat{display:flex;flex-direction:column;gap:6px} .mp-chat .log{height:120px;overflow-y:auto;background:rgba(0,0,0,.22);border:1px solid var(--panel-line);border-radius:10px;padding:6px 8px;font:600 13px/1.45 sans-serif}
 .mp-chat .log div{word-break:break-all} .mp-chat .log i{font-style:normal;font-weight:800;margin-right:6px}
 .mp-chat .in{display:flex;gap:6px} .mp-chat input,#rcIn{flex:1;min-width:0;font:600 14px sans-serif;padding:8px 10px;border-radius:10px;border:1px solid var(--panel-line);background:rgba(255,255,255,.08);color:#fff}
@@ -212,7 +212,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0301</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0308</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -339,12 +339,12 @@ window.CONFIG = CONFIG;
 const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고속도, accel=가속, turn=조향, boost=부스터 배율, mass=무게)
   {id:"blue", name:"러스티 세단", desc:"균형형. 모든 능력이 무난함", speed:1.32, accel:1.3, turn:1.05, boost:1.28, mass:1},
   {id:"gold", name:"실버 터보", desc:"최고속도 높음 · 가속과 조향은 조금 둔함", speed:1.42, accel:1.12, turn:.95, boost:1.32, mass:1},
-  {id:"kart", name:"오렌지 루키", desc:"가속·조향 좋음 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.3, accel:1.45, turn:1.22, boost:1.25, mass:.8, fly:1.7},
+  {id:"kart", name:"오렌지 루키", desc:"가속·조향 좋음 · 아주 가벼워서 잘 날아감 · 부스터 2초지만 부스터 중에 한 번 더 쓰면 2단 부스터(시속 400km)", speed:1.3, accel:1.45, turn:1.22, boost:1.25, boostTime:2, dual:true, mass:.8, fly:1.7},
   {id:"scoot", name:"배달 스쿠터", desc:"가속·조향 최고 · 최고속도 최저, 가장 가벼움", speed:1.26, accel:1.55, turn:1.32, boost:1.24, mass:.65},
   {id:"tank", name:"전차", desc:"느리지만 무거워서 다 밀어냄 + 포탄 발사 (Space / 포탄 버튼)", speed:1.17, accel:1.0, turn:.92, boost:1.3, mass:1.9},
   {id:"giant", name:"바위 거인", desc:"3배 크기 거인. 느리고 부스터도 천천히 차지만, 부스터 쓰면 5초 동안 점점 빨라져 2초 500km · 3초 700km · 4초부터 시속 1000km · 그때 닿는 차는 전부 튕겨냄", speed:1.09, accel:1.02, turn:.74, boost:1.3, mass:2.3, rad:2.35, gaugeMul:.6, superBoost:true},
-  {id:"dump", name:"덤프트럭", desc:"2배 크기. 가장 무거워 다 밀어냄 · 가장 느리지만 부스터가 가장 빠르고 4.5초로 김", speed:1.2, accel:.92, turn:.82, boost:1.5, boostTime:4.5, mass:3.4, rad:2.4, ram:1},
-  {id:"truck", name:"초보운전 1톤 트럭", desc:"묵직하고 조금 느림 · 부스터 빠르고 4초로 김. 뒤에 초보운전 스티커", speed:1.29, accel:1.2, turn:1.08, boost:1.4, boostTime:4, mass:2.0, ram:.5},
+  {id:"dump", name:"덤프트럭", desc:"2배 크기. 가장 무거워 다 밀어냄 · 가장 느리지만 부스터가 가장 빠르고 4.5초로 김", speed:1.2, accel:.92, turn:.82, boost:1.5, boostTime:4.5, gaugeMul:.8, mass:3.4, rad:2.4, ram:1},
+  {id:"truck", name:"초보운전 1톤 트럭", desc:"묵직하고 조금 느림 · 부스터 빠르고 4초로 김. 뒤에 초보운전 스티커", speed:1.29, accel:1.2, turn:1.08, boost:1.4, boostTime:4, gaugeMul:.8, mass:2.0, ram:.5},
   {id:"roach", name:"바퀴벌레", desc:"빠르고 민첩 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.38, accel:1.38, turn:1.15, boost:1.22, mass:.75, fly:1.7},
   {id:"trex", name:"티라노", desc:"2배 크기. 꼬리치기(Space/꼬리 버튼, 10초마다): 뒤쪽 넓은 범위의 차를 무게 상관없이 양옆 가드레일로 날려버림", speed:1.18, accel:.9, turn:.8, boost:1.36, mass:2.6, rad:2.4, bite:true},
   {id:"chair", name:"엔진 휠체어", desc:"엔진 달린 휠체어. 가속·조향 좋고 조금 가벼움", speed:1.27, accel:1.4, turn:1.25, boost:1.3, mass:.85},
@@ -352,6 +352,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
 ];
 // 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
 const SYN={tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
+const DUAL_V=400/5.8; // 오렌지 루키 2단 부스터 최고속도
 const SUPER_T=5, SUPER_V=1000/5.8, CHUTE_V=500/5.8; // 낙하산 활공: 모든 차 시속 500km // 거인 돌진: 5초, 서서히 올라 4초에 시속 1000km
 // 거인 돌진 속도 곡선 (지수적으로 상승): 0초 현재속도 → 2초 500 → 3초 700 → 4초 1000km/h 유지
 function superRamp(e,v0){ const K=5.8, a=Math.min(v0*K,480), seg=(x0,x1,t)=>x0*Math.pow(x1/x0,clamp(t,0,1));
@@ -1754,7 +1755,7 @@ const S={}; let KART=KARTS[0];
 function resetKart(){
   const i=TR.N-14;
   Object.assign(S,{x:TR.P[i].x,z:TR.P[i].z,y:TR.Y[i],vy:0,grounded:true,gy:TR.Y[i],slope:0,pitch:0,h:Math.atan2(TR.T[i].x,TR.T[i].z),vx:0,vz:0,yaw:0,
-    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,gLock:false,items:0,boostT:0,superT:0,instT:0,instWin:0,ej:null,shieldT:0,startTap:false,startUsed:false,biteT:0,chute:false,kickHint:false,inTun:false,
+    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,gLock:false,items:0,boostT:0,superT:0,stackT:0,instT:0,instWin:0,ej:null,shieldT:0,startTap:false,startUsed:false,biteT:0,chute:false,kickHint:false,inTun:false,
     idx:i,prog:i,onBranch:null,offroad:false,steerVis:0,shake:0,air:0});
 }
 function nearest(x,z,hint){
@@ -1788,7 +1789,7 @@ function physics(dt, controls){
   S.steerS=lerp(S.steerS||0,steerRaw,1-Math.exp(-dt/C.steerEase)); const sa=Math.abs(S.steerS), steer=sa<.02?0:Math.sign(S.steerS)*sa*sa*(3-2*sa);
   const brake=controls&&input.brake, accel=controls&&!brake&&(input.accel||touchMode);
   const boosting=S.boostT>0||S.instT>0, ground=S.grounded;
-  const roadMax=S.superT>0?superRamp(SUPER_T-S.superT,S.superV0||30):S.boostT>0?base*(K.boost||C.boostRatio):(S.instT>0?base*C.instRatio:base);
+  const roadMax=S.superT>0?superRamp(SUPER_T-S.superT,S.superV0||30):S.stackT>0?DUAL_V:S.boostT>0?base*(K.boost||C.boostRatio):(S.instT>0?base*C.instRatio:base);
   let gf=1; if(S.offroad){ const gc=C.grassCurve, t=S.grassT; gf=gc[gc.length-1][1];
     for(let k=0;k<gc.length-1;k++){ if(t<gc[k+1][0]){ gf=lerp(gc[k][1],gc[k+1][1],(t-gc[k][0])/(gc[k+1][0]-gc[k][0])); break; } } }
   const max=roadMax*gf;
@@ -1853,8 +1854,8 @@ function physics(dt, controls){
   if(S.instWin>0){ S.instWin-=dt;
     const tap=edge("accel")||(touchMode&&edge("boost"));
     if(controls&&tap&&fs>8){S.instT=C.instTime;S.instWin=0;usedTap=true;toast("순간 부스터!","#ffcf2e"); warp(false);} }
-  if(controls&&!usedTap&&edge("boost")&&S.items>0){S.items--; if(K.superBoost){ S.boostT=SUPER_T; S.superT=SUPER_T; toast("거인 돌진!","#ff7a1a"); S.superV0=Math.max(25,Math.hypot(S.vx,S.vz)); S.shake=Math.max(S.shake,.6); thud(); } else { S.boostT=K.boostTime||C.boostTime; toast("부스터!","#3ee6ff"); } warp(true);}
-  S.superT=Math.max(0,S.superT-dt); S.boostT=Math.max(0,S.boostT-dt); S.instT=Math.max(0,S.instT-dt);
+  if(controls&&!usedTap&&edge("boost")&&S.items>0){S.items--; if(K.superBoost){ S.boostT=SUPER_T; S.superT=SUPER_T; toast("거인 돌진!","#ff7a1a"); S.superV0=Math.max(25,Math.hypot(S.vx,S.vz)); S.shake=Math.max(S.shake,.6); thud(); } else if(K.dual&&S.boostT>0){ const bt=K.boostTime||C.boostTime; S.stackT=bt; S.boostT=Math.max(S.boostT,bt); toast("2단 부스터! 시속 400km","#ff4fd8"); S.shake=Math.max(S.shake,.35); } else { S.boostT=K.boostTime||C.boostTime; toast("부스터!","#3ee6ff"); } warp(true);}
+  S.stackT=Math.max(0,S.stackT-dt); S.superT=Math.max(0,S.superT-dt); S.boostT=Math.max(0,S.boostT-dt); S.instT=Math.max(0,S.instT-dt);
 
   S.vx=fx*fs+rx*ls; S.vz=fz*fs+rz*ls;
   S.x+=S.vx*dt; S.z+=S.vz*dt;
@@ -2780,15 +2781,16 @@ var myTag;
 function updateMyTag(){ if(typeof MP==="undefined"||!MP||typeof kart==="undefined") return; if(myTag){ kart.remove(myTag); myTag.material.map.dispose(); myTag.material.dispose(); myTag=null; }
   const nm=cleanName(MP.nick); if(!nm) return; myTag=mpTag(nm,hexCol(CHAR.helmet)); myTag.position.y=CAR.tagY||(CAR.giant?9.6:CAR.id==="tank"?4.4:3.1); kart.add(myTag); }
 // 차량 설명 말풍선: 썸네일 오른쪽 위 ⓘ 에 마우스를 올리거나(폰은 누르면) 표시
-const KTIP={blue:"균형형 · 모든 능력이 무난함",gold:"최고속도형 · 가속·조향은 조금 둔함",kart:"가속·조향 좋음 · 가벼워서 잘 날아감",scoot:"가속·조향 최고 · 가장 가벼움",tank:"무거움 · 포물선 포탄 (약 40m)",
+const KTIP={blue:"균형형 · 모든 능력이 무난함",gold:"최고속도형 · 가속·조향은 조금 둔함",kart:"가벼움 · 부스터 중 한 번 더 = 2단 부스터 400km",scoot:"가속·조향 최고 · 가장 가벼움",tank:"무거움 · 포물선 포탄 (약 40m)",
   giant:"부스터 쓰면 4초 만에 시속 1000km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
 function kInfoIcon(k){ const s=document.createElement("span"); s.className="kinfo"; s.textContent="i"; s.setAttribute("aria-label",k.name+" 설명");
   const show=()=>{ let t=document.getElementById("kTip"); if(!t){ t=document.createElement("div"); t.id="kTip"; document.body.appendChild(t); }
     t.innerHTML=""; const b=document.createElement("b"); b.textContent=k.name; const d=document.createElement("div"); d.className="one"; d.textContent=KTIP[k.id]||k.desc||""; t.append(b,d);
-    const val={spd:k.speed,acc:k.accel,turn:k.turn,bst:(k.superBoost?3:(k.boost||1.27)*(k.boostTime||3)/3),mass:k.mass||1};
-    for(const [key,lab,col] of [["spd","최고속도","#ff7a1a"],["acc","가속","#ffcf2e"],["turn","조향","#46e08a"],["bst","부스터","#3ee6ff"],["mass","무게","#b98cff"]]){
-      const all=KARTS.map(q=>key==="spd"?q.speed:key==="acc"?q.accel:key==="turn"?q.turn:key==="mass"?(q.mass||1):(q.superBoost?3:(q.boost||1.27)*(q.boostTime||3)/3)), lo=Math.min(...all), hi=Math.max(...all), p=.15+.85*(val[key]-lo)/((hi-lo)||1);
-      const row=document.createElement("div"); row.className="bar"; const l=document.createElement("span"); l.textContent=lab; const tr=document.createElement("i"), fl=document.createElement("em"); fl.style.width=Math.round(p*100)+"%"; fl.style.background=col; tr.appendChild(fl); row.append(l,tr); t.appendChild(row); }
+    const KM=CONFIG.maxSpeed*CONFIG.kmh, base=q=>q.speed*KM, top=q=>q.superBoost?1000:q.dual?400:q.speed*(q.boost||CONFIG.boostRatio)*KM;
+    const stats=[["기본속도","#ffb36b",base,v=>Math.round(v)+"km"],["최고속도","#ff4d3a",top,v=>Math.round(v)+"km"],["가속",'#ffcf2e',q=>q.accel],["조향","#46e08a",q=>q.turn],["게이지 충전","#3ee6ff",q=>q.gaugeMul||1,v=>v===1?"보통":"×"+v],["부스터 시간","#7fd8ff",q=>q.superBoost?SUPER_T:(q.boostTime||CONFIG.boostTime),v=>v+"초"],["무게","#b98cff",q=>q.mass||1,v=>String(v)]];
+    for(const [lab,col,fn,fmtv] of stats){ const vals=KARTS.map(fn).filter(v=>v<900), lo=Math.min(...vals), hi=Math.max(...vals), v=fn(k), p=v>=900?1:.15+.85*(v-lo)/((hi-lo)||1);
+      const row=document.createElement("div"); row.className="bar"; const l=document.createElement("span"); l.textContent=lab; const tr=document.createElement("i"), fl=document.createElement("em"); fl.style.width=Math.round(Math.min(1,p)*100)+"%"; fl.style.background=col; tr.appendChild(fl); row.append(l,tr);
+      if(fmtv){ const nv=document.createElement("b"); nv.className="nv"; nv.textContent=fmtv(v); row.appendChild(nv); } t.appendChild(row); }
     t.hidden=false;
     const r=s.getBoundingClientRect(), w=t.offsetWidth, h=t.offsetHeight; let x=r.right+6, y=r.top; if(x+w>innerWidth-6) x=r.left-w-6; if(x<6) x=6; if(y+h>innerHeight-6) y=innerHeight-h-6; t.style.left=x+"px"; t.style.top=Math.max(6,y)+"px"; };
   const hide=()=>{ const t=document.getElementById("kTip"); if(t) t.hidden=true; };
@@ -3070,8 +3072,8 @@ function render(dt){
   chute.visible=!!S.chute&&!S.grounded&&state!=="menu";
   if(chute.visible){ S.chuteVis=Math.min(1,(S.chuteVis||0)+dt*4); const k=CAR.giant?2.6:(KART.id==="tank"?1.3:1); chute.scale.setScalar(k*(.25+.75*S.chuteVis)); chute.position.y=CAR.giant?14:5.2; chute.rotation.set(-S.pitch*.8+Math.sin(performance.now()*.0021)*.06,0,Math.sin(performance.now()*.003)*.08); } else S.chuteVis=0;
   const fl=S.boostT>0||S.instT>0;
-  flameM.color.setHex(S.instT>0&&S.boostT<=0?0xffd23a:(S.boostT>0?0x3ee6ff:0xff7a1a));
-  const flk=S.superT>0?.6+2.4*clamp((Math.abs(fsNow)*5.8-200)/800,0,1):S.boostT>0?1.8:1.1; for(const f of flames){f.visible=fl; f.scale.set(1,1,flk*(0.8+Math.random()*.4));}
+  flameM.color.setHex(S.stackT>0?0xff4fd8:S.instT>0&&S.boostT<=0?0xffd23a:(S.boostT>0?0x3ee6ff:0xff7a1a));
+  const flk=S.stackT>0?2.6:S.superT>0?.6+2.4*clamp((Math.abs(fsNow)*5.8-200)/800,0,1):S.boostT>0?1.8:1.1; for(const f of flames){f.visible=fl; f.scale.set(1,1,flk*(0.8+Math.random()*.4));}
   skidTimer-=dt;
   if(!S.rail&&S.grounded&&(S.drifting||Math.abs(slide)>.25)&&Math.abs(fsNow)>6&&skidTimer<=0&&state!=="menu"){
     skidTimer=.025; const c=Math.cos(S.h), s=Math.sin(S.h);
