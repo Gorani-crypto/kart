@@ -196,7 +196,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2136</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2146</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -1739,7 +1739,7 @@ function physics(dt, controls){
   const keep=Math.exp(-grip*dt), ls2=ls*keep, eff=S.drifting?C.driftEff:0.85;
   fs=(fs>=0?1:-1)*Math.sqrt(fs*fs+(ls*ls-ls2*ls2)*eff); ls=ls2;
 
-  if(ground&&fs>8&&S.gauge<100){
+  if(ground&&fs>8&&S.gauge<100&&!(S.superT>0)){ // 거인 돌진 중엔 게이지 안 참 (드리프트는 가능)
     if(S.drifting&&Math.abs(ls)>2) S.gauge+=Math.abs(yaw)*dt*clamp(fs/base,.4,1.2)*C.gaugePerRad*(K.gaugeMul||1);
     else if(Math.abs(ls)>3) S.gauge+=Math.abs(ls)*dt*.6*(K.gaugeMul||1);
     if(S.gauge>=100) S.gauge=100; }
@@ -2247,7 +2247,7 @@ function botsUpdate(dt){
   for(const b of BOT.list){ const K=b.K, base=C.maxSpeed*K.speed, i=Math.floor(b.p)%N;
     if(going){
       b.shieldT=Math.max(0,b.shieldT-dt); b.superT=Math.max(0,b.superT-dt); b.boostT=Math.max(0,b.boostT-dt); b.cd=Math.max(0,b.cd-dt); b.biteT=Math.max(0,b.biteT-dt);
-      if(!b.ft&&b.v>8){ b.gauge+=dt*(K.gaugeMul||1)*b.itemRate; if(b.gauge>=12){ b.gauge=Math.random()*2; if(b.items<2) b.items++; } }
+      if(!b.ft&&b.v>8&&!(b.superT>0)){ b.gauge+=dt*(K.gaugeMul||1)*b.itemRate; if(b.gauge>=12){ b.gauge=Math.random()*2; if(b.items<2) b.items++; } }
       if(b.items>0&&b.boostT<=0&&cf[i]>.97&&Math.random()<dt*.4){ b.items--; if(K.superBoost){ b.boostT=b.superT=SUPER_T; } else b.boostT=C.boostTime; }
       let vt=base*b.skill*(1-(1-cf[i])*b.corner);
       b.errT-=dt; if(b.errT<=0){ b.errT=10+Math.random()*25*(b.skill-.8)*6; if(Math.random()>(b.skill-.84)*4){ b.v*=.72; b.vo+=(Math.random()<.5?-1:1)*6; b.spin+=(Math.random()<.5?-1:1)*.35; } } // 가끔 실수 (실력 낮을수록 자주)
