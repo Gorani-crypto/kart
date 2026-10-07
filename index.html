@@ -167,7 +167,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-1952</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-1958</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -1566,6 +1566,9 @@ const riderCache={};
 function attachRider(ch){ CHAR=ch; if(typeof updateMyTag==="function") setTimeout(updateMyTag,0); const st=CAR.seat, par=st.parent||CAR.body; if(CAR.rider&&CAR.rider.parent) CAR.rider.parent.remove(CAR.rider); const key=CAR.id+'.'+ch.id; const rd=riderCache[key]||(riderCache[key]=buildRider(ch,st.pose)); rd.position.set(...st.pos); rd.scale.setScalar(st.scale); rd.rotation.set(0,0,0); par.add(rd); CAR.rider=rd; }
 const shadow=new THREE.Mesh(new THREE.CircleGeometry(1,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.28}));
 shadow.rotation.x=-Math.PI/2; scene.add(shadow);
+// 출발 보호막
+function makeShield(){ const m=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),new THREE.MeshBasicMaterial({color:0x7fd8ff,transparent:true,opacity:.22,depthWrite:false})); const e=new THREE.Mesh(new THREE.SphereGeometry(1.02,18,12),new THREE.MeshBasicMaterial({color:0xbff0ff,wireframe:true,transparent:true,opacity:.35})); m.add(e); m.visible=false; return m; }
+const shieldMesh=makeShield(); kart.add(shieldMesh);
 // 낙하산 (공중에서 드리프트 키로 펼침)
 const chute=(()=>{ const g=new THREE.Group(), cols=[0xe8344a,0xffffff,0xffcf2e,0xffffff];
   for(let k=0;k<8;k++){ const m=new THREE.Mesh(new THREE.SphereGeometry(3.4,5,6,k/8*Math.PI*2,Math.PI*2/8,0,Math.PI*.42),new THREE.MeshLambertMaterial({color:cols[k%4],side:THREE.DoubleSide})); m.scale.set(1.3,.65,1.3); g.add(m); }
@@ -1609,7 +1612,7 @@ const S={}; let KART=KARTS[0];
 function resetKart(){
   const i=TR.N-14;
   Object.assign(S,{x:TR.P[i].x,z:TR.P[i].z,y:TR.Y[i],vy:0,grounded:true,gy:TR.Y[i],slope:0,pitch:0,h:Math.atan2(TR.T[i].x,TR.T[i].z),vx:0,vz:0,yaw:0,
-    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,items:0,boostT:0,instT:0,instWin:0,ej:null,biteT:0,chute:false,kickHint:false,inTun:false,
+    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,items:0,boostT:0,instT:0,instWin:0,ej:null,shieldT:0,startTap:false,startUsed:false,biteT:0,chute:false,kickHint:false,inTun:false,
     idx:i,prog:i,onBranch:null,offroad:false,steerVis:0,shake:0,air:0});
 }
 function nearest(x,z,hint){
@@ -2154,8 +2157,11 @@ function finishRace(){
   setTimeout(()=>{ if(state==="finish") $("finish").hidden=false; },900);
 }
 // ===== 슈퍼바이크: 세게 부딪히면 사람이 날아감 → 걸어가서 다시 타야 함 =====
+// 출발 부스터: GO 타이밍 ±0.5초 안에 부스터 키 → 순간부스터의 2배 시간 동안 부스터 + 출발 가속
+function startBoost(){ if(S.startUsed) return; S.startUsed=true; const C=CONFIG, base=C.maxSpeed*KART.speed; S.boostT=Math.max(S.boostT,C.instTime*2);
+  const sp=Math.hypot(S.vx,S.vz), add=Math.max(0,base*.45-sp); S.vx+=Math.sin(S.h)*add; S.vz+=Math.cos(S.h)*add; toast("출발 부스터!","#3ee6ff"); warp(true); }
 function ejectRider(nx,nz,power){
-  if(!KART.eject||S.ej||!CAR.rider) return;
+  if(!KART.eject||S.ej||!CAR.rider||S.shieldT>0) return;
   const rd=CAR.rider; rd.updateMatrixWorld(true); const wp=new THREE.Vector3(); rd.getWorldPosition(wp);
   scene.attach(rd); const sp=Math.hypot(S.vx,S.vz);
   S.ej={x:wp.x,y:wp.y,z:wp.z,vx:S.vx*.35+nx*Math.min(8,power*.3),vy:5+Math.min(4,power*.1),vz:S.vz*.35+nz*Math.min(8,power*.3),h:S.h,ground:false,t:0,idx:S.idx,told:false,spin:(Math.random()<.5?-1:1)*(6+Math.random()*4)};
@@ -2169,16 +2175,16 @@ function updEject(dt,controls){
   if(!E.ground){ E.vy-=CONFIG.gravity*dt; E.x+=E.vx*dt; E.y+=E.vy*dt; E.z+=E.vz*dt;
     if(E.y<=gy){ E.y=gy; E.ground=true; E.vy=0; thud(); } }
   else { const k=Math.exp(-12*dt); E.vx*=k; E.vz*=k; E.x+=E.vx*dt; E.z+=E.vz*dt; E.y=gy;
-    if(Math.hypot(E.vx,E.vz)<2.5||E.t>.9){ // 일어나서 자동으로 오토바이까지 걸어감 (종종걸음)
-      E.rest=(E.rest||0)+dt; if(E.rest>.1){ const want=Math.atan2(S.x-E.x,S.z-E.z); let dh=want-E.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; E.h+=dh*Math.min(1,8*dt);
-        const fw=Math.max(6,Math.hypot(S.x-E.x,S.z-E.z)/Math.max(.15,1.9-E.t)); /* 2초 안에 복귀하도록 속도 조절 */ E.x+=Math.sin(E.h)*fw*dt; E.z+=Math.cos(E.h)*fw*dt; E.walk=(E.walk||0)+fw*dt;
+    if(Math.hypot(E.vx,E.vz)<2.5||E.t>1.3){ // 일어나서 자동으로 오토바이까지 걸어감 (종종걸음)
+      E.rest=(E.rest||0)+dt; if(E.rest>.45){ const want=Math.atan2(S.x-E.x,S.z-E.z); let dh=want-E.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; E.h+=dh*Math.min(1,8*dt);
+        const fw=Math.hypot(S.x-E.x,S.z-E.z)<2.2?0:clamp(Math.hypot(S.x-E.x,S.z-E.z)/Math.max(.3,3.9-E.t),3,5.5); /* 터벅터벅 걸어서 약 3~4초 */ E.x+=Math.sin(E.h)*fw*dt; E.z+=Math.cos(E.h)*fw*dt; E.walk=(E.walk||0)+fw*dt;
         if(!E.told){ E.told=true; toast("오토바이로 돌아가는 중…","#ffcf2e"); toastTimer=1.8; } } } }
   const d=(E.x-p.x)*n.x+(E.z-p.z)*n.z, lim=TR.HW+(TR.def.walls?.5:(TR.def.runoff||2.4)); if(Math.abs(d)>lim){ const sg=Math.sign(d); E.x-=n.x*sg*(Math.abs(d)-lim); E.z-=n.z*sg*(Math.abs(d)-lim); }
   const rd=CAR.rider; if(rd){ rd.position.set(E.x,E.y+(E.ground?.15:0),E.z);
     if(!E.ground){ rd.rotation.x+=E.spin*dt; rd.rotation.z+=E.spin*.5*dt; }
     else { rd.rotation.set(0,E.h,0); rd.position.y+=Math.abs(Math.sin((E.walk||0)*3))*.15; } }
   // 다시 타기
-  if((E.ground&&E.t>.6&&Math.hypot(E.x-S.x,E.z-S.z)<2.8)||E.t>=2){ /* 늦어도 2초면 다시 탑승 */ const st=CAR.seat, par=st.parent||CAR.body; par.add(rd); rd.position.set(...st.pos); rd.rotation.set(0,0,0); rd.scale.setScalar(st.scale); S.ej=null; S.h=Math.atan2(TR.T[S.idx].x,TR.T[S.idx].z); toast("다시 탑승!","#46e08a"); beep(880,.12,.2); }
+  if((E.ground&&E.t>2.8&&Math.hypot(E.x-S.x,E.z-S.z)<2.8)||E.t>=4.2){ /* 늦어도 4초면 다시 탑승 */ const st=CAR.seat, par=st.parent||CAR.body; par.add(rd); rd.position.set(...st.pos); rd.rotation.set(0,0,0); rd.scale.setScalar(st.scale); S.ej=null; S.h=Math.atan2(TR.T[S.idx].x,TR.T[S.idx].z); toast("다시 탑승!","#46e08a"); beep(880,.12,.2); }
 }
 // ===== 티라노: 물기 (온라인에서 앞에 있는 상대를 물면 가벼울수록 감속, 전차급 무게부터는 못 물음) =====
 function trexBite(){
@@ -2189,6 +2195,7 @@ function trexBite(){
   if(best){ MP.biteSeq=(MP.biteSeq||0)+1; mpSend({bi:[MP.biteSeq,best]}); const g=MP.ghosts.get(best); bumpFx(g.x,g.y+2,g.z); toast("콱!","#ffffff"); }
 }
 function bittenByTrex(){
+  if(S.shieldT>0){ toast("보호막이 막았다!","#7fd8ff"); return; }
   const m=KART.mass||1;
   if(m>=1.9){ toast("티라노가 물려 했지만 너무 단단하다!","#46e08a"); S.shake=Math.max(S.shake,.2); return; }
   const keep=1-clamp(.8-.32*m,.15,.6); S.vx*=keep; S.vz*=keep; S.drifting=false; S.boostT=0; S.shake=Math.max(S.shake,.6); thud();
@@ -2414,7 +2421,7 @@ function mpGhost(peer,pr){
 function mpClearGhosts(){ for(const g of MP.ghosts.values()) scene.remove(g.obj); MP.ghosts.clear(); }
 
 // 포탄에 맞음: 가벼울수록 크게 들썩이고 포탄 방향으로 날아가며 느려짐, 무거우면 살짝 들썩하고 그대로
-function shellHitMe(s){ const m=KART.mass||1, hv=Math.hypot(s.v.x,s.v.z)||1, dx=s.v.x/hv, dz=s.v.z/hv;
+function shellHitMe(s){ if(S.shieldT>0){ toast("보호막이 막았다!","#7fd8ff"); return; } const m=KART.mass||1, hv=Math.hypot(s.v.x,s.v.z)||1, dx=s.v.x/hv, dz=s.v.z/hv;
   const fly=KART.fly||1, push=clamp(11/m,2,14)*fly, lift=clamp(10/m,2.2,12)*(fly>1?1.25:1), keep=1-clamp(.22/m,.06,.38);
   S.vx=S.vx*keep+dx*push; S.vz=S.vz*keep+dz*push; S.vy=Math.max(S.vy,lift); S.y+=.15; S.grounded=false; S.drifting=false;
   S.h+=(Math.random()<.5?-1:1)*clamp(.5/m,.05,.7)*(fly>1?2:1); S.shake=Math.max(S.shake,clamp(.9/m,.25,.9));
@@ -2427,13 +2434,15 @@ function mpUpdate(dt){
   if(!MP.joined) return;
   const now=performance.now();
   if(MP.racing&&!MP.finished&&(state==="race"||state==="countdown")&&now-MP.lastSend>66){ MP.lastSend=now;
-    const r=v=>Math.round(v*100)/100; mpSend({st:"race",rid:MP.raceId,x:r(S.x),y:r(S.y),z:r(S.z),h:r(S.h),vx:r(S.vx),vz:r(S.vz),ro:r(S.roll||0),pg:Math.round(mpProgress()*1000)/1000,bt:S.boostT>0||S.instT>0?1:0}); }
+    const r=v=>Math.round(v*100)/100; mpSend({st:"race",rid:MP.raceId,x:r(S.x),y:r(S.y),z:r(S.z),h:r(S.h),vx:r(S.vx),vz:r(S.vz),ro:r(S.roll||0),pg:Math.round(mpProgress()*1000)/1000,bt:S.boostT>0||S.instT>0?1:0,sd:S.shieldT>0?1:0}); }
   if(!MP.racing) return;
   const wallNow=Date.now();
   for(const p of mpList()){ if(p.peer===MP.myPeer) continue; const pr=p.presence; if(pr.rid!==MP.raceId||!(pr.st==="race"||pr.st==="done")||pr.x===undefined){ const g0=MP.ghosts.get(p.peer); if(g0) g0.obj.visible=false; continue; }
     const g=mpGhost(p.peer,pr); g.obj.visible=true;
     const BS=MP.biteSeen||(MP.biteSeen={}); if(BS[p.peer]===undefined) BS[p.peer]=Array.isArray(pr.bi)?pr.bi[0]:0;
     if(Array.isArray(pr.bi)&&pr.bi[0]!==BS[p.peer]){ BS[p.peer]=pr.bi[0]; g.biteT=.5; if(pr.bi[1]===MP.myPeer) bittenByTrex(); }
+    if(pr.sd&&!g.shield){ g.shield=makeShield(); const kk=KARTS[+pr.k]||KARTS[0], R=(kk.rad||1.15)*2.4+.6; g.shield.scale.setScalar(R); g.shield.position.y=R*.45; g.obj.add(g.shield); }
+    if(g.shield) g.shield.visible=!!pr.sd;
     if(g.key.startsWith("trex.")){ trexRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0),g.biteT||0); g.biteT=Math.max(0,(g.biteT||0)-dt); }
     const SS=MP.shotSeen||(MP.shotSeen={}); if(SS[p.peer]===undefined) SS[p.peer]=Array.isArray(pr.fs)?pr.fs[0]:0; // 이전 판 포탄은 무시
     if(Array.isArray(pr.fs)&&pr.fs.length===7){ const seen=SS[p.peer]; if(pr.fs[0]!==seen){ MP.shotSeen[p.peer]=pr.fs[0];
@@ -2446,7 +2455,8 @@ function mpUpdate(dt){
     if(state==="race"&&!S.rail){ const ok=KARTS[+pr.k]||KARTS[0], dx=S.x-g.x, dz=S.z-g.z, d=Math.hypot(dx,dz), R=(KART.rad||1.15)+(ok.rad||1.15);
       if(d<R&&d>1e-3&&Math.abs(S.y-g.y)<6){ const nx=dx/d, nz=dz/d, mMe=Math.pow(KART.mass||1,1.5), mOt=Math.pow(ok.mass||1,1.5), share=mOt/(mMe+mOt), fly=KART.fly||1; S.x+=nx*(R-d); S.z+=nz*(R-d);
         const ovx=+pr.vx||0, ovz=+pr.vz||0, rel=(S.vx-ovx)*nx+(S.vz-ovz)*nz;
-        if(rel<0&&(!g.bumpT||now-g.bumpT>350)){ g.bumpT=now; const imp=(Math.min(10,-rel)*(.8+share)+2*share)*(share>.5?fly:1); S.vx+=nx*imp; S.vz+=nz*imp;
+        if(rel<0&&(!g.bumpT||now-g.bumpT>350)&&S.shieldT>0){ g.bumpT=now; bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); }
+        else if(rel<0&&(!g.bumpT||now-g.bumpT>350)){ g.bumpT=now; const imp=(Math.min(10,-rel)*(.8+share)+2*share)*(share>.5?fly:1); S.vx+=nx*imp; S.vz+=nz*imp;
           const side=Math.sign(Math.sin(S.h)*nz-Math.cos(S.h)*nx)||1; S.h+=side*share*(fly>1?.9:.18); if(fly>1&&share>.5){ S.vy=Math.max(S.vy,3.5*share*fly); S.grounded=false; } const keep=1-.25*share; // 튕겨나가며 감속 (무거운 상대일수록 크게: 같은 무게 약 12%, 스쿠터→덤프 약 20%) S.vx*=keep; S.vz*=keep; S.drifting=false;
           S.shake=Math.max(S.shake,.25+share*.3); thud(); if(KART.eject&&share>.5&&-rel>5) ejectRider(nx,nz,-rel); bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); } } }
     }
@@ -2464,7 +2474,10 @@ function frame(now){
   let dt=Math.min(.05,(now-last)/1000); last=now; acc+=dt;
   while(acc>=STEP){
     const controls=state==="race";
-    if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(countT<=0){state="race"; $("count").hidden=true; toast("GO!","#ffcf2e"); beep(1320,.35);}}
+    if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(edge("boost")&&countT<=.5) S.startTap=true;
+      if(countT<=0){state="race"; $("count").hidden=true; toast("GO!","#ffcf2e"); beep(1320,.35); S.shieldT=5; if(S.startTap) startBoost(); }}
+    if(state==="race"&&!S.startUsed&&raceT<.5&&edge("boost")) startBoost();
+    if(S.shieldT>0) S.shieldT=Math.max(0,S.shieldT-STEP);
     if(state!=="menu"){ fsNow=physics(STEP, controls&&!S.ej); if(S.ej) updEject(STEP,controls); }
     if(state==="race"){raceT+=STEP; lapCheck(); if(input.fire&&!prev.fire) fireShell(); if(input.lock&&!prev.lock){ S.lock=!S.lock; toast(S.lock?"정지 고정":"고정 해제","#ffffff"); const lb=document.getElementById("lockBtn"); if(lb) lb.classList.toggle("hint",S.lock); } }
     for(const k in input) prev[k]=input[k];
@@ -2501,6 +2514,7 @@ function render(dt){
   wheels[0].rotation.y=S.steerVis; if(!CAR.lean&&wheels[1]) wheels[1].rotation.y=S.steerVis;
   shadow.visible=!S.rail; shadow.position.set(S.x,S.gy+.12,S.z); shadow.rotation.z=-S.h;
   const sh=clamp(1-(S.y-S.gy)/8,.3,1); shadow.scale.set(CAR.shadow[0]*sh,CAR.shadow[1]*sh,1);
+  shieldMesh.visible=S.shieldT>0&&state==="race"; if(shieldMesh.visible){ const R=(KART.rad||1.15)*2.4+.6; shieldMesh.scale.setScalar(R*(1+.03*Math.sin(performance.now()*.008))); shieldMesh.position.y=R*.45; shieldMesh.material.opacity=S.shieldT<1.2?(.22*(Math.sin(performance.now()*.03)>0?1:.3)):.22; }
   chute.visible=!!S.chute&&!S.grounded&&state!=="menu";
   if(chute.visible){ S.chuteVis=Math.min(1,(S.chuteVis||0)+dt*4); const k=CAR.giant?2.6:(KART.id==="tank"?1.3:1); chute.scale.setScalar(k*(.25+.75*S.chuteVis)); chute.position.y=CAR.giant?14:5.2; chute.rotation.set(-S.pitch*.8+Math.sin(performance.now()*.0021)*.06,0,Math.sin(performance.now()*.003)*.08); } else S.chuteVis=0;
   const fl=S.boostT>0||S.instT>0;
