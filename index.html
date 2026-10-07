@@ -167,7 +167,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-1958</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2005</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -370,10 +370,12 @@ const TRACKS = [
     ctrl:[[-164,-335,8],[55,-335,8],[78,-251,6],[82,-136,1],[122,-69,0],[174,-87,0],[190,-178,0],[237,-237,0],[318,-233,0],[350,-160,0],[360,-18,2],[437,40,5],[519,95,8],[529,255,8],[484,350,8],[73,368,8],[-364,364,8],[-473,302,6],[-514,186,3],[-524,40,0],[-564,-40,0],[-628,-81,0],[-615,-135,0],[-542,-138,0],[-473,-117,1],[-433,-182,3],[-433,-309,7],[-419,-374,8],[-350,-378,8],[-309,-335,8]],
     river:[[-130,247],[-125,624],[-156,1170]],
     decorate:decorateVillage },
-  { id:"sky", name:"구름 위 하늘길", desc:"5km · 출발 직후 손가락 헤어핀 5연속 · 600km/h 공중 유리터널 · 고가", hw:16, N:3900,
+  { id:"sky", name:"구름 위 하늘길", desc:"7km · 손가락 헤어핀 5연속 · 짧아진 600km/h 공중터널 · 지그재그 10연속(가운데 지름길)", hw:16, N:5500,
     sky:0x6fc3ff, ground:0x86d46a, walls:true, style:"village", overpass:3.5,
-    ctrl:[[0,0,0],[0,-120,0],[0,-390,0],[4,-422,0],[32,-452,0],[60,-422,0],[64,-250,0],[68,-218,0],[96,-188,0],[124,-218,0],[128,-390,0],[132,-422,0],[160,-452,0],[188,-422,0],[192,-250,0],[196,-218,0],[224,-188,0],[252,-218,0],[256,-390,0],[260,-422,0],[288,-452,0],[316,-422,0],[320,-250,0],[384,-250,1],[430,-330,3],[452,-420,7],[507,-497,14],[611,-471,30],[728,-510,45],[858,-471,48],[962,-380,44],[1001,-250,40],[962,-120,42],[1014,0,45],[1118,78,38],[1144,208,25],[1092,325,12],[1001,380,2],[884,398,0],[728,419,0],[611,380,0],[494,416,0],[377,385,5],[260,390,7],[143,390,7],[52,364,3],[-26,286,0],[-42,156,0],[-16,65,0]],
-    tube:{from:[507,-497],to:[1001,380],R:9},
+    ctrl:[[0,0,0],[0,-120,0],[0,-390,0],[4,-422,0],[32,-452,0],[60,-422,0],[64,-250,0],[68,-218,0],[96,-188,0],[124,-218,0],[128,-390,0],[132,-422,0],[160,-452,0],[188,-422,0],[192,-250,0],[196,-218,0],[224,-188,0],[252,-218,0],[256,-390,0],[260,-422,0],[288,-452,0],[316,-422,0],[320,-250,0],[384,-250,1],[430,-330,3],[452,-420,7],[507,-497,14],[611,-471,30],[728,-510,45],[858,-471,48],[962,-380,44],[1001,-250,40],[1060,-228,27],[1125,-212,15],[1165,-190,6],[1170,-168,2],[1130,-150,0],[950,-150,0],[934,-144,0],[922,-126,0],[934,-108,0],[950,-102,0],[1130,-102,0],[1146,-96,0],[1158,-78,0],[1146,-60,0],[1130,-54,0],[950,-54,0],[934,-48,0],[922,-30,0],[934,-12,0],[950,-6,0],[1130,-6,0],[1146,0,0],[1158,18,0],[1146,36,0],[1130,42,0],[950,42,0],[934,48,0],[922,66,0],[934,84,0],[950,90,0],[1130,90,0],[1146,96,0],[1158,114,0],[1146,132,0],[1130,138,0],[950,138,0],[934,144,0],[922,162,0],[934,180,0],[950,186,0],[1130,186,0],[1146,192,0],[1158,210,0],[1146,228,0],[1130,234,0],[950,234,0],[934,240,0],[922,258,0],[934,276,0],[950,282,0],[1130,282,0],[1146,288,0],[1158,306,0],[1146,324,0],[1130,330,0],[950,330,0],[880,365,0],[800,395,0],[728,419,0],[611,380,0],[494,416,0],[377,385,5],[260,390,7],[143,390,7],[52,364,3],[-26,286,0],[-42,156,0],[-16,65,0]],
+    tube:{from:[507,-497],to:[1001,-250],R:9},
+    branches:[{name:"지름길",s:[1015, -102],e:[1065, -6],mids:[[1040, -54]],hw:10}],
+    wallGaps:[[1026,-102,24],[1040,-54,20],[1054,-6,24]],
     river:[[195,234],[203,546],[182,988]],
     decorate:decorateSky },
   { id:"city", name:"하늘섬 빌딩숲", desc:"2.9km · 빌딩 사이를 누비는 지그재그 공중도로 · 전차로는 뭔가 다를지도", hw:16, N:2200,
@@ -420,6 +422,7 @@ function buildTrack(def){
   for(let i=0;i<N;i++) if(riverDist(P[i].x,P[i].z)<26 && flag[i]===0) flag[i]=1;
 
   const tr={def,N,HW,P,T,NR,Y,YB,flag,group,tube,arc,anim:[],branches:[],margin:def.walls?0.5:(def.runoff||2.4),riverDist};
+  if(def.wallGaps){ tr.wallGapSet=new Set(); for(let i=0;i<N;i++) if(def.wallGaps.some(g=>Math.hypot(P[i].x-g[0],P[i].z-g[1])<g[2]+4)) tr.wallGapSet.add(i); }
   if(gapR){ tr.gap={a:gapR.a,b:gapR.b,failY:Y[gapR.b]-45}; tr.gapSet=gapR.set; }
   if(kickR) tr.kickSet=kickR.set; if(tunR){ tr.boostRange={a:tunR.a,b:tunR.b}; tr.boostSet=tunR.set; }
 
@@ -466,7 +469,8 @@ function buildTrack(def){
   if(def.walls){
     const stone=new THREE.Color(0xd8d0c2), stone2=new THREE.Color(0xbfb6a6), rail=new THREE.Color(0xd9553b), rail2=new THREE.Color(0xf4f4f4);
     const vil=def.style==="village", sal=new THREE.Color(0xe8977a), cream=new THREE.Color(0xf3e6c8), conc=new THREE.Color(0xcfd2d8), conc2=new THREE.Color(0xbfc3ca);
-    group.add(wallMesh(P,NR,Y,YB,flag,N,HW+1.6,NT(i=>flag[i]===3?((Math.floor(i/8)%2)?conc:conc2):flag[i]===1?((Math.floor(i/3)%2)?rail:rail2):vil?((Math.floor(i/5)%2)?sal:cream):((Math.floor(i/6)%2)?stone:stone2))));
+    const WG=i=>(def.wallGaps||[]).some(g=>Math.hypot(P[i].x-g[0],P[i].z-g[1])<g[2]);
+    group.add(wallMesh(P,NR,Y,YB,flag,N,HW+1.6,NT(i=>WG(i)?null:flag[i]===3?((Math.floor(i/8)%2)?conc:conc2):flag[i]===1?((Math.floor(i/3)%2)?rail:rail2):vil?((Math.floor(i/5)%2)?sal:cream):((Math.floor(i/6)%2)?stone:stone2))));
   }
   // 출발선
   { const c=document.createElement("canvas"); c.width=128; c.height=16; const x=c.getContext("2d");
@@ -1728,16 +1732,17 @@ function physics(dt, controls){
   // 도로 찾기 (본선 + 샛길 중 가장 안쪽)
   S.idx=nearest(S.x,S.z,S.idx);
   let n=NR[S.idx], p=P[S.idx], hw=TR.HW;
-  let d=(S.x-p.x)*n.x+(S.z-p.z)*n.z, score=Math.abs(d)-hw, onB=null, prog=S.idx;
+  let d=(S.x-p.x)*n.x+(S.z-p.z)*n.z, score=Math.abs(d)-hw, onB=null, prog=S.idx, onBj=0;
   for(const b of TR.branches){
     let j=0,bd=1e9; for(let k=0;k<b.M;k++){const q=b.P[k],dd=(q.x-S.x)**2+(q.z-S.z)**2; if(dd<bd){bd=dd;j=k;}}
     const q=b.P[j], bn=b.NR[j], bt=b.T[j];
     const bdl=(S.x-q.x)*bn.x+(S.z-q.z)*bn.z, along=(S.x-q.x)*bt.x+(S.z-q.z)*bt.z;
     let sc=Math.abs(bdl)-b.hw;
     if((j===0&&along<0)||(j===b.M-1&&along>0)) sc=Math.max(sc,Math.abs(along));
-    if(sc<score){score=sc;n=bn;p=q;hw=b.hw;d=bdl;onB=b;prog=(b.a+Math.round(j/(b.M-1)*b.span))%N;}
+    if(sc<score){score=sc;n=bn;p=q;hw=b.hw;d=bdl;onB=b;onBj=j;prog=(b.a+Math.round(j/(b.M-1)*b.span))%N;}
   }
-  let margin=TR.margin;
+  if(onB&&score<-1&&onBj>onB.M*.75) S.idx=onB.b; // 지름길 끝: 본선 위치를 합류 지점으로 넘김
+  let margin=TR.margin; if(TR.wallGapSet&&TR.wallGapSet.has(S.idx)) margin=40;
   for(const b of TR.branches){ const da=(S.idx-b.a+N)%N, db=(b.b-S.idx+N)%N; if(da<50||db<50||(N-da)<6||(N-db)<6) margin=16; }
   if(onB&&onB!==S.onBranch&&score<-1) toast(onB.name+"!","#ffcf2e");
   S.onBranch=score<-1?onB:(onB?S.onBranch:null);
