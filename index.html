@@ -1,9 +1,7 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><title>잘남 카트 온라인</title><script>
-// 카카오톡 안의 간이 브라우저면 크롬/사파리로 다시 열기 (음성 기능이 막혀 있어서)
+// 카카오톡 안의 간이 브라우저면 위에 안내 띠: '열기'를 누르면 크롬/사파리로, ✕로 닫기
 (function(){ if(!/KAKAOTALK/i.test(navigator.userAgent)) return;
-  var ext="kakaotalk://web/openExternal?url="+encodeURIComponent(location.href), tried=false;
-  try{ tried=sessionStorage.getItem("kakaoExt")==="1"; sessionStorage.setItem("kakaoExt","1"); }catch(e){}
-  if(!tried) window.addEventListener("load",function(){ setTimeout(function(){ location.href=ext; },400); }); // 게임이 다 뜬 다음에 넘김
+  var ext="kakaotalk://web/openExternal?url="+encodeURIComponent(location.href); // 자동으로 넘기지 않고 안내 띠만 (열기 / ✕)
   (function(){ setTimeout(function show(){ if(!document.body) return setTimeout(show,300);
     var d=document.createElement("div"); d.style.cssText="position:fixed;left:8px;right:8px;top:8px;z-index:99;background:#ffd21f;color:#111;border-radius:12px;padding:10px 12px;font:700 13px sans-serif;display:flex;gap:8px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.3)";
     d.innerHTML='<span style="flex:1">카카오톡 안에서는 캐릭터 음성이 안 나와요. 크롬·사파리로 열어 주세요.</span>';
@@ -133,6 +131,8 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 .mp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .mp-slot{position:relative;border-radius:12px;border:1px solid var(--panel-line);background:rgba(255,255,255,.04);padding:6px 6px 8px;display:flex;flex-direction:column;gap:3px;min-width:0}
 .mp-slot img{width:100%;aspect-ratio:1.6;object-fit:cover;border-radius:8px;background:rgba(255,255,255,.06);display:block}
+.mp-slot .bot-x{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(14,22,48,.8);color:#fff;font-weight:900;cursor:pointer}
+.mp-slot.bot{border-color:#7fd8ff}
 .mp-slot.empty{border-style:dashed;opacity:.45;justify-content:center;align-items:center;min-height:110px;font-size:12px;color:var(--ink-dim);font-weight:700}
 .mp-slot.me{border-color:#ffcf2e;box-shadow:0 0 0 1px #ffcf2e inset}
 .mp-slot.ok{border-color:#46e08a}
@@ -196,7 +196,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2024</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2102</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -212,7 +212,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
       <kbd>드리프트 직후 ↑</kbd><span>↑를 떼었다 다시 누르면 순간부스터</span>
       <kbd>R / Esc</kbd><span>재시작 / 메뉴</span>
     </div>
-    <div class="row"><button class="btn" id="startBtn">혼자 출발</button><button class="btn ghost" id="voiceBtn" type="button">🔊 음성 테스트</button><button class="btn" id="mpBtn" type="button">온라인 대전</button><button class="btn ghost" id="hubBack" type="button">← 미니게임방</button></div>
+    <div class="row"><button class="btn" id="startBtn">출발</button><button class="btn ghost" id="botAddBtn" type="button">🤖 AI 추가</button><button class="btn ghost" id="botClrBtn" type="button">AI 빼기</button><button class="btn ghost" id="voiceBtn" type="button">🔊 음성 테스트</button><button class="btn" id="mpBtn" type="button">온라인 대전</button><button class="btn ghost" id="hubBack" type="button">← 미니게임방</button></div>
   </div>
 </div>
 
@@ -238,7 +238,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
       <div class="mp-sec">내 차 색상</div>
       <div class="swatches" id="mpColors"></div>
       <p class="mp-note" id="mpStatus"></p>
-      <div class="row"><button class="btn" id="mpGo" type="button">준비</button><button class="btn ghost" id="mpLeave" type="button">대기실 나가기</button></div>
+      <div class="row"><button class="btn" id="mpGo" type="button">준비</button><button class="btn ghost" id="mpBot" type="button">🤖 AI 추가</button><button class="btn ghost" id="mpLeave" type="button">대기실 나가기</button></div>
     </div>
   </div>
 </div>
@@ -323,7 +323,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"kart", name:"오렌지 루키", desc:"가속·조향 좋음 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.3, accel:1.45, turn:1.22, boost:1.25, mass:.8, fly:1.7},
   {id:"scoot", name:"배달 스쿠터", desc:"가속·조향 최고 · 최고속도 최저, 가장 가벼움", speed:1.26, accel:1.55, turn:1.32, boost:1.24, mass:.65},
   {id:"tank", name:"전차", desc:"느리지만 무거워서 다 밀어냄 + 포탄 발사 (Space / 포탄 버튼)", speed:1.17, accel:1.0, turn:.92, boost:1.3, mass:1.9},
-  {id:"giant", name:"바위 거인", desc:"3배 크기 거인. 무거워서 다 밀어냄 · 조향 최저", speed:1.36, accel:1.02, turn:.74, boost:1.3, mass:2.3, rad:2.35},
+  {id:"giant", name:"바위 거인", desc:"3배 크기 거인. 느리고 부스터도 천천히 차지만, 부스터 쓰면 시속 1000km로 6초 · 그때 닿는 차는 전부 튕겨냄", speed:1.09, accel:1.02, turn:.74, boost:1.3, mass:2.3, rad:2.35, gaugeMul:.5, superBoost:true},
   {id:"dump", name:"덤프트럭", desc:"2배 크기. 가장 무거워 다 밀어냄 · 가장 느리지만 부스터 강함", speed:1.2, accel:.92, turn:.82, boost:1.38, mass:2.8, rad:2.4},
   {id:"truck", name:"초보운전 1톤 트럭", desc:"조금 무겁고 조금 느림. 뒤에 초보운전 스티커", speed:1.29, accel:1.2, turn:1.08, boost:1.27, mass:1.5},
   {id:"roach", name:"바퀴벌레", desc:"빠르고 민첩 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.38, accel:1.38, turn:1.15, boost:1.22, mass:.75, fly:1.7},
@@ -333,6 +333,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
 ];
 // 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
 const SYN={tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
+const SUPER_T=6, SUPER_V=1000/5.8; // 거인 돌진: 6초, 시속 1000km
 function effKart(k,c){ return (c&&SYN[k.id]===c.id)?Object.assign({},k,{speed:k.speed*1.04,accel:k.accel*1.04,turn:k.turn*1.04,syn:true}):k; }
 
 
@@ -945,12 +946,12 @@ function decorateSummit(tr){
     const t=clamp((r-r0-12)/170,0,1); return Math.max(0,(y0-3)*(1-t)+ (1-t)*(1-t)*8+n*(1-t)); };
   const desc=[]; for(let i=gap.b;i!==tun.b+20;i=(i+1)%N) desc.push(i);
   const ridgeH=(x,z)=>{ let bi=-1,bd=1e9; for(let k=0;k<desc.length;k+=2){ const i=desc[k], d=(P[i].x-x)**2+(P[i].z-z)**2; if(d<bd){bd=d;bi=i;} }
-    const d=Math.sqrt(bd); const top=tr.boostSet.has(bi)?Y[bi]+15:Y[bi]-.4; if(d<HW+5) return top; const t=clamp((d-HW-5)/(tr.boostSet.has(bi)?70:95),0,1); return top*(1-t*t*(3-2*t)); };
+    const d=Math.sqrt(bd); const top=Y[bi]-.4; if(d<HW+5) return top; const t=clamp((d-HW-5)/95,0,1); return top*(1-t*t*(3-2*t)); };
   const valleyH=(x,z)=>Math.max(0,5+5*Math.sin(x/95)*Math.cos(z/120)+3*Math.sin(x/37+z/53));
   const rawH=(x,z)=>{ let h=Math.max(mtnH(x,z),ridgeH(x,z),valleyH(x,z)); const rd=tr.riverDist(x,z); if(rd<44){ const t=clamp((rd-28)/16,0,1); h=lerp(-4,h,t*t); } return h; };
   tr.terrainH=(x,z)=>{ let h=rawH(x,z);
-    let bi=0,bd=1e9; for(let i=0;i<N;i+=3){ const d=(P[i].x-x)**2+(P[i].z-z)**2; if(d<bd){bd=d;bi=i;} }
-    const d=Math.sqrt(bd)-HW-3; if(flag[bi]===5||tr.boostSet.has(bi)) return h;
+    let bi=0,bd=1e9; for(let i=0;i<N;i+=3){ if(flag[i]===5) continue; const d=(P[i].x-x)**2+(P[i].z-z)**2; if(d<bd){bd=d;bi=i;} }
+    const d=Math.sqrt(bd)-HW-3;
     if(d<=0) return Math.min(h,Y[bi]-.5); if(d<16){ const t=d/16; return lerp(Math.min(h,Y[bi]-.5),h,t*t); } return h; };
   // 지형 메시 (높이·경사에 따라 풀 → 숲 → 바위 → 눈)
   let bx0=1e9,bx1=-1e9,bz0=1e9,bz1=-1e9; for(const p of P){bx0=Math.min(bx0,p.x);bx1=Math.max(bx1,p.x);bz0=Math.min(bz0,p.z);bz1=Math.max(bz1,p.z);}
@@ -983,6 +984,10 @@ function decorateSummit(tr){
       const v=[ring(i,a0),ring(j,a0),ring(j,a1),ring(i,a0),ring(j,a1),ring(i,a1)]; for(const q of v){ pos.push(...q); col.push(c.r,c.g,c.b); } } }
     const tg=new THREE.BufferGeometry(); tg.setAttribute("position",new THREE.Float32BufferAttribute(pos,3)); tg.setAttribute("color",new THREE.Float32BufferAttribute(col,3)); tg.computeVertexNormals();
     const tm=new THREE.Mesh(tg,TOON({vertexColors:true,side:THREE.DoubleSide})); tm.userData.noProp=true; g.add(tm);
+    { const op=[], oc=[], o1=new THREE.Color(0x2f7bff), o2=new THREE.Color(0xffffff), ringO=(i,a)=>{ const p=P[i], n=NR[i]; return [p.x+n.x*Math.cos(a)*(HW+3.4), Y[i]-.2+Math.sin(a)*14.4, p.z+n.z*Math.cos(a)*(HW+3.4)]; };
+      for(let i=tun.a;i<tun.b;i++){ const j=i+1, c=(Math.floor(i/10)%2)?o1:o2; for(let k=0;k<A;k++){ const a0=k/A*Math.PI, a1=(k+1)/A*Math.PI; for(const q of [ringO(i,a0),ringO(j,a0),ringO(j,a1),ringO(i,a0),ringO(j,a1),ringO(i,a1)]){ op.push(...q); oc.push(c.r,c.g,c.b); } } }
+      const og=new THREE.BufferGeometry(); og.setAttribute("position",new THREE.Float32BufferAttribute(op,3)); og.setAttribute("color",new THREE.Float32BufferAttribute(oc,3)); og.computeVertexNormals();
+      const om=new THREE.Mesh(og,TOON({vertexColors:true,side:THREE.DoubleSide})); om.userData.noProp=true; g.add(om); }
     const lm=new THREE.MeshBasicMaterial({color:0x5ff3ff}), lm2=new THREE.MeshBasicMaterial({color:0xffe066});
     for(let i=tun.a+4;i<tun.b;i+=9){ for(const s of [1,-1]){ const b=new THREE.Mesh(new THREE.BoxGeometry(.5,.5,6),(Math.floor(i/9)%2)?lm:lm2); b.position.set(P[i].x+NR[i].x*s*(HW+1.2),Y[i]+5.5,P[i].z+NR[i].z*s*(HW+1.2)); b.rotation.y=Math.atan2(T[i].x,T[i].z); b.userData.noProp=true; g.add(b); } }
     const arrowM=new THREE.MeshBasicMaterial({color:0x3ee6ff,side:THREE.DoubleSide});
@@ -1009,13 +1014,13 @@ function decorateSummit(tr){
   { const trunk=new THREE.CylinderGeometry(.35,.45,2.4,6); trunk.translate(0,1.2,0); const leaf=new THREE.ConeGeometry(2.4,6.5,7); leaf.translate(0,5.2,0);
     const n=1600, it=new THREE.InstancedMesh(trunk,Lam(0x7a5236),n), il=new THREE.InstancedMesh(leaf,Lam(0x2f7a3a),n), il2=new THREE.InstancedMesh(leaf,Lam(0x3f9a46),n);
     const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), sc=new THREE.Vector3(), p=new THREE.Vector3(); let a=0,b=0;
-    for(let k=0;k<n*3&&a+b<n;k++){ const x=cx+(rnd()-.5)*(S-200), z=cz+(rnd()-.5)*(S-200); const h=tr.terrainH(x,z); if(h>210||h<.5) continue; if(tr.riverDist(x,z)<40) continue; if(tr.edgeDist(x,z)<9) continue;
+    for(let k=0;k<n*3&&a+b<n;k++){ const x=cx+(rnd()-.5)*(S-200), z=cz+(rnd()-.5)*(S-200); const h=tr.terrainH(x,z); if(h>210||h<.5) continue; if(tr.riverDist(x,z)<40) continue; if(tr.edgeDist(x,z)<15) continue;
       const s=.8+rnd()*.9; m4.compose(p.set(x,h-.3,z),q,sc.set(s,s,s)); it.setMatrixAt(a+b,m4); if(rnd()<.5){ il.setMatrixAt(a++,m4); } else { il2.setMatrixAt(b++,m4); } }
     it.count=a+b; il.count=a; il2.count=b; for(const o of [it,il,il2]){ o.userData.noProp=true; g.add(o); } }
   // 산허리를 감싸는 구름
   { const cm=new THREE.MeshLambertMaterial({color:0xffffff,transparent:true,opacity:.92});
     for(let k=0;k<34;k++){ const a=rnd()*Math.PI*2, r=280+rnd()*520, x=M[0]+Math.cos(a)*r, z=M[1]+Math.sin(a)*r, y=150+rnd()*170;
-      if(Math.abs(x-90)<60&&z>-700&&z<-150) continue; const cl=new THREE.Group();
+      if(Math.abs(x-90)<70&&z>-720&&z<-120) continue; if(tr.edgeDist(x,z)<70) continue; const cl=new THREE.Group();
       for(let j=0;j<5;j++){ const s=new THREE.Mesh(new THREE.SphereGeometry(8+rnd()*10,10,8),cm); s.position.set((rnd()-.5)*40,(rnd()-.5)*6,(rnd()-.5)*22); s.scale.y=.55; cl.add(s); }
       cl.position.set(x,y,z); cl.userData.noProp=true; g.add(cl); tr.anim.push(t=>{ cl.position.x=x+Math.sin(t*.05+k)*12; }); } }
   mountains(g,cx,cz,Math.max(bx1-bx0,bz1-bz0)*.5+900,[...P]);
@@ -1647,7 +1652,7 @@ const S={}; let KART=KARTS[0];
 function resetKart(){
   const i=TR.N-14;
   Object.assign(S,{x:TR.P[i].x,z:TR.P[i].z,y:TR.Y[i],vy:0,grounded:true,gy:TR.Y[i],slope:0,pitch:0,h:Math.atan2(TR.T[i].x,TR.T[i].z),vx:0,vz:0,yaw:0,
-    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,items:0,boostT:0,instT:0,instWin:0,ej:null,shieldT:0,startTap:false,startUsed:false,biteT:0,chute:false,kickHint:false,inTun:false,
+    rail:false,railV:0,railD:0,roll:0,free:false,spdMul:1,lock:false,drifting:false,driftDir:0,dYaw:0,steerS:0,hold:0,holdDir:0,dHold:0,driftT:0,gripRamp:1,gauge:0,items:0,boostT:0,superT:0,instT:0,instWin:0,ej:null,shieldT:0,startTap:false,startUsed:false,biteT:0,chute:false,kickHint:false,inTun:false,
     idx:i,prog:i,onBranch:null,offroad:false,steerVis:0,shake:0,air:0});
 }
 function nearest(x,z,hint){
@@ -1681,14 +1686,15 @@ function physics(dt, controls){
   S.steerS=lerp(S.steerS||0,steerRaw,1-Math.exp(-dt/C.steerEase)); const sa=Math.abs(S.steerS), steer=sa<.02?0:Math.sign(S.steerS)*sa*sa*(3-2*sa);
   const brake=controls&&input.brake, accel=controls&&!brake&&(input.accel||touchMode);
   const boosting=S.boostT>0||S.instT>0, ground=S.grounded;
-  const roadMax=S.boostT>0?base*(K.boost||C.boostRatio):(S.instT>0?base*C.instRatio:base);
+  const roadMax=S.superT>0?SUPER_V:S.boostT>0?base*(K.boost||C.boostRatio):(S.instT>0?base*C.instRatio:base);
   let gf=1; if(S.offroad){ const gc=C.grassCurve, t=S.grassT; gf=gc[gc.length-1][1];
     for(let k=0;k<gc.length-1;k++){ if(t<gc[k+1][0]){ gf=lerp(gc[k][1],gc[k+1][1],(t-gc[k][0])/(gc[k+1][0]-gc[k][0])); break; } } }
   const max=roadMax*gf;
 
   if(ground){
     if(accel&&!boosting&&fs<max) fs=Math.min(max, fs+C.accel*K.accel*(S.spdMul||1)*(1-Math.pow(Math.max(0,fs)/max,2))*dt+.4*dt);
-    if(S.boostT>0&&fs<max) fs=Math.min(max, fs+C.boostAccel*K.accel*dt);
+    if(S.superT>0&&fs<max) fs=Math.min(max, fs+75*dt);
+    else if(S.boostT>0&&fs<max) fs=Math.min(max, fs+C.boostAccel*K.accel*dt);
     else if(S.instT>0&&fs<max) fs=Math.min(max, fs+C.instAccel*K.accel*dt);
     if(brake){ if(fs>0) fs-=C.brake*dt; else fs=Math.max(fs-C.accel*.6*dt,-C.reverseMax); }
     if(!accel&&!brake&&!boosting) fs-=Math.sign(fs)*Math.min(Math.abs(fs),(C.coastDrag*Math.abs(fs)+1.2)*dt);
@@ -1718,6 +1724,7 @@ function physics(dt, controls){
     if(steerRaw!==0&&steerRaw===S.holdDir) S.hold+=dt; else { S.hold=0; S.holdDir=steerRaw; }
     if(steerRaw!==0&&ground&&fs>5){ const rate=Math.min(C.turnLossMax,C.turnLossBase*(Math.exp(S.hold/C.turnLossTime)-1)+C.turnLossBase); fs-=fs*rate*Math.abs(steer)*dt; }
   }
+  if(S.superT>0) yaw*=clamp(fs/base,1,3.2)*.8; // 초고속에서도 돌 수는 있게
   if(!ground) yaw*=.35;
   S.yaw=yaw;
 
@@ -1733,8 +1740,8 @@ function physics(dt, controls){
   fs=(fs>=0?1:-1)*Math.sqrt(fs*fs+(ls*ls-ls2*ls2)*eff); ls=ls2;
 
   if(ground&&fs>8&&S.gauge<100){
-    if(S.drifting&&Math.abs(ls)>2) S.gauge+=Math.abs(yaw)*dt*clamp(fs/base,.4,1.2)*C.gaugePerRad;
-    else if(Math.abs(ls)>3) S.gauge+=Math.abs(ls)*dt*.6;
+    if(S.drifting&&Math.abs(ls)>2) S.gauge+=Math.abs(yaw)*dt*clamp(fs/base,.4,1.2)*C.gaugePerRad*(K.gaugeMul||1);
+    else if(Math.abs(ls)>3) S.gauge+=Math.abs(ls)*dt*.6*(K.gaugeMul||1);
     if(S.gauge>=100) S.gauge=100; }
   if(S.gauge>=100&&S.items<2){ S.gauge=0; S.items++; toast("부스터 +1","#3ee6ff"); beep(1320,.12,.15);
   }
@@ -1742,8 +1749,8 @@ function physics(dt, controls){
   if(S.instWin>0){ S.instWin-=dt;
     const tap=edge("accel")||(touchMode&&edge("boost"));
     if(controls&&tap&&fs>8){S.instT=C.instTime;S.instWin=0;usedTap=true;toast("순간 부스터!","#ffcf2e"); warp(false);} }
-  if(controls&&!usedTap&&edge("boost")&&S.items>0){S.items--;S.boostT=C.boostTime;toast("부스터!","#3ee6ff"); warp(true);}
-  S.boostT=Math.max(0,S.boostT-dt); S.instT=Math.max(0,S.instT-dt);
+  if(controls&&!usedTap&&edge("boost")&&S.items>0){S.items--; if(K.superBoost){ S.boostT=SUPER_T; S.superT=SUPER_T; toast("거인 돌진! 시속 1000km","#ff7a1a"); S.shake=Math.max(S.shake,.6); thud(); } else { S.boostT=C.boostTime; toast("부스터!","#3ee6ff"); } warp(true);}
+  S.superT=Math.max(0,S.superT-dt); S.boostT=Math.max(0,S.boostT-dt); S.instT=Math.max(0,S.instT-dt);
 
   S.vx=fx*fs+rx*ls; S.vz=fz*fs+rz*ls;
   S.x+=S.vx*dt; S.z+=S.vz*dt;
@@ -1815,8 +1822,8 @@ function physics(dt, controls){
     else if(TR.gapSet&&TR.gapSet.has(S.idx)&&S.air>1.1){ S.chute=true; toast("자동 낙하산","#ffffff"); } }
   const prevGy=S.gy; S.gy=gy;
   S.vy-=C.gravity*dt;
-  if(S.chute&&!S.grounded){ const tv=(TR.gapSet&&TR.gapSet.has(S.idx))?-7:-Math.max(7,(S.y-gy)*1.3); S.vy+=C.gravity*dt; if(S.vy<tv) S.vy=lerp(S.vy,tv,1-Math.exp(-6*dt)); else S.vy-=C.gravity*dt;
-    if(S.chuteV===undefined) S.chuteV=Math.max(26,fs); if(fs<S.chuteV){ fs=S.chuteV; S.vx=fx*fs+rx*ls; S.vz=fz*fs+rz*ls; } } else S.chuteV=undefined;
+  if(S.chute&&!S.grounded){ const inGap=TR.gapSet&&TR.gapSet.has(S.idx), tv=inGap?-5.2:-Math.max(10,(S.y-gy)*2); S.vy+=C.gravity*dt; if(S.vy<tv) S.vy=lerp(S.vy,tv,1-Math.exp(-6*dt)); else S.vy-=C.gravity*dt;
+    if(S.chuteV===undefined) S.chuteV=Math.max(26,fs); if(inGap) S.chuteV=Math.max(16,S.chuteV-14*dt); if(fs<S.chuteV||inGap){ fs=S.chuteV; S.vx=fx*fs+rx*ls; S.vz=fz*fs+rz*ls; } } else S.chuteV=undefined;
   S.y+=S.vy*dt;
   if(S.y<=gy+(S.grounded?.12:0)){ if(S.chute){ S.chute=false; toast("착지!","#ffcf2e"); }
     if(!S.grounded&&S.vy<-5){ thud(); S.shake=Math.min(.4,-S.vy*.03); if(S.air>.35) toast("나이스 점프!","#ffffff"); }
@@ -2114,7 +2121,8 @@ function updateFX(dt){
       for(const mt of c.mountains){ if(mtnHit(mt,sx,sy,sz)){ wall=true; break; } } }
     let hitCar=false;
     if(s.remote&&state==="race"&&!S.rail){ const R=(KART.rad||1.15)+1.3; if(Math.hypot(sx-S.x,sz-S.z)<R&&Math.abs(sy-(S.y+1))<R+1.5){ hitCar=true; shellHitMe(s); } }
-    else if(!s.remote&&MP.racing){ for(const g of MP.ghosts.values()){ if(!g.obj.visible) continue; if(Math.hypot(sx-g.x,sz-g.z)<2.6&&Math.abs(sy-(g.y+1))<4){ hitCar=true; break; } } }
+    if(!hitCar) for(const b of BOT.list){ if(b.id===s.src) continue; const R=(b.K.rad||1.15)+1.3; if(Math.hypot(sx-b.x,sz-b.z)<R&&Math.abs(sy-(b.wy+1))<R+1.5){ hitCar=true; botShellHit(b,s); break; } }
+    if(!hitCar&&(!s.remote||s.src)&&MP.racing){ for(const g of MP.ghosts.values()){ if(!g.obj.visible) continue; if(Math.hypot(sx-g.x,sz-g.z)<2.6&&Math.abs(sy-(g.y+1))<4){ hitCar=true; break; } } }
     let hitProp=false; for(const p of TR.props){ if(p.broken) continue; if(Math.abs(p.center.x-s.m.position.x)<p.r+1&&Math.abs(p.center.z-s.m.position.z)<p.r+1&&s.m.position.y<p.center.y+p.r+2){ hitProp=true; break; } }
     if(hitCar||hitProp||s.m.position.y<=g.y+.2||wall||s.t>(s.life||2.5)){ explode(new THREE.Vector3(s.m.position.x,Math.max(g.y,s.m.position.y-.2),s.m.position.z),s.power||0); scene.remove(s.m); FX.shells.splice(i,1); } }
   for(let i=FX.broken.length-1;i>=0;i--){ const p=FX.broken[i]; p.t+=dt; if(p.t>3){ p.obj.visible=false; FX.broken.splice(i,1); continue; }
@@ -2157,6 +2165,136 @@ function drawSpeedFx(dt){
   sctx.fillStyle=vg; sctx.fillRect(0,0,w,h);
 }
 
+/* ===== AI 봇: 'AI 추가' 한 번에 한 대. 혼자 달리기와 온라인 대전 모두 참가. 부딪힘·포탄·물기·거인 돌진 모두 받음 ===== */
+const BOT_NAMES=["번개","깡통","뚜벅","쌩쌩","콩콩","모래","바람","찌릿"];
+const BOT={cfg:[],list:[],meshes:new Map(),on:false,t:0,seq:0,cf:null,cfTR:null,rankT:0,lastRank:0,cerDone:false,finT:null};
+const BUMPT={};
+function botPid(c){ return (MP.joined&&MP.myPeer?MP.myPeer+"#ai":"ai")+c.id; }
+function humanCount(){ return MP.joined?mpList().filter(p=>!p.bot).length:1; }
+function botAdd(){ if(BOT.cfg.length+humanCount()>=8){ toast("자리가 꽉 찼어요 (최대 8대)","#ffcf2e"); return false; }
+  const used=new Set(BOT.cfg.map(c=>c.n).concat(MP.joined?mpList().map(p=>cleanName(p.presence.n)):[])), nm=BOT_NAMES.map(n=>"AI "+n).find(n=>!used.has(n))||("AI "+(BOT.seq+1));
+  BOT.cfg.push({id:++BOT.seq,n:nm,ch:Math.floor(Math.random()*CHARS.length),k:Math.floor(Math.random()*KARTS.length),cl:Math.floor(Math.random()*PAINTS.length)}); return true; }
+function botRemove(id){ BOT.cfg=BOT.cfg.filter(c=>c.id!==id); }
+function botCurve(){ if(BOT.cfTR===TR&&BOT.cf) return BOT.cf; const N=TR.N, T=TR.T, f=new Float32Array(N);
+  for(let i=0;i<N;i++){ let mx=0; for(const L of [10,22,36]){ const j=(i+L)%N, a=Math.acos(clamp(T[i].x*T[j].x+T[i].z*T[j].z,-1,1)); mx=Math.max(mx,a*30/(L+8)); } f[i]=clamp(1-mx*.28,.72,1); }
+  const g=new Float32Array(N); for(let i=0;i<N;i++){ let m=1; for(let k=0;k<45;k+=3) m=Math.min(m,f[(i+k)%N]); g[i]=m; } // 미리 감속
+  BOT.cf=g; BOT.cfTR=TR; return g; }
+function botMake(c,slot){ const N=TR.N, i0=N-14, hw=(TR.def.hw||12), lane=Math.min(3.4,(hw*2-4)/4), col=slot%4, row=Math.floor(slot/4), lat=(col-1.5)*lane, back=row*8;
+  const seg=Math.hypot(TR.P[(i0+1)%N].x-TR.P[i0].x,TR.P[(i0+1)%N].z-TR.P[i0].z)||1.4, K=effKart(KARTS[c.k]||KARTS[0],CHARS[c.ch]);
+  const b={c,id:botPid(c),K,p:(i0-back/seg+N)%N,off:lat,lane:lat,v:0,vo:0,y:0,vy:0,lapN:-1,ft:null,boostT:0,superT:0,items:0,gauge:Math.random()*5,shieldT:0,spin:0,
+    skill:.95+Math.random()*.06,ph:Math.random()*6.28,cd:3+Math.random()*3,biteT:0,fsSeq:0,fs:null,biSeq:0,bi:null,startB:Math.random()<.55,x:0,z:0,wy:0,h:0,vx:0,vz:0};
+  botPose(b); return b; }
+function botsClear(){ for(const g of BOT.meshes.values()) scene.remove(g.obj); BOT.meshes.clear(); BOT.list=[]; BOT.on=false; }
+function botsSpawn(){ botsClear(); BOT.cerDone=false; BOT.finT=null; BOT.lastRank=0; BOT.t=0;
+  if(MP.racing){ const ps=MP.ps||[]; BOT.list=BOT.cfg.filter(c=>ps.includes(botPid(c))).map(c=>botMake(c,ps.indexOf(botPid(c)))); }
+  else BOT.list=BOT.cfg.map((c,k)=>botMake(c,k+1));
+  const show=BOT.list.length>0||MP.racing; $m("mpRank").parentNode.hidden=!show; }
+function botsGo(){ BOT.on=true; BOT.t=0; for(const b of BOT.list){ b.shieldT=5; if(b.startB) b.boostT=CONFIG.instTime*2; } }
+function botPose(b){ const N=TR.N, P=TR.P, i=Math.floor(b.p)%N, j=(i+1)%N, f=b.p-Math.floor(b.p), n=TR.NR[i], t=TR.T[i];
+  const px=P[i].x+(P[j].x-P[i].x)*f, pz=P[i].z+(P[j].z-P[i].z)*f; b.gy=TR.Y[i]+(TR.Y[j]-TR.Y[i])*f; b.idx=i;
+  b.x=px+n.x*b.off; b.z=pz+n.z*b.off; b.wy=b.gy+b.y; b.vx=t.x*b.v+n.x*b.vo; b.vz=t.z*b.v+n.z*b.vo;
+  b.h=Math.atan2(t.x,t.z)+Math.atan2(b.vo,Math.max(6,b.v))*.5+b.spin; }
+function botImpulse(b,ix,iz){ const t=TR.T[b.idx|0], n=TR.NR[b.idx|0]; b.v+=ix*t.x+iz*t.z; b.vo+=ix*n.x+iz*n.z; }
+function botSnap(b){ return {id:b.id,x:b.x,y:b.wy,z:b.z,vx:b.vx,vz:b.vz,mass:b.K.mass||1,rad:b.K.rad||1.15,gb:b.superT>0}; }
+// 거인 돌진에 맞으면: 무게 상관없이 옆 가드레일 쪽으로 날아감
+function giantSide(x,z,o,i){ const n=TR.NR[i|0]; return Math.sign((x-o.x)*n.x+(z-o.z)*n.z)||(Math.random()<.5?-1:1); }
+function botBump(b,o,now){ const dx=b.x-o.x, dz=b.z-o.z, d=Math.hypot(dx,dz), R=(b.K.rad||1.15)+(o.rad||1.15);
+  if(!(d<R&&d>1e-3&&Math.abs(b.wy-o.y)<6)) return; const nx=dx/d, nz=dz/d;
+  { const t=TR.T[b.idx], n=TR.NR[b.idx], sh=R-d; b.off+=(nx*n.x+nz*n.z)*sh; b.p+=(nx*t.x+nz*t.z)*sh/1.4; if(b.p<0) b.p+=TR.N; }
+  const rel=(b.vx-o.vx)*nx+(b.vz-o.vz)*nz, bt=b.bt||(b.bt={}); if(rel>=0||(bt[o.id]&&now-bt[o.id]<350)) return; bt[o.id]=now;
+  const near=Math.hypot(b.x-S.x,b.z-S.z)<60;
+  if(b.superT>0){ if(near) bumpFx((b.x+o.x)/2,b.wy+1.5,(b.z+o.z)/2); return; }
+  if(o.gb){ const sg=giantSide(b.x,b.z,o,b.idx); b.v*=.6; b.vo=sg*34; b.vy=Math.max(b.vy,7); b.y=Math.max(b.y,.05); b.spin=sg*2.4; if(near){ bumpFx(b.x,b.wy+1.5,b.z); thud(); } return; }
+  if(b.shieldT>0){ if(near) bumpFx((b.x+o.x)/2,b.wy+1.2,(b.z+o.z)/2); return; }
+  const mMe=Math.pow(b.K.mass||1,1.5), mOt=Math.pow(o.mass||1,1.5), share=mOt/(mMe+mOt), fly=b.K.fly||1, imp=(Math.min(10,-rel)*(.8+share)+2*share)*(share>.5?fly:1);
+  b.v*=1-.25*share; botImpulse(b,nx*imp,nz*imp); b.spin+=(Math.random()<.5?-1:1)*share*(fly>1?.9:.25); if(fly>1&&share>.5){ b.vy=Math.max(b.vy,3.5*share*fly); b.y=Math.max(b.y,.05); }
+  if(near) bumpFx((b.x+o.x)/2,b.wy+1.2,(b.z+o.z)/2); }
+function botShellHit(b,s){ if(b.shieldT>0) return; const m=b.K.mass||1, hv=Math.hypot(s.v.x,s.v.z)||1, dx=s.v.x/hv, dz=s.v.z/hv, fly=b.K.fly||1;
+  const push=clamp(11/m,2,14)*fly, lift=clamp(10/m,2.2,12)*(fly>1?1.25:1), keep=1-clamp(.22/m,.06,.38);
+  b.v*=keep; botImpulse(b,dx*push,dz*push); b.vy=Math.max(b.vy,lift); b.y=Math.max(b.y,.15); b.spin+=(Math.random()<.5?-1:1)*clamp(.5/m,.05,.7)*(fly>1?2:1); }
+function botBitten(b){ const m=b.K.mass||1; if(m>=1.9||b.shieldT>0) return; b.v*=1-clamp(.8-.32*m,.15,.6); b.boostT=0; b.superT=0; bumpFx(b.x,b.wy+1.5,b.z); }
+// 나를 밀어내는 계산 (상대 카트 / AI 봇 공통)
+function bumpMe(o,now){
+  if(state!=="race"||S.rail) return; const dx=S.x-o.x, dz=S.z-o.z, d=Math.hypot(dx,dz), R=(KART.rad||1.15)+(o.rad||1.15);
+  if(!(d<R&&d>1e-3&&Math.abs(S.y-o.y)<6)) return;
+  const nx=dx/d, nz=dz/d, mMe=Math.pow(KART.mass||1,1.5), mOt=Math.pow(o.mass||1,1.5), share=mOt/(mMe+mOt), fly=KART.fly||1; S.x+=nx*(R-d); S.z+=nz*(R-d);
+  const rel=(S.vx-o.vx)*nx+(S.vz-o.vz)*nz; if(!(rel<0&&(!BUMPT[o.id]||now-BUMPT[o.id]>350))) return; BUMPT[o.id]=now;
+  const fx=()=>bumpFx((S.x+o.x)/2,Math.max(S.y,o.y)+1.2,(S.z+o.z)/2);
+  if(S.superT>0){ fx(); thud(); S.shake=Math.max(S.shake,.3); return; } // 돌진 중인 거인은 안 밀림
+  if(o.gb){ const sg=giantSide(S.x,S.z,o,S.idx), n=TR.NR[S.idx]; S.vx=S.vx*.6+n.x*sg*34; S.vz=S.vz*.6+n.z*sg*34; S.vy=Math.max(S.vy,7); S.y+=.2; S.grounded=false; S.drifting=false; S.boostT=0;
+    S.h+=sg*.8; S.shake=Math.max(S.shake,.9); thud(); fx(); toast("거인 돌진에 날아갔다!","#ff4d6d"); voice("bad",0); if(KART.eject) ejectRider(n.x*sg,n.z*sg,30); return; }
+  if(S.shieldT>0){ fx(); return; }
+  const imp=(Math.min(10,-rel)*(.8+share)+2*share)*(share>.5?fly:1), keep=1-.25*share; S.vx=S.vx*keep+nx*imp; S.vz=S.vz*keep+nz*imp;
+  const side=Math.sign(Math.sin(S.h)*nz-Math.cos(S.h)*nx)||1; S.h+=side*share*(fly>1?.9:.18); if(fly>1&&share>.5){ S.vy=Math.max(S.vy,3.5*share*fly); S.grounded=false; }
+  S.drifting=false; S.shake=Math.max(S.shake,.25+share*.3); thud(); if(share>.6&&-rel>8) voice("bad"); if(KART.eject&&share>.5&&-rel>5) ejectRider(nx,nz,-rel); fx(); }
+// 봇이 노릴 상대 (나, 다른 봇, 온라인 상대)
+function botTargets(b){ const out=[]; if(state==="race"&&!S.rail) out.push({kind:"me",x:S.x,y:S.y,z:S.z});
+  for(const o of BOT.list) if(o!==b) out.push({kind:"bot",b:o,x:o.x,y:o.wy,z:o.z});
+  if(MP.racing) for(const [peer,g] of MP.ghosts) if(g.obj.visible) out.push({kind:"peer",peer,x:g.x,y:g.y,z:g.z}); return out; }
+function botWeapon(b){ const K=b.K; if(b.cd>0||b.ft||!(K.id==="tank"||K.id==="trex")) return; const fx=Math.sin(b.h), fz=Math.cos(b.h);
+  let best=null, bd=K.id==="tank"?85:9; for(const t of botTargets(b)){ const dx=t.x-b.x, dz=t.z-b.z, d=Math.hypot(dx,dz); if(d<bd&&d>(K.id==="tank"?12:0)&&(dx*fx+dz*fz)/Math.max(d,.01)>(K.id==="tank"?.93:.35)){ bd=d; best=t; } }
+  if(!best) return; b.cd=3+Math.random()*2.5;
+  if(K.id==="trex"){ b.biteT=.5; if(Math.hypot(b.x-S.x,b.z-S.z)<60) thud();
+    if(best.kind==="me"){ if(S.shieldT<=0) bittenByTrex(); } else if(best.kind==="bot") botBitten(best.b); else { b.biSeq++; b.bi=[b.biSeq,best.peer]; } return; }
+  const d=bd, tt=d/95, dx=(best.x-b.x)/d, dz=(best.z-b.z)/d, sx=b.x+dx*3, sz=b.z+dz*3, sy=b.wy+2.4;
+  const v=new THREE.Vector3(dx*95+b.vx*.3,4.9*tt+(best.y+1-sy)/tt,dz*95+b.vz*.3);
+  const m=new THREE.Mesh(shellG,shellM); m.position.set(sx,sy,sz); scene.add(m); FX.shells.push({m,v,t:0,life:2.5,power:0,remote:true,src:b.id});
+  const dist=Math.hypot(b.x-S.x,b.z-S.z); if(dist<120) boomSnd(dist); for(let k=0;k<3;k++) puff(new THREE.Vector3(sx,sy,sz),.7,.8,smokeM(),new THREE.Vector3((Math.random()-.5)*3,1,(Math.random()-.5)*3));
+  const q=x=>Math.round(x*100)/100; b.fsSeq++; b.fs=[b.fsSeq,q(sx),q(sy),q(sz),q(v.x),q(v.y),q(v.z)]; }
+function botsUpdate(dt){
+  if(!BOT.list.length||!TR) return; const N=TR.N, C=CONFIG, cf=botCurve(), now=performance.now(), going=BOT.on&&(state==="race"||state==="finish"), L=LAPS();
+  if(going) BOT.t+=dt;
+  for(const b of BOT.list){ const K=b.K, base=C.maxSpeed*K.speed, i=Math.floor(b.p)%N;
+    if(going){
+      b.shieldT=Math.max(0,b.shieldT-dt); b.superT=Math.max(0,b.superT-dt); b.boostT=Math.max(0,b.boostT-dt); b.cd=Math.max(0,b.cd-dt); b.biteT=Math.max(0,b.biteT-dt);
+      if(!b.ft&&b.v>8){ b.gauge+=dt*(K.gaugeMul||1); if(b.gauge>=12){ b.gauge=Math.random()*2; if(b.items<2) b.items++; } }
+      if(b.items>0&&b.boostT<=0&&cf[i]>.97&&Math.random()<dt*.4){ b.items--; if(K.superBoost){ b.boostT=b.superT=SUPER_T; } else b.boostT=C.boostTime; }
+      let vt=base*b.skill*cf[i];
+      if(TR.gapSet&&TR.gapSet.has(i)) vt=16;
+      else if(b.superT>0) vt=Math.max(base*(K.boost||C.boostRatio),SUPER_V*Math.pow(clamp((cf[i]-.72)/.28,0,1),3)); // 봇은 굽은 길에선 알아서 늦춤
+      else if(b.boostT>0||(TR.boostSet&&TR.boostSet.has(i))) vt=Math.max(vt,base*(K.boost||C.boostRatio));
+      if(b.ft) vt=base*.5;
+      if(b.v<vt) b.v=Math.min(vt,b.v+(b.superT>0?75:b.boostT>0?C.boostAccel*K.accel:C.accel*K.accel*(1-Math.pow(Math.max(0,b.v)/vt,2))+.4)*dt);
+      else b.v-=(b.v-vt)*Math.min(1,1.6*dt);
+      const hw=Math.max(1,TR.HW-(K.rad||1.15)-.8); b.ph+=dt*.3; const tgt=clamp(b.lane*.5+Math.sin(b.ph)*hw*.5,-hw,hw);
+      b.vo+=((tgt-b.off)*1.2-b.vo*1.5)*dt;
+      botWeapon(b);
+    } else { b.v*=Math.exp(-2*dt); b.vo*=Math.exp(-2*dt); }
+    b.off+=b.vo*dt; const lim=Math.max(1,TR.HW-(K.rad||1.15)*.6);
+    if(Math.abs(b.off)>lim){ const sg=Math.sign(b.off); b.off=sg*lim; if(b.vo*sg>0){ if(Math.abs(b.vo)>8){ b.v*=.85; if(Math.hypot(b.x-S.x,b.z-S.z)<60) thud(); } b.vo=-b.vo*.3; } }
+    const j=(i+1)%N, seg=Math.hypot(TR.P[j].x-TR.P[i].x,TR.P[j].z-TR.P[i].z)||1.4; b.p+=b.v*dt/seg;
+    if(b.p>=N){ b.p-=N; b.lapN++; if(b.lapN>=L&&!b.ft){ b.ft=Math.max(.01,BOT.t); if(!MP.racing) toast(b.c.n+" 골인!","#ffcf2e"); } }
+    if(b.p<0) b.p+=N;
+    if(b.y>0||b.vy>0){ b.vy-=C.gravity*dt; b.y+=b.vy*dt; if(b.y<=0){ b.y=0; b.vy=0; } }
+    b.spin*=Math.exp(-2.5*dt); botPose(b); }
+  // 부딪힘: 봇끼리, 나와 봇, 온라인 상대와 내 봇
+  if(going){ const snaps=BOT.list.map(botSnap), me=state==="race"&&!S.rail?{id:"me",x:S.x,y:S.y,z:S.z,vx:S.vx,vz:S.vz,mass:KART.mass||1,rad:KART.rad||1.15,gb:S.superT>0}:null;
+    const ghosts=[]; if(MP.racing) for(const [peer,g] of MP.ghosts){ if(!g.obj.visible||!g.pr) continue; const ok=KARTS[+g.pr.k]||KARTS[0]; ghosts.push({id:peer,x:g.x,y:g.y,z:g.z,vx:+g.pr.vx||0,vz:+g.pr.vz||0,mass:ok.mass||1,rad:ok.rad||1.15,gb:!!g.pr.gb}); }
+    BOT.list.forEach((b,k)=>{ for(let q=0;q<snaps.length;q++) if(q!==k) botBump(b,snaps[q],now); if(me) botBump(b,me,now); for(const o of ghosts) botBump(b,o,now); botPose(b); });
+    for(const s of snaps) bumpMe(s,now); }
+  // 그리기
+  for(const b of BOT.list){ const g=mpGhost(b.id,{k:b.c.k,ch:b.c.ch,cl:b.c.cl,n:b.c.n,x:b.x,y:b.wy,z:b.z},BOT.meshes); g.obj.visible=true; g.x=b.x; g.y=b.wy; g.z=b.z;
+    g.obj.position.set(b.x,b.wy,b.z); g.obj.rotation.set(b.y>0?-.15:0,b.h,b.y>0?b.spin*.2:0);
+    if(b.shieldT>0&&!g.shield){ g.shield=makeShield(); const R=(b.K.rad||1.15)*2.4+.6; g.shield.scale.setScalar(R); g.shield.position.y=R*.45; g.obj.add(g.shield); } if(g.shield) g.shield.visible=b.shieldT>0;
+    const sp=Math.abs(b.v); if(g.key.startsWith("trex.")) trexRun(g.obj,dt,sp,b.biteT); else if(g.key.startsWith("giant.")) giantRun(g.obj,dt,sp,0); else if(g.key.startsWith("roach.")) roachRun(g.obj,dt,sp); }
+  // 혼자 달리기: 순위판 + 시상식
+  if(!MP.racing){ BOT.rankT-=dt; if(BOT.rankT<=0){ BOT.rankT=.25; const rows=soloStandings(), me=rows.findIndex(r=>r.me); rankRender(rows);
+      if(state==="race"){ if(BOT.lastRank>1&&me===0&&raceT>4) voice("first",0); BOT.lastRank=me+1; } }
+    if(state==="finish"&&!BOT.cerDone){ if(BOT.finT===null) BOT.finT=BOT.t; if(BOT.list.every(b=>b.ft)||BOT.t-BOT.finT>15){ BOT.cerDone=true; startCeremony(soloStandings()); } } }
+}
+function botPg(b){ return b.ft?LAPS()+1:b.lapN+b.p/TR.N; }
+function soloStandings(){ const fin=state==="finish", out=[{name:(MP.nick||"나"),me:true,ft:fin?Math.max(.01,raceT):null,pg:fin?LAPS()+1:mpProgress(),ch:selChar,k:selKart}];
+  for(const b of BOT.list) out.push({name:b.c.n,me:false,ft:b.ft,pg:botPg(b),ch:b.c.ch,k:b.c.k});
+  out.sort((a,b)=>(a.ft&&b.ft)?a.ft-b.ft:a.ft?-1:b.ft?1:b.pg-a.pg); return out; }
+function rankRender(rows){ const me=rows.findIndex(r=>r.me), el=$m("mpRank"); el.innerHTML=""; const top=document.createElement("div"); top.className="r1"; top.textContent=(me+1)+"위"; const sm=document.createElement("small"); sm.textContent=" / "+rows.length; top.appendChild(sm); el.appendChild(top);
+  const ol=document.createElement("ol"); for(const r of rows.slice(0,8)){ const li=document.createElement("li"); li.textContent=r.name+(r.ft?" ✓":""); if(r.me) li.className="me"; ol.appendChild(li); } el.appendChild(ol); }
+// 온라인: 내 봇 정보를 내 접속 정보에 실어 보냄
+function botsPres(){ if(!BOT.cfg.length) return null; const q=v=>Math.round(v*100)/100;
+  return BOT.cfg.map(c=>{ const o={id:c.id,n:c.n,ch:c.ch,k:c.k,cl:c.cl,st:"lobby"}; const b=MP.racing&&BOT.list.find(x=>x.c===c);
+    if(b) Object.assign(o,{st:b.ft?"done":"race",rid:MP.raceId,x:q(b.x),y:q(b.wy),z:q(b.z),h:q(b.h),vx:q(b.vx),vz:q(b.vz),ro:0,pg:Math.round(botPg(b)*1000)/1000,bt:b.boostT>0?1:0,sd:b.shieldT>0?1:0,gb:b.superT>0?1:0,ft:b.ft?Math.round(b.ft*100)/100:null,fs:b.fs,bi:b.bi});
+    return o; }); }
+function botInfoText(){ return BOT.cfg.length?("AI "+BOT.cfg.length+"대: "+BOT.cfg.map(c=>c.n.replace(/^AI /,"")+"("+(KARTS[c.k]||KARTS[0]).name+")").join(", ")):"AI 없음"; }
+
 /* ===== 레이스 진행 ===== */
 const CAM_H=5.2, CAM_LOOK=3; // 주행 카메라 높이 / 차 앞 바라보는 거리
 const INTRO=2.6; // 출발 전 카메라 연출 시간 (s)
@@ -2173,11 +2311,13 @@ function startRace(){
   resetKart(); resetMissions(); kart.visible=true; updUpg(); state="countdown"; countT=3.2+INTRO; raceT=0; lapStart=0; lap=1; laps=[]; cp1=cp2=false; prevIdx=S.prog;
   clearSkids();
   $("menu").hidden=true; $("finish").hidden=true; $("count").hidden=true;
-  for(const k in input) input[k]=false;
+  for(const k in input) input[k]=false; botsSpawn();
   cam.x=S.x-Math.sin(S.h)*10; cam.z=S.z-Math.cos(S.h)*10; cam.y=S.y+5; cam.yaw=S.h;
 }
-function openMenu(){ if(MP.racing){ mpToLobby(); return; } state="menu"; $("finish").hidden=true; $("count").hidden=true; $("menu").hidden=false; renderOptions(); }
+function openMenu(){ if(MP.racing){ mpToLobby(); return; } botsClear(); endCeremony(); $m("mpRank").parentNode.hidden=true; state="menu"; $("finish").hidden=true; $("count").hidden=true; $("menu").hidden=false; renderOptions(); }
 $("startBtn").addEventListener("click",startRace);
+function botInfoUpd(){ let p=document.getElementById("botInfo"); const row=$("startBtn").parentNode; if(!p){ p=document.createElement("p"); p.id="botInfo"; p.className="keys"; p.style.margin="0"; p.style.fontSize="12px"; p.style.color="var(--ink-dim)"; row.parentNode.insertBefore(p,row); } p.textContent="🤖 "+botInfoText(); $("botClrBtn").hidden=!BOT.cfg.length; }
+$("botAddBtn").addEventListener("click",()=>{ botAdd(); botInfoUpd(); }); $("botClrBtn").addEventListener("click",()=>{ BOT.cfg=[]; botInfoUpd(); }); botInfoUpd();
 { const vb=document.getElementById("voiceBtn"); if(vb) vb.addEventListener("click",()=>{ initAudio(); voiceTest(); });
   const row=vb&&vb.parentNode; if(row&&!document.getElementById("voiceInfo")){ const p=document.createElement("p"); p.id="voiceInfo"; p.className="keys"; p.style.margin="0"; p.style.color="var(--ink-dim)"; p.style.fontSize="12px"; row.parentNode.insertBefore(p,row.nextSibling); } }
 $("againBtn").addEventListener("click",()=>{ if(MP.racing) mpToLobby(); else startRace(); });
@@ -2194,8 +2334,8 @@ function finishRace(){
   $("finLaps").innerHTML=laps.map((t,i)=>`<span>LAP ${i+1}</span><span class="${t===best?"hl":""}">${fmt(t)}</span>`).join("")+
     `<span>개인 최고 랩</span><span class="hl">${fmt(bestEver)}</span>`+missionHTML()+rankHTML(raceT);
   if(MP.racing) mpFinish();
-  setTimeout(()=>{ if(state==="finish") $("finish").hidden=false; },900);
-  if(typeof MP==="undefined"||!MP||!MP.racing){ const nm=(typeof MP!=="undefined"&&MP&&MP.nick)||"나"; setTimeout(()=>{ if(state==="finish") startCeremony([{name:nm,ch:selChar,k:selKart,ft:raceT,me:true}]); },1300); }
+  setTimeout(()=>{ if(state==="finish"&&!CER.on) $("finish").hidden=false; },900);
+  if((typeof MP==="undefined"||!MP||!MP.racing)&&!BOT.list.length){ const nm=(typeof MP!=="undefined"&&MP&&MP.nick)||"나"; setTimeout(()=>{ if(state==="finish") startCeremony([{name:nm,ch:selChar,k:selKart,ft:raceT,me:true}]); },1300); }
 }
 // ===== 슈퍼바이크: 세게 부딪히면 사람이 날아감 → 걸어가서 다시 타야 함 =====
 // 출발 부스터: GO 타이밍 ±0.5초 안에 부스터 키 → 순간부스터의 2배 시간 동안 부스터 + 출발 가속
@@ -2230,9 +2370,11 @@ function updEject(dt,controls){
 // ===== 티라노: 물기 (온라인에서 앞에 있는 상대를 물면 가벼울수록 감속, 전차급 무게부터는 못 물음) =====
 function trexBite(){
   if(FX.cool>0||state==="menu") return; FX.cool=3; S.biteT=.5; thud(); S.shake=Math.max(S.shake,.2);
-  if(typeof MP==="undefined"||!MP||!MP.racing) return;
   let best=null, bd=9; const fx=Math.sin(S.h), fz=Math.cos(S.h);
+  let bb=null; for(const b of BOT.list){ const dx=b.x-S.x, dz=b.z-S.z, d=Math.hypot(dx,dz); if(d<bd&&(dx*fx+dz*fz)/Math.max(d,.01)>.35){ bd=d; bb=b; } }
+  if(typeof MP==="undefined"||!MP||!MP.racing){ if(bb){ botBitten(bb); toast("콱!","#ffffff"); } return; }
   for(const [peer,g] of MP.ghosts){ if(!g.obj.visible) continue; const dx=g.x-S.x, dz=g.z-S.z, d=Math.hypot(dx,dz); if(d<bd&&(dx*fx+dz*fz)/Math.max(d,.01)>.35){ bd=d; best=peer; } }
+  if(!best&&bb){ botBitten(bb); toast("콱!","#ffffff"); return; }
   if(best){ MP.biteSeq=(MP.biteSeq||0)+1; mpSend({bi:[MP.biteSeq,best]}); const g=MP.ghosts.get(best); bumpFx(g.x,g.y+2,g.z); toast("콱!","#ffffff"); }
 }
 function bittenByTrex(){
@@ -2247,23 +2389,24 @@ function bittenByTrex(){
 // ===== 캐릭터 음성 (안 좋은 일 / 1등 탈환) — 한국어 음성 합성 + 말풍선 =====
 // g: 성별(m/f), p: 음높이(나이·성별 느낌), r: 말 빠르기
 const VO={
-  dotori:{g:"m",p:1.7,r:1.18,bad:["으앙! 내 도토리!","아야야야… 반칙이야!","엄마아아~!","다시 해! 다시!","치사하게 진짜!"],
+  dotori:{g:"m",p:1.85,r:1.28,bad:["으앙! 내 도토리!","아야야야… 반칙이야!","엄마아아~!","다시 해! 다시!","치사하게 진짜!"],
     first:["도토리 1등이다~!","봤지? 봤지?","다람쥐보다 빠르지롱!","나 잡아 봐라~","오늘 간식은 내 거!"]},
-  bori:{g:"f",p:1.55,r:1.12,bad:["꺄악! 내 머리띠!","곰돌이 화났어!","히잉… 아프잖아","누구야! 누가 그랬어!","별 스티커 떨어졌잖아!"],
+  bori:{g:"f",p:1.4,r:1.05,bad:["꺄악! 내 머리띠!","곰돌이 화났어!","히잉… 아프잖아","누구야! 누가 그랬어!","별 스티커 떨어졌잖아!"],
     first:["보리 등장~ 1등이야!","곰은 원래 빠르거든?","별 하나 더 붙여야지~","꿀맛이다, 꿀맛!","다들 내 뒤만 따라와~"]},
-  rider:{g:"m",p:.9,r:1.02,bad:["크윽… 재킷 기스 났잖아","이건 사고가 아니라 연출이다","핸들이 좀 미끄러졌을 뿐…","아직 안 끝났어","젠장, 폼 다 망가졌네"],
+  rider:{g:"m",p:0.8,r:1.0,bad:["크윽… 재킷 기스 났잖아","이건 사고가 아니라 연출이다","핸들이 좀 미끄러졌을 뿐…","아직 안 끝났어","젠장, 폼 다 망가졌네"],
     first:["바람이 나를 부른다","앞에 아무도 없군","따라올 수 있으면 따라와 봐","이게 진짜 라이딩이지","기어 6단, 끝."]},
-  major:{g:"m",p:.62,r:.95,bad:["적 포탄이다! 엎드려!","이런 낭패가 있나!","보급 요청! 보급 요청!","이건 후퇴가 아니라 전술적 이동이다!","포대장 체면이 말이 아니군!"],
+  major:{g:"m",p:0.3,r:0.82,bad:["적 포탄이다! 엎드려!","이런 낭패가 있나!","보급 요청! 보급 요청!","이건 후퇴가 아니라 전술적 이동이다!","포대장 체면이 말이 아니군!"],
     first:["고지 점령! 충성!","전원 내 뒤로 집합!","이것이 포병의 화력이다!","작전 성공, 포상 휴가 간다!","짱돌은 굴러야 제맛이지!"]},
-  kkwak:{g:"f",p:1.95,r:1.35,bad:["케에에엑!","꽤애액?!","흐히유유…","꾸르륵 꽥!","삐삡 삐삡!"],
+  kkwak:{g:"f",p:2.0,r:1.65,bad:["케에에엑!","꽤애액?!","흐히유유…","꾸르륵 꽥!","삐삡 삐삡!"],
     first:["꽥꽥꽥꽥!!","꾸루루룩~ 꽥!","흐히히히힛!","꽤애애액~","삐삐삐 꽤액!"]},
-  kkami:{g:"f",p:1.75,r:1.15,bad:["캬아아악!","냐아앙?!","하악! 하아악!","미야아아오…","크르르르릉"],
+  kkami:{g:"f",p:1.9,r:0.86,bad:["캬아아악!","냐아앙?!","하악! 하아악!","미야아아오…","크르르르릉"],
     first:["냐옹~","골골골골골…","냥! 냥냥!","미야오오옹~","냐아아앙!"]},
-  sausage:{g:"m",p:1.2,r:1.22,bad:["소오오오오오!! 세지세지!","왓 더 소세지!","아이고 내 껍질 터지겠네!","이러다 핫도그 되겠어!","케첩 나왔잖아 케첩!"],
+  sausage:{g:"m",p:1.3,r:1.45,bad:["소오오오오오!! 세지세지!","왓 더 소세지!","아이고 내 껍질 터지겠네!","이러다 핫도그 되겠어!","케첩 나왔잖아 케첩!"],
     first:["소세지는 구워야 제맛!","1등은 바삭하게~","지글지글 불타오른다!","이게 바로 육즙 질주다!","나한테 케첩 뿌려 줘!"]},
-  granny:{g:"f",p:1.05,r:.82,bad:["노인공경 모르나!","에잉, 끌끌…","어린 놈들이 말이야!","나 때는 말이야…","아이고 내 허리야!"],
+  granny:{g:"f",p:0.55,r:0.7,bad:["노인공경 모르나!","에잉, 끌끌…","어린 놈들이 말이야!","나 때는 말이야…","아이고 내 허리야!"],
     first:["할미 아직 안 죽었다!","젊은 것들 따라와 봐라~","에헴, 이게 연륜이여","손주들아, 할미 1등했다!","느린 게 아니라 여유였어~"]}
 };
+for(const k in VO) VO[k].id=k;
 // 차마다 붙는 1등 멘트 (차의 직업·성격)
 const CARVO={
   scoot:["배달 짬밥 10년이여~","30분 안에 도착 보장!","번쩍 배달 왔습니다!","콜 하나 더 받는다!","리뷰 별 다섯 개 부탁드려유~"],
@@ -2282,12 +2425,28 @@ const CARVO={
 let koVoices=[]; const VOICE={t:0,seq:0};
 function loadVoices(){ try{ koVoices=speechSynthesis.getVoices().filter(v=>/^ko/i.test(v.lang)); }catch(_){} }
 if(window.speechSynthesis){ loadVoices(); try{ speechSynthesis.addEventListener("voiceschanged",loadVoices); }catch(_){} }
-function pickVoice(g){ if(!koVoices.length) return null; const male=/InJoon|Minsu|Hyunsu|Jun|Bong|male|남/i, fem=/SunHi|Heami|Yuna|Sora|Jimin|female|여|Google/i;
-  return koVoices.find(v=>g==="m"?male.test(v.name):fem.test(v.name))||koVoices[0]; }
+// 캐릭터마다 다른 목소리: 기기에 있는 한국어 음성들을 성별에 맞춰 캐릭터별로 나눠 씀 (음성이 하나뿐이면 높낮이·빠르기로 구분)
+function pickVoice(c){ if(!koVoices.length) return null; const male=/InJoon|Minsu|Hyunsu|Jun|Bong|Gukbin|male|남/i;
+  const mine=koVoices.filter(v=>c.g==="m"?male.test(v.name):!male.test(v.name)), pool=mine.length?mine:koVoices;
+  const same=Object.keys(VO).filter(k=>VO[k].g===c.g), gi=Math.max(0,same.indexOf(c.id)); return pool[gi%pool.length]; }
+// 대사 앞에 붙는 캐릭터 고유 소리 (같은 TTS라도 누군지 바로 알게)
+function sigTone(type,f0,f1,dur,vol,at,filt){ const c=SND.ctx, t=c.currentTime+(at||0), o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+.02); g.gain.exponentialRampToValueAtTime(.001,t+dur); let n=o; if(filt){ const bq=c.createBiquadFilter(); bq.type=filt[0]; bq.frequency.value=filt[1]; bq.Q.value=filt[2]||1; o.connect(bq); n=bq; } n.connect(g); g.connect(SND.master); o.start(t); o.stop(t+dur+.02); return o; }
+function sigNoise(dur,vol,type,freq,at){ const c=SND.ctx, t=c.currentTime+(at||0), n=c.createBufferSource(); n.buffer=SND.buf; const f=c.createBiquadFilter(); f.type=type; f.frequency.value=freq; const g=c.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur); n.connect(f); f.connect(g); g.connect(SND.master); n.start(t); n.stop(t+dur); }
+const SIG={
+  dotori:()=>{ sigTone("square",500,1300,.09,.08); sigTone("square",650,1600,.09,.08,.11); },
+  bori:()=>{ sigTone("sine",1320,1320,.25,.12); sigTone("sine",1760,1760,.35,.1,.12); },
+  rider:()=>{ sigTone("sawtooth",80,190,.45,.12,0,["lowpass",900]); },
+  major:()=>{ sigTone("sawtooth",110,98,.35,.14,0,["lowpass",700]); sigTone("sawtooth",165,147,.35,.08,0,["lowpass",700]); },
+  kkwak:()=>{ sigTone("sawtooth",760,420,.14,.16,0,["bandpass",1300,4]); sigTone("sawtooth",700,380,.16,.16,.18,["bandpass",1300,4]); },
+  kkami:()=>{ sigNoise(.45,.18,"highpass",3200); },
+  sausage:()=>{ sigNoise(.35,.1,"bandpass",5200); const o=sigTone("sine",180,180,.4,.14,.05); o.frequency.exponentialRampToValueAtTime(620,SND.ctx.currentTime+.2); o.frequency.exponentialRampToValueAtTime(200,SND.ctx.currentTime+.42); },
+  granny:()=>{ const c=SND.ctx, o=sigTone("sine",310,280,.5,.12), l=c.createOscillator(), lg=c.createGain(); l.frequency.value=7; lg.gain.value=14; l.connect(lg); lg.connect(o.frequency); l.start(); l.stop(c.currentTime+.52); }
+};
 function unlockSpeech(){ try{ if(window.speechSynthesis&&!VOICE.unlocked){ VOICE.unlocked=true; loadVoices(); const u=new SpeechSynthesisUtterance("출발"); u.lang="ko-KR"; u.volume=.01; u.rate=2; speechSynthesis.resume(); speechSynthesis.speak(u); } }catch(_){} }
 // 실제로 말하기 (일부 브라우저는 cancel 직후 speak가 씹혀서 살짝 늦게)
 function speakNow(text,c,vol){ const ss=window.speechSynthesis; if(!ss) return false; loadVoices();
-  const u=new SpeechSynthesisUtterance(text.replace(/~/g,"")); u.lang="ko-KR"; const v=pickVoice(c.g); if(v) u.voice=v; u.pitch=c.p; u.rate=c.r; u.volume=vol==null?1:vol;
+  const u=new SpeechSynthesisUtterance(text.replace(/~/g,"")); u.lang="ko-KR"; const v=pickVoice(c); if(v) u.voice=v; u.pitch=c.p; u.rate=c.r; u.volume=vol==null?1:vol;
   const go=()=>{ try{ ss.resume(); ss.speak(u); }catch(_){} };
   if(ss.speaking||ss.pending){ ss.cancel(); setTimeout(go,90); } else go(); return true; }
 // 말풍선 (카트 위)
@@ -2302,7 +2461,7 @@ function makeBubble(text){ const c=document.createElement("canvas"); c.width=512
 function showBubble(parent,text,y){ for(let i=BUBBLES.length-1;i>=0;i--) if(BUBBLES[i].s.parent===parent){ parent.remove(BUBBLES[i].s); BUBBLES.splice(i,1); }
   const s=makeBubble(text); s.position.y=y; parent.add(s); BUBBLES.push({s,t:0,life:2.6}); }
 function updBubbles(dt){ for(let i=BUBBLES.length-1;i>=0;i--){ const b=BUBBLES[i]; b.t+=dt; const k=b.t/b.life; b.s.material.opacity=k>.8?(1-k)/.2:1; b.s.scale.set(6.4*(k<.08?k/.08:1),1.6*(k<.08?k/.08:1),1); if(k>=1){ if(b.s.parent) b.s.parent.remove(b.s); b.s.material.map.dispose(); b.s.material.dispose(); BUBBLES.splice(i,1); } } }
-function sayLine(text,c){ showBubble(kart,text,(CAR.tagY||3.1)+1.6); if(!SND.on) return; try{ speakNow(text,c); }catch(_){} }
+function sayLine(text,c){ if(!SND.on) return; try{ if(SND.ctx&&SIG[c.id]) SIG[c.id](); }catch(_){} try{ speakNow(text,c); }catch(_){} }
 // 메뉴의 음성 테스트 (손가락으로 누른 순간 재생되어야 폰에서도 소리가 남)
 function voiceTest(){ const c=VO[(CHARS[selChar]||CHARS[0]).id]||VO.dotori, out=document.getElementById("voiceInfo");
   if(!window.speechSynthesis){ if(out) out.textContent="이 브라우저는 음성 읽기를 지원하지 않아요. 카카오톡 안에서 열었다면 크롬이나 사파리로 열어 주세요."; return; }
@@ -2310,7 +2469,7 @@ function voiceTest(){ const c=VO[(CHARS[selChar]||CHARS[0]).id]||VO.dotori, out=
   setTimeout(()=>{ loadVoices(); if(out) out.textContent=koVoices.length?("한국어 음성 "+koVoices.length+"개 사용 가능 · “"+line+"”"):"기기에 한국어 음성이 안 보여요. 소리가 안 나면 휴대폰 설정 › 텍스트 음성 변환(TTS)에서 한국어를 설치해 주세요. 무음 모드도 확인해 주세요."; },400); }
 function voice(kind,minGap){ const c=VO[CHAR.id]; if(!c||state==="menu") return; const now=performance.now(); if(now-VOICE.t<(minGap||2800)) return; VOICE.t=now;
   const pool=kind==="first"?c.first.concat(CARVO[KART.id]||[]):c.bad; let text=pool[Math.floor(Math.random()*pool.length)]; if(text===VOICE.last&&pool.length>1) text=pool[(pool.indexOf(text)+1)%pool.length]; VOICE.last=text;
-  sayLine(text,c); if(typeof MP!=="undefined"&&MP&&MP.racing&&typeof mpSend==="function"){ VOICE.seq++; mpSend({vo:[VOICE.seq,text.slice(0,40)]}); } }
+  sayLine(text,c); }
 
 // ===== 시상식 (경기 끝나고 10초) =====
 const CER={on:false};
@@ -2410,6 +2569,7 @@ function drawMinimap(){
   for(const b of TR.branches){ mx.beginPath(); b.P.forEach((q,i)=>i?mx.lineTo(X(q.x),Yf(q.z)):mx.moveTo(X(q.x),Yf(q.z)));
     mx.strokeStyle="rgba(255,255,255,.9)"; mx.lineWidth=6; mx.stroke(); mx.strokeStyle="#ffcf2e"; mx.lineWidth=3; mx.stroke(); }
   mx.fillStyle="#ffcf2e"; mx.fillRect(X(P[0].x)-7,Yf(P[0].z)-2,14,4);
+  for(const b of BOT.list){ mx.beginPath(); mx.arc(X(b.x),Yf(b.z),6,0,Math.PI*2); mx.fillStyle=hexCol((CHARS[b.c.ch]||CHARS[0]).helmet); mx.fill(); mx.lineWidth=2; mx.strokeStyle="rgba(255,255,255,.8)"; mx.stroke(); }
   if(MP.racing) for(const g of MP.ghosts.values()) if(g.obj.visible){ mx.beginPath(); mx.arc(X(g.x),Yf(g.z),6,0,Math.PI*2); mx.fillStyle=g.col; mx.fill(); mx.lineWidth=2; mx.strokeStyle="rgba(255,255,255,.8)"; mx.stroke(); }
   mx.beginPath(); mx.arc(X(S.x),Yf(S.z),8,0,Math.PI*2); mx.fillStyle="#"+CHAR.helmet.toString(16).padStart(6,"0"); mx.fill(); mx.lineWidth=3; mx.strokeStyle="#fff"; mx.stroke();
 }
@@ -2460,7 +2620,7 @@ var myTag;
 function updateMyTag(){ if(typeof MP==="undefined"||!MP||typeof kart==="undefined") return; if(myTag){ kart.remove(myTag); myTag.material.map.dispose(); myTag.material.dispose(); myTag=null; }
   const nm=cleanName(MP.nick); if(!nm) return; myTag=mpTag(nm,hexCol(CHAR.helmet)); myTag.position.y=CAR.tagY||(CAR.giant?9.6:CAR.id==="tank"?4.4:3.1); kart.add(myTag); }
 function mpOpen(){ MP.lobbySig=null; $m("menu").hidden=true; $m("finish").hidden=true; $m("mpLobby").hidden=false; mpRender(); }
-function mpPresBase(){ return {v:1,n:MP.nick,ch:selChar,k:selKart,cl:selColor,rd:MP.ready?1:0,jt:MP.jt,tr:selTrack}; }
+function mpPresBase(){ return {v:1,n:MP.nick,ch:selChar,k:selKart,cl:selColor,rd:MP.ready?1:0,jt:MP.jt,tr:selTrack,ai:botsPres()}; }
 function mpSend(extra){ if(!MP.joined) return; NETA.pres(Object.assign(mpPresBase(),extra||{})); }
 
 $m("mpBtn").addEventListener("click",()=>{ initAudio(); mpOpen(); });
@@ -2479,13 +2639,15 @@ $m("mpJoin").addEventListener("click",async()=>{ unlockSpeech();
 });
 function alertNote(t){ let n=$m("mpJoinNote"); if(!n){ n=document.createElement("p"); n.className="mp-note"; n.id="mpJoinNote"; n.style.color="#ffcf2e"; $m("mpJoinBox").appendChild(n); } n.textContent=t; }
 $m("mpLeave").addEventListener("click",()=>{ mpLeaveRoom(); $m("mpLobby").hidden=true; openMenu(); });
-function mpLeaveRoom(){ if(MP.joined) NETA.leave(); MP.joined=false; MP.racing=false; MP.peers=[]; MP.myPeer=null; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기"; }
+function mpLeaveRoom(){ botsClear(); if(MP.joined) NETA.leave(); MP.joined=false; MP.racing=false; MP.peers=[]; MP.myPeer=null; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기"; }
 
 /* 참가자 목록 */
 function mpList(){ return MP.peers.filter(p=>p.presence&&p.presence.v===1); }
-function mpHost(){ const L=mpList(); if(!L.length) return null; return L.slice().sort((a,b)=>((+a.presence.jt||0)-(+b.presence.jt||0))||(a.peer<b.peer?-1:1))[0]; }
+function mpHost(){ const L=mpList().filter(p=>!p.bot); if(!L.length) return null; return L.slice().sort((a,b)=>((+a.presence.jt||0)-(+b.presence.jt||0))||(a.peer<b.peer?-1:1))[0]; }
 function mpIsHost(){ const h=mpHost(); return !!h&&h.peer===MP.myPeer; }
 function mpPeers(list){
+  { const ex=[]; for(const p of list){ ex.push(p); const pr=p.presence; if(pr&&Array.isArray(pr.ai)) pr.ai.slice(0,7).forEach((a,k)=>{ if(!a||typeof a!=="object") return;
+      ex.push({peer:p.peer+"#ai"+(+a.id||k),bot:true,owner:p.peer,sameTab:false,isMe:false,at:p.at,presence:Object.assign({},a,{v:1,rd:1,jt:(+pr.jt||0)+1+k,tr:pr.tr,ai:null,go:null})}); }); } list=ex; }
   MP.peers=list; for(const p of list) if(p.sameTab) MP.myPeer=p.peer;
   const host=mpHost(), early=performance.now()-MP.joinAt<2500;
   // 방장의 출발 신호
@@ -2503,7 +2665,7 @@ function mpPeers(list){
 function mpRender(){
   $m("mpJoinBox").hidden=MP.joined; $m("mpRoomBox").hidden=!MP.joined; if(!MP.joined) return;
   const L=mpList(), host=mpHost(), amHost=mpIsHost();
-  const sig=JSON.stringify([MP.code,MP.myPeer,MP.ready,selKart,selChar,selColor,selTrack,host&&host.peer,L.map(p=>[p.peer,p.presence.n,p.presence.k,p.presence.ch,p.presence.cl,p.presence.rd,p.presence.st,p.presence.tr,p.presence.jt])]);
+  const sig=JSON.stringify([BOT.cfg.length,MP.code,MP.myPeer,MP.ready,selKart,selChar,selColor,selTrack,host&&host.peer,L.map(p=>[p.peer,p.presence.n,p.presence.k,p.presence.ch,p.presence.cl,p.presence.rd,p.presence.st,p.presence.tr,p.presence.jt])]);
   if(sig===MP.lobbySig) return; MP.lobbySig=sig; // 바뀐 게 없으면 다시 그리지 않음 (버튼 누르는 중 깜빡임 방지)
   $m("mpRoomTitle").textContent="방 "+MP.code+" · 참가자 "+L.length+"명";
   const G=$m("mpList"); G.innerHTML="";
@@ -2512,11 +2674,14 @@ function mpRender(){
     if(!p){ cell.className="mp-slot empty"; cell.textContent="빈 자리"; G.appendChild(cell); continue; }
     const pr=p.presence, me=p.peer===MP.myPeer, ch=CHARS[+pr.ch]||CHARS[0], kt=KARTS[+pr.k]||KARTS[0], isH=host&&p.peer===host.peer, racing=pr.st==="race";
     cell.className="mp-slot"+(me?" me":"")+(!isH&&pr.rd?" ok":"");
+    if(p.bot){ cell.className="mp-slot ok bot"; }
     const img=document.createElement("img"); img.alt=""; img.src=safeThumb(()=>carThumb(kt,ch,+pr.cl||0));
-    const tag=document.createElement("span"); tag.className="tag"+(isH?" host":pr.rd?" ok":""); tag.textContent=racing?"주행 중":isH?"방장":pr.rd?"준비 완료":"대기 중";
+    const tag=document.createElement("span"); tag.className="tag"+(isH?" host":pr.rd?" ok":""); tag.textContent=racing?"주행 중":p.bot?"AI":isH?"방장":pr.rd?"준비 완료":"대기 중";
     const b=document.createElement("b"); b.textContent=(me?"나 · ":"")+(cleanName(pr.n)||"라이더");
     const sm=document.createElement("small"); sm.textContent=(SYN[kt.id]===ch.id?"★ ":"")+kt.name+" · "+ch.name;
-    cell.append(img,tag,b,sm); G.appendChild(cell); }
+    cell.append(img,tag,b,sm);
+    if(p.bot&&p.owner===MP.myPeer&&!MP.racing){ const x=document.createElement("button"); x.type="button"; x.className="bot-x"; x.textContent="✕"; x.title="AI 빼기"; x.onclick=()=>{ botRemove(+String(p.peer).split("#ai")[1]); mpSend(); MP.lobbySig=null; mpRender(); }; cell.appendChild(x); }
+    G.appendChild(cell); }
   const htr=host?(+host.presence.tr||0):selTrack;
   $m("mpTrackHint").textContent=amHost?"(방장이 골라요)":"· 방장이 고르는 중";
   $m("mpTracks").innerHTML=""; TRACKS.forEach((t,i)=>{ const b=document.createElement("button"); b.type="button"; b.textContent=t.name; b.setAttribute("aria-pressed",String(i===(amHost?selTrack:htr))); b.disabled=!amHost;
@@ -2528,12 +2693,13 @@ function mpRender(){
   $m("mpColors").innerHTML=swatchesHTML(); $m("mpColors").querySelectorAll(".sw").forEach(b=>b.onclick=()=>{ setColor(+b.dataset.i); mpSend(); mpRender(); });
   const go=$m("mpGo"), others=L.filter(p=>p.peer!==MP.myPeer&&p.presence.st!=="race"), notReady=others.filter(p=>!p.presence.rd).length, inRace=L.filter(p=>p.presence.st==="race").length;
   if(amHost){ go.textContent=notReady?"준비 기다리는 중 ("+(others.length-notReady)+"/"+others.length+")":"출발!"; go.disabled=notReady>0;
-    $m("mpStatus").textContent=L.length<2?"아직 혼자예요. 링크를 친구에게 보내고 방 번호 "+MP.code+"로 들어오라고 하세요. 혼자 출발해도 돼요."
+    $m("mpStatus").textContent=L.filter(p=>!p.bot).length<2&&!L.some(p=>p.bot)?"아직 혼자예요. 링크를 친구에게 보내고 방 번호 "+MP.code+"로 들어오라고 하세요. 혼자 출발해도 돼요."
       :notReady?"모두 준비해야 출발할 수 있어요. 아직 "+notReady+"명이 준비 전이에요.":"모두 준비 완료! 출발을 누르세요.";
     if(inRace) $m("mpStatus").textContent+=" ("+inRace+"명은 아직 주행 중)"; }
   else { go.textContent=MP.ready?"준비 취소":"준비"; go.disabled=false;
     $m("mpStatus").textContent=inRace&&!MP.ready?"지금 다른 경기가 진행 중이에요. 준비해 두면 다음 판에 같이 출발해요.":MP.ready?"방장이 출발시키면 바로 시작해요.":"준비를 누르면 방장이 출발시킬 때 같이 달려요."; }
 }
+$m("mpBot").addEventListener("click",()=>{ if(!MP.joined) return; if(botAdd()){ mpSend(); MP.lobbySig=null; mpRender(); } });
 $m("mpGo").addEventListener("click",()=>{
   unlockSpeech(); if(!MP.joined) return;
   if(mpIsHost()){ const L=mpList(); if(L.some(p=>p.peer!==MP.myPeer&&p.presence.st!=="race"&&!p.presence.rd)) return; const ps=[MP.myPeer,...L.filter(p=>p.peer!==MP.myPeer&&p.presence.rd&&p.presence.st!=="race").map(p=>p.peer)].slice(0,8);
@@ -2569,16 +2735,16 @@ function mpStandings(){ const out=[];
     out.push({name:cleanName(pr.n)||"라이더",me,ft,pg,ch:me?selChar:(+pr.ch||0),k:me?selKart:(+pr.k||0)}); }
   if(!out.some(r=>r.me)) out.push({ch:selChar,k:selKart,name:MP.nick,me:true,ft:MP.finished?Math.max(.01,raceT):null,pg:MP.finished?LAPS()+1:mpProgress()});
   out.sort((a,b)=>(a.ft&&b.ft)?a.ft-b.ft:a.ft?-1:b.ft?1:b.pg-a.pg); return out; }
-function mpToLobby(){ endCeremony(); MP.racing=false; MP.finished=false; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기";
+function mpToLobby(){ endCeremony(); botsClear(); MP.racing=false; MP.finished=false; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기";
   state="menu"; $m("finish").hidden=true; $m("count").hidden=true; kart.visible=true; mpSend({st:"lobby",rid:null,ft:null,pg:null,go:mpIsHost()?undefined:null}); mpOpen(); }
 
 /* 상대 카트 (유령처럼 보이되 부딪히면 밀려남) */
 const ghostRiderCache={};
 function mpTag(name,color){ const c=document.createElement("canvas"); c.width=256; c.height=64; const x=c.getContext("2d"); x.fillStyle="rgba(14,22,48,.75)"; x.beginPath(); x.roundRect?x.roundRect(8,10,240,44,22):x.rect(8,10,240,44); x.fill(); x.fillStyle=color; x.beginPath(); x.arc(34,32,9,0,Math.PI*2); x.fill();
   x.fillStyle="#fff"; x.font="800 26px sans-serif"; x.textBaseline="middle"; x.fillText(name,52,33,190); const t=new THREE.CanvasTexture(c); const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true})); s.scale.set(4.2,1.05,1); s.renderOrder=10; return s; }
-function mpGhost(peer,pr){
+function mpGhost(peer,pr,map){ map=map||MP.ghosts;
   const kid=(KARTS[+pr.k]||KARTS[0]).id, ch=CHARS[+pr.ch]||CHARS[0], cl=Math.max(0,Math.min(PAINTS.length-1,+pr.cl||0)), key=kid+"."+ch.id+"."+cl+"."+cleanName(pr.n);
-  let g=MP.ghosts.get(peer); if(g&&g.key===key) return g; if(g) scene.remove(g.obj);
+  let g=map.get(peer); if(g&&g.key===key) return g; if(g) scene.remove(g.obj);
   const c=CARS[kid], obj=new THREE.Group(); obj.rotation.order="YXZ";
   const mine=c.rider, mp=mine&&mine.parent; if(mp) mp.remove(mine);
   const root=c.root.clone(true); if(mp) mp.add(mine);
@@ -2588,7 +2754,7 @@ function mpGhost(peer,pr){
   const rk=kid+"."+ch.id, rd=(ghostRiderCache[rk]||(ghostRiderCache[rk]=buildRider(ch,st.pose))).clone(true); rd.position.set(...st.pos); rd.scale.setScalar(st.scale); seatPar.add(rd);
   root.traverse(o=>{ if(o.isMesh&&o.material&&o.material.color&&o.material===flameM) o.visible=false; });
   obj.add(root); const tag=mpTag(cleanName(pr.n)||"라이더",hexCol(ch.helmet)); tag.position.y=CARS[kid].tagY||(kid==="giant"?9.6:3.4); obj.add(tag);
-  scene.add(obj); g={obj,key,col:hexCol(ch.helmet),x:+pr.x||0,y:+pr.y||0,z:+pr.z||0,h:+pr.h||0,init:false}; MP.ghosts.set(peer,g); return g; }
+  scene.add(obj); g={obj,key,col:hexCol(ch.helmet),x:+pr.x||0,y:+pr.y||0,z:+pr.z||0,h:+pr.h||0,init:false}; map.set(peer,g); return g; }
 function mpClearGhosts(){ for(const g of MP.ghosts.values()) scene.remove(g.obj); MP.ghosts.clear(); }
 
 // 포탄에 맞음: 가벼울수록 크게 들썩이고 포탄 방향으로 날아가며 느려짐, 무거우면 살짝 들썩하고 그대로
@@ -2604,15 +2770,14 @@ let mpRankT=0;
 function mpUpdate(dt){
   if(!MP.joined) return;
   const now=performance.now();
-  if(MP.racing&&!MP.finished&&(state==="race"||state==="countdown")&&now-MP.lastSend>66){ MP.lastSend=now;
-    const r=v=>Math.round(v*100)/100; mpSend({st:"race",rid:MP.raceId,x:r(S.x),y:r(S.y),z:r(S.z),h:r(S.h),vx:r(S.vx),vz:r(S.vz),ro:r(S.roll||0),pg:Math.round(mpProgress()*1000)/1000,bt:S.boostT>0||S.instT>0?1:0,sd:S.shieldT>0?1:0}); }
+  if(MP.racing&&now-MP.lastSend>66){ const meOn=!MP.finished&&(state==="race"||state==="countdown");
+    if(meOn||BOT.list.length){ MP.lastSend=now; const r=v=>Math.round(v*100)/100; mpSend(meOn?{st:"race",rid:MP.raceId,x:r(S.x),y:r(S.y),z:r(S.z),h:r(S.h),vx:r(S.vx),vz:r(S.vz),ro:r(S.roll||0),pg:Math.round(mpProgress()*1000)/1000,bt:S.boostT>0||S.instT>0?1:0,sd:S.shieldT>0?1:0,gb:S.superT>0?1:0}:{}); } }
   if(!MP.racing) return;
   const wallNow=Date.now();
-  for(const p of mpList()){ if(p.peer===MP.myPeer) continue; const pr=p.presence; if(pr.rid!==MP.raceId||!(pr.st==="race"||pr.st==="done")||pr.x===undefined){ const g0=MP.ghosts.get(p.peer); if(g0) g0.obj.visible=false; continue; }
-    const g=mpGhost(p.peer,pr); g.obj.visible=true;
-    if(Array.isArray(pr.vo)){ if(g.voSeq===undefined) g.voSeq=pr.vo[0]; else if(pr.vo[0]!==g.voSeq){ g.voSeq=pr.vo[0]; showBubble(g.obj,String(pr.vo[1]||"").replace(/[\u0000-\u001f]/g,"").slice(0,40)||"…",(CARS[(KARTS[+pr.k]||KARTS[0]).id].tagY||3.4)+1.6); } }
+  for(const p of mpList()){ if(p.peer===MP.myPeer||(p.bot&&p.owner===MP.myPeer)) continue; const pr=p.presence; if(pr.rid!==MP.raceId||!(pr.st==="race"||pr.st==="done")||pr.x===undefined){ const g0=MP.ghosts.get(p.peer); if(g0) g0.obj.visible=false; continue; }
+    const g=mpGhost(p.peer,pr); g.obj.visible=true; g.pr=pr;
     const BS=MP.biteSeen||(MP.biteSeen={}); if(BS[p.peer]===undefined) BS[p.peer]=Array.isArray(pr.bi)?pr.bi[0]:0;
-    if(Array.isArray(pr.bi)&&pr.bi[0]!==BS[p.peer]){ BS[p.peer]=pr.bi[0]; g.biteT=.5; if(pr.bi[1]===MP.myPeer) bittenByTrex(); }
+    if(Array.isArray(pr.bi)&&pr.bi[0]!==BS[p.peer]){ BS[p.peer]=pr.bi[0]; g.biteT=.5; if(pr.bi[1]===MP.myPeer) bittenByTrex(); else { const bb=BOT.list.find(b=>b.id===pr.bi[1]); if(bb) botBitten(bb); } }
     if(pr.sd&&!g.shield){ g.shield=makeShield(); const kk=KARTS[+pr.k]||KARTS[0], R=(kk.rad||1.15)*2.4+.6; g.shield.scale.setScalar(R); g.shield.position.y=R*.45; g.obj.add(g.shield); }
     if(g.shield) g.shield.visible=!!pr.sd;
     if(g.key.startsWith("trex.")){ trexRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0),g.biteT||0); g.biteT=Math.max(0,(g.biteT||0)-dt); }
@@ -2624,13 +2789,7 @@ function mpUpdate(dt){
     const k=1-Math.exp(-14*dt); g.x+=(tx-g.x)*k; g.z+=(tz-g.z)*k; g.y+=(ty-g.y)*k; let dh=th-g.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; g.h+=dh*k;
     g.obj.position.set(g.x,g.y,g.z); g.obj.rotation.set(0,g.h,-(+pr.ro||0)); if(g.key.startsWith("giant.")) giantRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0),0); if(g.key.startsWith("roach.")) roachRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0));
     // 부딪힘: 서로 밀어냄 (각자 자기 카트만 움직임)
-    if(state==="race"&&!S.rail){ const ok=KARTS[+pr.k]||KARTS[0], dx=S.x-g.x, dz=S.z-g.z, d=Math.hypot(dx,dz), R=(KART.rad||1.15)+(ok.rad||1.15);
-      if(d<R&&d>1e-3&&Math.abs(S.y-g.y)<6){ const nx=dx/d, nz=dz/d, mMe=Math.pow(KART.mass||1,1.5), mOt=Math.pow(ok.mass||1,1.5), share=mOt/(mMe+mOt), fly=KART.fly||1; S.x+=nx*(R-d); S.z+=nz*(R-d);
-        const ovx=+pr.vx||0, ovz=+pr.vz||0, rel=(S.vx-ovx)*nx+(S.vz-ovz)*nz;
-        if(rel<0&&(!g.bumpT||now-g.bumpT>350)&&S.shieldT>0){ g.bumpT=now; bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); }
-        else if(rel<0&&(!g.bumpT||now-g.bumpT>350)){ g.bumpT=now; const imp=(Math.min(10,-rel)*(.8+share)+2*share)*(share>.5?fly:1); S.vx+=nx*imp; S.vz+=nz*imp;
-          const side=Math.sign(Math.sin(S.h)*nz-Math.cos(S.h)*nx)||1; S.h+=side*share*(fly>1?.9:.18); if(fly>1&&share>.5){ S.vy=Math.max(S.vy,3.5*share*fly); S.grounded=false; } const keep=1-.25*share; // 튕겨나가며 감속 (무거운 상대일수록 크게: 같은 무게 약 12%, 스쿠터→덤프 약 20%) S.vx*=keep; S.vz*=keep; S.drifting=false;
-          S.shake=Math.max(S.shake,.25+share*.3); thud(); if(share>.6&&-rel>8) voice("bad"); if(KART.eject&&share>.5&&-rel>5) ejectRider(nx,nz,-rel); bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); } } }
+    { const ok=KARTS[+pr.k]||KARTS[0]; bumpMe({id:p.peer,x:g.x,y:g.y,z:g.z,vx:+pr.vx||0,vz:+pr.vz||0,mass:ok.mass||1,rad:ok.rad||1.15,gb:!!pr.gb},now); }
     }
   mpRankT-=dt; if(mpRankT<=0){ mpRankT=.25; const rows=mpStandings(), me=rows.findIndex(r=>r.me);
     if(rows.length>1&&state==="race"&&!MP.finished){ if(MP.lastRank>1&&me===0&&raceT>4) voice("first",0); MP.lastRank=me+1; }
@@ -2649,7 +2808,7 @@ function frame(now){
   while(acc>=STEP){
     const controls=state==="race";
     if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(edge("boost")&&countT<=.5) S.startTap=true;
-      if(countT<=0){state="race"; $("count").hidden=true; toast("GO!","#ffcf2e"); beep(1320,.35); S.shieldT=5; if(S.startTap) startBoost(); }}
+      if(countT<=0){state="race"; $("count").hidden=true; toast("GO!","#ffcf2e"); beep(1320,.35); S.shieldT=5; if(S.startTap) startBoost(); botsGo(); }}
     if(state==="race"&&!S.startUsed&&raceT<.5&&edge("boost")) startBoost();
     if(S.shieldT>0) S.shieldT=Math.max(0,S.shieldT-STEP);
     if(state!=="menu"){ fsNow=physics(STEP, controls&&!S.ej); if(S.ej) updEject(STEP,controls); }
@@ -2657,7 +2816,7 @@ function frame(now){
     for(const k in input) prev[k]=input[k];
     acc-=STEP;
   }
-  updateFX(dt); mpUpdate(dt); render(dt); drawSpeedFx(dt); updateAudio(fsNow);
+  updateFX(dt); mpUpdate(dt); botsUpdate(dt); render(dt); drawSpeedFx(dt); updateAudio(fsNow);
   requestAnimationFrame(frame);
 }
 
