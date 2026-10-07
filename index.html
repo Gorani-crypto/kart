@@ -132,6 +132,22 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 .mp-pick button img{width:100%;aspect-ratio:1.6;object-fit:cover;border-radius:6px;display:block}
 .mp-pick button[aria-pressed="true"]{border-color:#ffcf2e;background:rgba(255,207,46,.12)}
 @media (max-width:520px){ .mp-grid{gap:5px} .mp-slot b{font-size:11px} .mp-slot small{display:none} .mp-pick button{width:80px} }
+
+/* 시상식 */
+.cer{position:fixed;inset:0;z-index:30;pointer-events:none;display:flex;align-items:center;padding:16px}
+.cer-panel{pointer-events:auto;width:min(44vw,430px);max-height:92vh;overflow:auto;background:rgba(16,26,58,.88);border:1px solid var(--panel-line);border-radius:16px;padding:18px 18px 14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.cer-panel h1{font-family:var(--display);font-weight:400;font-size:34px;margin:0}
+.cer-rows{display:flex;flex-direction:column;gap:6px}
+.cer-row{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.05)}
+.cer-row b{font-family:var(--display);font-weight:400;font-size:20px}
+.cer-row:nth-child(1) b{color:#ffd21f}.cer-row:nth-child(2) b{color:#d9dde3}.cer-row:nth-child(3) b{color:#e0a060}
+.cer-row span{font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cer-row small{display:block;font-weight:600;font-size:11px;color:var(--ink-dim)}
+.cer-row em{font-style:normal;font-variant-numeric:tabular-nums;font-weight:800;font-size:14px}
+.cer-row.me{outline:2px solid #ffcf2e}
+.cer-count{align-self:flex-end;font-size:12px;font-weight:800;color:var(--ink-dim)}
+.cer-count::after{content:"초 뒤 닫혀요"}
+@media (max-aspect-ratio:1/1){ .cer{align-items:flex-start} .cer-panel{width:100%;max-height:40vh;padding:12px} .cer-panel h1{font-size:24px} .cer-row{padding:5px 8px} }
 #mpRank{min-width:120px}
 #mpRank .r1{font-family:var(--display);font-size:24px;line-height:1}
 #mpRank .r1 small{font-size:14px;color:var(--ink-dim)}
@@ -167,7 +183,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2005</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1007-2015</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -1758,6 +1774,7 @@ function physics(dt, controls){
     S.x-=n.x*sg*push; S.z-=n.z*sg*push;
     const vn=S.vx*n.x+S.vz*n.z;
     if(Math.sign(vn)===sg&&KART.eject&&Math.abs(vn)>13) ejectRider(-n.x*sg,-n.z*sg,Math.abs(vn));
+    else if(Math.sign(vn)===sg&&Math.abs(vn)>17&&state==="race") voice("bad",7000);
     if(Math.sign(vn)===sg){S.vx-=n.x*vn*1.4;S.vz-=n.z*vn*1.4; S.vx*=.88; S.vz*=.88; S.shake=Math.min(.5,Math.abs(vn)*.04); if(Math.abs(vn)>4) thud(); if(S.drifting){S.drifting=false;S.gripRamp=0;}}
   }
 
@@ -1775,7 +1792,7 @@ function physics(dt, controls){
     else for(const b of c.buildings){ if(!b.alive) continue; const bx=S.x-b.x, bz=S.z-b.z, bd=Math.hypot(bx,bz), rr=b.r+1.3; if(bd<rr&&bd>0){ S.x=b.x+bx/bd*rr; S.z=b.z+bz/bd*rr; const vn=(S.vx*bx+S.vz*bz)/bd; if(vn<0){ S.vx-=bx/bd*vn*1.5; S.vz-=bz/bd*vn*1.5; S.shake=.3; if(vn<-4) thud(); } } }
   }
   if(TR.gapSet&&TR.gapSet.has(S.idx)){ gy=-1e9; // 낭떠러지 구간: 도로 없음
-    if(S.y<TR.gap.failY){ const i=(TR.gap.b+4)%N, t=T[i], v=16; S.x=P[i].x; S.z=P[i].z; S.y=Y[i]+3; S.gy=Y[i]; S.vy=0; S.h=Math.atan2(t.x,t.z); S.vx=t.x*v; S.vz=t.z*v; S.idx=i; S.prog=i; S.chute=false; S.drifting=false; S.grounded=false; toast("추락! 착지 지점에서 다시 출발","#ff7a1a"); return v; } }
+    if(S.y<TR.gap.failY){ const i=(TR.gap.b+4)%N, t=T[i], v=16; S.x=P[i].x; S.z=P[i].z; S.y=Y[i]+3; S.gy=Y[i]; S.vy=0; S.h=Math.atan2(t.x,t.z); S.vx=t.x*v; S.vz=t.z*v; S.idx=i; S.prog=i; S.chute=false; S.drifting=false; S.grounded=false; toast("추락! 착지 지점에서 다시 출발","#ff7a1a"); voice("bad"); return v; } }
   if(TR.kickSet&&TR.kickSet.has(S.idx)&&!S.kickHint){ S.kickHint=true; toast(touchMode?"점프! 공중에서 드리프트 = 낙하산":"점프! 공중에서 Shift = 낙하산","#ffcf2e"); toastTimer=2.4; }
   if(!S.grounded&&controls&&!S.chute){ // 낙하산: 공중에서 드리프트 키
     if(S.air>.15&&edge("drift")){ S.chute=true; toast("낙하산!","#ffffff"); beep(520,.15,.2); }
@@ -2134,7 +2151,7 @@ let bestEver=null;
 function loadBest(){ bestEver=null; try{const v=localStorage.getItem(bestKey()); if(v) bestEver=parseFloat(v);}catch(_){} }
 
 function startRace(){
-  initAudio(); if(TR) resetDestruction();
+  initAudio(); unlockSpeech(); endCeremony(); if(TR) resetDestruction();
   loadTrack(selTrack); resetDestruction(); KART=effKart(KARTS[selKart],CHARS[selChar]); if(KART.syn) setTimeout(()=>toast("시너지! 성능 +4%","#ffcf2e"),INTRO*1000); paintKart(KART); attachRider(CHARS[selChar]); loadBest(); bestLap=null;
   const fb=document.getElementById("fireBtn"); if(fb){ fb.hidden=!(KART.id==="tank"||KART.id==="trex"); fb.textContent=KART.id==="trex"?"물기":"포탄"; }
   resetKart(); resetMissions(); kart.visible=true; updUpg(); state="countdown"; countT=3.2+INTRO; raceT=0; lapStart=0; lap=1; laps=[]; cp1=cp2=false; prevIdx=S.prog;
@@ -2160,6 +2177,7 @@ function finishRace(){
     `<span>개인 최고 랩</span><span class="hl">${fmt(bestEver)}</span>`+missionHTML()+rankHTML(raceT);
   if(MP.racing) mpFinish();
   setTimeout(()=>{ if(state==="finish") $("finish").hidden=false; },900);
+  if(typeof MP==="undefined"||!MP||!MP.racing){ const nm=(typeof MP!=="undefined"&&MP&&MP.nick)||"나"; setTimeout(()=>{ if(state==="finish") startCeremony([{name:nm,ch:selChar,k:selKart,ft:raceT,me:true}]); },1300); }
 }
 // ===== 슈퍼바이크: 세게 부딪히면 사람이 날아감 → 걸어가서 다시 타야 함 =====
 // 출발 부스터: GO 타이밍 ±0.5초 안에 부스터 키 → 순간부스터의 2배 시간 동안 부스터 + 출발 가속
@@ -2170,7 +2188,7 @@ function ejectRider(nx,nz,power){
   const rd=CAR.rider; rd.updateMatrixWorld(true); const wp=new THREE.Vector3(); rd.getWorldPosition(wp);
   scene.attach(rd); const sp=Math.hypot(S.vx,S.vz);
   S.ej={x:wp.x,y:wp.y,z:wp.z,vx:S.vx*.35+nx*Math.min(8,power*.3),vy:5+Math.min(4,power*.1),vz:S.vz*.35+nz*Math.min(8,power*.3),h:S.h,ground:false,t:0,idx:S.idx,told:false,spin:(Math.random()<.5?-1:1)*(6+Math.random()*4)};
-  S.drifting=false; S.boostT=0; S.instT=0; S.shake=Math.max(S.shake,.8); thud(); toast("앗! 사람이 날아갔다!","#ff7a1a");
+  S.drifting=false; S.boostT=0; S.instT=0; S.shake=Math.max(S.shake,.8); thud(); toast("앗! 사람이 날아갔다!","#ff7a1a"); voice("bad",0);
   if(sp>1){ S.vx*=.6; S.vz*=.6; }
 }
 function updEject(dt,controls){
@@ -2204,9 +2222,130 @@ function bittenByTrex(){
   const m=KART.mass||1;
   if(m>=1.9){ toast("티라노가 물려 했지만 너무 단단하다!","#46e08a"); S.shake=Math.max(S.shake,.2); return; }
   const keep=1-clamp(.8-.32*m,.15,.6); S.vx*=keep; S.vz*=keep; S.drifting=false; S.boostT=0; S.shake=Math.max(S.shake,.6); thud();
-  toast("티라노에게 물렸다!","#ff4d6d"); if(typeof bumpFx==="function") bumpFx(S.x,S.y+1.5,S.z);
+  toast("티라노에게 물렸다!","#ff4d6d"); voice("bad"); if(typeof bumpFx==="function") bumpFx(S.x,S.y+1.5,S.z);
   if(KART.eject&&m<1) ejectRider(Math.cos(S.h),-Math.sin(S.h),12);
 }
+
+// ===== 캐릭터 음성 (안 좋은 일 / 1등 탈환) — 한국어 음성 합성 + 말풍선 =====
+// g: 성별(m/f), p: 음높이(나이·성별 느낌), r: 말 빠르기
+const VO={
+  dotori:{g:"m",p:1.7,r:1.18,bad:["으앙! 내 도토리!","아야야야… 반칙이야!","엄마아아~!","다시 해! 다시!","치사하게 진짜!"],
+    first:["도토리 1등이다~!","봤지? 봤지?","다람쥐보다 빠르지롱!","나 잡아 봐라~","오늘 간식은 내 거!"]},
+  bori:{g:"f",p:1.55,r:1.12,bad:["꺄악! 내 머리띠!","곰돌이 화났어!","히잉… 아프잖아","누구야! 누가 그랬어!","별 스티커 떨어졌잖아!"],
+    first:["보리 등장~ 1등이야!","곰은 원래 빠르거든?","별 하나 더 붙여야지~","꿀맛이다, 꿀맛!","다들 내 뒤만 따라와~"]},
+  rider:{g:"m",p:.9,r:1.02,bad:["크윽… 재킷 기스 났잖아","이건 사고가 아니라 연출이다","핸들이 좀 미끄러졌을 뿐…","아직 안 끝났어","젠장, 폼 다 망가졌네"],
+    first:["바람이 나를 부른다","앞에 아무도 없군","따라올 수 있으면 따라와 봐","이게 진짜 라이딩이지","기어 6단, 끝."]},
+  major:{g:"m",p:.62,r:.95,bad:["적 포탄이다! 엎드려!","이런 낭패가 있나!","보급 요청! 보급 요청!","이건 후퇴가 아니라 전술적 이동이다!","포대장 체면이 말이 아니군!"],
+    first:["고지 점령! 충성!","전원 내 뒤로 집합!","이것이 포병의 화력이다!","작전 성공, 포상 휴가 간다!","짱돌은 굴러야 제맛이지!"]},
+  kkwak:{g:"f",p:1.95,r:1.35,bad:["케에에엑!","꽤애액?!","흐히유유…","꾸르륵 꽥!","삐삡 삐삡!"],
+    first:["꽥꽥꽥꽥!!","꾸루루룩~ 꽥!","흐히히히힛!","꽤애애액~","삐삐삐 꽤액!"]},
+  kkami:{g:"f",p:1.75,r:1.15,bad:["캬아아악!","냐아앙?!","하악! 하아악!","미야아아오…","크르르르릉"],
+    first:["냐옹~","골골골골골…","냥! 냥냥!","미야오오옹~","냐아아앙!"]},
+  sausage:{g:"m",p:1.2,r:1.22,bad:["소오오오오오!! 세지세지!","왓 더 소세지!","아이고 내 껍질 터지겠네!","이러다 핫도그 되겠어!","케첩 나왔잖아 케첩!"],
+    first:["소세지는 구워야 제맛!","1등은 바삭하게~","지글지글 불타오른다!","이게 바로 육즙 질주다!","나한테 케첩 뿌려 줘!"]},
+  granny:{g:"f",p:1.05,r:.82,bad:["노인공경 모르나!","에잉, 끌끌…","어린 놈들이 말이야!","나 때는 말이야…","아이고 내 허리야!"],
+    first:["할미 아직 안 죽었다!","젊은 것들 따라와 봐라~","에헴, 이게 연륜이여","손주들아, 할미 1등했다!","느린 게 아니라 여유였어~"]}
+};
+// 차마다 붙는 1등 멘트 (차의 직업·성격)
+const CARVO={
+  scoot:["배달 짬밥 10년이여~","30분 안에 도착 보장!","번쩍 배달 왔습니다!","콜 하나 더 받는다!","리뷰 별 다섯 개 부탁드려유~"],
+  dump:["내가 공사장 생활을 19살부터 시작했다!","길 비켜! 자재 들어간다!","안전제일! 근데 1등도 제일!","오늘 일당 두 배다!","레미콘보다 빠르다 이거여!"],
+  truck:["초보라고 무시하지 마요!","어? 내가 1등이야?","깜빡이 켰어요! 추월합니다!","초보 딱지 오늘 뗍니다!","사이드미러 보는 법 이제 알았다!"],
+  tank:["전차 앞에 길은 없다!","포탑 회전, 1등 조준 완료!","무한궤도는 멈추지 않는다!"],
+  chair:["바퀴 굴러간다~ 비켜라!","엔진 달린 의자 맛 좀 봐라!","재활 치료 끝! 이제 질주다!"],
+  trex:["크아아아앙!!","쥬라기 시대엔 내가 1등이었다!","다 잡아먹어 버린다!"],
+  bike:["부릉부릉~ 1등은 내 자리!","헬멧 끈 꽉 매라!","이 맛에 두 바퀴 탄다!"],
+  giant:["쿵! 쿵! 쿵! 1등이다!","돌은 굴러가면 못 멈춘다!","산도 내 뒤에 있다!"],
+  roach:["사사삭~ 아무도 못 잡지!","바퀴는 원래 빠르다고!","살충제도 나는 못 막지!"],
+  kart:["레이싱은 카트지!","코너는 이렇게 도는 거야!"],
+  gold:["터보 터진다~!","고급차는 다르다고!"],
+  blue:["녹슬어도 엔진은 살아있다!","왕년의 명차 나가신다!"]
+};
+let koVoices=[]; const VOICE={t:0,seq:0};
+function loadVoices(){ try{ koVoices=speechSynthesis.getVoices().filter(v=>/^ko/i.test(v.lang)); }catch(_){} }
+if(window.speechSynthesis){ loadVoices(); try{ speechSynthesis.addEventListener("voiceschanged",loadVoices); }catch(_){} }
+function pickVoice(g){ if(!koVoices.length) return null; const male=/InJoon|Minsu|Hyunsu|Jun|Bong|male|남/i, fem=/SunHi|Heami|Yuna|Sora|Jimin|female|여|Google/i;
+  return koVoices.find(v=>g==="m"?male.test(v.name):fem.test(v.name))||koVoices[0]; }
+function unlockSpeech(){ try{ if(window.speechSynthesis&&!VOICE.unlocked){ VOICE.unlocked=true; const u=new SpeechSynthesisUtterance(" "); u.volume=0; speechSynthesis.speak(u); } }catch(_){} }
+// 말풍선 (카트 위)
+const BUBBLES=[];
+function makeBubble(text){ const c=document.createElement("canvas"); c.width=512; c.height=128; const x=c.getContext("2d");
+  x.font="800 40px sans-serif"; const w=Math.min(496,x.measureText(text).width+56);
+  x.fillStyle="rgba(255,255,255,.96)"; x.strokeStyle="#1b2a5c"; x.lineWidth=5; const L=(512-w)/2;
+  x.beginPath(); if(x.roundRect) x.roundRect(L,8,w,84,30); else x.rect(L,8,w,84); x.fill(); x.stroke();
+  x.beginPath(); x.moveTo(236,90); x.lineTo(256,122); x.lineTo(276,90); x.closePath(); x.fill(); x.stroke(); x.fillStyle="#fff"; x.fillRect(238,84,36,10);
+  x.fillStyle="#1b2a5c"; x.textAlign="center"; x.textBaseline="middle"; x.fillText(text,256,52,w-40);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:false,transparent:true})); s.scale.set(6.4,1.6,1); s.renderOrder=11; return s; }
+function showBubble(parent,text,y){ for(let i=BUBBLES.length-1;i>=0;i--) if(BUBBLES[i].s.parent===parent){ parent.remove(BUBBLES[i].s); BUBBLES.splice(i,1); }
+  const s=makeBubble(text); s.position.y=y; parent.add(s); BUBBLES.push({s,t:0,life:2.6}); }
+function updBubbles(dt){ for(let i=BUBBLES.length-1;i>=0;i--){ const b=BUBBLES[i]; b.t+=dt; const k=b.t/b.life; b.s.material.opacity=k>.8?(1-k)/.2:1; b.s.scale.set(6.4*(k<.08?k/.08:1),1.6*(k<.08?k/.08:1),1); if(k>=1){ if(b.s.parent) b.s.parent.remove(b.s); b.s.material.map.dispose(); b.s.material.dispose(); BUBBLES.splice(i,1); } } }
+function sayLine(text,c){ showBubble(kart,text,(CAR.tagY||3.1)+1.6); if(!window.speechSynthesis||!SND.on) return;
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text.replace(/~/g,"")); u.lang="ko-KR"; const v=pickVoice(c.g); if(v) u.voice=v; u.pitch=c.p; u.rate=c.r; u.volume=1; speechSynthesis.speak(u); }catch(_){} }
+function voice(kind,minGap){ const c=VO[CHAR.id]; if(!c||state==="menu") return; const now=performance.now(); if(now-VOICE.t<(minGap||2800)) return; VOICE.t=now;
+  const pool=kind==="first"?c.first.concat(CARVO[KART.id]||[]):c.bad; let text=pool[Math.floor(Math.random()*pool.length)]; if(text===VOICE.last&&pool.length>1) text=pool[(pool.indexOf(text)+1)%pool.length]; VOICE.last=text;
+  sayLine(text,c); if(typeof MP!=="undefined"&&MP&&MP.racing&&typeof mpSend==="function"){ VOICE.seq++; mpSend({vo:[VOICE.seq,text.slice(0,40)]}); } }
+
+// ===== 시상식 (경기 끝나고 10초) =====
+const CER={on:false};
+function standPose(rd){ const L=rd.userData.legs; if(L) for(const k of ["L","R"]){ if(L[k]){ L[k].visible=true; L[k].rotation.x=Math.PI/2; } } return rd; }
+function cerLabel(text,col){ const c=document.createElement("canvas"); c.width=256; c.height=64; const x=c.getContext("2d"); x.fillStyle="rgba(14,22,48,.8)"; x.beginPath(); if(x.roundRect) x.roundRect(4,8,248,48,24); else x.rect(4,8,248,48); x.fill(); x.fillStyle=col||"#fff"; x.font="800 28px sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText(text,128,33,230);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false})); s.scale.set(2.6,.65,1); s.renderOrder=5; return s; }
+function startCeremony(rows){
+  if(CER.on) return; CER.on=true; CER.t=0; CER.anim=[];
+  const sc=new THREE.Scene(); sc.background=new THREE.Color(0x8fd3ff); sc.fog=new THREE.Fog(0x8fd3ff,30,90);
+  sc.add(new THREE.HemisphereLight(0xffffff,0x88aa77,.95)); const dl=new THREE.DirectionalLight(0xffffff,.8); dl.position.set(5,12,8); sc.add(dl);
+  const gr=new THREE.Mesh(new THREE.CircleGeometry(60,40),Lam(0x7cc25a)); gr.rotation.x=-Math.PI/2; sc.add(gr);
+  const carpet=new THREE.Mesh(new THREE.PlaneGeometry(9,6),Lam(0xc8102e)); carpet.rotation.x=-Math.PI/2; carpet.position.set(0,.01,.5); sc.add(carpet);
+  // 시상대 2 · 1 · 3
+  const podCol=[0xffd21f,0xd9dde3,0xd08a4a], podX=[0,-2.2,2.2], podH=[1.9,1.3,.9];
+  for(let k=0;k<3;k++){ const b=new THREE.Mesh(new THREE.BoxGeometry(2.1,podH[k],2.1),Lam(0xf4f4f6)); b.position.set(podX[k],podH[k]/2,0); sc.add(b);
+    const tc=document.createElement("canvas"); tc.width=128; tc.height=128; const tx=tc.getContext("2d"); tx.fillStyle="#"+podCol[k].toString(16).padStart(6,"0"); tx.beginPath(); tx.arc(64,64,56,0,Math.PI*2); tx.fill(); tx.fillStyle="#1b2a5c"; tx.font="900 80px sans-serif"; tx.textAlign="center"; tx.textBaseline="middle"; tx.fillText(String(k+1),64,70);
+    const num=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(tc),transparent:true})); num.position.set(podX[k],podH[k]/2,1.06); sc.add(num); }
+  const sorted=rows.slice(0,8);
+  sorted.forEach((r,i)=>{ const ch=CHARS[r.ch]||CHARS[0]; const rd=standPose(buildRider(ch,"scoot")); rd.scale.setScalar(.9);
+    const holder=new THREE.Group(); holder.add(rd); sc.add(holder);
+    if(i<3){ holder.position.set(podX[i],podH[i]+.82,0); holder.rotation.y=(i===1?.25:i===2?-.25:0);
+      const lab=cerLabel((i+1)+"등 "+r.name,i===0?"#ffd21f":"#fff"); lab.position.set(podX[i],podH[i]+3.4,0); sc.add(lab);
+      if(i===0){ const cup=new THREE.Group(); const gm=new THREE.MeshStandardMaterial({color:0xffcf2e,metalness:.8,roughness:.25}); const bowl=new THREE.Mesh(new THREE.SphereGeometry(.32,16,10,0,Math.PI*2,0,Math.PI/2),gm); bowl.rotation.x=Math.PI; bowl.position.y=.55; cup.add(bowl); const st=new THREE.Mesh(new THREE.CylinderGeometry(.05,.12,.4,10),gm); st.position.y=.2; cup.add(st);
+        cup.position.set(.55,1.75,.35); holder.add(cup); }
+      CER.anim.push(t=>{ holder.position.y=podH[i]+.82+(i===0?Math.abs(Math.sin(t*4))*.35:Math.abs(Math.sin(t*3+i))*.12); });
+    } else { // 시상 못 한 캐릭터들: 벌서기 / 울기 / 엎드려
+      const j=i-3, px=4.0+j*1.55, pz=1.2+(j%2)*.9, mode=j%3; holder.position.set(px,.82,pz); rd.scale.setScalar(.75);
+      const lab=cerLabel((i+1)+"등 "+r.name,"#b9c6e8"); lab.scale.multiplyScalar(.8); lab.position.set(px,mode===2?1.3:2.75,pz); sc.add(lab);
+      const suit=Lam(ch.suit);
+      if(mode===0){ holder.rotation.y=Math.PI; for(const sx of [1,-1]){ const arm=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,.75,8),suit); arm.position.set(sx*.32,2.35,0); arm.rotation.z=sx*.15; rd.add(arm); }
+        CER.anim.push(t=>{ holder.rotation.z=Math.sin(t*2.2+j)*.05; }); }
+      else if(mode===1){ const head=rd.userData.head; if(head) head.rotation.x=.45; const tm=new THREE.MeshBasicMaterial({color:0x5ab8ff});
+        const tears=[]; for(let q=0;q<6;q++){ const d=new THREE.Mesh(new THREE.SphereGeometry(.06,8,6),tm); rd.add(d); tears.push(d); }
+        CER.anim.push(t=>{ holder.position.x=px+Math.sin(t*25)*.03; tears.forEach((d,q)=>{ const u=(t*1.4+q/6)%1, sx=q%2?1:-1; d.position.set(sx*.22,1.25-u*1.1,.6+u*.2); d.scale.setScalar(1-u*.5); }); }); }
+      else { holder.position.y=.35; rd.rotation.x=Math.PI/2.1; holder.rotation.y=-.3; CER.anim.push(t=>{ rd.position.y=Math.sin(t*1.5+j)*.02; }); }
+    } });
+  // 꽃가루
+  const conf=[]; const cols=[0xe8344a,0xffd21f,0x3ec6ff,0x46e08a,0xff6fb5,0xffffff];
+  for(let k=0;k<160;k++){ const m=new THREE.Mesh(new THREE.PlaneGeometry(.12,.2),new THREE.MeshBasicMaterial({color:cols[k%cols.length],side:THREE.DoubleSide})); m.position.set((Math.random()-.5)*10,3+Math.random()*9,(Math.random()-.5)*6); m.userData.v=.6+Math.random()*1.2; m.userData.s=Math.random()*6; sc.add(m); conf.push(m); }
+  CER.anim.push((t,dt)=>{ for(const m of conf){ m.position.y-=m.userData.v*dt; m.rotation.x+=dt*3; m.rotation.y+=dt*2; m.position.x+=Math.sin(t*2+m.userData.s)*dt*.4; if(m.position.y<0) m.position.y=10; } });
+  CER.scene=sc; CER.cam=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,200);
+  // 화면: 왼쪽 기록표·순위표, 오른쪽 시상대
+  let el=document.getElementById("cer"); if(!el){ el=document.createElement("div"); el.id="cer"; document.body.appendChild(el); }
+  el.className="cer"; el.hidden=false;
+  const esc=v=>String(v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  el.innerHTML='<div class="cer-panel"><div class="eyebrow">AWARDS · '+esc(TR.def.name)+'</div><h1>🏆 시상식</h1><div class="cer-rows">'+
+    sorted.map((r,i)=>'<div class="cer-row'+(r.me?' me':'')+'"><b>'+(i+1)+'등</b><span>'+esc(r.name)+(r.me?' (나)':'')+'<small>'+esc((KARTS[r.k]||KARTS[0]).name)+' · '+esc((CHARS[r.ch]||CHARS[0]).name)+'</small></span><em>'+(r.ft?fmtT(r.ft):'완주 못 함')+'</em></div>').join("")+
+    '</div><div class="cer-count" id="cerCount">10</div></div>';
+  document.querySelectorAll(".hud").forEach(h=>{ h.dataset.cerHide=h.style.visibility||""; h.style.visibility="hidden"; });
+  const mine=sorted.findIndex(r=>r.me); if(mine===0) setTimeout(()=>voice("first",0),600); else if(mine>=3) setTimeout(()=>voice("bad",0),600);
+  const fin=document.getElementById("finish"); CER.finWas=fin&&!fin.hidden; if(fin) fin.hidden=true;
+  CER.timer=setTimeout(endCeremony,10000);
+}
+function endCeremony(){ if(!CER.on) return; CER.on=false; clearTimeout(CER.timer); const el=document.getElementById("cer"); if(el) el.hidden=true;
+  document.querySelectorAll(".hud").forEach(h=>{ h.style.visibility=h.dataset.cerHide||""; });
+  if(CER.scene){ CER.scene.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); CER.scene=null; }
+  if(state==="finish"){ const fin=document.getElementById("finish"); if(fin) fin.hidden=false; } }
+function cerRender(dt){ CER.t+=dt; for(const f of CER.anim) f(CER.t,dt); const c=CER.cam, a=-.2+Math.sin(CER.t*.25)*.1;
+  c.aspect=innerWidth/innerHeight; c.updateProjectionMatrix(); const wide=innerWidth>innerHeight;
+  const asp=innerWidth/innerHeight, cx=wide?2-4.4:2, dist=wide?16.5:Math.min(36,15/asp), ly=wide?1.8:1.4+dist*.17; c.position.set(cx+Math.sin(a)*dist,wide?4.8:4+dist*.2,Math.cos(a)*dist); c.lookAt(cx,ly,0);
+  const cc=document.getElementById("cerCount"); if(cc) cc.textContent=Math.max(0,Math.ceil(10-CER.t));
+  renderer.render(CER.scene,c); }
 
 function LAPS(){ return (TR&&TR.def.laps)||CONFIG.laps; }
 function fmtT(t){ const m=Math.floor(t/60), x=t-m*60; return m+":"+(x<10?"0":"")+x.toFixed(2); }
@@ -2378,7 +2517,7 @@ $m("mpGo").addEventListener("click",()=>{
 /* 경기 */
 function mpStartRace(g){
   const tr=Math.max(0,Math.min(TRACKS.length-1,+g.tr||0)); selTrack=tr;
-  MP.racing=true; MP.finished=false; MP.shotSeen={}; MP.biteSeen={}; MP.lastShot=null; MP.raceId=String(g.id); MP.slot=Math.max(0,g.ps.indexOf(MP.myPeer)); MP.ps=g.ps.slice(); MP.ready=false; MP.finishTold.clear();
+  MP.racing=true; MP.finished=false; MP.shotSeen={}; MP.biteSeen={}; MP.lastShot=null; MP.cerDone=false; MP.lastRank=0; MP.raceId=String(g.id); MP.slot=Math.max(0,g.ps.indexOf(MP.myPeer)); MP.ps=g.ps.slice(); MP.ready=false; MP.finishTold.clear();
   $m("mpLobby").hidden=true; mpClearGhosts();
   startRace();
   // 출발선 자리: 4줄로 나란히, 뒤로 한 칸씩
@@ -2391,7 +2530,7 @@ function mpStartRace(g){
   mpSend({st:"race",rid:MP.raceId,ft:null,go:mpIsHost()?g:undefined});
 }
 function mpProgress(){ const N=TR.N; let f=S.prog/N; if(!cp1&&f>.8) f-=1; return laps.length+f; }
-function mpFinish(){ MP.finished=true; mpSend({st:"done",rid:MP.raceId,ft:Math.round(raceT*100)/100,pg:LAPS()+1}); mpRenderResults(); }
+function mpFinish(){ MP.finished=true; MP.finAt=performance.now(); mpSend({st:"done",rid:MP.raceId,ft:Math.round(raceT*100)/100,pg:LAPS()+1}); mpRenderResults(); }
 function mpRenderResults(){
   const rows=mpStandings(); $m("finSub").textContent="온라인 대전 · "+TR.def.name;
   $m("finLaps").innerHTML="";
@@ -2400,10 +2539,10 @@ function mpRenderResults(){
 function mpStandings(){ const out=[];
   for(const p of mpList()){ const pr=p.presence, me=p.peer===MP.myPeer; if(!me&&!(pr.rid===MP.raceId&&(pr.st==="race"||pr.st==="done"))) continue;
     const ft=me?(MP.finished?Math.max(.01,raceT):null):(+pr.ft||null), pg=me?(MP.finished?LAPS()+1:mpProgress()):(+pr.pg||0);
-    out.push({name:cleanName(pr.n)||"라이더",me,ft,pg}); }
-  if(!out.some(r=>r.me)) out.push({name:MP.nick,me:true,ft:MP.finished?Math.max(.01,raceT):null,pg:MP.finished?LAPS()+1:mpProgress()});
+    out.push({name:cleanName(pr.n)||"라이더",me,ft,pg,ch:me?selChar:(+pr.ch||0),k:me?selKart:(+pr.k||0)}); }
+  if(!out.some(r=>r.me)) out.push({ch:selChar,k:selKart,name:MP.nick,me:true,ft:MP.finished?Math.max(.01,raceT):null,pg:MP.finished?LAPS()+1:mpProgress()});
   out.sort((a,b)=>(a.ft&&b.ft)?a.ft-b.ft:a.ft?-1:b.ft?1:b.pg-a.pg); return out; }
-function mpToLobby(){ MP.racing=false; MP.finished=false; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기";
+function mpToLobby(){ endCeremony(); MP.racing=false; MP.finished=false; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기";
   state="menu"; $m("finish").hidden=true; $m("count").hidden=true; kart.visible=true; mpSend({st:"lobby",rid:null,ft:null,pg:null,go:mpIsHost()?undefined:null}); mpOpen(); }
 
 /* 상대 카트 (유령처럼 보이되 부딪히면 밀려남) */
@@ -2426,7 +2565,7 @@ function mpGhost(peer,pr){
 function mpClearGhosts(){ for(const g of MP.ghosts.values()) scene.remove(g.obj); MP.ghosts.clear(); }
 
 // 포탄에 맞음: 가벼울수록 크게 들썩이고 포탄 방향으로 날아가며 느려짐, 무거우면 살짝 들썩하고 그대로
-function shellHitMe(s){ if(S.shieldT>0){ toast("보호막이 막았다!","#7fd8ff"); return; } const m=KART.mass||1, hv=Math.hypot(s.v.x,s.v.z)||1, dx=s.v.x/hv, dz=s.v.z/hv;
+function shellHitMe(s){ if(S.shieldT>0){ toast("보호막이 막았다!","#7fd8ff"); return; } voice("bad"); const m=KART.mass||1, hv=Math.hypot(s.v.x,s.v.z)||1, dx=s.v.x/hv, dz=s.v.z/hv;
   const fly=KART.fly||1, push=clamp(11/m,2,14)*fly, lift=clamp(10/m,2.2,12)*(fly>1?1.25:1), keep=1-clamp(.22/m,.06,.38);
   S.vx=S.vx*keep+dx*push; S.vz=S.vz*keep+dz*push; S.vy=Math.max(S.vy,lift); S.y+=.15; S.grounded=false; S.drifting=false;
   S.h+=(Math.random()<.5?-1:1)*clamp(.5/m,.05,.7)*(fly>1?2:1); S.shake=Math.max(S.shake,clamp(.9/m,.25,.9));
@@ -2444,6 +2583,7 @@ function mpUpdate(dt){
   const wallNow=Date.now();
   for(const p of mpList()){ if(p.peer===MP.myPeer) continue; const pr=p.presence; if(pr.rid!==MP.raceId||!(pr.st==="race"||pr.st==="done")||pr.x===undefined){ const g0=MP.ghosts.get(p.peer); if(g0) g0.obj.visible=false; continue; }
     const g=mpGhost(p.peer,pr); g.obj.visible=true;
+    if(Array.isArray(pr.vo)){ if(g.voSeq===undefined) g.voSeq=pr.vo[0]; else if(pr.vo[0]!==g.voSeq){ g.voSeq=pr.vo[0]; showBubble(g.obj,String(pr.vo[1]||"").replace(/[\u0000-\u001f]/g,"").slice(0,40)||"…",(CARS[(KARTS[+pr.k]||KARTS[0]).id].tagY||3.4)+1.6); } }
     const BS=MP.biteSeen||(MP.biteSeen={}); if(BS[p.peer]===undefined) BS[p.peer]=Array.isArray(pr.bi)?pr.bi[0]:0;
     if(Array.isArray(pr.bi)&&pr.bi[0]!==BS[p.peer]){ BS[p.peer]=pr.bi[0]; g.biteT=.5; if(pr.bi[1]===MP.myPeer) bittenByTrex(); }
     if(pr.sd&&!g.shield){ g.shield=makeShield(); const kk=KARTS[+pr.k]||KARTS[0], R=(kk.rad||1.15)*2.4+.6; g.shield.scale.setScalar(R); g.shield.position.y=R*.45; g.obj.add(g.shield); }
@@ -2463,9 +2603,11 @@ function mpUpdate(dt){
         if(rel<0&&(!g.bumpT||now-g.bumpT>350)&&S.shieldT>0){ g.bumpT=now; bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); }
         else if(rel<0&&(!g.bumpT||now-g.bumpT>350)){ g.bumpT=now; const imp=(Math.min(10,-rel)*(.8+share)+2*share)*(share>.5?fly:1); S.vx+=nx*imp; S.vz+=nz*imp;
           const side=Math.sign(Math.sin(S.h)*nz-Math.cos(S.h)*nx)||1; S.h+=side*share*(fly>1?.9:.18); if(fly>1&&share>.5){ S.vy=Math.max(S.vy,3.5*share*fly); S.grounded=false; } const keep=1-.25*share; // 튕겨나가며 감속 (무거운 상대일수록 크게: 같은 무게 약 12%, 스쿠터→덤프 약 20%) S.vx*=keep; S.vz*=keep; S.drifting=false;
-          S.shake=Math.max(S.shake,.25+share*.3); thud(); if(KART.eject&&share>.5&&-rel>5) ejectRider(nx,nz,-rel); bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); } } }
+          S.shake=Math.max(S.shake,.25+share*.3); thud(); if(share>.6&&-rel>8) voice("bad"); if(KART.eject&&share>.5&&-rel>5) ejectRider(nx,nz,-rel); bumpFx((S.x+g.x)/2,Math.max(S.y,g.y)+1.2,(S.z+g.z)/2); } } }
     }
   mpRankT-=dt; if(mpRankT<=0){ mpRankT=.25; const rows=mpStandings(), me=rows.findIndex(r=>r.me);
+    if(rows.length>1&&state==="race"&&!MP.finished){ if(MP.lastRank>1&&me===0&&raceT>4) voice("first",0); MP.lastRank=me+1; }
+    if(MP.finished&&!MP.cerDone&&(rows.every(r=>r.ft)||performance.now()-(MP.finAt||0)>25000)){ MP.cerDone=true; startCeremony(rows); }
     const el=$m("mpRank"); el.innerHTML=""; const top=document.createElement("div"); top.className="r1"; top.textContent=(me+1)+"위"; const sm=document.createElement("small"); sm.textContent=" / "+rows.length; top.appendChild(sm); el.appendChild(top);
     const ol=document.createElement("ol"); for(const r of rows.slice(0,8)){ const li=document.createElement("li"); li.textContent=r.name+(r.ft?" ✓":""); if(r.me) li.className="me"; ol.appendChild(li); } el.appendChild(ol); }
 }
@@ -2493,6 +2635,7 @@ function frame(now){
 }
 
 function render(dt){
+  updBubbles(dt); if(CER.on){ cerRender(dt); return; }
   if(S.rail||Math.abs(S.roll)>1e-3){ const R=TR.tube?TR.tube.R:9, rx=-Math.cos(S.h), rz=Math.sin(S.h), sr=Math.sin(S.roll), cr=Math.cos(S.roll);
     kart.position.set(S.x+rx*R*sr, S.y+R-R*cr, S.z+rz*R*sr); }
   else kart.position.set(S.x,S.y,S.z);
