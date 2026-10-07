@@ -212,7 +212,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="overlay" id="menu">
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0328</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0331</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -337,8 +337,8 @@ const CONFIG = {
 window.CONFIG = CONFIG;
 
 const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고속도, accel=가속, turn=조향, boost=부스터 배율, mass=무게)
-  {id:"blue", name:"러스티 세단", desc:"균형형. 모든 능력이 무난함", speed:1.32, accel:1.3, turn:1.05, boost:1.28, mass:1},
-  {id:"gold", name:"실버 터보", desc:"최고속도 높음 · 가속과 조향은 조금 둔함", speed:1.42, accel:1.12, turn:.95, boost:1.32, mass:1},
+  {id:"blue", name:"러스티 세단", desc:"균형형. 모든 능력이 무난함", speed:1.228, accel:1.3, turn:1.05, boost:1.28, mass:1},
+  {id:"gold", name:"실버 터보", desc:"최고속도 높음 · 가속과 조향은 조금 둔함", speed:1.321, accel:1.12, turn:.95, boost:1.32, mass:1},
   {id:"kart", name:"오렌지 루키", desc:"가속·조향 좋음 · 아주 가벼워서 잘 날아감 · 부스터 2초지만 부스터 중에 한 번 더 쓰면 2단 부스터(시속 400km)", speed:1.3, accel:1.45, turn:1.22, boost:1.25, boostTime:2, dual:true, mass:.8, fly:1.7},
   {id:"scoot", name:"배달 스쿠터", desc:"가속·조향 최고 · 최고속도 최저, 가장 가벼움", speed:1.26, accel:1.55, turn:1.32, boost:1.24, mass:.65},
   {id:"tank", name:"전차", desc:"느리지만 무거워서 다 밀어냄 + 포탄 발사 (Space / 포탄 버튼)", speed:1.17, accel:1.0, turn:.92, boost:1.3, mass:1.9},
