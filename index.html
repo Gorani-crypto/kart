@@ -279,7 +279,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0350</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1008-0351</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
@@ -2601,7 +2601,7 @@ const bestKey=()=>"kartrebuild.best."+TR.def.id+"."+KART.id;
 let bestEver=null;
 function loadBest(){ bestEver=null; try{const v=localStorage.getItem(bestKey()); if(v) bestEver=parseFloat(v);}catch(_){} }
 
-function startRace(){
+function startRace(){ autoBackStop();
   initAudio(); unlockSpeech(); endCeremony(); if(TR) resetDestruction();
   loadTrack(selTrack); resetDestruction(); KART=effKart(KARTS[selKart],CHARS[selChar]); if(KART.syn) setTimeout(()=>toast("시너지! 성능 +4%","#ffcf2e"),INTRO*1000); paintKart(KART); attachRider(CHARS[selChar]); loadBest(); bestLap=null;
   const fb=document.getElementById("fireBtn"); if(fb){ fb.hidden=!(KART.id==="tank"||KART.id==="trex"); fb.textContent=KART.id==="trex"?"꼬리치기":"포탄"; }
@@ -2612,7 +2612,7 @@ function startRace(){
   if(!MP.racing&&BOT.list.length){ const i=TR.N-14, lane=((TR.def.hw||12)*2-4)/4, T=TR.T[i], n=TR.NR[i], lat=-1.5*lane; S.x+=n.x*lat; S.z+=n.z*lat; S.idx=S.prog=prevIdx=nearest(S.x,S.z,i); cam.x=S.x-Math.sin(S.h)*10; cam.z=S.z-Math.cos(S.h)*10; }
   cam.x=S.x-Math.sin(S.h)*10; cam.z=S.z-Math.cos(S.h)*10; cam.y=S.y+5; cam.yaw=S.h;
 }
-function openMenu(){ for(const k of ["titleScr","roomScr","rModal"]){ const e=document.getElementById(k); if(e) e.hidden=true; } if(MP.racing){ mpToLobby(); return; } botsClear(); raceEndReset(); endCeremony(); $m("mpRank").parentNode.hidden=true; state="menu"; $("finish").hidden=true; $("count").hidden=true; $("menu").hidden=false; renderOptions(); }
+function openMenu(){ autoBackStop(); for(const k of ["titleScr","roomScr","rModal"]){ const e=document.getElementById(k); if(e) e.hidden=true; } if(MP.racing){ mpToLobby(); return; } botsClear(); raceEndReset(); endCeremony(); $m("mpRank").parentNode.hidden=true; state="menu"; $("finish").hidden=true; $("count").hidden=true; $("menu").hidden=false; renderOptions(); }
 $("startBtn").addEventListener("click",startRace);
 function botInfoUpd(){ let p=document.getElementById("botInfo"); const row=$("startBtn").parentNode; if(!p){ p=document.createElement("p"); p.id="botInfo"; p.className="keys"; p.style.margin="0"; p.style.fontSize="12px"; p.style.color="var(--ink-dim)"; row.parentNode.insertBefore(p,row); } p.textContent="🤖 "+botInfoText(); $("botClrBtn").hidden=!BOT.cfg.length; }
 $("botAddBtn").addEventListener("click",()=>{ botAdd(); botInfoUpd(); }); $("botClrBtn").addEventListener("click",()=>{ BOT.cfg=[]; botInfoUpd(); }); botInfoUpd();
@@ -2839,10 +2839,16 @@ function startCeremony(rows){
   const fin=document.getElementById("finish"); CER.finWas=fin&&!fin.hidden; if(fin) fin.hidden=true;
   CER.timer=setTimeout(endCeremony,10000);
 }
+// 시상식이 끝나면 10초 뒤 자동으로 대기실(혼자면 메뉴)로
+const AUTOB={t:0,timer:0};
+function autoBackStop(){ clearInterval(AUTOB.timer); AUTOB.timer=0; const e=document.getElementById("autoBack"); if(e) e.remove(); }
+function autoBackStart(){ autoBackStop(); AUTOB.t=10; const card=document.querySelector("#finish .card"); if(!card) return; const e=document.createElement("div"); e.id="autoBack"; e.style.cssText="text-align:center;font-weight:800;color:#ffcf2e"; card.appendChild(e);
+  const upd=()=>{ e.textContent=AUTOB.t+"초 뒤 "+(MP.racing?"대기실로":"메뉴로")+" 돌아가요"; };
+  upd(); AUTOB.timer=setInterval(()=>{ AUTOB.t--; if(state!=="finish"){ autoBackStop(); return; } if(AUTOB.t<=0){ autoBackStop(); if(MP.racing) mpToLobby(); else openMenu(); return; } upd(); },1000); }
 function endCeremony(){ if(!CER.on) return; CER.on=false; clearTimeout(CER.timer); const el=document.getElementById("cer"); if(el) el.hidden=true;
   document.querySelectorAll(".hud").forEach(h=>{ h.style.visibility=h.dataset.cerHide||""; });
   if(CER.scene){ CER.scene.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); CER.scene=null; }
-  if(state==="finish"){ const fin=document.getElementById("finish"); if(fin) fin.hidden=false; } }
+  if(state==="finish"){ const fin=document.getElementById("finish"); if(fin) fin.hidden=false; autoBackStart(); } }
 function cerRender(dt){ CER.t+=dt; for(const f of CER.anim) f(CER.t,dt); const c=CER.cam, a=-.2+Math.sin(CER.t*.25)*.1;
   c.aspect=innerWidth/innerHeight; c.updateProjectionMatrix(); const wide=innerWidth>innerHeight;
   const asp=innerWidth/innerHeight, cx=wide?2-4.4:2, dist=wide?16.5:Math.min(36,15/asp), ly=wide?1.8:1.4+dist*.17; c.position.set(cx+Math.sin(a)*dist,wide?4.8:4+dist*.2,Math.cos(a)*dist); c.lookAt(cx,ly,0);
@@ -3190,7 +3196,7 @@ function mpStandings(){ const out=[];
     out.push({name:cleanName(pr.n)||"라이더",me,ft,pg,ch:me?selChar:(+pr.ch||0),k:me?selKart:(+pr.k||0)}); }
   if(!out.some(r=>r.me)) out.push({ch:selChar,k:selKart,name:MP.nick,me:true,ft:MP.finished?Math.max(.01,raceT):null,pg:MP.finished?LAPS()+1:mpProgress()});
   out.sort((a,b)=>(a.ft&&b.ft)?a.ft-b.ft:a.ft?-1:b.ft?1:b.pg-a.pg); return out; }
-function mpToLobby(){ endCeremony(); botsClear(); raceEndReset(); MP.racing=false; MP.finished=false; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기";
+function mpToLobby(){ autoBackStop(); endCeremony(); botsClear(); raceEndReset(); MP.racing=false; MP.finished=false; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기";
   state="menu"; $m("finish").hidden=true; $m("count").hidden=true; kart.visible=true; mpSend({st:"lobby",rid:null,ft:null,pg:null,go:mpIsHost()?undefined:null}); mpOpen(); }
 
 /* 상대 카트 (유령처럼 보이되 부딪히면 밀려남) */
