@@ -1223,7 +1223,8 @@ function drawTitle(now){if(!titleOn)return;const cv=$("titleCv"),dpr=Math.min(2,
   const vg=g.createRadialGradient(W/2,H*.45,Math.min(W,H)*.3,W/2,H*.5,Math.max(W,H)*.75);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.75)");g.fillStyle=vg;g.fillRect(0,0,W,H);
   titleRaf=requestAnimationFrame(drawTitle);}
 function showTitle(){titleOn=true;$("title").hidden=false;$("tStory").hidden=!(S.endSeen||(S.conqBy&&S.conqBy[6]));const hs=S.earned>0;$("tPlay").hidden=!hs;$("tNew").textContent="새 게임";$("tNew").classList.remove("warn");newArm=0;const c=COUNTRIES[S.country-1];$("tSave").textContent=S.earned>0?`진행 기록 · ${S.country}스테이지 ${c?c.name:""} · ${S.wave}단계`:"새 작전";bgmLabels();titleRaf=requestAnimationFrame(drawTitle);}
-function hideTitle(){titleOn=false;cancelAnimationFrame(titleRaf);$("title").hidden=true;last=0;if(!S.intro&&!(S.earned>0))setTimeout(()=>{if(!S.intro&&!(S.earned>0))startIntro();},300);}
+function landLock(){try{const m=matchMedia("(pointer:coarse)").matches;if(!m)return;const go=()=>{try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{});}catch(e){}};const de=document.documentElement;if(!document.fullscreenElement&&de.requestFullscreen&&!matchMedia("(display-mode: fullscreen)").matches&&!matchMedia("(display-mode: standalone)").matches)de.requestFullscreen({navigationUI:"hide"}).then(go).catch(go);else go();}catch(e){}} /* 폰에서 게임 시작 시 가로 고정(지원 기기) */
+function hideTitle(){landLock();titleOn=false;cancelAnimationFrame(titleRaf);$("title").hidden=true;last=0;if(!S.intro&&!(S.earned>0))setTimeout(()=>{if(!S.intro&&!(S.earned>0))startIntro();},300);}
 function drawKorea(g,x,y,w,h){g.save();g.fillStyle="#ffffff";g.fillRect(x,y,w,h);const cx=x+w/2,cy=y+h/2,R=h/4,an=Math.atan2(2,3);g.translate(cx,cy);g.rotate(an);
   g.fillStyle="#c60c30";g.beginPath();g.arc(0,0,R,Math.PI,0);g.fill();g.fillStyle="#003478";g.beginPath();g.arc(0,0,R,0,Math.PI);g.fill();
   g.fillStyle="#c60c30";g.beginPath();g.arc(-R/2,0,R/2,0,7);g.fill();g.fillStyle="#003478";g.beginPath();g.arc(R/2,0,R/2,0,7);g.fill();g.restore();
@@ -2409,5 +2410,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190801 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190803 */</script>
 </body></html>
