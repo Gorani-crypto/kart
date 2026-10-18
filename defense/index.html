@@ -131,6 +131,7 @@ canvas{display:block;width:100%;touch-action:manipulation}
 #tPlay:hover{filter:brightness(1.12)}
 @media (orientation:landscape) and (max-height:560px){#title .tc{inset:0;gap:6px;padding:8px}#title .tk{font-size:10px}#title h1{font-size:min(64px,16vh)}#title .tq{font-size:12px;line-height:1.4}#title .tbtns{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:8px;max-width:92vw}#title .tbtns .tsave{flex-basis:100%}#tPlay{font-size:20px;padding:8px 28px}#title .tnew{font-size:15px;padding:6px 16px;letter-spacing:.06em}#title .tfoot{display:none}}
 html.rot #title .tc{inset:0;gap:6px;padding:8px}html.rot #title .tk{font-size:10px}html.rot #title h1{font-size:min(64px,16vw)}html.rot #title .tq{font-size:12px;line-height:1.4}html.rot #title .tbtns{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:8px;max-width:92vh}html.rot #title .tbtns .tsave{flex-basis:100%}html.rot #tPlay{font-size:20px;padding:8px 28px}html.rot #title .tnew{font-size:15px;padding:6px 16px;letter-spacing:.06em}html.rot #title .tfoot{display:none}
+#title .tbtns{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px!important;width:min(640px,92vw);max-width:none!important}html.rot #title .tbtns{width:min(640px,92vh)}#title .tbtns>button{width:100%;margin:0;padding-left:6px!important;padding-right:6px!important;letter-spacing:.06em;white-space:nowrap}#title .tbtns .tsave{grid-column:1/-1}#title .tbtns>#tBgm{font:400 18px var(--f-disp);color:#f2e6c4;padding-top:9px;padding-bottom:9px;border-color:#a0784a;background:rgba(0,0,0,.5)}html.rot #title .tbtns>#tBgm{font-size:15px;padding-top:6px;padding-bottom:6px}@media (orientation:landscape) and (max-height:560px){#title .tbtns>#tBgm{font-size:15px;padding-top:6px;padding-bottom:6px}}#title .tbtns>#tBgm{font:400 18px var(--f-disp);color:#f2e6c4;padding-top:9px;padding-bottom:9px;border-color:#a0784a;background:rgba(0,0,0,.5)}html.rot #title .tbtns>#tBgm,body #title .tbtns>#tBgm.sm{font-size:15px}@media (orientation:landscape) and (max-height:560px){#title .tbtns>#tBgm{font-size:15px;padding-top:6px;padding-bottom:6px}}#tPlay{font-size:22px}
 @keyframes tpulse{50%{box-shadow:0 0 0 4px rgba(0,0,0,.55),0 0 60px rgba(255,140,40,.75)}}
 #title .tnew{font:400 20px var(--f-disp);letter-spacing:.14em;padding:9px 34px 9px 40px;color:#f2e6c4;background:rgba(0,0,0,.5);border:1px solid #a0784a;border-radius:4px;cursor:pointer}
 #title .tnew:hover{background:rgba(60,30,10,.7)}
@@ -230,7 +231,7 @@ body.cmp.drawer #drawerBg{display:block;position:fixed;inset:0;z-index:44;backgr
   <div id="title"><canvas id="titleCv" aria-hidden="true"></canvas>
     <div class="tc"><div class="tk">대한민국 최후 방어 사령부</div><h1>최후방어선</h1>
       <p class="tq">세계가 한꺼번에 등을 돌렸다.<br>이 선이 무너지면, <b>다음은 없다.</b></p>
-      <div class="tbtns"><button id="tPlay">이어하기</button><button id="tNew" class="tnew">새 게임</button><button id="tStory" class="tnew" hidden>스토리 다시 보기</button><button id="tLoad" class="tnew">불러오기</button><button id="tMove" class="tnew">기록 옮기기</button><button id="tBgm" aria-pressed="true">♪ BGM 켜짐</button><div class="tsave" id="tSave"></div></div></div>
+      <div class="tbtns"><button id="tPlay">이어하기</button><button id="tNew" class="tnew">새 게임</button><button id="tLoad" class="tnew">불러오기</button><button id="tMove" class="tnew">기록 옮기기</button><button id="tBgm" class="tnew" aria-pressed="true">♪ BGM 켜짐</button><button id="tStory" class="tnew" hidden>스토리 다시 보기</button><div class="tsave" id="tSave"></div></div></div>
     <div class="tfoot">LAST LINE OF DEFENSE</div><div id="tVer"></div></div>
 <div id="slotPanel" hidden><div class="mv"><h3 id="slTitle">저장하기</h3><p id="slHint"></p><div class="slots" id="slList"></div><div class="row"><button id="slClose">닫기</button></div><div class="msg" id="slMsg"></div></div></div>
 <div id="movePanel" hidden><div class="mv"><h3>기록 옮기기</h3><p>다른 기기(폰 앱 ↔ 이 페이지)로 진행 기록을 옮깁니다.<br>① 원래 기기에서 <b>코드 만들기</b> → 복사 ② 새 기기에서 붙여 넣고 <b>이 코드로 불러오기</b></p><textarea id="mvCode" placeholder="여기에 기록 코드가 나타나거나, 받은 코드를 붙여 넣으세요"></textarea><div class="row"><button id="mvMake">코드 만들기 · 복사</button><button id="mvLoad">이 코드로 불러오기</button><button id="mvClose">닫기</button></div><div class="msg" id="mvMsg"></div></div></div>
@@ -1732,7 +1733,7 @@ $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
 $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{try{save();}catch(e){}showTitle();});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v227 · 10/19 08:13";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v228 · 10/19 08:17";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={};
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2419,5 +2420,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190812 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190816 */</script>
 </body></html>
