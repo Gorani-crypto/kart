@@ -130,6 +130,7 @@ canvas{display:block;width:100%;touch-action:manipulation}
   box-shadow:0 0 0 4px rgba(0,0,0,.55),0 0 36px rgba(255,160,60,.45);animation:tpulse 2.4s ease-in-out infinite}
 #tPlay:hover{filter:brightness(1.12)}
 @media (orientation:landscape) and (max-height:560px){#title .tc{inset:0;gap:6px;padding:8px}#title .tk{font-size:10px}#title h1{font-size:min(64px,16vh)}#title .tq{font-size:12px;line-height:1.4}#title .tbtns{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:8px;max-width:92vw}#title .tbtns .tsave{flex-basis:100%}#tPlay{font-size:20px;padding:8px 28px}#title .tnew{font-size:15px;padding:6px 16px;letter-spacing:.06em}#title .tfoot{display:none}}
+html.rot #title .tc{inset:0;gap:6px;padding:8px}html.rot #title .tk{font-size:10px}html.rot #title h1{font-size:min(64px,16vw)}html.rot #title .tq{font-size:12px;line-height:1.4}html.rot #title .tbtns{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:8px;max-width:92vh}html.rot #title .tbtns .tsave{flex-basis:100%}html.rot #tPlay{font-size:20px;padding:8px 28px}html.rot #title .tnew{font-size:15px;padding:6px 16px;letter-spacing:.06em}html.rot #title .tfoot{display:none}
 @keyframes tpulse{50%{box-shadow:0 0 0 4px rgba(0,0,0,.55),0 0 60px rgba(255,140,40,.75)}}
 #title .tnew{font:400 20px var(--f-disp);letter-spacing:.14em;padding:9px 34px 9px 40px;color:#f2e6c4;background:rgba(0,0,0,.5);border:1px solid #a0784a;border-radius:4px;cursor:pointer}
 #title .tnew:hover{background:rgba(60,30,10,.7)}
@@ -157,8 +158,12 @@ canvas{display:block;width:100%;touch-action:manipulation}
 
 
 /* ── 폰 가로 모드(높이 560px 이하 가로 화면): 지도를 크게, 왼쪽 무기 목록 · 오른쪽 ☰/배속, 나머지는 ☰ 서랍 ── */
+/* 폰을 세로로 들어도 화면을 90도 돌려 가로 화면으로 보여줌 */
+html.rot,html.rot body{overflow:hidden}
+html.rot body{position:fixed;top:0;left:var(--sw);width:var(--sh);height:var(--sw);transform-origin:0 0;transform:rotate(90deg);margin:0}
+
 #rcol,#drawerBg{display:none}
-body.cmp{padding:2px max(4px,env(safe-area-inset-right,0px)) 0 max(4px,env(safe-area-inset-left,0px));overflow:hidden;height:100dvh}
+body.cmp{padding:2px max(4px,env(safe-area-inset-right,0px)) 0 max(4px,env(safe-area-inset-left,0px));overflow:hidden;height:100dvh}html.rot body.cmp{height:var(--sw)}html.rot #slotPanel .mv,html.rot #movePanel .mv{max-height:calc(var(--sw) - 24px)}html.rot body.cmp .side{width:min(360px,86vh)}
 body.cmp .app{max-width:none;gap:2px}
 body.cmp .top{padding:0 6px;border:0;gap:0 16px;flex-wrap:nowrap;align-items:center;height:22px;justify-content:center}
 body.cmp .brand{display:none}
@@ -716,7 +721,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
 
 /* ═════════ 그리기 ═════════ */
 const C=document.getElementById("cv");let X=C.getContext("2d");let CS=40,DPR=1,BG=null;
-function resize(){let w=C.parentElement.clientWidth;DPR=Math.min(2,window.devicePixelRatio||1);if(document.body.classList.contains("cmp")){const th=document.querySelector(".top").offsetHeight,ah=window.innerHeight-th-18,aw=window.innerWidth-64-52-28;const cs=Math.max(8,Math.min(aw/COLS,ah/ROWS));w=cs*COLS;C.style.width=w+"px";$("bar").style.height=cs*ROWS+"px";}else{C.style.width="";$("bar").style.height="";}CS=w/COLS;
+function resize(){let w=C.parentElement.clientWidth;DPR=Math.min(2,window.devicePixelRatio||1);if(document.body.classList.contains("cmp")){const rv=ROT(),VW=rv?window.innerHeight:window.innerWidth,VH=rv?window.innerWidth:window.innerHeight,th=document.querySelector(".top").offsetHeight,ah=VH-th-18,aw=VW-64-52-28;const cs=Math.max(8,Math.min(aw/COLS,ah/ROWS));w=cs*COLS;C.style.width=w+"px";$("bar").style.height=cs*ROWS+"px";}else{C.style.width="";$("bar").style.height="";}CS=w/COLS;
   C.width=Math.round(w*DPR);C.height=Math.round(CS*ROWS*DPR);C.style.height=CS*ROWS+"px";buildBG();}
 
 
@@ -1195,7 +1200,7 @@ let newArm=0;function newGame(){S=fresh();COUNTRY=COUNTRIES[0];enemies=[];queue=
   try{buildBG();paintHeaderFlag();makeThumbs();}catch(e){}save(true);dirtyUI=true;}
 let titleOn=false,titleRaf=0,TF=null;const EMB=[];
 function titleFlag(){if(TF)return TF;TF=document.createElement("canvas");TF.width=240;TF.height=160;const g=TF.getContext("2d");drawKorea(g,0,0,240,160);return TF;}
-function drawTitle(now){if(!titleOn)return;const cv=$("titleCv"),dpr=Math.min(2,window.devicePixelRatio||1),W=innerWidth,H=innerHeight;
+function drawTitle(now){if(!titleOn)return;const cv=$("titleCv"),dpr=Math.min(2,window.devicePixelRatio||1),_r=document.documentElement.classList.contains("rot"),W=_r?innerHeight:innerWidth,H=_r?innerWidth:innerHeight;
   if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
   const g=cv.getContext("2d"),T=now/1000;g.setTransform(dpr,0,0,dpr,0,0);
   const sky=g.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#050407");sky.addColorStop(.45,"#1a0c0a");sky.addColorStop(.72,"#5a1d0c");sky.addColorStop(.8,"#8a3410");sky.addColorStop(1,"#0a0705");g.fillStyle=sky;g.fillRect(0,0,W,H);
@@ -1225,8 +1230,7 @@ function drawTitle(now){if(!titleOn)return;const cv=$("titleCv"),dpr=Math.min(2,
   titleRaf=requestAnimationFrame(drawTitle);}
 function showTitle(){titleOn=true;$("title").hidden=false;$("tStory").hidden=!(S.endSeen||(S.conqBy&&S.conqBy[6]));const hs=S.earned>0;$("tPlay").hidden=!hs;$("tNew").textContent="새 게임";$("tNew").classList.remove("warn");newArm=0;const c=COUNTRIES[S.country-1];$("tSave").textContent=S.earned>0?`진행 기록 · ${S.country}스테이지 ${c?c.name:""} · ${S.wave}단계`:"새 작전";bgmLabels();titleRaf=requestAnimationFrame(drawTitle);}
 function landLock(){try{const m=matchMedia("(pointer:coarse)").matches;if(!m)return;const go=()=>{try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{});}catch(e){}};const de=document.documentElement;if(!document.fullscreenElement&&de.requestFullscreen&&!matchMedia("(display-mode: fullscreen)").matches&&!matchMedia("(display-mode: standalone)").matches)de.requestFullscreen({navigationUI:"hide"}).then(go).catch(go);else go();}catch(e){}} /* 폰에서 게임 시작 시 가로 고정(지원 기기) */
-document.addEventListener("pointerdown",function f(){landLock();document.removeEventListener("pointerdown",f,true);},true); /* 첫 터치 때 가로 고정(메인 메뉴부터) */
-function hideTitle(){landLock();titleOn=false;cancelAnimationFrame(titleRaf);$("title").hidden=true;last=0;if(!S.intro&&!(S.earned>0))setTimeout(()=>{if(!S.intro&&!(S.earned>0))startIntro();},300);}
+function hideTitle(){titleOn=false;cancelAnimationFrame(titleRaf);$("title").hidden=true;last=0;if(!S.intro&&!(S.earned>0))setTimeout(()=>{if(!S.intro&&!(S.earned>0))startIntro();},300);}
 function drawKorea(g,x,y,w,h){g.save();g.fillStyle="#ffffff";g.fillRect(x,y,w,h);const cx=x+w/2,cy=y+h/2,R=h/4,an=Math.atan2(2,3);g.translate(cx,cy);g.rotate(an);
   g.fillStyle="#c60c30";g.beginPath();g.arc(0,0,R,Math.PI,0);g.fill();g.fillStyle="#003478";g.beginPath();g.arc(0,0,R,0,Math.PI);g.fill();
   g.fillStyle="#c60c30";g.beginPath();g.arc(-R/2,0,R/2,0,7);g.fill();g.fillStyle="#003478";g.beginPath();g.arc(R/2,0,R/2,0,7);g.fill();g.restore();
@@ -1678,7 +1682,7 @@ function makeThumbs(){for(const k of ORDER){const c=document.createElement("canv
 const LOCK_SVG=`<svg class="lock" viewBox="0 0 20 22" aria-hidden="true"><path d="M5 9V6a5 5 0 0 1 10 0v3" fill="none" stroke="#e7e3cf" stroke-width="2.4"/><rect x="2" y="9" width="16" height="12" rx="2" fill="#e3a82b"/><circle cx="10" cy="15" r="2" fill="#1a1405"/></svg>`;
 
 /* ═════════ 입력 ═════════ */
-function cellAt(ev){const r=C.getBoundingClientRect();const x=Math.floor((ev.clientX-r.left)/r.width*COLS),y=Math.floor((ev.clientY-r.top)/r.height*ROWS);return x>=0&&x<COLS&&y>=0&&y<ROWS?[x,y]:null;}
+function cellAt(ev){const r=C.getBoundingClientRect(),rv=ROT(),fx=rv?(ev.clientY-r.top)/r.height:(ev.clientX-r.left)/r.width,fy=rv?(r.right-ev.clientX)/r.width:(ev.clientY-r.top)/r.height;const x=Math.floor(fx*COLS),y=Math.floor(fy*ROWS);return x>=0&&x<COLS&&y>=0&&y<ROWS?[x,y]:null;}
 const towerAt=(x,y)=>S.towers.find(t=>t.x===x&&t.y===y);
 const canPlace=(x,y)=>!PATH.has(x+","+y)&&!BLOCK.has(x+","+y)&&!towerAt(x,y);
 function place(type,x,y){if(lockText(type))return null;const cost=placeCost(type);if(S.gold<cost||!canPlace(x,y))return null;S.gold-=cost;
@@ -1753,7 +1757,7 @@ let drag=null;
 $("bar").addEventListener("pointerdown",e=>{const b=e.target.closest(".slot");if(!b||b.classList.contains("locked"))return;drag={k:b.dataset.t,x:e.clientX,y:e.clientY,on:false,id:e.pointerId};});
 window.addEventListener("pointermove",e=>{if(!drag||e.pointerId!==drag.id)return;
   if(!drag.on&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>8){drag.on=true;buildType=drag.k;sel=null;buildCell=null;const g=$("ghost");g.src=THUMB[drag.k];g.hidden=false;dirtyUI=true;}
-  if(drag.on){const g=$("ghost");g.style.left=e.clientX+"px";g.style.top=e.clientY+"px";hover=cellAt(e);e.preventDefault();}},{passive:false});
+  if(drag.on){const g=$("ghost"),rv=ROT();g.style.left=(rv?e.clientY:e.clientX)+"px";g.style.top=(rv?window.innerWidth-e.clientX:e.clientY)+"px";hover=cellAt(e);e.preventDefault();}},{passive:false});
 window.addEventListener("pointerup",e=>{if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;$("ghost").hidden=true;
   if(d.on){const c=cellAt(e);buildType=null;if(c&&canPlace(c[0],c[1])){const nt=place(d.k,c[0],c[1]);if(nt){fx.push({k:"ring",x:c[0]+.5,y:c[1]+.5,life:.5,m:.5,col:"#e3a82b",R:.8});sel=nt;save();}else banner("자금이 부족합니다");}
     else if(c)banner("길 위에는 놓을 수 없습니다");hover=null;dirtyUI=true;return;}
@@ -2065,7 +2069,7 @@ function storyPlay(i,atEnd){if(i<0)i=0;if(i>=STORY_SEQ.length){storyExit();retur
   if(n==="intro")startIntro();else if(n==="credits")startCredits();else startCutscene(n,true);
   if(atEnd){const st=sceneStarts(cutData);cutT=st[st.length-1]+.01;}
   $("cutBtns").innerHTML=`<button class="btn" id="cutQuit">스토리 나가기</button>`;$("cutQuit").onclick=storyExit;
-  $("cutCv").onclick=e=>{const r=$("cutCv").getBoundingClientRect(),left=e.clientX<r.left+r.width/2,st=sceneStarts(cutData);let k=0;for(let q=0;q<st.length;q++)if(st[q]<=cutT+.05)k=q;
+  $("cutCv").onclick=e=>{const r=$("cutCv").getBoundingClientRect(),left=ROT()?e.clientY<r.top+r.height/2:e.clientX<r.left+r.width/2,st=sceneStarts(cutData);let k=0;for(let q=0;q<st.length;q++)if(st[q]<=cutT+.05)k=q;
     if(left){if(k>0)cutT=st[k-1]+.01;else if(storyI>0)storyPlay(storyI-1,true);else cutT=0;}
     else{if(k<st.length-1)cutT=st[k+1]+.01;else if(storyI<STORY_SEQ.length-1)storyPlay(storyI+1,false);else storyExit();}};}
 function cutEnd(){const d=cutData;if(d.from&&d.from.alien&&!d.credits&&!S.endSeen){S.endSeen=true;try{save();}catch(e){}}
@@ -2398,10 +2402,12 @@ function loop(now){if(!last)last=now;let dt=Math.min(.1,(now-last)/1000);last=no
   requestAnimationFrame(loop);}
 let hiddenAt=0;
 document.addEventListener("visibilitychange",()=>{if(document.hidden){hiddenAt=Date.now();save(true);}else if(hiddenAt){last=performance.now();offline(hiddenAt);hiddenAt=0;}});
-window.addEventListener("resize",resize);
+window.addEventListener("resize",()=>{const was=ROT();setRot();if(was!==ROT()||document.body.classList.contains("cmp")!==(cmpMQ.matches||ROT()))applyCmp();else resize();});
 /* 폰 가로 모드 전환 */
 const cmpMQ=matchMedia("(orientation:landscape) and (max-height:560px)");
-function applyCmp(){const on=cmpMQ.matches,b=document.body,rc=$("rcol"),ct=document.querySelector(".ctrl");b.classList.toggle("cmp",on);b.classList.remove("drawer");
+const ROT=()=>document.documentElement.classList.contains("rot");
+function setRot(){const de=document.documentElement,on=matchMedia("(pointer:coarse)").matches&&window.innerHeight>window.innerWidth;de.classList.toggle("rot",on);de.style.setProperty("--sw",window.innerWidth+"px");de.style.setProperty("--sh",window.innerHeight+"px");}
+function applyCmp(){setRot();const on=cmpMQ.matches||ROT(),b=document.body,rc=$("rcol"),ct=document.querySelector(".ctrl");b.classList.toggle("cmp",on);b.classList.remove("drawer");
   if(on){rc.hidden=false;rc.append($("pause"),$("speed"));}else{rc.hidden=true;ct.insertBefore($("pause"),ct.firstChild);$("pause").after($("speed"));}
   resize();}
 cmpMQ.addEventListener?cmpMQ.addEventListener("change",applyCmp):cmpMQ.addListener(applyCmp);
@@ -2412,5 +2418,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190807 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190811 */</script>
 </body></html>
