@@ -142,7 +142,7 @@ html.rot #title .tc{inset:0;gap:6px;padding:8px}html.rot #title .tk{font-size:10
 @media (prefers-reduced-motion:reduce){#tPlay{animation:none}}
 #pop .tgrow{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:6px}#pop .tgrow .btn{padding:5px 0;font-size:12px}#pop .tgrow .btn[aria-pressed="true"]{background:var(--accent);color:#1a1205;border-color:var(--accent)}
 #cut{position:fixed;inset:0;z-index:40;background:rgba(6,7,4,.92);display:grid;place-items:center;padding:16px}
-#cut .cutbox{width:min(960px,100%);display:flex;flex-direction:column;gap:10px}
+#cut .cutbox{width:min(960px,100%,calc((100dvh - 84px)*1.6));display:flex;flex-direction:column;gap:8px}html.rot #cut .cutbox{width:min(960px,100%,calc((var(--sw) - 84px)*1.6))}@media (max-height:560px){#cut{padding:6px 12px}}
 #cutCv{width:100%;height:auto;aspect-ratio:16/10;max-width:100%;border-radius:4px;cursor:pointer;background:#f3ead2}
 #cut .cutbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 #cut .dots{display:flex;gap:6px}
@@ -1733,7 +1733,7 @@ $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
 $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{try{save();}catch(e){}showTitle();});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v228 · 10/19 08:17";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v229 · 10/19 08:22";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={};
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2420,5 +2420,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190816 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190821 */</script>
 </body></html>
