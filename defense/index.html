@@ -164,7 +164,14 @@ html.rot,html.rot body{overflow:hidden}
 html.rot body{position:fixed;top:0;left:var(--sw);width:var(--sh);height:var(--sw);transform-origin:0 0;transform:rotate(90deg);margin:0}
 
 #tVer{position:absolute;right:10px;bottom:6px;font:500 10px var(--f-mono);color:#6d5f48;letter-spacing:.05em;pointer-events:none}.verTag{font:500 10px var(--f-mono);color:var(--muted);opacity:.7;margin-left:8px}
-#rcol,#drawerBg{display:none}
+#rcol,#drawerBg,#hud{display:none}
+body.cmp .top{display:none}
+body.cmp #hud{display:flex;position:absolute;z-index:4;top:4px;right:4px;gap:10px;align-items:baseline;padding:3px 8px;background:rgba(10,12,8,.62);border:1px solid rgba(255,255,255,.08);border-radius:5px;pointer-events:none;font-size:11px;white-space:nowrap}
+body.cmp #hud .stat{flex-direction:row;gap:3px;align-items:baseline}body.cmp #hud .stat b{font-size:12px}body.cmp #hud .stat span{font-size:9.5px;letter-spacing:0}
+body.cmp #pop{width:min(470px,calc(100% - 12px));max-height:calc(100% - 12px);overflow-y:auto;padding:7px;gap:5px}
+body.cmp #pop .bgrid{grid-template-columns:repeat(5,1fr);gap:4px}
+body.cmp #pop .bopt{padding:3px 2px}body.cmp #pop .bopt img{width:26px;height:26px}body.cmp #pop .bopt span{font-size:10.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis}body.cmp #pop .bopt small{font-size:9.5px}body.cmp #pop .bopt .lock{top:4px;width:13px;height:15px}
+
 body.cmp{padding:2px max(4px,env(safe-area-inset-right,0px)) 0 max(4px,env(safe-area-inset-left,0px));overflow:hidden;height:100dvh}html.rot body.cmp{height:var(--sw)}html.rot #slotPanel .mv,html.rot #movePanel .mv{max-height:calc(var(--sw) - 24px)}html.rot body.cmp .side{width:min(360px,86vh)}
 body.cmp .app{max-width:none;gap:2px}
 body.cmp .top{padding:0 6px;border:0;gap:0 16px;flex-wrap:nowrap;align-items:center;height:22px;justify-content:center}
@@ -208,7 +215,7 @@ body.cmp.drawer #drawerBg{display:block;position:fixed;inset:0;z-index:44;backgr
     </div>
   </header>
   <main class="main">
-    <section class="field" id="field"><canvas id="cv" aria-label="작전 지도"></canvas><div id="banner"></div><div id="pauseVeil" hidden>일시정지</div><div id="pop" hidden></div><div class="bar" id="bar" aria-label="무기 목록 — 지도로 끌어서 배치"></div><div id="rcol" hidden><button id="menuBtn" aria-label="메뉴 열기">☰</button></div></section><div id="drawerBg"></div><img id="ghost" hidden alt="">
+    <section class="field" id="field"><canvas id="cv" aria-label="작전 지도"></canvas><div id="banner"></div><div id="pauseVeil" hidden>일시정지</div><div id="pop" hidden></div><div class="bar" id="bar" aria-label="무기 목록 — 지도로 끌어서 배치"></div><div id="hud"></div><div id="rcol" hidden><button id="menuBtn" aria-label="메뉴 열기">☰</button></div></section><div id="drawerBg"></div><img id="ghost" hidden alt="">
     <aside class="side">
       <div class="box">
         <div class="ctrl">
@@ -723,7 +730,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
 
 /* ═════════ 그리기 ═════════ */
 const C=document.getElementById("cv");let X=C.getContext("2d");let CS=40,DPR=1,BG=null;
-function resize(){let w=C.parentElement.clientWidth;DPR=Math.min(2,window.devicePixelRatio||1);if(document.body.classList.contains("cmp")){const rv=ROT(),VW=rv?window.innerHeight:window.innerWidth,VH=rv?window.innerWidth:window.innerHeight,th=document.querySelector(".top").offsetHeight,ah=VH-th-18,aw=VW-64-52-28;const cs=Math.max(8,Math.min(aw/COLS,ah/ROWS));w=cs*COLS;C.style.width=w+"px";$("bar").style.height=cs*ROWS+"px";}else{C.style.width="";$("bar").style.height="";}CS=w/COLS;
+function resize(){let w=C.parentElement.clientWidth;DPR=Math.min(2,window.devicePixelRatio||1);if(document.body.classList.contains("cmp")){const rv=ROT(),VW=rv?window.innerHeight:window.innerWidth,VH=rv?window.innerWidth:window.innerHeight,th=0,ah=VH-10,aw=VW-64-52-28;const cs=Math.max(8,Math.min(aw/COLS,ah/ROWS));w=cs*COLS;C.style.width=w+"px";$("bar").style.height=cs*ROWS+"px";requestAnimationFrame(()=>{const f=$("field"),h=$("hud");h.style.right=(f.clientWidth-(C.offsetLeft+C.clientWidth)+5)+"px";h.style.top=(C.offsetTop+5)+"px";});}else{C.style.width="";$("bar").style.height="";}CS=w/COLS;
   C.width=Math.round(w*DPR);C.height=Math.round(CS*ROWS*DPR);C.style.height=CS*ROWS+"px";buildBG();}
 
 
@@ -1733,7 +1740,7 @@ $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
 $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{try{save();}catch(e){}showTitle();});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v229 · 10/19 08:22";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v230 · 10/19 08:32";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={};
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2410,7 +2417,7 @@ const cmpMQ=matchMedia("(orientation:landscape) and (max-height:560px)");
 const ROT=()=>document.documentElement.classList.contains("rot");
 function setRot(){const de=document.documentElement,on=matchMedia("(pointer:coarse)").matches&&window.innerHeight>window.innerWidth;de.classList.toggle("rot",on);de.style.setProperty("--sw",window.innerWidth+"px");de.style.setProperty("--sh",window.innerHeight+"px");}
 function applyCmp(){setRot();const on=cmpMQ.matches||ROT(),b=document.body,rc=$("rcol"),ct=document.querySelector(".ctrl");b.classList.toggle("cmp",on);b.classList.remove("drawer");
-  if(on){rc.hidden=false;rc.append($("pause"),$("speed"));}else{rc.hidden=true;ct.insertBefore($("pause"),ct.firstChild);$("pause").after($("speed"));}
+  const stt=document.querySelector(".stats");if(on){$("hud").append(stt);rc.hidden=false;rc.append($("pause"),$("speed"));}else{document.querySelector(".top").append(stt);rc.hidden=true;ct.insertBefore($("pause"),ct.firstChild);$("pause").after($("speed"));}
   resize();}
 cmpMQ.addEventListener?cmpMQ.addEventListener("change",applyCmp):cmpMQ.addListener(applyCmp);
 $("menuBtn").addEventListener("click",()=>document.body.classList.toggle("drawer"));$("drawerBg").addEventListener("click",()=>document.body.classList.remove("drawer"));
@@ -2420,5 +2427,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190821 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190829 */</script>
 </body></html>
