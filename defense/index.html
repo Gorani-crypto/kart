@@ -154,7 +154,37 @@ canvas{display:block;width:100%;touch-action:manipulation}
 @media (prefers-reduced-motion:reduce){#banner{transition:none}}
 .skipb{width:100%;margin:6px 0 2px}
 
+
+/* ── 폰 가로 모드(높이 560px 이하 가로 화면): 지도를 크게, 왼쪽 무기 목록 · 오른쪽 ☰/배속, 나머지는 ☰ 서랍 ── */
+#rcol,#drawerBg{display:none}
+body.cmp{padding:2px max(4px,env(safe-area-inset-right,0px)) 0 max(4px,env(safe-area-inset-left,0px));overflow:hidden;height:100dvh}
+body.cmp .app{max-width:none;gap:2px}
+body.cmp .top{padding:0 6px;border:0;gap:0 16px;flex-wrap:nowrap;align-items:center;height:22px;justify-content:center}
+body.cmp .brand{display:none}
+body.cmp .stats{gap:0 18px;flex-wrap:nowrap}
+body.cmp .stat{flex-direction:row;gap:5px;align-items:baseline}
+body.cmp .stat b{font-size:13px}
+body.cmp .stat span{font-size:10px;letter-spacing:0}
+body.cmp .main{display:block}
+body.cmp .field{display:grid;grid-template-columns:auto auto auto;justify-content:center;align-items:start;border:0;border-radius:0;background:transparent;overflow:visible}
+body.cmp #cv{grid-column:2;grid-row:1;border:1px solid var(--line);border-radius:4px}
+body.cmp .bar{grid-column:1;grid-row:1;grid-auto-flow:row;grid-auto-columns:auto;grid-auto-rows:min-content;width:64px;overflow-y:auto;overflow-x:hidden;padding:3px;gap:3px;border:0;border-radius:4px;margin-right:4px}
+body.cmp .slot{padding:3px 2px;touch-action:pan-y}
+body.cmp .slot img{width:30px;height:30px}
+body.cmp .slot .nm{font-size:10px}
+body.cmp .slot .pr{font-size:9.5px}
+body.cmp .lock{top:6px;width:16px;height:18px}
+body.cmp #rcol{display:flex;grid-column:3;grid-row:1;flex-direction:column;gap:5px;margin-left:4px;width:52px}
+body.cmp #rcol .btn,body.cmp #menuBtn{width:52px;padding:7px 0;font-size:12px;text-align:center}
+body.cmp #menuBtn{font-size:20px;line-height:1;padding:8px 0;border:1px solid var(--accent);border-radius:6px;background:var(--panel2);color:var(--accent)}
+body.cmp #rcol .seg{display:flex;flex-direction:column;width:52px}
+body.cmp #rcol .seg button{padding:8px 0;font-size:12.5px}
+body.cmp .side{position:fixed;top:0;right:0;bottom:0;width:min(360px,86vw);overflow-y:auto;background:var(--bg);z-index:45;padding:10px max(10px,env(safe-area-inset-right,0px)) 16px 10px;transform:translateX(105%);transition:transform .22s ease;box-shadow:-8px 0 24px rgba(0,0,0,.6)}
+body.cmp.drawer .side{transform:none}
+body.cmp.drawer #drawerBg{display:block;position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.5)}
+
 #movePanel{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:16px}#movePanel[hidden]{display:none}#movePanel .mv{background:#1b1f15;border:1px solid #4a4230;border-radius:10px;max-width:520px;width:100%;padding:18px;color:#e7e3cf;font:14px var(--f-body)}#movePanel h3{margin:0 0 6px;font:22px var(--f-disp);color:#e3a82b}#movePanel p{margin:4px 0 10px;color:#b9b49a;font-size:13px;line-height:1.5}#movePanel textarea{width:100%;height:110px;box-sizing:border-box;background:#0e100b;color:#e7e3cf;border:1px solid #3a3a2a;border-radius:6px;font:11px var(--f-mono);padding:8px;word-break:break-all}#movePanel .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}#movePanel button{flex:1;min-width:120px;padding:10px;border-radius:6px;border:1px solid #6a5a30;background:#2a2618;color:#f1e3b0;font:15px var(--f-disp);cursor:pointer}#movePanel .msg{min-height:18px;color:#93c25c;font-size:13px;margin-top:8px}
+#slotPanel{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:16px}#slotPanel[hidden]{display:none}#slotPanel .mv{background:#1b1f15;border:1px solid #4a4230;border-radius:10px;max-width:520px;width:100%;padding:18px;color:#e7e3cf;font:14px var(--f-body)}#slotPanel h3{margin:0 0 6px;font:22px var(--f-disp);color:#e3a82b}#slotPanel p{margin:4px 0 10px;color:#b9b49a;font-size:13px;line-height:1.5}#slotPanel textarea{width:100%;height:110px;box-sizing:border-box;background:#0e100b;color:#e7e3cf;border:1px solid #3a3a2a;border-radius:6px;font:11px var(--f-mono);padding:8px;word-break:break-all}#slotPanel .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}#slotPanel button{flex:1;min-width:120px;padding:10px;border-radius:6px;border:1px solid #6a5a30;background:#2a2618;color:#f1e3b0;font:15px var(--f-disp);cursor:pointer}#slotPanel .msg{min-height:18px;color:#93c25c;font-size:13px;margin-top:8px}#slotPanel .slots{display:flex;flex-direction:column;gap:6px}#slotPanel .sl{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;flex:none;min-width:0;width:100%;padding:10px 12px;font:14px var(--f-body)}#slotPanel .sl b{font:17px var(--f-disp);color:#e3a82b;flex:none}#slotPanel .sl span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e7e3cf}#slotPanel .sl small{color:#9b9a82;font-size:11px;flex:none}#slotPanel .sl.empty span{color:#6f6e5c}#slotPanel .sl.arm{border-color:#d9573c;background:#3a1a14}body.cmp #banner{font-size:22px}#slotPanel .mv,#movePanel .mv{max-height:calc(100dvh - 24px);overflow-y:auto}body.cmp #slotPanel .sl{padding:6px 12px}body.cmp #slotPanel h3{font-size:18px}body.cmp #slotPanel p{margin:2px 0 6px}
 </style>
 <style>body{background:#12150e;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}</style>
 </head><body>
@@ -170,7 +200,7 @@ canvas{display:block;width:100%;touch-action:manipulation}
     </div>
   </header>
   <main class="main">
-    <section class="field" id="field"><canvas id="cv" aria-label="작전 지도"></canvas><div id="banner"></div><div id="pauseVeil" hidden>일시정지</div><div id="pop" hidden></div><div class="bar" id="bar" aria-label="무기 목록 — 지도로 끌어서 배치"></div></section><img id="ghost" hidden alt="">
+    <section class="field" id="field"><canvas id="cv" aria-label="작전 지도"></canvas><div id="banner"></div><div id="pauseVeil" hidden>일시정지</div><div id="pop" hidden></div><div class="bar" id="bar" aria-label="무기 목록 — 지도로 끌어서 배치"></div><div id="rcol" hidden><button id="menuBtn" aria-label="메뉴 열기">☰</button></div></section><div id="drawerBg"></div><img id="ghost" hidden alt="">
     <aside class="side">
       <div class="box">
         <div class="ctrl">
@@ -180,7 +210,7 @@ canvas{display:block;width:100%;touch-action:manipulation}
           </div>
           <button class="btn" id="auto" aria-pressed="true">자동 진행</button>
           <button class="btn" id="bgmBtn" aria-pressed="true">♪ BGM</button>
-          <button class="btn" id="homeBtn">메인으로</button>
+          <button class="btn" id="saveSlotBtn">저장하기</button><button class="btn" id="loadSlotBtn">불러오기</button><button class="btn" id="homeBtn">메인으로</button>
           <button class="btn" id="nukeBtn" hidden style="border-color:#c9a23a;color:#ffd36b">☢ 핵</button>
           <button class="btn pri" id="go">출격</button>
         </div>
@@ -193,8 +223,9 @@ canvas{display:block;width:100%;touch-action:manipulation}
   <div id="title"><canvas id="titleCv" aria-hidden="true"></canvas>
     <div class="tc"><div class="tk">대한민국 최후 방어 사령부</div><h1>최후방어선</h1>
       <p class="tq">세계가 한꺼번에 등을 돌렸다.<br>이 선이 무너지면, <b>다음은 없다.</b></p>
-      <div class="tbtns"><button id="tPlay">이어하기</button><button id="tNew" class="tnew">새 게임</button><button id="tStory" class="tnew" hidden>스토리 다시 보기</button><button id="tMove" class="tnew">기록 옮기기</button><button id="tBgm" aria-pressed="true">♪ BGM 켜짐</button><div class="tsave" id="tSave"></div></div></div>
+      <div class="tbtns"><button id="tPlay">이어하기</button><button id="tNew" class="tnew">새 게임</button><button id="tStory" class="tnew" hidden>스토리 다시 보기</button><button id="tLoad" class="tnew">불러오기</button><button id="tMove" class="tnew">기록 옮기기</button><button id="tBgm" aria-pressed="true">♪ BGM 켜짐</button><div class="tsave" id="tSave"></div></div></div>
     <div class="tfoot">LAST LINE OF DEFENSE</div></div>
+<div id="slotPanel" hidden><div class="mv"><h3 id="slTitle">저장하기</h3><p id="slHint"></p><div class="slots" id="slList"></div><div class="row"><button id="slClose">닫기</button></div><div class="msg" id="slMsg"></div></div></div>
 <div id="movePanel" hidden><div class="mv"><h3>기록 옮기기</h3><p>다른 기기(폰 앱 ↔ 이 페이지)로 진행 기록을 옮깁니다.<br>① 원래 기기에서 <b>코드 만들기</b> → 복사 ② 새 기기에서 붙여 넣고 <b>이 코드로 불러오기</b></p><textarea id="mvCode" placeholder="여기에 기록 코드가 나타나거나, 받은 코드를 붙여 넣으세요"></textarea><div class="row"><button id="mvMake">코드 만들기 · 복사</button><button id="mvLoad">이 코드로 불러오기</button><button id="mvClose">닫기</button></div><div class="msg" id="mvMsg"></div></div></div>
   <div id="modal" hidden><div class="box" id="modalBox"></div></div>
   <div id="cut" hidden><div class="cutbox"><canvas id="cutCv" width="1280" height="800" aria-label="점령 축하 장면"></canvas>
@@ -409,7 +440,7 @@ function nukeLaunch(){const t=nukeTower();if(!t||t.cd>0||nukeCin>0||!enemies.som
 function nukeTower(){return S.towers.find(t=>t.type==="nuke");}
 function mmss(x){x=Math.ceil(x);return Math.floor(x/60)+":"+String(x%60).padStart(2,"0");}
 let nukeTxt="";function updNukeBtn(){const b=$("nukeBtn");if(!b)return;const t=nukeTower();if(!t){if(!b.hidden)b.hidden=true;return;}if(b.hidden)b.hidden=false;
-  const rem=Math.max(0,t.cd||0),has=enemies.some(e=>!e.dead),txt=nukeCin>0?"☢ 발사 중…":rem>0?"☢ 충전 "+mmss(rem):has?"☢ 핵 발사":"☢ 준비 완료";if(txt!==nukeTxt){nukeTxt=txt;b.textContent=txt;}b.disabled=nukeCin>0||rem>0||!has;}
+  const rem=Math.max(0,t.cd||0),has=enemies.some(e=>!e.dead),txt=nukeCin>0?"☢ 발사 중…":rem>0?"☢ 충전 "+mmss(rem):has?"☢ 핵 발사":"☢ 준비 완료";if(txt!==nukeTxt){nukeTxt=txt;b.textContent=txt;}b.disabled=nukeCin>0||rem>0||!has;const pn=$("popNuke");if(pn){const pt=nukeCin>0?"☢ …":rem>0?"☢ "+mmss(rem):"☢ 발사";if(pn.textContent!==pt)pn.textContent=pt;pn.disabled=b.disabled;}}
 function lockText(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())return"1기만 설치";if(st>S.country)return st+"스테이지 해금";if(T.wip)return"준비 중";if(st===S.country&&S.best<(T.unlock||1))return T.unlock+"단계 해금";return null;}
 const ATTACK=ORDER.filter(k=>TT[k].dmg);
 // 최고 레벨: 5스테이지 미국 점령 전까지 50(5차 전직), 미국 점령 후 100(사용자 결정)
@@ -684,7 +715,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
 
 /* ═════════ 그리기 ═════════ */
 const C=document.getElementById("cv");let X=C.getContext("2d");let CS=40,DPR=1,BG=null;
-function resize(){const w=C.parentElement.clientWidth;DPR=Math.min(2,window.devicePixelRatio||1);CS=w/COLS;
+function resize(){let w=C.parentElement.clientWidth;DPR=Math.min(2,window.devicePixelRatio||1);if(document.body.classList.contains("cmp")){const th=document.querySelector(".top").offsetHeight,ah=window.innerHeight-th-18,aw=window.innerWidth-64-52-28;const cs=Math.max(8,Math.min(aw/COLS,ah/ROWS));w=cs*COLS;C.style.width=w+"px";$("bar").style.height=cs*ROWS+"px";}else{C.style.width="";$("bar").style.height="";}CS=w/COLS;
   C.width=Math.round(w*DPR);C.height=Math.round(CS*ROWS*DPR);C.style.height=CS*ROWS+"px";buildBG();}
 
 
@@ -1693,7 +1724,23 @@ $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
 $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{try{save();}catch(e){}showTitle();});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);document.body.appendChild($("movePanel"));$("tMove").addEventListener("click",()=>{$("mvMsg").textContent="";$("mvCode").value="";$("movePanel").hidden=false;});$("mvClose").addEventListener("click",()=>{$("movePanel").hidden=true;});
+$("tStory").addEventListener("click",storyAll);document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+/* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
+const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={};
+async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
+function slotLabel(o){const c=COUNTRIES[(o.country||1)-1];return`${o.country}스테이지 ${c?c.name:""} · ${o.wave}단계`;}
+async function slotOpen(mode){slotMode=mode;slotArm=0;try{save(true);}catch(e){}$("slTitle").textContent=mode==="save"?"저장하기":"불러오기";$("slHint").textContent=mode==="save"?"저장할 칸을 고르세요. 이미 저장된 칸은 한 번 더 누르면 덮어씁니다.":"이어서 할 저장소를 고르세요.";$("slMsg").textContent="";
+  $("slotPanel").hidden=false;document.body.classList.remove("drawer");if(!titleOn)paused=true;$("slList").innerHTML="<p>불러오는 중…</p>";for(let i=1;i<=SLOTN;i++)slotCache[i]=await slotRead(i);slotRender();}
+function slotRender(){$("slList").innerHTML=Array.from({length:SLOTN},(_,k)=>{const i=k+1,v=slotCache[i];let o=null;try{o=v&&JSON.parse(v.json);}catch(e){}
+  const d=v&&v.t?new Date(v.t):null,ds=d?`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`:"";
+  return`<button class="sl${o?"":" empty"}${slotArm===i?" arm":""}" data-i="${i}"><b>저장소 ${i}</b><span>${o?slotLabel(o):"비어 있음"}</span><small>${slotArm===i?"한 번 더 누르면 덮어쓰기":ds}</small></button>`;}).join("");}
+$("slList").addEventListener("click",async e=>{const b=e.target.closest(".sl");if(!b)return;const i=+b.dataset.i,v=slotCache[i];
+  if(slotMode==="save"){if(v&&slotArm!==i){slotArm=i;slotRender();return;}const rec={json:ser(),t:Date.now()};try{localStorage.setItem(slotKey(i),JSON.stringify(rec));}catch(e){}if(db&&uid){try{await db.doc("data/users/"+uid+"/slot"+i).set(rec);}catch(e){}}slotCache[i]=rec;slotArm=0;slotRender();$("slMsg").textContent=`저장소 ${i}에 저장했어요.`;return;}
+  if(!v){$("slMsg").textContent="비어 있는 저장소예요.";return;}let o=null;try{o=JSON.parse(v.json);}catch(e){}if(!o||!apply(o)){$("slMsg").textContent="불러올 수 없는 저장소예요.";return;}
+  hasSave=true;save(true);$("slotPanel").hidden=true;paused=false;if(titleOn){hideTitle();}else{dirtyUI=true;renderUI();}resize();banner(`저장소 ${i} 불러옴 · ${slotLabel(o)}`);});
+$("slClose").addEventListener("click",()=>{$("slotPanel").hidden=true;if(!titleOn)paused=false;});
+$("saveSlotBtn").addEventListener("click",()=>slotOpen("save"));$("loadSlotBtn").addEventListener("click",()=>slotOpen("load"));$("tLoad").addEventListener("click",()=>slotOpen("load"));
+$("tMove").addEventListener("click",()=>{$("mvMsg").textContent="";$("mvCode").value="";$("movePanel").hidden=false;});$("mvClose").addEventListener("click",()=>{$("movePanel").hidden=true;});
 $("mvMake").addEventListener("click",async()=>{try{save(true);}catch(e){}const code="LLD1."+btoa(unescape(encodeURIComponent(ser())));$("mvCode").value=code;$("mvCode").select();let ok=false;try{await navigator.clipboard.writeText(code);ok=true;}catch(e){try{ok=document.execCommand("copy");}catch(e2){}}$("mvMsg").textContent=ok?"복사했어요. 새 기기에 붙여 넣으세요.":"코드를 길게 눌러 전체 복사하세요.";});
 $("mvLoad").addEventListener("click",()=>{const raw=($("mvCode").value||"").trim().replace(/^LLD1\./,"");try{const o=JSON.parse(decodeURIComponent(escape(atob(raw))));if(!apply(o))throw 0;hasSave=true;save(true);$("mvMsg").textContent="불러왔어요! "+S.country+"스테이지 · "+S.wave+"단계";showTitle();}catch(e){$("mvMsg").style.color="#d9573c";$("mvMsg").textContent="코드가 올바르지 않아요.";setTimeout(()=>{$("mvMsg").style.color="";},2000);}});$("tNew").addEventListener("click",()=>{const b=$("tNew");if(S.earned>0&&Date.now()-newArm>3000){newArm=Date.now();b.textContent="기록이 지워집니다 · 한 번 더 누르면 시작";b.classList.add("warn");setTimeout(()=>{if(titleOn&&Date.now()-newArm>=3000){b.textContent="새 게임";b.classList.remove("warn");}},3100);return;}
   if(BGM.on)bgmStart();if(S.earned>0||S.country!==1)newGame();hideTitle();});
@@ -1715,7 +1762,7 @@ $("pop").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)r
   if(b.dataset.tg&&sel){sel.tg=b.dataset.tg;popKey="";save();dirtyUI=true;return;}
   const a=b.dataset.a;if(a==="close"){sel=null;buildCell=null;dirtyUI=true;return;}
   if(!sel)return;
-  if(a==="u1")upgrade(sel,1);else if(a==="u10")upgrade(sel,10);else if(a==="umax")upgrade(sel,maxL());else if(a==="sell")sell(sel);});
+  if(a==="u1")upgrade(sel,1);else if(a==="u10")upgrade(sel,10);else if(a==="umax")upgrade(sel,maxL());else if(a==="sell")sell(sel);else if(a==="nuke")nukeLaunch();});
 let resetArm=0;$("resetBtn").addEventListener("click",()=>{const b=$("resetBtn");
   if(Date.now()-resetArm<3000){S=fresh();enemies=[];queue=[];shells=[];fx=[];phase="idle";sel=null;buildType=null;save(true);b.textContent="처음부터";b.classList.remove("warn");banner("새 작전 개시");dirtyUI=true;}
   else{resetArm=Date.now();b.textContent="한 번 더 누르면 초기화";b.classList.add("warn");setTimeout(()=>{b.textContent="처음부터";b.classList.remove("warn");},3000);}});
@@ -1733,9 +1780,9 @@ function renderStage(){const s=S.wave,m=mix(s),boss=BOSS[s];
     ${live}${COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
     ${!COUNTRY.alien&&!boss&&nb?`<div class="next">다음 ${BKIND[BOSS[nb][2]]} <b>${nb}단계 ${BT(BOSS[nb][1])}</b></div>`:""}`;}
 let popKey="";
-function popAt(p,cx,cy){const F=$("field").clientWidth,cs=F/COLS,pw=p.offsetWidth,ph=p.offsetHeight;
+function popAt(p,cx,cy){const F=C.clientWidth,ox=C.offsetLeft,oy=C.offsetTop,cs=F/COLS,pw=p.offsetWidth,ph=p.offsetHeight;
   let x=(cx+1.1)*cs;if(x+pw>F-6)x=cx*cs-pw-cs*.1;if(x<6)x=6;
-  let y=(cy+.5)*cs-ph/2;y=Math.max(6,Math.min(cs*ROWS-ph-6,y));p.style.left=x+"px";p.style.top=y+"px";}
+  let y=(cy+.5)*cs-ph/2;y=Math.max(6,Math.min(cs*ROWS-ph-6,y));p.style.left=(x+ox)+"px";p.style.top=(y+oy)+"px";}
 function renderPop(){const p=$("pop");
   if(buildCell&&!sel){if(!canPlace(buildCell[0],buildCell[1])){buildCell=null;p.hidden=true;return;}
     const here=ORDER.filter(k=>(TT[k].stage||1)<=S.country&&!TT[k].wip);const key="b|"+buildCell+"|"+here.map(k=>!lockText(k)&&S.gold>=placeCost(k)).join();
@@ -1748,7 +1795,7 @@ function renderPop(){const p=$("pop");
   if(key!==popKey){popKey=key;
     p.innerHTML=`<div class="ph"><b style="color:${TCOL[s.tier]}">${T.names[s.tier]}</b><span>LV ${t.l}</span><button class="x" data-a="close" aria-label="닫기">×</button></div>
     <div class="pips">${Array.from({length:10},(_,i)=>`<i class="${max||i<into?"on":""}"></i>`).join("")}</div>
-    <div class="row">${max?`<button class="btn" disabled>최대 레벨</button>`:`<button class="btn pri" data-a="u1" ${poor?"disabled":""}>강화 ${fmt(c)}</button><button class="btn" data-a="u10" ${poor?"disabled":""}>+10</button><button class="btn" data-a="umax" ${poor?"disabled":""}>최대</button>`}</div>
+    <div class="row">${max?`<button class="btn" disabled>최대 레벨</button>`:`<button class="btn pri" data-a="u1" ${poor?"disabled":""}>강화 ${fmt(c)}</button><button class="btn" data-a="u10" ${poor?"disabled":""}>+10</button><button class="btn" data-a="umax" ${poor?"disabled":""}>최대</button>`}${t.type==="nuke"?`<button class="btn" data-a="nuke" id="popNuke" style="border-color:#c9a23a;color:#ffd36b">☢</button>`:""}</div>
     ${TT[t.type].dmg&&t.type!=="nuke"?`<div class="tgrow" role="group" aria-label="표적 우선순위">${TGM.map(([k,l])=>`<button class="btn" data-tg="${k}" aria-pressed="${tgOf(t)===k}">${l}</button>`).join("")}</div>`:""}
     <div class="row"><button class="btn warn" data-a="sell">해체 +${fmt(t.inv*.7)}</button></div>`;}
   p.hidden=false;popAt(p,t.x,t.y);}
@@ -2328,7 +2375,7 @@ function paintHeaderFlag(){const f=$("hFlag"),g=f.getContext("2d");drawFlag(g,0,
 function boot(data){
   let local=null;try{local=JSON.parse(localStorage.getItem(LS)||"null");}catch(e){}
   const src=data&&data.S?data.S:local;if(src&&apply(src)){hasSave=true;if(!(data&&data.S))offline(src.t||Date.now());}
-  setSave(local?"local":"");BGM.on=bgmPref();if(!window.__SIM__)showTitle();paintHeaderFlag();makeThumbs();resize();renderUI();gClock=performance.now();requestAnimationFrame(loop);connect();}
+  setSave(local?"local":"");BGM.on=bgmPref();if(!window.__SIM__)showTitle();paintHeaderFlag();makeThumbs();applyCmp();renderUI();gClock=performance.now();requestAnimationFrame(loop);connect();}
 async function connect(){try{let n=0;while(!(window.claude&&window.claude.use)&&n++<30)await new Promise(r=>setTimeout(r,100));if(!window.claude?.use)return;
   const[d,u]=await Promise.all([claude.use("db"),claude.use("user")]);if(!d||!u)return;const id=await u.id();if(!id)return;db=d;uid=id;
   const snap=await db.doc("data/users/"+uid+"/save").get();
@@ -2349,9 +2396,18 @@ function loop(now){if(!last)last=now;let dt=Math.min(.1,(now-last)/1000);last=no
 let hiddenAt=0;
 document.addEventListener("visibilitychange",()=>{if(document.hidden){hiddenAt=Date.now();save(true);}else if(hiddenAt){last=performance.now();offline(hiddenAt);hiddenAt=0;}});
 window.addEventListener("resize",resize);
+/* 폰 가로 모드 전환 */
+const cmpMQ=matchMedia("(orientation:landscape) and (max-height:560px)");
+function applyCmp(){const on=cmpMQ.matches,b=document.body,rc=$("rcol"),ct=document.querySelector(".ctrl");b.classList.toggle("cmp",on);b.classList.remove("drawer");
+  if(on){rc.hidden=false;rc.append($("pause"),$("speed"));}else{rc.hidden=true;ct.insertBefore($("pause"),ct.firstChild);$("pause").after($("speed"));}
+  resize();}
+cmpMQ.addEventListener?cmpMQ.addEventListener("change",applyCmp):cmpMQ.addListener(applyCmp);
+$("menuBtn").addEventListener("click",()=>document.body.classList.toggle("drawer"));$("drawerBg").addEventListener("click",()=>document.body.classList.remove("drawer"));
+$("homeBtn").addEventListener("click",()=>document.body.classList.remove("drawer"));
+
 if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190748 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202610190801 */</script>
 </body></html>
