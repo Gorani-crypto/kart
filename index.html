@@ -55,6 +55,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--sky);color:var(-
 .gauge-label{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--ink-dim);text-align:center;margin-top:4px}
 #toast{top:26%;left:50%;transform:translateX(-50%);font-family:var(--display);font-size:34px;letter-spacing:.02em;text-shadow:0 3px 0 rgba(0,0,0,.35);opacity:0;transition:opacity .2s;white-space:nowrap}
 #toast.on{opacity:1}
+#count.wait{font-size:min(6vw,30px);text-align:center;line-height:1.4;white-space:nowrap;color:#fff}
 #count{top:38%;left:50%;transform:translate(-50%,-50%);font-family:var(--display);font-size:min(28vw,150px);color:var(--helmet);text-shadow:0 6px 0 rgba(0,0,0,.35)}
 #inst{top:calc(50% + 40px);left:50%;transform:translateX(-50%);font-weight:800;font-size:14px;letter-spacing:.06em;padding:6px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--boost);color:var(--boost)}
 
@@ -297,7 +298,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1013-0544</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-0703</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="rankBox" id="rankMenu"></div>
@@ -2446,7 +2447,7 @@ function buildRider(ch,pose){
     const boot=new THREE.Mesh(new THREE.SphereGeometry(.14,10,8),dark); boot.scale.set(1,.7,1.5); boot.position.set(0,-.5,.62); leg.add(boot);
     leg.visible=scoot; legs[sx>0?"L":"R"]=leg; }
   rider.userData.legs=legs;
-  const head=new THREE.Group(); head.position.y=1.35; rider.add(head); rider.userData.head=head;
+  const head=new THREE.Group(); head.name="riderHead"; head.position.y=1.35; rider.add(head); rider.userData.head=head;
   const helm=new THREE.Mesh(new THREE.SphereGeometry(.72,24,18),helmM); helm.scale.set(1,.92,1); head.add(helm);
   if(ch.acc!=="army"&&ch.acc!=="animal"&&ch.acc!=="blackcat"&&ch.acc!=="sausage"&&ch.acc!=="granny"){ const stripe=new THREE.Mesh(new THREE.TorusGeometry(.6,.07,8,32,Math.PI),stripeM); stripe.rotation.y=Math.PI/2; stripe.position.y=.12; stripe.scale.set(1.12,1.12,1.12); head.add(stripe); }
   if(ch.acc==="sausage") helm.scale.set(.82,1.4,.82);
@@ -2640,6 +2641,7 @@ function physics(dt, controls){
   const steerRaw=controls?((input.left?1:0)-(input.right?1:0)):0;
   S.steerS=lerp(S.steerS||0,steerRaw,1-Math.exp(-dt/C.steerEase)); const sa=Math.abs(S.steerS), steer=sa<.02?0:Math.sign(S.steerS)*sa*sa*(3-2*sa);
   const brake=controls&&input.brake, accel=controls&&!brake&&(input.accel||touchMode);
+  if(controls&&!accel&&(S.boostT>0||S.instT>0||S.stackT>0||S.superT>0)){ S.boostT=0; S.instT=0; S.stackT=0; S.superT=0; } /* 전진키를 떼면 부스터가 끊김 */
   const boosting=S.boostT>0||S.instT>0, ground=S.grounded;
   const roadMax=S.superT>0?superRamp(SUPER_T-S.superT,S.superV0||30):S.stackT>0?DUAL_V:S.boostT>0?base*(K.boost||C.boostRatio):(S.instT>0?base*C.instRatio:base);
   let gf=1; if(S.offroad){ const gc=C.grassCurve, t=S.grassT; gf=gc[gc.length-1][1];
@@ -3981,6 +3983,7 @@ $m("mpLeave").addEventListener("click",()=>{ if(MP.announced&&NETA.announce) NET
 function mpLeaveRoom(){ botsClear(); CHAT.log=[]; CHAT.seen={}; chatRender(); const cb=document.getElementById("chatBtn"); if(cb) cb.hidden=true; if(MP.joined) NETA.leave(); MP.joined=false; MP.racing=false; MP.peers=[]; MP.myPeer=null; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기"; }
 
 /* 참가자 목록 */
+function mpLoadState(){ const L=mpList(), live=new Set(L.map(p=>p.peer)); const need=(MP.ps||[]).filter(p=>p===MP.myPeer||live.has(p)); let ok=0; for(const p of need){ if(p===MP.myPeer){ ok++; continue; } const e=L.find(q=>q.peer===p); if(e&&e.presence.rid===MP.raceId&&(e.presence.wt===MP.raceId||e.presence.st==="done")) ok++; } return {ok,all:need.length}; }
 function mpList(){ return MP.peers.filter(p=>p.presence&&p.presence.v===1); }
 function mpHost(){ const L=mpList().filter(p=>!p.bot); if(!L.length) return null; return L.slice().sort((a,b)=>((+a.presence.jt||0)-(+b.presence.jt||0))||(a.peer<b.peer?-1:1))[0]; }
 function mpIsHost(){ const h=mpHost(); return !!h&&h.peer===MP.myPeer; }
@@ -4056,7 +4059,7 @@ $m("mpGo").addEventListener("click",()=>{
 /* 경기 */
 function mpStartRace(g){
   const tr=Math.max(0,Math.min(TRACKS.length-1,+g.tr||0)); selTrack=tr;
-  MP.racing=true; MP.finished=false; MP.shotSeen={}; MP.biteSeen={}; MP.twSeen={}; MP.lastShot=null; MP.cerDone=false; MP.lastRank=0; MP.raceId=String(g.id); MP.slot=Math.max(0,g.ps.indexOf(MP.myPeer)); MP.ps=g.ps.slice(); MP.ready=false; MP.finishTold.clear();
+  MP.racing=true; MP.cgo=false; MP.waitT=0; MP.finished=false; MP.shotSeen={}; MP.biteSeen={}; MP.twSeen={}; MP.lastShot=null; MP.cerDone=false; MP.lastRank=0; MP.raceId=String(g.id); MP.slot=Math.max(0,g.ps.indexOf(MP.myPeer)); MP.ps=g.ps.slice(); MP.ready=false; MP.finishTold.clear();
   $m("mpLobby").hidden=true; mpClearGhosts();
   startRace();
   // 출발선 자리: 4줄로 나란히, 뒤로 한 칸씩
@@ -4118,8 +4121,11 @@ function mpUpdate(dt){
   if(!MP.joined) return;
   const now=performance.now();
   if(MP.racing&&now-MP.lastSend>100){ const meOn=!MP.finished&&(state==="race"||state==="countdown");
-    if(meOn||BOT.list.length){ MP.lastSend=now; const r=v=>Math.round(v*100)/100; mpSend(meOn?{st:"race",rid:MP.raceId,x:r(S.x),y:r(S.y),z:r(S.z),h:r(S.h),vx:r(S.vx),vz:r(S.vz),ro:r(S.roll||0),pg:Math.round(mpProgress()*1000)/1000,bt:S.boostT>0||S.instT>0?1:0,sd:S.shieldT>0?1:0,gb:S.superT>0?1:0}:{}); } }
+    if(meOn||BOT.list.length){ MP.lastSend=now; const r=v=>Math.round(v*100)/100; mpSend(meOn?{st:"race",rid:MP.raceId,hd:state==="countdown"?r(S.headT||0):0,x:r(S.x),y:r(S.y),z:r(S.z),h:r(S.h),vx:r(S.vx),vz:r(S.vz),ro:r(S.roll||0),pg:Math.round(mpProgress()*1000)/1000,bt:S.boostT>0||S.instT>0?1:0,sd:S.shieldT>0?1:0,gb:S.superT>0?1:0}:{}); } }
   if(!MP.racing) return;
+  if(!MP.cgo){ const h=mpHost(); if(mpIsHost()){ const st=mpLoadState(); if(state==="countdown"&&countT<=3.2&&st.ok>=st.all){ MP.cgo=true; mpSend({cg:MP.raceId}); } }
+    else if(h&&h.presence.cg===MP.raceId) MP.cgo=true; }
+  else if(mpIsHost()&&MP.sent&&MP.sent.cg!==MP.raceId) mpSend({cg:MP.raceId});
   const wallNow=Date.now();
   for(const p of mpList()){ if(p.peer===MP.myPeer||(p.bot&&p.owner===MP.myPeer)) continue; const pr=p.presence; if(pr.rid!==MP.raceId||!(pr.st==="race"||pr.st==="done")||pr.x===undefined){ const g0=MP.ghosts.get(p.peer); if(g0) g0.obj.visible=false; continue; }
     const g=mpGhost(p.peer,pr); g.obj.visible=true; g.pr=pr;
@@ -4136,7 +4142,7 @@ function mpUpdate(dt){
     const tx=(+pr.x)+(+pr.vx||0)*age, tz=(+pr.z)+(+pr.vz||0)*age, ty=+pr.y||0, th=+pr.h||0;
     if(!g.init||Math.hypot(tx-g.x,tz-g.z)>40){ g.x=tx; g.z=tz; g.y=ty; g.h=th; g.init=true; }
     const k=1-Math.exp(-14*dt); g.x+=(tx-g.x)*k; g.z+=(tz-g.z)*k; g.y+=(ty-g.y)*k; let dh=th-g.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; g.h+=dh*k;
-    g.obj.position.set(g.x,g.y,g.z); g.obj.rotation.set(0,g.h,-(+pr.ro||0)); if(g.key.startsWith("giant.")){ const gsp=Math.hypot(+pr.vx||0,+pr.vz||0); giantRun(g.obj,dt,gsp,0); if(pr.gb&&!g.meteor){ g.meteor=makeMeteor(); g.obj.add(g.meteor); } heatTick(g.heatSt||(g.heatSt={heat:0}),g.obj,!!pr.gb,dt,g.x,g.y,g.z); if(g.meteor){ const pp=pr.gb?Math.max(.08,clamp((gsp*5.8-200)/600,0,1)):0; meteorUpd(g.meteor,pp,dt); if(pp>.1&&Math.hypot(g.x-S.x,g.z-S.z)<150) meteorEmbers(g.x,g.y,g.z,g.h,pp); } } if(g.key.startsWith("roach.")) roachRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0));
+    g.obj.position.set(g.x,g.y,g.z); g.obj.rotation.set(0,g.h,-(+pr.ro||0)); if(g.head===undefined) g.head=g.obj.getObjectByName("riderHead")||null; if(g.head) g.head.rotation.z=lerp(g.head.rotation.z,+pr.hd||0,.3); if(g.key.startsWith("giant.")){ const gsp=Math.hypot(+pr.vx||0,+pr.vz||0); giantRun(g.obj,dt,gsp,0); if(pr.gb&&!g.meteor){ g.meteor=makeMeteor(); g.obj.add(g.meteor); } heatTick(g.heatSt||(g.heatSt={heat:0}),g.obj,!!pr.gb,dt,g.x,g.y,g.z); if(g.meteor){ const pp=pr.gb?Math.max(.08,clamp((gsp*5.8-200)/600,0,1)):0; meteorUpd(g.meteor,pp,dt); if(pp>.1&&Math.hypot(g.x-S.x,g.z-S.z)<150) meteorEmbers(g.x,g.y,g.z,g.h,pp); } } if(g.key.startsWith("roach.")) roachRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0));
     // 부딪힘: 서로 밀어냄 (각자 자기 카트만 움직임)
     { const ok=KARTS[+pr.k]||KARTS[0]; bumpMe({id:p.peer,x:g.x,y:g.y,z:g.z,vx:+pr.vx||0,vz:+pr.vz||0,mass:ok.mass||1,rad:ok.rad||1.15,gb:!!pr.gb,ram:ok.ram||0},now); }
     }
@@ -4155,10 +4161,12 @@ function frame(now){
   let dt=Math.min(.05,(now-last)/1000); last=now; acc+=dt;
   while(acc>=STEP){
     const controls=state==="race";
-    if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(edge(touchMode?"boost":"accel")&&countT<=.5) S.startTap=true;
+    if(state==="countdown"&&MP.racing&&!MP.cgo&&countT<=3.2){ countT=3.2; if(!MP.waitT) mpSend({wt:MP.raceId}); MP.waitT=(MP.waitT||0)+STEP; if(MP.waitT>25) MP.cgo=true; }
+    else if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(edge(touchMode?"boost":"accel")&&countT<=.5) S.startTap=true;
       if(countT<=0){state="race"; $("count").hidden=true; toast("GO!","#ffcf2e"); beep(1320,.35); S.shieldT=5; if(S.startTap) startBoost(); botsGo(); }}
     if(state==="race"&&!S.startUsed&&raceT<.5&&edge(touchMode?"boost":"accel")) startBoost(); /* 컴퓨터는 ↑ 키, 폰은 부스터 버튼 */
     if(S.shieldT>0) S.shieldT=Math.max(0,S.shieldT-STEP);
+    { const hd=state==="countdown"?((input.left?1:0)-(input.right?1:0)):0; S.headT=lerp(S.headT||0,hd*.5,1-Math.exp(-STEP*14)); const hr=CAR&&CAR.rider&&CAR.rider.userData.head; if(hr) hr.rotation.z=S.headT; }
     if(state!=="menu"){ fsNow=physics(STEP, controls&&!S.ej); if(S.ej) updEject(STEP,controls); }
     if(state==="race"){raceT+=STEP; lapCheck(); if(KART.id==="tank"){ if(input.fire&&FX.cool<=0){ S.charge=Math.min(1,(S.charge||0)+STEP/1.2); } else if(!input.fire&&prev.fire&&S.charge>0){ fireShell(.55+1.9*S.charge); S.charge=0; } else if(!input.fire) S.charge=0; } else if(input.fire&&!prev.fire) fireShell(); if(input.lock&&!prev.lock){ S.lock=!S.lock; toast(S.lock?"정지 고정":"고정 해제","#ffffff"); const lb=document.getElementById("lockBtn"); if(lb) lb.classList.toggle("hint",S.lock); } }
     for(const k in input) prev[k]=input[k];
@@ -4252,7 +4260,8 @@ function render(dt){
   $("slot0").classList.toggle("full",S.items>=1); $("slot1").classList.toggle("full",S.items>=2);
   $("inst").hidden=!(S.instWin>0&&state==="race");
   const ab=$("boostBtn"); if(ab) ab.classList.toggle("hint",S.instWin>0&&state==="race");
-  if(state==="countdown"){ $("count").textContent=Math.max(1,Math.ceil(countT-0.2)); }
+  if(state==="countdown"){ const ce=$("count"), wait=MP.racing&&!MP.cgo&&countT<=3.2; ce.classList.toggle("wait",wait);
+    if(wait){ const st=mpLoadState(); ce.textContent="다른 선수 입장 기다리는 중 "+st.ok+"/"+st.all+"\n(←→ 키로 고개 까딱!)"; ce.style.whiteSpace="pre"; } else { ce.style.whiteSpace=""; ce.textContent=Math.max(1,Math.ceil(countT-0.2)); } }
   if(toastTimer>0){toastTimer-=dt; if(toastTimer<=0)$("toast").classList.remove("on");}
   drawMinimap();
 }
