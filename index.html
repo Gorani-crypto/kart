@@ -298,7 +298,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-0703</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-0713</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="rankBox" id="rankMenu"></div>
@@ -3394,14 +3394,14 @@ function updEject(dt,controls){
   else { const k=Math.exp(-12*dt); E.vx*=k; E.vz*=k; E.x+=E.vx*dt; E.z+=E.vz*dt; E.y=gy;
     if(Math.hypot(E.vx,E.vz)<2.5||E.t>1.3){ // 일어나서 자동으로 오토바이까지 걸어감 (종종걸음)
       E.rest=(E.rest||0)+dt; if(E.rest>.45){ const want=Math.atan2(S.x-E.x,S.z-E.z); let dh=want-E.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; E.h+=dh*Math.min(1,8*dt);
-        const fw=Math.hypot(S.x-E.x,S.z-E.z)<2.2?0:clamp(Math.hypot(S.x-E.x,S.z-E.z)/Math.max(.3,3.9-E.t),3,5.5); /* 터벅터벅 걸어서 약 3~4초 */ E.x+=Math.sin(E.h)*fw*dt; E.z+=Math.cos(E.h)*fw*dt; E.walk=(E.walk||0)+fw*dt;
+        const fw=Math.hypot(S.x-E.x,S.z-E.z)<2.2?0:clamp(Math.hypot(S.x-E.x,S.z-E.z)/Math.max(.3,4.9-E.t),3,5.5); /* 터벅터벅 걸어서 약 4~5초 */ E.x+=Math.sin(E.h)*fw*dt; E.z+=Math.cos(E.h)*fw*dt; E.walk=(E.walk||0)+fw*dt;
         if(!E.told){ E.told=true; toast("오토바이로 돌아가는 중…","#ffcf2e"); toastTimer=1.8; } } } }
   const d=(E.x-p.x)*n.x+(E.z-p.z)*n.z, lim=TR.HW+(TR.def.walls?.5:(TR.def.runoff||2.4)); if(Math.abs(d)>lim){ const sg=Math.sign(d); E.x-=n.x*sg*(Math.abs(d)-lim); E.z-=n.z*sg*(Math.abs(d)-lim); }
   const rd=CAR.rider; if(rd){ rd.position.set(E.x,E.y+(E.ground?.15:0),E.z);
     if(!E.ground){ rd.rotation.x+=E.spin*dt; rd.rotation.z+=E.spin*.5*dt; }
     else { rd.rotation.set(0,E.h,0); rd.position.y+=Math.abs(Math.sin((E.walk||0)*3))*.15; } }
   // 다시 타기
-  if((E.ground&&E.t>2.8&&Math.hypot(E.x-S.x,E.z-S.z)<2.8)||E.t>=4.2){ /* 늦어도 4초면 다시 탑승 */ const st=CAR.seat, par=st.parent||CAR.body; par.add(rd); rd.position.set(...st.pos); rd.rotation.set(0,0,0); rd.scale.setScalar(st.scale); S.ej=null; S.h=Math.atan2(TR.T[S.idx].x,TR.T[S.idx].z); toast("다시 탑승!","#46e08a"); beep(880,.12,.2); }
+  if((E.ground&&E.t>3.8&&Math.hypot(E.x-S.x,E.z-S.z)<2.8)||E.t>=5.2){ /* 늦어도 5초면 다시 탑승 */ const st=CAR.seat, par=st.parent||CAR.body; par.add(rd); rd.position.set(...st.pos); rd.rotation.set(0,0,0); rd.scale.setScalar(st.scale); S.ej=null; S.h=Math.atan2(TR.T[S.idx].x,TR.T[S.idx].z); toast("다시 탑승!","#46e08a"); beep(880,.12,.2); }
 }
 // ===== 티라노: 물기 (온라인에서 앞에 있는 상대를 물면 가벼울수록 감속, 전차급 무게부터는 못 물음) =====
 // 꼬리치기 범위: 티라노 뒤쪽, 폭 = 티라노 몸 폭의 3배
