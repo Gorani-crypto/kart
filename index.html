@@ -298,7 +298,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-1015</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-1020</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="rankBox" id="rankMenu"></div>
@@ -2789,9 +2789,7 @@ const flameG=new THREE.ConeGeometry(.2,1,10); flameG.translate(0,.5,0); flameG.r
 const flameM=new THREE.MeshBasicMaterial({color:0xff7a1a,transparent:true,opacity:.9}), flameCoreM=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.95,depthWrite:false}), flameGlowM=new THREE.MeshBasicMaterial({color:0x7ae8ff,transparent:true,opacity:.45,depthWrite:false,blending:THREE.AdditiveBlending});
 /* 부스터 연출: 시작 충격파 고리 · 바닥 바람 꼬리 */
 const BFX={rings:[],trails:null};
-function boostBurst(){ const m=new THREE.Mesh(new THREE.TorusGeometry(1.1,.14,8,36),new THREE.MeshBasicMaterial({color:0x9ff0ff,transparent:true,opacity:.9,depthWrite:false,blending:THREE.AdditiveBlending}));
-  const back=(CAR.shadow?CAR.shadow[1]:2.4)+.6; m.position.set(S.x-Math.sin(S.h)*back,S.y+1,S.z-Math.cos(S.h)*back); m.rotation.y=S.h; scene.add(m); BFX.rings.push({m,t:0});
-  S.burstT=.35; S.kick=1; S.shake=Math.max(S.shake,.25); }
+function boostBurst(){ S.burstT=.35; S.kick=1; } /* 충격파 고리·화면 흔들림 없음 */
 function boostFxUpd(dt){ for(let k=BFX.rings.length-1;k>=0;k--){ const R=BFX.rings[k]; R.t+=dt; const u=R.t/.45; if(u>=1){ scene.remove(R.m); R.m.geometry.dispose(); R.m.material.dispose(); BFX.rings.splice(k,1); continue; } R.m.scale.setScalar(1+u*3.2); R.m.material.opacity=.9*(1-u); }
   if(!BFX.trails){ const tt=canvasTex(16,128,(x,w,h)=>{ const g=x.createLinearGradient(0,0,0,h); g.addColorStop(0,"rgba(160,240,255,0)"); g.addColorStop(.25,"rgba(160,240,255,.9)"); g.addColorStop(1,"rgba(160,240,255,0)"); x.fillStyle=g; x.fillRect(0,0,w,h); },1,1); const mt=new THREE.MeshBasicMaterial({map:tt,transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending});
     BFX.trails=[0,1].map(()=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(.35,7).rotateX(-Math.PI/2),mt); kart.add(m); return m; }); BFX.trailM=mt; }
