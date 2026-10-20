@@ -298,7 +298,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-1006</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-1010</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="rankBox" id="rankMenu"></div>
@@ -440,7 +440,8 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"snake", name:"구렁이 뱀", desc:"구불구불 기어가는 뱀 · 코너를 가장 잘 돔 · 가볍고 미끄러지듯 달림", speed:1.31, accel:1.36, turn:1.32, boost:1.2, mass:.9, fly:1.2},
   {id:"jet", name:"제트 로드스터", desc:"바퀴 없이 살짝 떠서 달리는 미래형 로드스터 · 부스터를 쓰면 순간 450km로 튀어나간 뒤 점점 감속", speed:1.3, accel:1.4, burst:450, turn:1.05, boost:1.22, mass:1},
   {id:"nova", name:"노바 스러스터", desc:"날개 달린 미래형 호버 레이서 · 균형 잡힌 보통 성능", speed:1.3, accel:1.35, turn:1.05, boost:1.22, mass:1},
-  {id:"gt", name:"썬더 GT", desc:"낮고 넓은 미드십 스포츠카 · 큰 리어윙 · 빠르고 코너도 잘 도는 보통 성능", speed:1.33, accel:1.4, turn:1.08, boost:1.22, mass:.95}
+  {id:"gt", name:"썬더 GT", desc:"낮고 넓은 미드십 스포츠카 · 큰 리어윙 · 빠르고 코너도 잘 도는 보통 성능", speed:1.33, accel:1.4, turn:1.08, boost:1.22, mass:.95},
+  {id:"trike", name:"세발 자전거", desc:"앞바퀴 페달을 열심히 밟는 어린이 세발자전거 · 휠체어급 성능 · 작고 민첩", speed:1.27, accel:1.4, turn:1.25, boost:1.235, mass:.8}
 ];
 // 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
 const SYN={tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
@@ -2484,6 +2485,32 @@ function titanRun(rootObj,dt,v){
   return s2;
 }
 
+// ===== 세발 자전거 (큰 앞바퀴 + 페달, 뒤 작은 바퀴 2개, 바구니·리본·종) =====
+(function(){
+  const root=new THREE.Group(), body=new THREE.Group(); root.add(body);
+  const frame=Lam(0xe8344a), frame2=Lam(0xffd21f), white=Lam(0xf4f4f4), grip=Lam(0x3b82f6);
+  const tube=(a,b,rad,m)=>{ const v=new THREE.Vector3(b[0]-a[0],b[1]-a[1],b[2]-a[2]), L=v.length(), c=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad,L,10),m); c.position.set((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2); c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize()); body.add(c); return c; };
+  /* 앞바퀴 (페달 달림) */
+  const fw0=new THREE.Group(); fw0.position.set(0,.55,.85); root.add(fw0); const fw=new THREE.Group(); fw0.add(fw);
+  const tire=new THREE.Mesh(new THREE.TorusGeometry(.5,.07,10,28),tireM); tire.rotation.y=Math.PI/2; fw.add(tire);
+  for(let k=0;k<12;k++){ const a=k/12*Math.PI*2, sp=new THREE.Mesh(new THREE.BoxGeometry(.02,.9,.02),white); sp.rotation.x=a; fw.add(sp); }
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.36,10),frame2); hub.rotation.z=Math.PI/2; fw.add(hub);
+  for(const sx of [1,-1]){ const cr=new THREE.Mesh(new THREE.BoxGeometry(.04,.22,.05),frame2); cr.position.set(sx*.2,sx*.1,0); fw.add(cr); const pd=new THREE.Mesh(new THREE.BoxGeometry(.16,.05,.12),Lam(0x222222)); pd.position.set(sx*.29,sx*.2,0); fw.add(pd); }
+  /* 뒤 작은 바퀴 2개 + 축 */
+  const rws=[]; for(const sx of [1,-1]){ const w=new THREE.Group(); w.position.set(sx*.42,.25,-.65); root.add(w); const t=new THREE.Mesh(new THREE.TorusGeometry(.22,.055,8,20),tireM); t.rotation.y=Math.PI/2; w.add(t); const h=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,.08,10),white); h.rotation.z=Math.PI/2; w.add(h); rws.push(w); }
+  tube([-.42,.25,-.65],[.42,.25,-.65],.035,frame);
+  /* 프레임 · 안장 · 핸들 */
+  tube([0,.25,-.65],[0,.62,-.2],.05,frame); tube([0,.62,-.2],[0,.95,.75],.055,frame); tube([0,.95,.75],[0,.55,.85],.045,frame); tube([0,.95,.75],[0,1.15,.7],.04,frame);
+  tube([-.32,1.15,.65],[.32,1.15,.65],.035,frame2); for(const sx of [1,-1]){ const g=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.16,10),grip); g.rotation.z=Math.PI/2; g.position.set(sx*.38,1.15,.65); body.add(g);
+    for(let k=0;k<3;k++){ const rb=new THREE.Mesh(new THREE.BoxGeometry(.03,.32,.01),Lam([0xff4fd8,0x3ee6ff,0xffd21f][k])); rb.position.set(sx*(.46+k*.02),1.0,.65); rb.rotation.z=sx*.3; rb.name="trRib"; body.add(rb); } }
+  const sad=new THREE.Mesh(new THREE.BoxGeometry(.34,.08,.42),Lam(0x2a2a2a)); sad.position.set(0,.67,-.18); body.add(sad);
+  const bell=new THREE.Mesh(new THREE.SphereGeometry(.06,10,8,0,Math.PI*2,0,Math.PI/2),frame2); bell.position.set(.22,1.19,.65); body.add(bell);
+  const bk=new THREE.Mesh(new THREE.BoxGeometry(.5,.3,.32),Lam(0xc8a26a)); bk.position.set(0,.98,1.0); body.add(bk); const fl=new THREE.Mesh(new THREE.SphereGeometry(.09,8,6),Lam(0xff6fae)); fl.position.set(.1,1.16,1.02); body.add(fl);
+  const step=new THREE.Mesh(new THREE.BoxGeometry(.7,.04,.3),frame2); step.position.set(0,.36,-.78); body.add(step);
+  const wheels=[fw0,new THREE.Group()];
+  CARS.trike={paint:[frame],root,body,wheels,spin:[[fw,.55],[rws[0],.28],[rws[1],.28]],exhaust:[[0,.3,-.9]],shadow:[.6,1.3],camDist:5.8,tagY:2.7,seat:{pos:[0,.7,-.18],scale:.55}};
+})();
+
 // ===== 썬더 GT (오리지널 미드십 스포츠카: 낮은 쐐기 차체 · 옆 공기흡입구 · 큰 리어윙 · 쿼드 머플러) =====
 (function(){
   const root=new THREE.Group(), body=new THREE.Group(); root.add(body);
@@ -3084,7 +3111,7 @@ function carThumb(k,ch,col){
   const c=CARS[k.id], par=c.root.parent, rot=c.root.rotation.y; paintMats(c.paint,c.paintDef,col);
   const old=c.rider&&c.rider.parent?c.rider:null, oldPar=old?old.parent:null; if(old) oldPar.remove(old);
   const tmp=buildRider(ch,c.seat.pose); tmp.position.set(...c.seat.pos); tmp.scale.setScalar(c.seat.scale); (c.seat.parent||c.body).add(tmp);
-  c.root.rotation.y=0; const big=k.id==="tank"?1.55:k.id==="giant"?2.2:k.id==="dump"?2.1:k.id==="roach"?1.3:k.id==="snake"?.8:k.id==="titan"?18:k.id==="truck"?1.1:k.id==="trex"?2.1:k.id==="chair"?.8:1;
+  c.root.rotation.y=0; const big=k.id==="tank"?1.55:k.id==="giant"?2.2:k.id==="dump"?2.1:k.id==="roach"?1.3:k.id==="snake"?.8:k.id==="trike"?.7:k.id==="titan"?18:k.id==="truck"?1.1:k.id==="trex"?2.1:k.id==="chair"?.8:1;
   const url=shot(c.root,[5.4*big,3.0*big,6.6*big],[0,(k.id==="giant"?1.4:k.id==="dump"||k.id==="trex"?1.25:.8)*big,0]);
   tmp.parent.remove(tmp); if(old) oldPar.add(old);
   c.root.rotation.y=rot; if(par) par.add(c.root);
@@ -3709,6 +3736,7 @@ const CARVO={
   trex:["크아아아앙!!","쥬라기 시대엔 내가 1등이었다!","다 잡아먹어 버린다!"],
   bike:["부릉부릉~ 1등은 내 자리!","헬멧 끈 꽉 매라!","이 맛에 두 바퀴 탄다!"],
   giant:["쿵! 쿵! 쿵! 1등이다!","돌은 굴러가면 못 멈춘다!","산도 내 뒤에 있다!"],
+  trike:["따릉따릉~ 비켜주세요!","페달 밟는 다리가 안 보이지?","작다고 무시하지 마!"],
   gt:["썬더 GT 출격! 비켜비켜~","코너는 이렇게 도는 거야!","노란 번개 지나간다!"],
   nova:["미래에서 왔다! 슈웅~","날개 펴고 간다!","중력? 잠깐 꺼둘게!"],
   titan:["쿠웅… 쿠웅… 길 좀 비켜라!","나한텐 이 길이 장난감이야!","불꽃 돌진이다!"],
@@ -3977,7 +4005,7 @@ function updateMyTag(){ if(typeof MP==="undefined"||!MP||typeof kart==="undefine
   const nm=cleanName(MP.nick); if(!nm) return; myTag=mpTag(nm,hexCol(CHAR.helmet)); myTag.position.y=CAR.tagY||(CAR.giant?9.6:CAR.id==="tank"?4.4:3.1); kart.add(myTag); }
 // 차량 설명 말풍선: 썸네일 오른쪽 위 ⓘ 에 마우스를 올리거나(폰은 누르면) 표시
 const KTIP={blue:"균형형 · 모든 능력이 무난함",gold:"최고속도형 · 가속·조향은 조금 둔함",kart:"가벼움 · 부스터 중 한 번 더 = 2단 부스터 400km",scoot:"가속·조향 최고 · 가장 가벼움",tank:"무거움 · 포물선 포탄 (약 40m)",
-  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",gt:"미드십 스포츠카 · 보통 성능",nova:"미래형 호버 레이서 · 보통 성능",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"부스터 = 순간 450km 급가속 → 점점 감속",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
+  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",trike:"휠체어급 성능 · 작고 민첩",gt:"미드십 스포츠카 · 보통 성능",nova:"미래형 호버 레이서 · 보통 성능",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"부스터 = 순간 450km 급가속 → 점점 감속",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
 function kInfoIcon(k){ const s=document.createElement("span"); s.className="kinfo"; s.textContent="i"; s.setAttribute("aria-label",k.name+" 설명");
   const show=()=>{ let t=document.getElementById("kTip"); if(!t){ t=document.createElement("div"); t.id="kTip"; document.body.appendChild(t); }
     t.innerHTML=""; const b=document.createElement("b"); b.textContent=k.name; const d=document.createElement("div"); d.className="one"; d.textContent=KTIP[k.id]||k.desc||""; t.append(b,d);
@@ -4468,6 +4496,7 @@ function render(dt){
   if(CAR.giant){ const st=giantRun(CAR.root,dt,state==="menu"?0:fsNow,S.yaw||0); body.rotation.z*=.5; if(st!==undefined){ const ph=Math.sign(st); if(CAR.lastStep!==undefined&&ph!==CAR.lastStep&&Math.abs(fsNow)>4&&state==="race"){ thud(); S.shake=Math.max(S.shake,.18); } CAR.lastStep=ph; } }
   const steer=(input.left?1:0)-(input.right?1:0);
   S.steerVis=lerp(S.steerVis,state==="race"?steer*.4:0,.2);
+  if(CAR.spin) for(const [w,rr] of CAR.spin) w.rotation.x+=(state==="menu"?0:fsNow)*dt/rr;
   wheels[0].rotation.y=S.steerVis; if(!CAR.lean&&wheels[1]) wheels[1].rotation.y=S.steerVis;
   shadow.visible=!S.rail; shadow.position.set(S.x,S.gy+.12,S.z); shadow.rotation.z=-S.h;
   const sh=clamp(1-(S.y-S.gy)/8,.3,1); shadow.scale.set(CAR.shadow[0]*sh,CAR.shadow[1]*sh,1);
