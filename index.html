@@ -298,7 +298,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-1001</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-1003</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="rankBox" id="rankMenu"></div>
@@ -439,7 +439,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"bike", name:"슈퍼바이크", desc:"가장 빠르지만 잘 미끄러지고 덜 꺾여서 다루기 어려움. 벽·무거운 차에 부딪히면 사람이 날아가서 걸어가 다시 타야 함", speed:1.89, accel:1.6, turn:1.06, grip:.72, boost:1.14, mass:.7, eject:true},
   {id:"snake", name:"구렁이 뱀", desc:"구불구불 기어가는 뱀 · 코너를 가장 잘 돔 · 가볍고 미끄러지듯 달림", speed:1.31, accel:1.36, turn:1.32, boost:1.2, mass:.9, fly:1.2},
   {id:"jet", name:"제트 로드스터", desc:"바퀴 없이 살짝 떠서 달리는 미래형 로드스터 · 부스터를 쓰면 순간 450km로 튀어나간 뒤 점점 감속", speed:1.3, accel:1.4, burst:450, turn:1.05, boost:1.22, mass:1},
-  {id:"nova", name:"노바 스러스터", desc:"미래형 호버 레이서 · 부스터를 쓰면 공기 분사로 순간 가속하며 떠올라 활공", speed:1.32, accel:1.6, turn:1.03, boost:1.22, mass:1, thrust:true}
+  {id:"nova", name:"노바 스러스터", desc:"날개 달린 미래형 호버 레이서 · 균형 잡힌 보통 성능", speed:1.3, accel:1.35, turn:1.05, boost:1.22, mass:1}
 ];
 // 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
 const SYN={tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
@@ -3689,7 +3689,7 @@ const CARVO={
   trex:["크아아아앙!!","쥬라기 시대엔 내가 1등이었다!","다 잡아먹어 버린다!"],
   bike:["부릉부릉~ 1등은 내 자리!","헬멧 끈 꽉 매라!","이 맛에 두 바퀴 탄다!"],
   giant:["쿵! 쿵! 쿵! 1등이다!","돌은 굴러가면 못 멈춘다!","산도 내 뒤에 있다!"],
-  nova:["미래에서 왔다! 슈웅~","날개 펴고 활공 간다!","중력? 잠깐 꺼둘게!"],
+  nova:["미래에서 왔다! 슈웅~","날개 펴고 간다!","중력? 잠깐 꺼둘게!"],
   titan:["쿠웅… 쿠웅… 길 좀 비켜라!","나한텐 이 길이 장난감이야!","불꽃 돌진이다!"],
   jet:["슈웅~ 미끄러지듯 간다!","바퀴는 옛날 얘기지!","떠서 달리면 덜컹거림도 없지!"],
   snake:["스르르~ 코너는 내 몸이 길이다!","쉬익~ 꼬리 조심해!","구불구불해도 1등은 곧장!"],
@@ -3956,7 +3956,7 @@ function updateMyTag(){ if(typeof MP==="undefined"||!MP||typeof kart==="undefine
   const nm=cleanName(MP.nick); if(!nm) return; myTag=mpTag(nm,hexCol(CHAR.helmet)); myTag.position.y=CAR.tagY||(CAR.giant?9.6:CAR.id==="tank"?4.4:3.1); kart.add(myTag); }
 // 차량 설명 말풍선: 썸네일 오른쪽 위 ⓘ 에 마우스를 올리거나(폰은 누르면) 표시
 const KTIP={blue:"균형형 · 모든 능력이 무난함",gold:"최고속도형 · 가속·조향은 조금 둔함",kart:"가벼움 · 부스터 중 한 번 더 = 2단 부스터 400km",scoot:"가속·조향 최고 · 가장 가벼움",tank:"무거움 · 포물선 포탄 (약 40m)",
-  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",nova:"부스터 = 공기 분사로 떠올라 활공",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"부스터 = 순간 450km 급가속 → 점점 감속",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
+  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",nova:"미래형 호버 레이서 · 보통 성능",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"부스터 = 순간 450km 급가속 → 점점 감속",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
 function kInfoIcon(k){ const s=document.createElement("span"); s.className="kinfo"; s.textContent="i"; s.setAttribute("aria-label",k.name+" 설명");
   const show=()=>{ let t=document.getElementById("kTip"); if(!t){ t=document.createElement("div"); t.id="kTip"; document.body.appendChild(t); }
     t.innerHTML=""; const b=document.createElement("b"); b.textContent=k.name; const d=document.createElement("div"); d.className="one"; d.textContent=KTIP[k.id]||k.desc||""; t.append(b,d);
