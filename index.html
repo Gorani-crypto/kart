@@ -298,7 +298,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-1010</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1020-1015</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="rankBox" id="rankMenu"></div>
@@ -439,8 +439,8 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"bike", name:"슈퍼바이크", desc:"가장 빠르지만 잘 미끄러지고 덜 꺾여서 다루기 어려움. 벽·무거운 차에 부딪히면 사람이 날아가서 걸어가 다시 타야 함", speed:1.89, accel:1.6, turn:1.06, grip:.72, boost:1.14, mass:.7, eject:true},
   {id:"snake", name:"구렁이 뱀", desc:"구불구불 기어가는 뱀 · 코너를 가장 잘 돔 · 가볍고 미끄러지듯 달림", speed:1.31, accel:1.36, turn:1.32, boost:1.2, mass:.9, fly:1.2},
   {id:"jet", name:"제트 로드스터", desc:"바퀴 없이 살짝 떠서 달리는 미래형 로드스터 · 부스터를 쓰면 순간 450km로 튀어나간 뒤 점점 감속", speed:1.3, accel:1.4, burst:450, turn:1.05, boost:1.22, mass:1},
-  {id:"nova", name:"노바 스러스터", desc:"날개 달린 미래형 호버 레이서 · 균형 잡힌 보통 성능", speed:1.3, accel:1.35, turn:1.05, boost:1.22, mass:1},
-  {id:"gt", name:"썬더 GT", desc:"낮고 넓은 미드십 스포츠카 · 큰 리어윙 · 빠르고 코너도 잘 도는 보통 성능", speed:1.33, accel:1.4, turn:1.08, boost:1.22, mass:.95},
+  {id:"nova", name:"노바 스러스터", desc:"날개 달린 미래형 호버 레이서 · 균형 잡힌 보통 성능", speed:1.3, accel:1.35, turn:1.05, boost:1.2425, mass:1},
+  {id:"gt", name:"썬더 GT", desc:"낮고 넓은 미드십 스포츠카 · 큰 리어윙 · 빠르고 코너도 잘 도는 보통 성능", speed:1.33, accel:1.4, turn:1.08, boost:1.2322, mass:.95},
   {id:"trike", name:"세발 자전거", desc:"앞바퀴 페달을 열심히 밟는 어린이 세발자전거 · 휠체어급 성능 · 작고 민첩", speed:1.27, accel:1.4, turn:1.25, boost:1.235, mass:.8}
 ];
 // 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
@@ -2786,8 +2786,19 @@ function buildRider(ch,pose){
 }
 
 const flameG=new THREE.ConeGeometry(.2,1,10); flameG.translate(0,.5,0); flameG.rotateX(-Math.PI/2);
-const flameM=new THREE.MeshBasicMaterial({color:0xff7a1a,transparent:true,opacity:.9});
-for(const id in CARS){ const c=CARS[id]; c.flames=c.exhaust.map(([x,y,z])=>{ cyl(c.body,.08,.25,chromeM,x,y,z+.08,"z"); const f=new THREE.Mesh(flameG,flameM); f.position.set(x,y,z); f.visible=false; c.body.add(f); return f; }); }
+const flameM=new THREE.MeshBasicMaterial({color:0xff7a1a,transparent:true,opacity:.9}), flameCoreM=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.95,depthWrite:false}), flameGlowM=new THREE.MeshBasicMaterial({color:0x7ae8ff,transparent:true,opacity:.45,depthWrite:false,blending:THREE.AdditiveBlending});
+/* 부스터 연출: 시작 충격파 고리 · 바닥 바람 꼬리 */
+const BFX={rings:[],trails:null};
+function boostBurst(){ const m=new THREE.Mesh(new THREE.TorusGeometry(1.1,.14,8,36),new THREE.MeshBasicMaterial({color:0x9ff0ff,transparent:true,opacity:.9,depthWrite:false,blending:THREE.AdditiveBlending}));
+  const back=(CAR.shadow?CAR.shadow[1]:2.4)+.6; m.position.set(S.x-Math.sin(S.h)*back,S.y+1,S.z-Math.cos(S.h)*back); m.rotation.y=S.h; scene.add(m); BFX.rings.push({m,t:0});
+  S.burstT=.35; S.kick=1; S.shake=Math.max(S.shake,.25); }
+function boostFxUpd(dt){ for(let k=BFX.rings.length-1;k>=0;k--){ const R=BFX.rings[k]; R.t+=dt; const u=R.t/.45; if(u>=1){ scene.remove(R.m); R.m.geometry.dispose(); R.m.material.dispose(); BFX.rings.splice(k,1); continue; } R.m.scale.setScalar(1+u*3.2); R.m.material.opacity=.9*(1-u); }
+  if(!BFX.trails){ const tt=canvasTex(16,128,(x,w,h)=>{ const g=x.createLinearGradient(0,0,0,h); g.addColorStop(0,"rgba(160,240,255,0)"); g.addColorStop(.25,"rgba(160,240,255,.9)"); g.addColorStop(1,"rgba(160,240,255,0)"); x.fillStyle=g; x.fillRect(0,0,w,h); },1,1); const mt=new THREE.MeshBasicMaterial({map:tt,transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending});
+    BFX.trails=[0,1].map(()=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(.35,7).rotateX(-Math.PI/2),mt); kart.add(m); return m; }); BFX.trailM=mt; }
+  const on=(S.boostT>0||S.instT>0||S.padT>.15)&&S.grounded&&(state==="race"||state==="finish"), sw=CAR.shadow?CAR.shadow[0]:1.2, sl=CAR.shadow?CAR.shadow[1]:2.4;
+  BFX.trails.forEach((m,k)=>{ m.visible=on; m.position.set((k?1:-1)*sw*.75,.15,-(sl+3.4)); m.scale.set(1,.8+Math.random()*.4,1); }); BFX.trailM.opacity=.55+Math.random()*.3;
+  if(S.burstT>0) S.burstT-=dt; if(S.kick>0) S.kick=Math.max(0,S.kick-dt*2.5); }
+for(const id in CARS){ const c=CARS[id]; c.flames=c.exhaust.map(([x,y,z])=>{ cyl(c.body,.08,.25,chromeM,x,y,z+.08,"z"); const f=new THREE.Mesh(flameG,flameM); f.position.set(x,y,z); f.visible=false; const core=new THREE.Mesh(flameG,flameCoreM); core.scale.set(.5,.5,.7); f.add(core); const glow=new THREE.Mesh(new THREE.SphereGeometry(.32,10,8),flameGlowM); f.add(glow); c.body.add(f); return f; }); }
 const PAINTS=[null,0xe8344a,0xff8a1a,0xffd21f,0x3cc46a,0x3ec6ff,0x2f5bd8,0x9b5de5,0xff6fb5,0x2b2f3a,0xf4f4f4];
 const PAINT_NAMES=["기본","빨강","주황","노랑","초록","하늘","파랑","보라","분홍","검정","흰색"];
 for(const id in CARS){ const c=CARS[id]; c.paintDef=(c.paint||[]).map(m=>m.color.getHex()); }
@@ -3436,8 +3447,9 @@ function drawSpeedFx(dt){
     const x0=cx+Math.cos(a)*r0, y0=cy+Math.sin(a)*r0*.75, x1=cx+Math.cos(a)*(r0+len), y1=cy+Math.sin(a)*(r0+len)*.75;
     sctx.strokeStyle=S.rail?`rgba(${190+Math.random()*60|0},${230},255,${.25+.45*Math.min(1,sfxI)*Math.random()})`:`rgba(255,255,255,${.18+.4*Math.min(1,sfxI)*Math.random()})`;
     sctx.lineWidth=(1+Math.random()*2.5)*Math.min(1.5,sfxI+.3)*(w/1000+.6); sctx.beginPath(); sctx.moveTo(x0,y0); sctx.lineTo(x1,y1); sctx.stroke(); }
-  const vg=sctx.createRadialGradient(cx,cy,diag*.45,cx,cy,diag); vg.addColorStop(0,"rgba(255,255,255,0)"); vg.addColorStop(1,S.rail?`rgba(120,220,255,${.35*Math.min(1,sfxI)})`:`rgba(255,255,255,${.16*Math.min(1,sfxI)})`);
+  const vg=sctx.createRadialGradient(cx,cy,diag*.45,cx,cy,diag); vg.addColorStop(0,"rgba(255,255,255,0)"); vg.addColorStop(1,S.rail?`rgba(120,220,255,${.35*Math.min(1,sfxI)})`:(S.boostT>0||S.padT>.15)?`rgba(90,210,255,${.3*Math.min(1,sfxI)})`:`rgba(255,255,255,${.16*Math.min(1,sfxI)})`);
   sctx.fillStyle=vg; sctx.fillRect(0,0,w,h);
+  if(S.burstT>0){ sctx.fillStyle=`rgba(200,245,255,${.4*S.burstT/.35})`; sctx.fillRect(0,0,w,h); }
 }
 
 /* ===== AI 봇: 'AI 추가' 한 번에 한 대. 혼자 달리기와 온라인 대전 모두 참가. 부딪힘·포탄·물기·거인 돌진 모두 받음 ===== */
@@ -4503,9 +4515,10 @@ function render(dt){
   shieldMesh.visible=S.shieldT>0&&state==="race"; if(shieldMesh.visible){ const R=(KART.rad||1.15)*2.4+.6; shieldMesh.scale.setScalar(R*(1+.03*Math.sin(performance.now()*.008))); shieldMesh.position.y=R*.45; shieldMesh.material.opacity=S.shieldT<1.2?(.22*(Math.sin(performance.now()*.03)>0?1:.3)):.22; }
   chute.visible=!!S.chute&&!S.grounded&&state!=="menu";
   if(chute.visible){ S.chuteVis=Math.min(1,(S.chuteVis||0)+dt*4); const k=CAR.giant?2.6:(KART.id==="tank"?1.3:1); chute.scale.setScalar(k*(.25+.75*S.chuteVis)); chute.position.y=CAR.giant?14:5.2; chute.rotation.set(-S.pitch*.8+Math.sin(performance.now()*.0021)*.06,0,Math.sin(performance.now()*.003)*.08); } else S.chuteVis=0;
+  const bOn=S.boostT>0||S.padT>.15; if(bOn&&!S.wasBoost&&state==="race") boostBurst(); S.wasBoost=bOn; boostFxUpd(dt);
   const fl=S.boostT>0||S.instT>0;
   flameM.color.setHex(S.stackT>0?0xff4fd8:S.instT>0&&S.boostT<=0?0xffd23a:(S.boostT>0?0x3ee6ff:0xff7a1a));
-  const flk=S.stackT>0?2.6:S.superT>0?.6+2.4*clamp((Math.abs(fsNow)*5.8-200)/600,0,1):S.boostT>0?1.8:1.1; for(const f of flames){f.visible=fl; f.scale.set(1,1,flk*(0.8+Math.random()*.4));}
+  const flk=S.stackT>0?3.4:S.superT>0?.6+2.4*clamp((Math.abs(fsNow)*5.8-200)/600,0,1):S.boostT>0?2.8:1.1, fw=S.boostT>0?1.5:1; for(const f of flames){f.visible=fl; f.scale.set(fw,fw,flk*(0.8+Math.random()*.45));} flameGlowM.color.copy(flameM.color);
   skidTimer-=dt;
   if(!S.rail&&S.grounded&&(S.drifting||Math.abs(slide)>.25)&&Math.abs(fsNow)>6&&skidTimer<=0&&state!=="menu"){
     skidTimer=.025; const c=Math.cos(S.h), s=Math.sin(S.h);
@@ -4540,7 +4553,7 @@ function render(dt){
   if(CAR.giant||CAR.titan){ heatTick(myHeat,CAR.root,S.superT>0,dt,S.x,S.y,S.z); } myMeteor.scale.setScalar(CAR.titan?7:1);
   if(myMeteor.parent!==kart) kart.add(myMeteor); meteorUpd(myMeteor,S.superT>0?Math.max(.08,sprog):0,dt); if(sprog>0) meteorEmbers(S.x,S.y,S.z,S.h,sprog,S.vx,S.vz);
   if(sprog>0) S.shake=Math.max(S.shake,.04+.3*sprog*sprog);
-  const targetFov=70+(S.rail?16:S.superT>0?4+26*sprog*sprog:S.boostT>0?7:S.instT>0?3:0);
+  const targetFov=70+(S.rail?16:S.superT>0?4+26*sprog*sprog:S.boostT>0?9:S.instT>0?3:0)+12*(S.kick||0);
   camera.fov=lerp(camera.fov,targetFov,.08); camera.updateProjectionMatrix();
   skyDome.position.set(camera.position.x,0,camera.position.z); if(NIGHT) NIGHT.position.copy(skyDome.position);
   renderer.render(scene,camera);
