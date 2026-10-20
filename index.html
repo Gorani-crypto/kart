@@ -2990,7 +2990,7 @@ function physics(dt, controls){
     if(controls&&tap&&fs>8){S.instT=C.instTime;S.instWin=0;usedTap=true;toast("순간 부스터!","#ffcf2e"); warp(false);} }
   if(K.noBoost){ S.items=0; S.gauge=0; }
   if(controls&&!usedTap&&edge("boost")&&S.items>0&&!K.noBoost){S.items--; if(K.superBoost){ S.boostT=SUPER_T; S.superT=SUPER_T; toast("거인 돌진!","#ff7a1a"); S.superV0=Math.max(25,Math.hypot(S.vx,S.vz)); S.shake=Math.max(S.shake,.6); thud(); } else if(K.thrust){ S.boostT=K.boostTime||C.boostTime; fs=Math.max(fs,base*(K.boost||C.boostRatio)*1.12); if(S.grounded){ S.vy=Math.max(S.vy,7); S.grounded=false; S.y+=.2; } S.thrustT=1.4; S.shake=Math.max(S.shake,.4); toast("공기 분사! 떠올라 활공","#b48cff"); }
-    else if(K.burst){ fs=Math.max(fs,K.burst/C.kmh); S.padT=1; S.padV=K.burst/C.kmh; S.padHold=0; S.padRate=1/1.6; S.shake=Math.max(S.shake,.45); toast("급가속! "+K.burst+"km","#7ae8ff"); }
+    else if(K.burst){ fs=Math.max(fs,K.burst/C.kmh); S.padT=1; S.padV=K.burst/C.kmh; S.padHold=0; S.padRate=1/1.6; toast("급가속! "+K.burst+"km","#7ae8ff"); }
     else if(K.dual&&S.boostT>0){ const bt=K.boostTime||C.boostTime; S.stackT=bt; S.boostT=Math.max(S.boostT,bt); toast("2단 부스터! 시속 400km","#ff4fd8"); S.shake=Math.max(S.shake,.35); } else { S.boostT=K.boostTime||C.boostTime; toast("부스터!","#3ee6ff"); } warp(true);}
   S.stackT=Math.max(0,S.stackT-dt); S.superT=Math.max(0,S.superT-dt); S.boostT=Math.max(0,S.boostT-dt); S.instT=Math.max(0,S.instT-dt);
 
