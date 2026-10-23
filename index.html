@@ -303,7 +303,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1024-0200</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1024-0257</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -830,7 +830,14 @@ function gmStep(dt,controls){ if(!GM.live||!TR) return; try{
   if(controls&&edge("boost")) gmUse(me,R);
   for(const b of GM.bananas){ if(b.src===me.id||gmAlly(b.src,me.id)) continue; if(Math.abs(b.y-S.y)<3&&Math.hypot(b.x-S.x,b.z-S.z)<2.4){ geEmit(["bh",b.id]); gmHit(me.id,"banana",b.src); break; } }
   }catch(err){ console.warn("gmStep",err); } }
-function gmShiftToast(m,was){ const up=m>was, txt="속도 x"+m+(m>was?" ▲":m<was?" ▼":""); toast("🎲 "+txt,m>=1.5?"#ff7a3c":m<1?"#7ad8ff":"#ffffff"); beep(up?990:m<was?440:660,.12,.18); if(GM.ui.shift){ GM.ui.shift.classList.remove("pop"); void GM.ui.shift.offsetWidth; GM.ui.shift.classList.add("pop"); } }
+function gmShiftToast(m,was){ const u=gmUi(); let el=document.getElementById("gmShiftPop"); if(!el){ el=document.createElement("div"); el.id="gmShiftPop"; document.body.appendChild(el); }
+  const up=m>was, down=m<was, cls=up?"up":down?"down":"same";
+  el.className=""; void el.offsetWidth; el.className=cls;
+  el.innerHTML=(up?"🎺 ":down?"😢 ":"")+"<b>"+m+"배속!</b>"+(up?" 🎉":down?" 💧":"")+"<small>"+(up?"빨라졌다!":down?"느려졌어요…":"그대로")+"</small>";
+  if(up){ el.querySelectorAll("i").forEach(x=>x.remove()); const cols=["#ffcf2e","#ff6ad5","#7af7ff","#7aff9a","#ff7a3c"]; for(let k=0;k<26;k++){ const c=document.createElement("i"); c.style.left=(10+Math.random()*80)+"%"; c.style.background=cols[k%5]; c.style.animationDelay=(Math.random()*.25)+"s"; c.style.setProperty("--dx",(Math.random()*240-120)+"px"); el.appendChild(c); } }
+  try{ if(up){ [523,659,784,1047].forEach((f,k)=>setTimeout(()=>beep(f,.12,.22),k*95)); setTimeout(()=>{ beep(1047,.5,.22); beep(1319,.5,.12); },420); }
+    else if(down){ [392,370,349].forEach((f,k)=>setTimeout(()=>beep(f,.32,.2),k*330)); setTimeout(()=>beep(311,.9,.2),1000); }
+    else beep(660,.12,.15); }catch(_){} }
 
 /* AI: 속도 배율 · 아이템 획득/사용 · 피격 상태 */
 function gmBot(b,dt){ if(!GM.live) return; try{ const fx=b.gm||(b.gm=gmFx()), going=BOT.on&&(state==="race"||state==="finish");
@@ -882,6 +889,16 @@ function gmVisuals(R){ for(const r of R){ const obj=r.me?kart:r.bot?(BOT.meshes.
 /* ---------- 화면 UI ---------- */
 function gmUi(){ if(GM.ui.root) return GM.ui; const st=document.createElement("style"); st.textContent=`#gmHud{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:25;display:flex;gap:8px;align-items:flex-start;pointer-events:none;font-family:inherit}
 #gmHud .gmb{background:rgba(14,22,48,.78);border:2px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;padding:6px 10px;font-weight:800;font-size:13px;text-align:center}
+#gmShiftPop{position:fixed;left:50%;top:26%;transform:translate(-50%,-50%);z-index:40;pointer-events:none;text-align:center;font-weight:900;opacity:0;padding:14px 26px;border-radius:20px}
+#gmShiftPop b{font-size:54px;display:inline-block;margin:0 6px}#gmShiftPop small{display:block;font-size:18px;margin-top:2px}
+#gmShiftPop.up{color:#fff;background:linear-gradient(135deg,rgba(255,122,60,.9),rgba(255,207,46,.9));box-shadow:0 0 40px rgba(255,170,60,.8);animation:gmUp 2.2s ease forwards;font-size:30px}
+#gmShiftPop.down{color:#d9ecff;background:rgba(40,60,110,.85);box-shadow:0 0 30px rgba(80,120,200,.5);animation:gmDown 2.6s ease forwards;font-size:30px}
+#gmShiftPop.same{color:#fff;background:rgba(14,22,48,.8);animation:gmSame 1.6s ease forwards;font-size:24px}
+#gmShiftPop i{position:absolute;top:30%;width:8px;height:12px;border-radius:2px;animation:gmCf 1.4s ease-out forwards}
+@keyframes gmCf{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(var(--dx,0px),140px) rotate(540deg);opacity:0}}
+@keyframes gmUp{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.25)}22%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-70%) scale(1)}}
+@keyframes gmDown{0%{opacity:0;transform:translate(-50%,-80%)}15%{opacity:1;transform:translate(-50%,-50%)}75%{opacity:1;transform:translate(-50%,-40%)}100%{opacity:0;transform:translate(-50%,-25%)}}
+@keyframes gmSame{0%{opacity:0}20%{opacity:1}80%{opacity:1}100%{opacity:0}}
 #gmShift{min-width:120px}#gmShift b{font-size:22px;display:block;line-height:1.1}#gmShift i{display:block;height:4px;border-radius:2px;background:#ffcf2e;margin-top:4px;font-style:normal}#gmShift.pop{animation:gmpop .5s}@keyframes gmpop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
 #gmItems{display:flex;gap:6px;padding:6px}#gmItems span{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:26px;border:2px solid rgba(255,255,255,.18)}#gmItems span.on{border-color:#ffcf2e;background:rgba(255,207,46,.15)}#gmItems small{display:block;font-size:10px;color:#9fb0d8;margin-top:2px}
 #gmTeam.R{border-color:#ff4d5d;color:#ffb3ba}#gmTeam.B{border-color:#3e8cff;color:#b3d1ff}
@@ -892,7 +909,7 @@ function gmUi(){ if(GM.ui.root) return GM.ui; const st=document.createElement("s
   GM.ui={root,team:root.querySelector("#gmTeam"),shift:root.querySelector("#gmShift"),items:root.querySelector("#gmItemsBox"),slots:root.querySelectorAll("#gmItems span"),key:root.querySelector("#gmKey")}; return GM.ui; }
 function gmHud(){ const u=gmUi(), on=GM.live&&(state==="race"||state==="countdown"||state==="finish"); u.root.hidden=!on; if(!on) return;
   const tm=GM.team&&GM.teams[gmMyId()]; u.team.hidden=!tm; if(tm){ u.team.className="gmb "+tm; u.team.textContent=(tm==="R"?"🔴 레드팀":"🔵 블루팀"); }
-  u.shift.hidden=GM.mode!=="shift"; if(GM.mode==="shift"){ const left=state==="race"?SHIFT_PERIOD-(raceT%SHIFT_PERIOD):SHIFT_PERIOD; u.shift.querySelector("b").textContent="x"+GM.me.mul; u.shift.querySelector("b").style.color=GM.me.mul>1?"#ff9a5c":GM.me.mul<1?"#7ad8ff":"#fff"; u.shift.querySelector(".nx").textContent="다음 변경 "+Math.ceil(left)+"초"; u.shift.querySelector("i").style.width=(left/SHIFT_PERIOD*100)+"%"; }
+  u.shift.hidden=true; if(false){ const left=state==="race"?SHIFT_PERIOD-(raceT%SHIFT_PERIOD):SHIFT_PERIOD; u.shift.querySelector("b").textContent="x"+GM.me.mul; u.shift.querySelector("b").style.color=GM.me.mul>1?"#ff9a5c":GM.me.mul<1?"#7ad8ff":"#fff"; u.shift.querySelector(".nx").textContent="다음 변경 "+Math.ceil(left)+"초"; u.shift.querySelector("i").style.width=(left/SHIFT_PERIOD*100)+"%"; }
   u.items.hidden=GM.mode!=="item"; if(GM.mode==="item"){ const it=GM.me.items; u.slots.forEach((s,k)=>{ s.textContent=it[k]?ITEMS[it[k]].ic:""; s.classList.toggle("on",!!it[k]); s.title=it[k]?ITEMS[it[k]].n:""; }); u.key.textContent=touchMode?"아이템 버튼":"Ctrl / X : 아이템 사용"; }
   const gw=document.getElementById("gauge"); if(gw){ const box=gw.closest("div").parentNode; if(box) box.style.visibility=GM.mode==="item"&&GM.live?"hidden":""; }
   const sl=document.getElementById("slot0"); if(sl&&sl.parentNode) sl.parentNode.style.visibility=GM.mode==="item"&&GM.live?"hidden":"";
@@ -5152,7 +5169,7 @@ $m("mpLeave").addEventListener("click",()=>{ if(MP.announced&&NETA.announce) NET
 function mpLeaveRoom(){ botsClear(); CHAT.log=[]; CHAT.seen={}; chatRender(); const cb=document.getElementById("chatBtn"); if(cb) cb.hidden=true; if(MP.joined) NETA.leave(); MP.joined=false; MP.racing=false; MP.peers=[]; MP.myPeer=null; mpClearGhosts(); $m("mpRank").parentNode.hidden=true; $m("againBtn").textContent="다시 달리기"; $m("menuBtn").textContent="트랙·카트 바꾸기"; }
 
 /* 참가자 목록 */
-function mpLoadState(){ const L=mpList(), live=new Set(L.map(p=>p.peer)); const need=(MP.ps||[]).filter(p=>p===MP.myPeer||live.has(p)); let ok=0; for(const p of need){ if(p===MP.myPeer){ ok++; continue; } const e=L.find(q=>q.peer===p); if(e&&e.presence.rid===MP.raceId&&(e.presence.wt===MP.raceId||e.presence.st==="done")) ok++; } return {ok,all:need.length}; }
+function mpLoadState(){ const L=mpList(), live=new Set(L.map(p=>p.peer)); const need=(MP.ps||[]).filter(p=>p===MP.myPeer||live.has(p)); let ok=0; for(const p of need){ if(p===MP.myPeer){ ok++; continue; } const e=L.find(q=>q.peer===p); if(e&&e.bot){ const ow=e.owner; if(ow===MP.myPeer){ ok++; continue; } const oe=L.find(q=>q.peer===ow); if(oe&&oe.presence.rid===MP.raceId&&(oe.presence.wt===MP.raceId||oe.presence.st==="done")) ok++; continue; } /* AI는 주인이 준비되면 준비 완료 */ if(e&&e.presence.rid===MP.raceId&&(e.presence.wt===MP.raceId||e.presence.st==="done")) ok++; } return {ok,all:need.length}; }
 function mpList(){ return MP.peers.filter(p=>p.presence&&p.presence.v===1); }
 function mpHost(){ const L=mpList().filter(p=>!p.bot); if(!L.length) return null; return L.slice().sort((a,b)=>((+a.presence.jt||0)-(+b.presence.jt||0))||(a.peer<b.peer?-1:1))[0]; }
 function mpIsHost(){ const h=mpHost(); return !!h&&h.peer===MP.myPeer; }
