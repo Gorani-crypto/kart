@@ -303,7 +303,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1024-0257</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1024-0300</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -723,8 +723,8 @@ function gmFx(){ return {mul:1,sk:0,stunT:0,slipT:0,slowT:0,shieldT:0,magT:0,mag
 GM.me=gmFx();
 
 /* ---------- 속도변화: 확정 확률표 (기대 배속 1.0875) ---------- */
-const SHIFT_TABLE=[[.5,.10],[.75,.25],[1,.35],[1.5,.20],[2,.10]];
-const SHIFT_EV=SHIFT_TABLE.reduce((s,[m,p])=>s+m*p,0); // = 1.0875
+const SHIFT_TABLE=[[.5,.10],[.75,.25],[1,.35],[1.5,.20],[2,.095],[4,.005]]; /* 기대 배속 1.0975 */
+const SHIFT_EV=SHIFT_TABLE.reduce((s,[m,p])=>s+m*p,0); // = 1.0975
 function shiftDraw(){ const r=Math.random(); let acc=0; for(const [m,p] of SHIFT_TABLE){ acc+=p; if(r<acc) return m; } return SHIFT_TABLE[SHIFT_TABLE.length-1][0]; }
 const SHIFT_PERIOD=10;
 /* 내 카트 최고속도에 곱하는 모드 배율 (속도전 개인·팀전에서는 항상 정확히 1) */
@@ -833,7 +833,7 @@ function gmStep(dt,controls){ if(!GM.live||!TR) return; try{
 function gmShiftToast(m,was){ const u=gmUi(); let el=document.getElementById("gmShiftPop"); if(!el){ el=document.createElement("div"); el.id="gmShiftPop"; document.body.appendChild(el); }
   const up=m>was, down=m<was, cls=up?"up":down?"down":"same";
   el.className=""; void el.offsetWidth; el.className=cls;
-  el.innerHTML=(up?"🎺 ":down?"😢 ":"")+"<b>"+m+"배속!</b>"+(up?" 🎉":down?" 💧":"")+"<small>"+(up?"빨라졌다!":down?"느려졌어요…":"그대로")+"</small>";
+  el.innerHTML=(up?"🎺 ":down?"😢 ":"")+"<b>"+m+"배속!</b>"+(up?" 🎉":down?" 💧":"");
   if(up){ el.querySelectorAll("i").forEach(x=>x.remove()); const cols=["#ffcf2e","#ff6ad5","#7af7ff","#7aff9a","#ff7a3c"]; for(let k=0;k<26;k++){ const c=document.createElement("i"); c.style.left=(10+Math.random()*80)+"%"; c.style.background=cols[k%5]; c.style.animationDelay=(Math.random()*.25)+"s"; c.style.setProperty("--dx",(Math.random()*240-120)+"px"); el.appendChild(c); } }
   try{ if(up){ [523,659,784,1047].forEach((f,k)=>setTimeout(()=>beep(f,.12,.22),k*95)); setTimeout(()=>{ beep(1047,.5,.22); beep(1319,.5,.12); },420); }
     else if(down){ [392,370,349].forEach((f,k)=>setTimeout(()=>beep(f,.32,.2),k*330)); setTimeout(()=>beep(311,.9,.2),1000); }
