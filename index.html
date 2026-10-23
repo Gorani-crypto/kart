@@ -107,6 +107,7 @@ kbd{font-family:var(--body);font-weight:800;font-size:12px;padding:3px 7px;borde
 .swatches .sw[aria-pressed="true"]{border-color:#fff;box-shadow:0 0 0 2px #ffcf2e}
 .pick-label{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--ink-dim)}
 .opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
+.cat-h{grid-column:1/-1;flex-basis:100%;display:flex;align-items:center;gap:8px;margin:10px 2px 0;font-weight:800;font-size:14px;color:#ffcf2e}.cat-h:first-child{margin-top:0}.cat-h small{font-weight:600;color:#9fb0d8;font-size:11px}.cat-h::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.15)}
 .opt{text-align:left;padding:10px 12px;border-radius:10px;border:2px solid var(--panel-line);background:#16224a;color:var(--ink);font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
 .opt[aria-pressed="true"]{border-color:var(--helmet);background:#1f2d60}
 .opt:focus-visible{outline:3px solid var(--boost);outline-offset:2px}
@@ -298,7 +299,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1023-2148</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1023-2159</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
     <div class="rankBox" id="rankMenu"></div>
@@ -3614,8 +3615,18 @@ try{ selColor=Math.min(PAINTS.length-1,parseInt(localStorage.getItem("kartrebuil
 function setColor(i){ selColor=i; try{localStorage.setItem("kartrebuild.color",String(i));}catch(_){} paintMats(CAR.paint,CAR.paintDef,selColor); }
 function swatchesHTML(){ return PAINTS.map((h,i)=>`<button type="button" class="sw" data-i="${i}" aria-pressed="${i===selColor}" title="${PAINT_NAMES[i]}" style="background:${h==null?"conic-gradient(#e8344a,#ffd21f,#3cc46a,#3ec6ff,#9b5de5,#e8344a)":"#"+h.toString(16).padStart(6,"0")}"></button>`).join(""); }
 try{ selTrack=Math.min(TRACKS.length-1,parseInt(localStorage.getItem("kartrebuild.track")||"0",10)||0); selKart=Math.min(KARTS.length-1,parseInt(localStorage.getItem("kartrebuild.kart")||"0",10)||0); selChar=Math.min(CHARS.length-1,parseInt(localStorage.getItem("kartrebuild.char")||"0",10)||0);}catch(_){}
+/* 트랙 선택 화면: 테마별 묶음 (TRACKS 순서·번호는 그대로, 보여주는 순서만 묶음) */
+const TRACK_CATS=[
+  {n:"🏘️ 마을·도시",d:"항구 · 마을 · 거리 · 저택 · 공장",ids:["harbor","hill","village","street","mansion","factory"]},
+  {n:"☁️ 하늘·구름",d:"공중터널 · 하늘섬 · 구름 산",ids:["sky","city","summit","peak","bean"]},
+  {n:"🌿 대자연 탐험",d:"빙하 · 용암 · 정글 · 버섯 숲",ids:["ice","mine","jungle","shroom"]},
+  {n:"🏛️ 유적·사막",d:"신전 · 모래 투기장",ids:["temple","arena"]},
+  {n:"🚀 우주·바다",d:"우주 궤도 · 해저 도시",ids:["orbit","coral"]},
+  {n:"🎡 놀이·장난감",d:"놀이공원 · 장난감 방",ids:["funpark","toybox"]}];
+function trackGroups(){ const used=new Set(), out=[]; for(const c of TRACK_CATS){ const L=[]; for(const id of c.ids){ const i=TRACKS.findIndex(t=>t.id===id); if(i>=0&&!used.has(i)){ used.add(i); L.push(i); } } if(L.length) out.push({n:c.n,d:c.d,L}); }
+  const rest=TRACKS.map((t,i)=>i).filter(i=>!used.has(i)); if(rest.length) out.push({n:"🏁 기타",d:"",L:rest}); return out; }
 function renderOptions(){ setTimeout(rankRenderAll,0);
-  $("trackOpts").innerHTML=TRACKS.map((t,i)=>`<button class="opt" type="button" id="trk-${t.id}" aria-pressed="${i===selTrack}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>trackThumb(t))}"><b>${t.name}</b><i class="diff">난이도 ${"●".repeat(t.diff||2)}${"○".repeat(5-(t.diff||2))}</i><span>${t.desc}</span>${t.records?`<span class="stat">랭킹 1위 ${t.records[0].name} ${fmtT(t.records[0].t)}</span>`:""}</button>`).join("");
+  $("trackOpts").innerHTML=trackGroups().map(g=>`<div class="cat-h">${g.n} <small>${g.d} · ${g.L.length}개</small></div>`+g.L.map(i=>{ const t=TRACKS[i]; return `<button class="opt" type="button" id="trk-${t.id}" aria-pressed="${i===selTrack}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>trackThumb(t))}"><b>${t.name}</b><i class="diff">난이도 ${"●".repeat(t.diff||2)}${"○".repeat(5-(t.diff||2))}</i><span>${t.desc}</span>${t.records?`<span class="stat">랭킹 1위 ${t.records[0].name} ${fmtT(t.records[0].t)}</span>`:""}</button>`; }).join("")).join("");
   $("kartOpts").innerHTML=KARTS.map((k,i)=>{const top=Math.round(CONFIG.maxSpeed*k.speed*CONFIG.kmh), bst=Math.round(CONFIG.maxSpeed*k.speed*(k.boost||CONFIG.boostRatio)*CONFIG.kmh);
     return `<button class="opt" type="button" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span><span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
   $("charOpts").innerHTML=CHARS.map((c,i)=>`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="${i===selChar}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>charThumb(c))}"><b><span class="dot" style="background:#${c.helmet.toString(16).padStart(6,"0")}"></span>${c.name}</b><span>${c.desc}</span>${SYN[KARTS[selKart].id]===c.id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}</button>`).join("");
@@ -4817,8 +4828,8 @@ function mpRender(){ rankRenderAll();
     G.appendChild(cell); }
   const htr=host?(+host.presence.tr||0):selTrack;
   $m("mpTrackHint").textContent=amHost?"(방장이 골라요)":"· 방장이 고르는 중";
-  $m("mpTracks").innerHTML=""; TRACKS.forEach((t,i)=>{ const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=trackThumb(t); const sp=document.createElement("span"); sp.textContent=t.name+((t.laps||CONFIG.laps)===1?" · 1바퀴":""); const df=document.createElement("i"); df.className="diff"; df.textContent="●".repeat(t.diff||2)+"○".repeat(5-(t.diff||2)); df.style.cssText="font-style:normal;font-size:10px;color:#ff6b6b"; b.append(im,sp,df); b.setAttribute("aria-pressed",String(i===(amHost?selTrack:htr))); b.disabled=!amHost;
-    b.onclick=()=>{ selTrack=i; try{localStorage.setItem("kartrebuild.track",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpTracks").appendChild(b); });
+  $m("mpTracks").innerHTML=""; for(const grp of trackGroups()){ const hd=document.createElement("div"); hd.className="cat-h"; hd.innerHTML=grp.n+" <small>"+grp.d+"</small>"; $m("mpTracks").appendChild(hd); grp.L.forEach(i=>{ const t=TRACKS[i]; const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=trackThumb(t); const sp=document.createElement("span"); sp.textContent=t.name+((t.laps||CONFIG.laps)===1?" · 1바퀴":""); const df=document.createElement("i"); df.className="diff"; df.textContent="●".repeat(t.diff||2)+"○".repeat(5-(t.diff||2)); df.style.cssText="font-style:normal;font-size:10px;color:#ff6b6b"; b.append(im,sp,df); b.setAttribute("aria-pressed",String(i===(amHost?selTrack:htr))); b.disabled=!amHost;
+    b.onclick=()=>{ selTrack=i; try{localStorage.setItem("kartrebuild.track",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpTracks").appendChild(b); }); }
   $m("mpKarts").innerHTML=""; KARTS.forEach((k,i)=>{ const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=safeThumb(()=>carThumb(k,CHARS[selChar],i===selKart?selColor:0)); const t=document.createElement("span"); t.textContent=k.name; b.append(im,t); b.setAttribute("aria-pressed",String(i===selKart));
     b.style.position="relative"; b.appendChild(kInfoIcon(k));
     b.onclick=()=>{ selKart=i; try{localStorage.setItem("kartrebuild.kart",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpKarts").appendChild(b); });
