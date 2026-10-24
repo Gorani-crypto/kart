@@ -307,7 +307,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0231</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0237</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -4974,7 +4974,7 @@ function botBump(b,o,now){ if(Math.abs(b.wy-o.y)>3.5||Math.hypot(b.x-o.x,b.z-o.z
 function shellLoss(m){ return clamp(.5/m,.15,.4); } /* 일반·가벼운 차 40%, 1톤 25%, 덤프 15% */
 function shellLat(m){ return clamp(32*Math.pow(1/m,1.2),6,38); } /* 확실히 옆으로 밀려남 */
 function shellSide(x,z,s,n){ const p=s.m.position, off=(x-p.x)*n.x+(z-p.z)*n.z; if(Math.abs(off)>.8) return Math.sign(off); const pv=s.v.x*n.x+s.v.z*n.z; return Math.abs(pv)>3?Math.sign(pv):(Math.random()<.5?-1:1); }
-function botShellHit(b,s){ if(b.shieldT>0) return; b.v*=.3; b.vy=Math.max(b.vy,11); b.y=Math.max(b.y,.15); b.flipT=0; b.flipD=2*11/CONFIG.gravity; b.hitT=1; b.boostT=0; botVoice(b,0); }
+function botShellHit(b,s){ if(b.shieldT>0||(b.y||0)>3.5) return; b.v*=.3; b.vy=Math.max(b.vy,11); b.y=Math.max(b.y,.15); b.flipT=0; b.flipD=2*11/CONFIG.gravity; b.hitT=1; b.boostT=0; botVoice(b,0); }
 function botBitten(b){ const m=b.K.mass||1; if(m>=1.9||b.shieldT>0) return; b.v*=1-clamp(.8-.32*m,.15,.6); b.boostT=0; b.superT=0; bumpFx(b.x,b.wy+1.5,b.z); botVoice(b,0); }
 // 나를 밀어내는 계산 (상대 카트 / AI 봇 공통)
 function bumpMe(o,now){
@@ -5173,8 +5173,8 @@ function flingMe(src,msg,k){ k=k||1; const sg=giantSide(S.x,S.z,src,S.idx), n=TR
 function botFling(b,src,k){ k=k||1; const sg=giantSide(b.x,b.z,src,b.idx); b.v*=k>1?.45:.6; b.vo=sg*34*k; b.vy=Math.max(b.vy,7*k*k); b.y=Math.max(b.y,.05); b.spin=sg*2.4*k*k; b.boostT=0; botVoice(b,0); if(Math.hypot(b.x-S.x,b.z-S.z)<60){ bumpFx(b.x,b.wy+1.5,b.z); thud(); } }
 // 내가(또는 상대가) 꼬리치기를 했을 때: 맞은 쪽이 각자 자기 차를 날림
 function tailHitLocal(x,z,h,rad,srcId){ const src={x,z}; let hit=0;
-  if(srcId!=="me"&&state==="race"&&!S.rail&&tailZone(S.x,S.z,x,z,h,rad,KART.rad||1.15)){ if(S.shieldT>0) toast("보호막이 막았다!","#7fd8ff"); else flingMe(src,"티라노 꼬리에 맞아 날아갔다!",1.4); hit++; }
-  for(const b of BOT.list){ if(b.id===srcId||b.shieldT>0) continue; if(tailZone(b.x,b.z,x,z,h,rad,b.K.rad||1.15)){ botFling(b,src,1.4); hit++; } } return hit; }
+  if(srcId!=="me"&&state==="race"&&!S.rail&&!meHigh()&&tailZone(S.x,S.z,x,z,h,rad,KART.rad||1.15)){ if(S.shieldT>0) toast("보호막이 막았다!","#7fd8ff"); else flingMe(src,"티라노 꼬리에 맞아 날아갔다!",1.4); hit++; }
+  for(const b of BOT.list){ if(b.id===srcId||b.shieldT>0||(b.y||0)>3.5) continue; if(tailZone(b.x,b.z,x,z,h,rad,b.K.rad||1.15)){ botFling(b,src,1.4); hit++; } } return hit; }
 function trexTail(){
   if(FX.cool>0||state!=="race") return; FX.cool=10; S.biteT=.6; thud(); S.shake=Math.max(S.shake,.3); toast("꼬리치기!","#ffcf2e");
   const R=KART.rad||2.4; let hit=tailHitLocal(S.x,S.z,S.h,R,"me");
@@ -5907,7 +5907,8 @@ function mpGhost(peer,pr,map){ map=map||MP.ghosts;
 function mpClearGhosts(){ for(const g of MP.ghosts.values()) scene.remove(g.obj); MP.ghosts.clear(); }
 
 // 포탄에 맞음: 가벼울수록 크게 들썩이고 포탄 방향으로 날아가며 느려짐, 무거우면 살짝 들썩하고 그대로
-function shellHitMe(s){ if(S.shieldT>0){ toast("보호막이 막았다!","#7fd8ff"); return; } voice("bad"); const hv=Math.hypot(s.v.x,s.v.z)||1, dx=s.v.x/hv, dz=s.v.z/hv;
+function meHigh(){ return !!S.flying||(!S.grounded&&S.y-(S.gy>-1e8?S.gy:S.y)>3.5); } /* 일정 높이(3.5) 이상 떠 있으면 포탄·꼬리에 안 맞음 */
+function shellHitMe(s){ if(meHigh()) return; if(S.shieldT>0){ toast("보호막이 막았다!","#7fd8ff"); return; } voice("bad"); const hv=Math.hypot(s.v.x,s.v.z)||1, dx=s.v.x/hv, dz=s.v.z/hv;
   S.vx*=.3; S.vz*=.3; S.vy=Math.max(S.vy,11); S.y+=.2; S.grounded=false; S.drifting=false; S.boostT=0; S.instT=0; S.hitT=1; /* 차 한 대 높이로 한 바퀴 + 약 1초 딜레이 */
   S.flip={t:0,T:2*11/CONFIG.gravity}; S.shake=Math.max(S.shake,.9); toast("포탄 맞음! 공중제비!","#ff7a1a"); if(KART.eject) ejectRider(dx,dz,20); }
 // 부딪힐 때 튀는 별 + 먼지
@@ -6061,6 +6062,13 @@ function render(dt){
   camera.fov=lerp(camera.fov,targetFov,.08); camera.updateProjectionMatrix();
   skyDome.position.set(camera.position.x,0,camera.position.z); if(NIGHT) NIGHT.position.copy(skyDome.position);
   renderer.render(scene,camera);
+  { if(state==="race"&&S.novaT>0) S.mirT=1.5; else S.mirT=Math.max(0,(S.mirT||0)-dt); let mf=document.getElementById("sideMirror"); const on=S.mirT>0&&(state==="race"||state==="finish");
+    if(on){ if(!window.MIRCAM) window.MIRCAM=new THREE.PerspectiveCamera(58,1.8,.5,4000); const mc=MIRCAM, sz=renderer.getSize(new THREE.Vector2()), W=sz.x, H=sz.y, w=Math.round(Math.min(W*.34,340)), h=Math.round(w/1.8), x=W-w-12, top=Math.max(230,Math.round(H*.4)), y=H-top-h;
+      const fx=Math.sin(S.h), fz=Math.cos(S.h); mc.aspect=w/h; mc.updateProjectionMatrix(); mc.position.set(S.x+fx*1.5,S.y+3.2,S.z+fz*1.5); mc.lookAt(S.x-fx*40,S.y-4,S.z-fz*40);
+      const myVis=kart.visible; kart.visible=false; renderer.setScissorTest(true); renderer.setViewport(x,y,w,h); renderer.setScissor(x,y,w,h); renderer.render(scene,mc); renderer.setScissorTest(false); renderer.setViewport(0,0,W,H); kart.visible=myVis;
+      if(!mf){ mf=document.createElement("div"); mf.id="sideMirror"; mf.style.cssText="position:fixed;z-index:25;pointer-events:none;border:4px solid #1a1d2a;border-radius:14px;box-shadow:0 0 0 2px #b48cff,0 6px 18px rgba(0,0,0,.5)"; mf.innerHTML='<span style="position:absolute;left:8px;top:4px;font:900 12px sans-serif;color:#fff;text-shadow:0 1px 3px #000">🪞 사이드 미러</span>'; document.body.appendChild(mf); }
+      mf.hidden=false; mf.style.left=(x-4)+"px"; mf.style.top=(top-4)+"px"; mf.style.width=w+"px"; mf.style.height=h+"px"; }
+    else if(mf) mf.hidden=true; }
 
   $("spd").textContent=Math.round(Math.abs(fsNow)*CONFIG.kmh);
   $("lap").textContent=lap; $("lapTotal").textContent="/"+LAPS();
