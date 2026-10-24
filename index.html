@@ -307,7 +307,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0240</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0241</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -4467,11 +4467,11 @@ function physics(dt, controls){
     for(const ln of TR.launches||[]){ const da=(ln.a-S.idx+N)%N; if(da<5&&S.grounded&&!S.launch&&fs>5){ const g=C.gravity, ya=Y[ln.a], yb=Y[ln.b], hh=Math.max(ln.h,yb-ya+8), vy=Math.sqrt(2*g*hh), t1=vy/g, t2=Math.sqrt(Math.max(.1,2*(ya+hh-yb)/g)), TT=t1+t2, dx=P[ln.b].x-S.x, dz=P[ln.b].z-S.z, D=Math.hypot(dx,dz), vh=D/TT, h=Math.atan2(dx,dz);
         S.launch={vx:dx/D*vh,vz:dz/D*vh,h,t:TT+.3,T:TT+.3}; S.vy=vy; S.y=gy+.3; S.grounded=false; S.air=.01; S.vx=S.launch.vx; S.vz=S.launch.vz; S.h=h; S.drifting=false; gy=-1e9; toast("슈퍼 점프!","#ff4d6d"); thud(); break; } } }
   if(!onB) S.bjB=null; const refNow=(onB&&score<-1)?onB:null; let prevGy=S.gy; if(refNow!==S._ref){ S._ref=refNow; if(Math.abs(gy-prevGy)<1.5) prevGy=gy; } if(prevGy<-1e8&&gy>-1e8&&!S.grounded&&S.y<gy-3) gy=-1e9; /* 틈을 못 건너면 절벽에 막혀 떨어짐 */ S.gy=gy; /* 본선↔지름길 기준이 바뀌는 순간 높이 차로 튀지 않게 */
-  { const wantFly=(state==="race"||state==="finish")&&((S.novaT>0)||(K.hover&&controls&&input.fire&&(S.flyG||0)>.03));
+  { const wantFly=(state==="race"||state==="finish")&&((S.novaT>0)||(K.hover&&controls&&input.fire&&!S.flyLock&&(S.flyG||0)>.03)); if(!input.fire) S.flyLock=false; /* 게이지가 바닥나면 Space를 뗐다 다시 눌러야 다시 뜸 (꾹 누른 채 깡충 비행 방지) */
     if(wantFly){ if(gy>-1e8) S.flyRef=gy; else if(S.flyRef===undefined) S.flyRef=S.y-7;
       if(!S.flying){ S.flying=true; if(S.grounded){ S.grounded=false; S.y=Math.max(S.y,gy>-1e8?gy:S.y)+.3; } if(!(S.novaT>0)) toast("비행!","#7fd8ff"); }
       const tgt=S.flyRef+(S.novaT>0?9:7); S.vy=clamp((tgt-S.y)*4,-10,14); if(!(S.novaT>0)) S.flyG=Math.max(0,(S.flyG||0)-dt); }
-    else { if(S.flying){ S.flying=false; S.flyRef=undefined; if(K.hover&&controls&&input.fire&&!(S.flyG>.03)) toast("비행 게이지 바닥!","#ff7a1a"); } S.vy-=C.gravity*dt*(S.thrustT>0?.3:1); } }
+    else { if(S.flying){ S.flying=false; S.flyRef=undefined; if(K.hover&&controls&&input.fire&&!(S.flyG>.03)){ S.flyLock=true; toast("비행 게이지 바닥!","#ff7a1a"); } } S.vy-=C.gravity*dt*(S.thrustT>0?.3:1); } }
   if(S.thrustT>0) S.thrustT-=dt;
   if(S.chute&&!S.grounded){ const inGap=TR.gapSet&&TR.gapSet.has(S.idx);
     let tv=-Math.max(10,(S.y-gy)*2);
