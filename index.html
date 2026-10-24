@@ -306,7 +306,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0040</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0056</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -458,10 +458,11 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"dozer", name:"불도저", desc:"큰 삽날 달린 무한궤도 불도저 · 느리지만 아주 무거워서 앞을 막는 차를 삽날로 밀어냄 · 부스터 빠르고 4초로 김", speed:1.17, accel:.95, turn:.84, boost:1.4, boostTime:4, gaugeMul:.85, mass:3.1, rad:2.1, ram:1},
   {id:"ringbike", name:"네온 링 바이크", desc:"바퀴살 없이 빛나는 링 바퀴의 미래형 바이크 · 빠르고 가벼움 · 조금 미끄러움(넘어지진 않음)", speed:1.4, accel:1.5, turn:1.12, grip:.85, boost:1.2, mass:.7, fly:1.4},
   {id:"sushi", name:"연어 초밥", desc:"거대한 연어 초밥 위에 올라타 달리는 카트 · 양옆 김말이 · 균형 잡힌 성능, 코너 조금 좋음 · 스모 선수와 시너지", speed:1.32, accel:1.4, turn:1.12, boost:1.23, mass:1.05},
+  {id:"stroller", name:"유모차", desc:"지붕 달린 아기 유모차 · 가볍고 코너를 잘 돎, 최고속도는 조금 낮음 · 자이언트 베이비와 시너지", speed:1.27, accel:1.46, turn:1.24, boost:1.24, mass:.8},
   {id:"horse", name:"질주 말", desc:"달릴수록 네 다리가 힘차게 뛰는 갈색 말 · 빠르고 코너도 잘 돎 · 조금 묵직함", speed:1.34, accel:1.42, turn:1.12, boost:1.22, mass:1.1}
 ];
 // 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
-const SYN={sushi:"sumo",rearcart:"grandpa",tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
+const SYN={ringbike:"neonr",horse:"foal",snake:"lizard",stroller:"baby",trike:"clown",sushi:"sumo",rearcart:"grandpa",tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
 const DUAL_V=400/5.8; // 오렌지 루키 2단 부스터 최고속도
 const SUPER_T=5, SUPER_V=800/5.8, CHUTE_V=500/5.8; // 낙하산 활공: 모든 차 시속 500km // 거인 돌진: 5초, 서서히 올라 4초에 시속 800km
 // 거인 돌진 속도 곡선 (지수적으로 상승): 0초 현재속도 → 2초 500 → 3초 700 → 4초 800km/h 유지
@@ -3856,6 +3857,20 @@ function horseRun(rootObj,dt,v){
   const rim=Lam(0x2a2c33); const wheels=[wheel(root,.85,1.4,.32,rim),wheel(root,-.85,1.4,.32,rim),wheel(root,.85,-1.4,.32,rim),wheel(root,-.85,-1.4,.32,rim)];
   CARS.sushi={paint:[salmon],root,body,wheels,exhaust:[[.4,.5,-2.2],[-.4,.5,-2.2]],shadow:[1.1,2.3],camDist:7.4,tagY:3.6,seat:{pos:[0,0,0],scale:.45,parent:seat}};
 })();
+// 유모차: 접이식 지붕 + 큰 뒷바퀴·작은 앞바퀴 + 손잡이 + 아래 바구니
+(function(){
+  const root=new THREE.Group(), body=new THREE.Group(); root.add(body);
+  const fab=new THREE.MeshStandardMaterial({color:0x8fd3ff,metalness:.05,roughness:.7}), frame=new THREE.MeshStandardMaterial({color:0xd7d9dc,metalness:.6,roughness:.3}), dk=Lam(0x2a2c33), trim=Lam(0xffffff);
+  const tub=new THREE.Mesh(new THREE.BoxGeometry(1.25,.6,1.7),fab); tub.position.set(0,1.0,0); body.add(tub); const seatpad=new THREE.Mesh(new THREE.BoxGeometry(1.1,.08,1.5),Lam(0xfff1d6)); seatpad.position.set(0,1.3,0); body.add(seatpad);
+  const hood=new THREE.Mesh(new THREE.SphereGeometry(.85,20,12,0,Math.PI,0,Math.PI/2),fab); hood.material=fab.clone(); hood.material.side=THREE.DoubleSide; hood.rotation.y=-Math.PI/2; hood.scale.set(1,1.1,.78); hood.position.set(0,1.3,-.55); body.add(hood);
+  for(let k=0;k<3;k++){ const rb=new THREE.Mesh(new THREE.TorusGeometry(.66,.025,6,20,Math.PI),trim); rb.position.set(0,1.3,-.55-k*.18+.18); body.add(rb); }
+  for(const sx of [1,-1]){ cyl(body,.04,2.0,frame,sx*.6,.9,-.1,"z").rotation.x=Math.PI/2+.35; }
+  const handle=cyl(body,.06,1.3,frame,0,1.95,-1.25,"x"); for(const sx of [1,-1]){ const h=cyl(body,.04,1.1,frame,sx*.6,1.5,-1.05); h.rotation.x=-.55; }
+  box(body,1.1,.04,1.2,dk,0,.5,0); for(const sx of [1,-1]) box(body,.04,.3,1.2,dk,sx*.55,.62,0);
+  const rim=Lam(0xffffff); const wheels=[wheel(root,.62,.85,.24,rim),wheel(root,-.62,.85,.24,rim),wheel(root,.64,-.75,.36,rim),wheel(root,-.64,-.75,.36,rim)];
+  const seat=new THREE.Group(); seat.position.set(0,1.32,.15); body.add(seat);
+  CARS.stroller={paint:[fab],root,body,wheels,exhaust:[[0,.6,-1.3]],shadow:[.9,1.6],camDist:6.8,tagY:3.4,seat:{pos:[0,0,0],scale:.5,parent:seat}};
+})();
 // ===== 구렁이 뱀 (몸이 구불구불 물결치며 기어감, 캐릭터는 목 뒤 안장에) =====
 (function(){
   const root=new THREE.Group(), body=new THREE.Group(); root.add(body);
@@ -3976,7 +3991,12 @@ const CHARS=[
   {id:"sausage", name:"소세지 인간", desc:"통통한 소세지 몸, 구운 자국, 꼭지 매듭", helmet:0xd0644a, stripe:0x8a3a28, suit:0xd0644a, glove:0xd0644a, acc:"sausage"},
   {id:"granny", name:"할머니", desc:"하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny"},
   {id:"grandpa", name:"할아버지", desc:"회색 납작모자, 하얀 콧수염과 눈썹, 동그란 안경, 갈색 조끼", helmet:0xf2c79a, stripe:0xf4f4f4, suit:0x8a5a34, glove:0xf2c79a, acc:"grandpa"},
-  {id:"sumo", name:"스모 장사 태산", desc:"일반 캐릭터보다 3배 큰 거구의 스모 선수 · 상투머리, 남색 샅바", helmet:0x1a1a1e, stripe:0x1f2f6b, suit:0xf0c49a, glove:0xf0c49a, acc:"sumo", big:3}
+  {id:"sumo", name:"스모 장사 태산", desc:"일반 캐릭터보다 3배 큰 거구의 스모 선수 · 상투머리, 남색 샅바", helmet:0x1a1a1e, stripe:0x1f2f6b, suit:0xf0c49a, glove:0xf0c49a, acc:"sumo", big:3},
+  {id:"neonr", name:"네온 라이더", desc:"빛나는 하늘색 바이저의 검은 헬멧 · 몸에 네온 줄 · 네온 링 바이크와 시너지", helmet:0x14161e, stripe:0x3ee6ff, suit:0x1c1f2a, glove:0x3ee6ff, acc:"neonr"},
+  {id:"foal", name:"망아지 콩콩", desc:"쫑긋 귀에 큰 눈, 갈기 달린 새끼 말 · 질주 말과 시너지", helmet:0xa86a3a, stripe:0xa86a3a, suit:0xa86a3a, glove:0x3a2414, acc:"foal"},
+  {id:"lizard", name:"도마뱀 인간 리자", desc:"초록 비늘, 노란 세로 눈, 등 가시와 꼬리 · 구렁이 뱀과 시너지", helmet:0x4fa84a, stripe:0x2f7a3a, suit:0x4fa84a, glove:0x2f7a3a, acc:"lizard"},
+  {id:"baby", name:"자이언트 베이비", desc:"2배 크기의 아기 · 머리카락 한 가닥, 쪽쪽이, 턱받이, 기저귀 · 유모차와 시너지", helmet:0xffcfa6, stripe:0xffffff, suit:0xffe4ec, glove:0xffcfa6, acc:"baby", big:2},
+  {id:"clown", name:"광대 삐에로", desc:"하얀 얼굴에 빨간 코, 무지개 곱슬머리, 고깔모자 · 세발 자전거와 시너지", helmet:0xffffff, stripe:0xff3a3a, suit:0xffcf2e, glove:0xffffff, acc:"clown"}
 ];
 function buildRider(ch,pose){
   const dark=Lam(0x2b2f3a), skin=Lam(0xffd9b3), helmM=Lam(ch.helmet), suitM=Lam(ch.suit), gloveM=Lam(ch.glove), stripeM=Lam(ch.stripe);
@@ -3997,7 +4017,7 @@ function buildRider(ch,pose){
   rider.userData.legs=legs;
   const head=new THREE.Group(); head.name="riderHead"; head.position.y=1.35; rider.add(head); rider.userData.head=head;
   const helm=new THREE.Mesh(new THREE.SphereGeometry(.72,24,18),helmM); helm.scale.set(1,.92,1); head.add(helm);
-  if(ch.acc!=="army"&&ch.acc!=="animal"&&ch.acc!=="blackcat"&&ch.acc!=="sausage"&&ch.acc!=="granny"&&ch.acc!=="sumo"){ const stripe=new THREE.Mesh(new THREE.TorusGeometry(.6,.07,8,32,Math.PI),stripeM); stripe.rotation.y=Math.PI/2; stripe.position.y=.12; stripe.scale.set(1.12,1.12,1.12); head.add(stripe); }
+  if(ch.acc!=="army"&&ch.acc!=="animal"&&ch.acc!=="blackcat"&&ch.acc!=="sausage"&&ch.acc!=="granny"&&ch.acc!=="sumo"&&!["neonr","foal","lizard","baby","clown"].includes(ch.acc)){ const stripe=new THREE.Mesh(new THREE.TorusGeometry(.6,.07,8,32,Math.PI),stripeM); stripe.rotation.y=Math.PI/2; stripe.position.y=.12; stripe.scale.set(1.12,1.12,1.12); head.add(stripe); }
   if(ch.acc==="sausage") helm.scale.set(.82,1.4,.82);
   if(ch.acc==="granny"){ helm.scale.set(1.02,.95,.95); helm.position.set(0,.08,-.12); }
   if(ch.acc!=="animal"&&ch.acc!=="blackcat"&&ch.acc!=="sausage"){ const face=new THREE.Mesh(new THREE.SphereGeometry(.5,20,14),skin); face.position.set(0,-.1,.32); face.scale.set(1,.8,.6); head.add(face); }
@@ -4086,6 +4106,47 @@ function buildRider(ch,pose){
     for(const sx of [1,-1]){ const eb=new THREE.Mesh(new THREE.BoxGeometry(.22,.07,.05),helmM); eb.position.set(sx*.19,.13,.64); eb.rotation.z=sx*.2; head.add(eb); }
     const chin=new THREE.Mesh(new THREE.SphereGeometry(.34,14,10),skin); chin.scale.set(1.15,.55,.8); chin.position.set(0,-.4,.3); head.add(chin);
     const mo=new THREE.Mesh(new THREE.BoxGeometry(.18,.035,.03),dark); mo.position.set(0,-.3,.63); head.add(mo); }
+  /* ---- 신규 캐릭터 5종 ---- */
+  const hideFace=()=>{ for(const c of head.children.slice()) if(c!==helm) c.visible=false; };
+  if(ch.acc==="neonr"){ // 네온 라이더: 매끈한 검은 헬멧 + 빛나는 하늘색 바이저 + 몸에 네온 줄
+    const glow=new THREE.MeshBasicMaterial({color:0x3ee6ff}); hideFace();
+    const vis=new THREE.Mesh(new THREE.SphereGeometry(.73,24,12,-Math.PI*.12,Math.PI*.76,Math.PI*.36,Math.PI*.2),glow); vis.geometry.computeBoundingBox(); { const c=vis.geometry.boundingBox.getCenter(new THREE.Vector3()); vis.rotation.y=-Math.atan2(c.x,c.z); } head.add(vis);
+    const fin=new THREE.Mesh(new THREE.BoxGeometry(.06,.3,.9),glow); fin.position.set(0,.66,-.1); head.add(fin);
+    for(const sx of [1,-1]){ const ln=new THREE.Mesh(new THREE.BoxGeometry(.04,.7,.05),glow); ln.position.set(sx*.22,.48,.36); rider.add(ln); }
+    const belt=new THREE.Mesh(new THREE.TorusGeometry(.43,.03,6,24),glow); belt.rotation.x=Math.PI/2; belt.position.y=.22; rider.add(belt); }
+  if(ch.acc==="foal"){ // 새끼 말: 갈색 머리 + 긴 주둥이 + 큰 눈 + 쫑긋 귀 + 갈기
+    hideFace(); const coat=helmM, dk=Lam(0x3a2414), wh=Lam(0xf4efe6);
+    const sn=new THREE.Mesh(new THREE.SphereGeometry(.38,16,12),coat); sn.scale.set(.9,.8,1.35); sn.position.set(0,-.22,.62); head.add(sn);
+    const nose=new THREE.Mesh(new THREE.SphereGeometry(.26,14,10),wh); nose.scale.set(1,.7,.8); nose.position.set(0,-.28,1.0); head.add(nose);
+    for(const sx of [1,-1]){ const ns=new THREE.Mesh(new THREE.SphereGeometry(.04,6,5),dk); ns.position.set(sx*.09,-.25,1.2); head.add(ns);
+      const ey=new THREE.Mesh(new THREE.SphereGeometry(.12,12,10),Lam(0x1a1210)); ey.position.set(sx*.32,.12,.5); head.add(ey); const hl=new THREE.Mesh(new THREE.SphereGeometry(.04,6,5),wh); hl.position.set(sx*.35,.17,.6); head.add(hl);
+      const ear=new THREE.Mesh(new THREE.ConeGeometry(.13,.42,8),coat); ear.position.set(sx*.3,.72,-.05); ear.rotation.z=-sx*.25; head.add(ear); }
+    for(let k=0;k<5;k++){ const m=new THREE.Mesh(new THREE.BoxGeometry(.12,.28,.2),dk); m.position.set(0,.66-k*.06,-.15-k*.16); m.rotation.x=-.5; head.add(m); }
+    const bl=new THREE.Mesh(new THREE.BoxGeometry(.14,.32,.06),wh); bl.position.set(0,.3,.68); head.add(bl); }
+  if(ch.acc==="lizard"){ // 도마뱀 인간: 초록 비늘 머리 + 길쭉한 주둥이 + 노란 세로 눈 + 등 가시 + 꼬리
+    hideFace(); const sc=helmM, sc2=Lam(0x2f7a3a), bel=Lam(0xe8d98a), yel=new THREE.MeshBasicMaterial({color:0xffe14d}), blk=Lam(0x111111);
+    const sn=new THREE.Mesh(new THREE.SphereGeometry(.42,16,12),sc); sn.scale.set(.95,.6,1.5); sn.position.set(0,-.2,.6); head.add(sn);
+    const jaw=new THREE.Mesh(new THREE.SphereGeometry(.36,14,10),bel); jaw.scale.set(.85,.35,1.3); jaw.position.set(0,-.38,.6); head.add(jaw);
+    for(const sx of [1,-1]){ const ey=new THREE.Mesh(new THREE.SphereGeometry(.14,12,10),yel); ey.position.set(sx*.3,.36,.48); head.add(ey); const pu=new THREE.Mesh(new THREE.BoxGeometry(.04,.18,.04),blk); pu.position.set(sx*.32,.36,.61); head.add(pu); }
+    const tg=new THREE.Mesh(new THREE.BoxGeometry(.06,.02,.4),Lam(0xe8344a)); tg.position.set(0,-.32,1.1); head.add(tg);
+    for(let k=0;k<5;k++){ const sp=new THREE.Mesh(new THREE.ConeGeometry(.09,.3,5),sc2); sp.position.set(0,.68-k*.08,.1-k*.2); sp.rotation.x=-.4; head.add(sp); }
+    for(let k=0;k<4;k++){ const sp=new THREE.Mesh(new THREE.ConeGeometry(.07,.22,5),sc2); sp.position.set(0,.8-k*.15,-.38); sp.rotation.x=-.6; rider.add(sp); }
+    const tail=new THREE.Mesh(new THREE.ConeGeometry(.18,1.2,8),sc); tail.rotation.x=-1.9; tail.position.set(0,.1,-.75); rider.add(tail); }
+  if(ch.acc==="baby"){ // 자이언트 베이비: 민머리에 머리카락 한 가닥 + 큰 볼 + 쪽쪽이 + 턱받이 + 기저귀
+    const bskin=Lam(0xffcfa6);
+    const curl=new THREE.Mesh(new THREE.TorusGeometry(.12,.035,6,16,Math.PI*1.6),Lam(0x8a5a30)); curl.position.set(0,.8,.1); head.add(curl);
+    for(const sx of [1,-1]){ const ey=new THREE.Mesh(new THREE.SphereGeometry(.1,12,10),Lam(0x2b2f3a)); ey.scale.set(1,1.15,.5); ey.position.set(sx*.2,-.02,.64); head.add(ey); const hl=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),Lam(0xffffff)); hl.position.set(sx*.2+.03,.03,.69); head.add(hl); const ck=new THREE.Mesh(new THREE.SphereGeometry(.13,12,10),Lam(0xff9a9a)); ck.scale.set(1.2,.7,.4); ck.position.set(sx*.42,-.28,.52); head.add(ck); const ear=new THREE.Mesh(new THREE.SphereGeometry(.14,10,8),bskin); ear.position.set(sx*.72,0,0); head.add(ear); }
+    const pc=new THREE.Mesh(new THREE.TorusGeometry(.1,.03,6,16),Lam(0x3ec6ff)); pc.position.set(0,-.3,.72); head.add(pc); const sh=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.05,16),Lam(0x9fdcff)); sh.rotation.x=Math.PI/2; sh.position.set(0,-.3,.68); head.add(sh);
+    const bib=new THREE.Mesh(new THREE.CircleGeometry(.32,20,Math.PI,Math.PI),Lam(0xffffff)); bib.position.set(0,.82,.4); rider.add(bib);
+    const dp=new THREE.Mesh(new THREE.SphereGeometry(.46,16,12),Lam(0xf8f8ff)); dp.scale.set(1.05,.6,1); dp.position.y=.12; rider.add(dp); }
+  if(ch.acc==="clown"){ // 광대: 하얀 얼굴 + 빨간 코 + 무지개 곱슬 머리 + 고깔모자 + 주름 칼라
+    helm.visible=false; for(const c of head.children) if(c.material===skin) c.material=Lam(0xffffff);
+    const nose=new THREE.Mesh(new THREE.SphereGeometry(.13,12,10),Lam(0xe8202a)); nose.position.set(0,-.12,.72); head.add(nose);
+    const sm=new THREE.Mesh(new THREE.TorusGeometry(.18,.035,6,16,Math.PI),Lam(0xe8202a)); sm.position.set(0,-.3,.6); sm.rotation.z=Math.PI; head.add(sm);
+    const col=[0xff3a3a,0xffcf2e,0x3cc46a,0x3a86ff,0xb388ff]; for(let k=0;k<10;k++){ const a=k/10*Math.PI*2, puff=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),Lam(col[k%5])); puff.position.set(Math.cos(a)*.62,.18,Math.sin(a)*.5-.12); head.add(puff); }
+    const hat=new THREE.Mesh(new THREE.ConeGeometry(.3,.75,16),Lam(0x3a86ff)); hat.position.set(0,.85,0); hat.rotation.z=.15; head.add(hat); const pom=new THREE.Mesh(new THREE.SphereGeometry(.11,10,8),Lam(0xffcf2e)); pom.position.set(-.08,1.24,0); head.add(pom);
+    for(let k=0;k<12;k++){ const a=k/12*Math.PI*2, r=new THREE.Mesh(new THREE.ConeGeometry(.12,.22,6),Lam(k%2?0xffffff:0xff3a3a)); r.position.set(Math.cos(a)*.42,.86,Math.sin(a)*.42); r.rotation.set(Math.sin(a)*1.4,0,-Math.cos(a)*1.4); rider.add(r); }
+    for(const sx of [1,-1]){ const st=new THREE.Mesh(new THREE.BoxGeometry(.03,.14,.02),Lam(0x3a86ff)); st.position.set(sx*.17,.05,.7); head.add(st); } }
   if(ch.big){ const outer=new THREE.Group(); rider.scale.setScalar(ch.big); outer.add(rider); outer.userData=rider.userData; return outer; } /* 거대 캐릭터: 안쪽에서만 키워서 자리·애니메이션은 그대로 */
   return rider;
 }
@@ -5128,7 +5189,7 @@ const CARVO={
   bike:["부릉부릉~ 1등은 내 자리!","헬멧 끈 꽉 매라!","이 맛에 두 바퀴 탄다!"],
   giant:["쿵! 쿵! 쿵! 1등이다!","돌은 굴러가면 못 멈춘다!","산도 내 뒤에 있다!"],
   rearcart:["리어카 나가신다~ 비켜라!","이 할애비 아직 쌩쌩해!","배추 떨어진다, 조심혀!"],
-  volt:["소리 없이 빠르게~","충전 완료! 출발!","전기의 힘을 보여주마!"], ruby:["바람 맞으며 달린다~","지붕 열고 한 바퀴!","빨간 차가 제일 빨라!"], storm:["윙 펼치고 간다!","폭풍처럼 지나간다!","다운포스 최고!"], panther:["어둠 속의 파란 눈빛!","으르렁! 비켜라!","검은 표범 출격!"], dozer:["삽날 내려간다~ 비켜!","공사 중! 길 막지 마라!","다 밀어버린다!"], ringbike:["빛의 속도로!","링이 빛난다~","네온 길을 남기고 간다!"], horse:["이랴! 달려라!","히이잉~ 비켜라!","말발굽 소리 들리지?"], sushi:["신선한 연어 배달이요~","와사비 맛 좀 볼래?","초밥은 속도가 생명!"],
+  volt:["소리 없이 빠르게~","충전 완료! 출발!","전기의 힘을 보여주마!"], ruby:["바람 맞으며 달린다~","지붕 열고 한 바퀴!","빨간 차가 제일 빨라!"], storm:["윙 펼치고 간다!","폭풍처럼 지나간다!","다운포스 최고!"], panther:["어둠 속의 파란 눈빛!","으르렁! 비켜라!","검은 표범 출격!"], dozer:["삽날 내려간다~ 비켜!","공사 중! 길 막지 마라!","다 밀어버린다!"], ringbike:["빛의 속도로!","링이 빛난다~","네온 길을 남기고 간다!"], horse:["이랴! 달려라!","히이잉~ 비켜라!","말발굽 소리 들리지?"], stroller:["응애! 비켜라~","유모차도 빠르다!","까꿍! 1등이다!"], sushi:["신선한 연어 배달이요~","와사비 맛 좀 볼래?","초밥은 속도가 생명!"],
   trike:["따릉따릉~ 비켜주세요!","페달 밟는 다리가 안 보이지?","작다고 무시하지 마!"],
   gt:["썬더 GT 출격! 비켜비켜~","코너는 이렇게 도는 거야!","노란 번개 지나간다!"],
   nova:["미래에서 왔다! 슈웅~","날개 펴고 간다!","중력? 잠깐 꺼둘게!"],
@@ -5398,7 +5459,7 @@ function updateMyTag(){ if(typeof MP==="undefined"||!MP||typeof kart==="undefine
   const nm=cleanName(MP.nick); if(!nm) return; myTag=mpTag(nm,hexCol(CHAR.helmet)); myTag.position.y=(CAR.tagY||(CAR.giant?9.6:CAR.id==="tank"?4.4:3.1))+(CHAR.big&&!CAR.giant?2.6:0); kart.add(myTag); }
 // 차량 설명 말풍선: 썸네일 오른쪽 위 ⓘ 에 마우스를 올리거나(폰은 누르면) 표시
 const KTIP={blue:"균형형 · 모든 능력이 무난함",gold:"최고속도형 · 가속·조향은 조금 둔함",kart:"가벼움 · 부스터 중 한 번 더 = 2단 부스터 400km",scoot:"가속·조향 최고 · 가장 가벼움",tank:"무거움 · 포물선 포탄 (약 40m)",
-  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",rearcart:"최고 301km · 무겁지만 엄청 빠름",volt:"가속 최고 · 전기 오픈카",ruby:"코너 최고 · 균형형 컨버터블",storm:"최고속도 높음 · 조향 조금 둔함",panther:"부스터 강함 · 조금 묵직함",dozer:"아주 무거움 · 삽날로 밀어냄 · 긴 부스터",ringbike:"빠르고 가벼움 · 조금 미끄러움",horse:"빠르고 코너 좋음 · 다리로 달림",sushi:"균형형 · 코너 조금 좋음 · 스모와 시너지",trike:"휠체어급 성능 · 작고 민첩",gt:"미드십 스포츠카 · 보통 성능",nova:"미래형 호버 레이서 · 보통 성능",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"부스터 = 순간 450km 급가속 → 점점 감속",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
+  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",rearcart:"최고 301km · 무겁지만 엄청 빠름",volt:"가속 최고 · 전기 오픈카",ruby:"코너 최고 · 균형형 컨버터블",storm:"최고속도 높음 · 조향 조금 둔함",panther:"부스터 강함 · 조금 묵직함",dozer:"아주 무거움 · 삽날로 밀어냄 · 긴 부스터",ringbike:"빠르고 가벼움 · 조금 미끄러움",horse:"빠르고 코너 좋음 · 다리로 달림",sushi:"균형형 · 코너 조금 좋음 · 스모와 시너지",stroller:"가볍고 코너 좋음 · 자이언트 베이비와 시너지",trike:"휠체어급 성능 · 작고 민첩",gt:"미드십 스포츠카 · 보통 성능",nova:"미래형 호버 레이서 · 보통 성능",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"부스터 = 순간 450km 급가속 → 점점 감속",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
 function kInfoIcon(k){ const s=document.createElement("span"); s.className="kinfo"; s.textContent="i"; s.setAttribute("aria-label",k.name+" 설명");
   const show=()=>{ let t=document.getElementById("kTip"); if(!t){ t=document.createElement("div"); t.id="kTip"; document.body.appendChild(t); }
     t.innerHTML=""; const b=document.createElement("b"); b.textContent=k.name; const d=document.createElement("div"); d.className="one"; d.textContent=KTIP[k.id]||k.desc||""; t.append(b,d);
