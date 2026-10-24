@@ -307,7 +307,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0145</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0151</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -1722,9 +1722,9 @@ function decorateOsaka(tr){
   nmParticles(tr,500,0xffc8e0,3,0,160,false);
   /* 지붕·처마에서 떨어지면: 아래 다른 길로 넘어가지 않고, 떨어진 그 길 위로 돌아옴 */
   { let good=-1, goodY=0, cd=0;
-    tr.anim.push(()=>{ if(TR!==tr||state!=="race") { good=-1; return; } if(cd>0){ cd--; return; } const i=S.idx;
+    tr.anim.push(()=>{ if(TR!==tr||state!=="race") { good=-1; return; } if(cd>0){ cd--; return; } const i=S.idx; if(S.launch){ good=-1; return; } /* 큰 점프 중·직후엔 지붕 기준을 지워서 착지 후 되돌아가지 않게 */
       if(S.grounded&&!S.launch&&Math.abs(S.y-Y[i])<2.5&&flag[i]!==6&&!(tr.holeSet&&tr.holeSet.has(i))){ good=i; goodY=Y[i]; return; }
-      if(good>=0&&!S.launch&&goodY>15&&S.y<goodY-9){ const k=good, t=T[k]; S.x=P[k].x; S.z=P[k].z; S.y=Y[k]+1.5; S.gy=Y[k]; S.vy=0; S.vx=t.x*6; S.vz=t.z*6; S.h=Math.atan2(t.x,t.z); S.idx=k; S.prog=k; S.drifting=false; S.grounded=false; S.boostT=0; cd=20; toast("떨어졌다! 그 자리에서 다시 출발","#ff9ec8"); } }); }
+      if(good>=0&&!S.launch&&goodY>15&&S.y<goodY-9&&Math.abs(i-good)<90){ const k=good, t=T[k]; S.x=P[k].x; S.z=P[k].z; S.y=Y[k]+1.5; S.gy=Y[k]; S.vy=0; S.vx=t.x*6; S.vz=t.z*6; S.h=Math.atan2(t.x,t.z); S.idx=k; S.prog=k; S.drifting=false; S.grounded=false; S.boostT=0; cd=20; toast("떨어졌다! 그 자리에서 다시 출발","#ff9ec8"); } }); }
   { const n0=g.children.length; cornerArrows(tr,"#ffcf4a"); const hid=[]; for(let i=0;i<N;i+=2) if(flag[i]===6) hid.push(P[i]);
     for(const o of g.children.slice(n0)){ const p=o.position; let dh=1e9; for(const q of hid) dh=Math.min(dh,Math.hypot(q.x-p.x,q.z-p.z)); if(dh<HW+12&&nmRoadD(tr,p.x,p.z)>-1){ let dv=1e9; for(let i=0;i<N;i+=2) if(flag[i]!==6) dv=Math.min(dv,Math.hypot(P[i].x-p.x,P[i].z-p.z)); if(dv>dh) o.visible=false; } } }
   portalSign(tr,24,"재팬 오사카 성 · 출발","#ffb7d5",14);
