@@ -306,7 +306,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0029</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0031</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -457,10 +457,11 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"panther", name:"블랙 팬서", desc:"파란 눈빛의 검정 슈퍼카 · 부스터가 강하고 조금 묵직함", speed:1.31, accel:1.36, turn:1.04, boost:1.27, mass:1.1},
   {id:"dozer", name:"불도저", desc:"큰 삽날 달린 무한궤도 불도저 · 느리지만 아주 무거워서 앞을 막는 차를 삽날로 밀어냄 · 부스터 빠르고 4초로 김", speed:1.17, accel:.95, turn:.84, boost:1.4, boostTime:4, gaugeMul:.85, mass:3.1, rad:2.1, ram:1},
   {id:"ringbike", name:"네온 링 바이크", desc:"바퀴살 없이 빛나는 링 바퀴의 미래형 바이크 · 빠르고 가벼움 · 조금 미끄러움(넘어지진 않음)", speed:1.4, accel:1.5, turn:1.12, grip:.85, boost:1.2, mass:.7, fly:1.4},
+  {id:"sushi", name:"연어 초밥", desc:"거대한 연어 초밥 위에 올라타 달리는 카트 · 양옆 김말이 · 균형 잡힌 성능, 코너 조금 좋음 · 스모 선수와 시너지", speed:1.32, accel:1.4, turn:1.12, boost:1.23, mass:1.05},
   {id:"horse", name:"질주 말", desc:"달릴수록 네 다리가 힘차게 뛰는 갈색 말 · 빠르고 코너도 잘 돎 · 조금 묵직함", speed:1.34, accel:1.42, turn:1.12, boost:1.22, mass:1.1}
 ];
 // 차·캐릭터 시너지: 어울리는 조합이면 속도·가속·조향 +4%
-const SYN={rearcart:"grandpa",tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
+const SYN={sushi:"sumo",rearcart:"grandpa",tank:"major",kart:"dotori",bike:"rider",chair:"granny",roach:"kkwak",truck:"sausage",blue:"bori",scoot:"kkami"};
 const DUAL_V=400/5.8; // 오렌지 루키 2단 부스터 최고속도
 const SUPER_T=5, SUPER_V=800/5.8, CHUTE_V=500/5.8; // 낙하산 활공: 모든 차 시속 500km // 거인 돌진: 5초, 서서히 올라 4초에 시속 800km
 // 거인 돌진 속도 곡선 (지수적으로 상승): 0초 현재속도 → 2초 500 → 3초 700 → 4초 800km/h 유지
@@ -3832,6 +3833,29 @@ function horseRun(rootObj,dt,v){
   if(H.neck) H.neck.rotation.x=Math.sin(u.ph*2)*A*.12; if(H.tail) H.tail.rotation.x=.3+Math.sin(u.ph*2+1)*A*.3;
   const bd=H.neck&&H.neck.parent; if(bd) bd.position.y=Math.abs(Math.sin(u.ph))*A*.25;
 }
+// 스시 카트: 거대한 연어 초밥 위에 타고 달림 · 양옆 김말이 · 와사비 · 생강
+(function(){
+  const root=new THREE.Group(), body=new THREE.Group(); root.add(body);
+  const salmon=new THREE.MeshStandardMaterial({color:0xff8a4c,metalness:.05,roughness:.45}), rice=Lam(0xfbf8f0), stripe=Lam(0xffe2cc), nori=Lam(0x1a2a1e), wasabi=Lam(0x8fc84a), ginger=Lam(0xffb3c1), wood=Lam(0xc8925a), dark=Lam(0x6a4a2a);
+  /* 나무 받침(게타) */
+  box(body,1.9,.18,4.2,wood,0,.42,0); for(const z of [1.5,-1.5]) box(body,1.7,.22,.3,dark,0,.24,z);
+  /* 밥 */
+  const r1=new THREE.Mesh(new THREE.SphereGeometry(.8,16,12),rice); r1.scale.set(1.05,.75,2.1); r1.position.set(0,1.05,0); body.add(r1);
+  for(let k=0;k<26;k++){ const g=new THREE.Mesh(new THREE.SphereGeometry(.09,6,5),rice); const a=Math.random()*Math.PI*2, z=(Math.random()-.5)*2.6; g.position.set(Math.cos(a)*.72,1.05+Math.sin(a)*.5,z); body.add(g); }
+  /* 연어 한 장 (살짝 휘어 덮음) + 흰 줄무늬 */
+  const sl=new THREE.Group(); sl.position.set(0,1.55,0); body.add(sl);
+  for(let k=0;k<7;k++){ const u=(k-3)/3, seg=new THREE.Mesh(new THREE.BoxGeometry(1.75,.22,.62),salmon); seg.position.set(0,-Math.abs(u)*.12,u*1.65); seg.rotation.x=-u*.12; sl.add(seg); }
+  for(let k=0;k<6;k++){ const st=new THREE.Mesh(new THREE.BoxGeometry(1.77,.05,.09),stripe); st.position.set(0,.12,-1.6+k*.62); st.rotation.y=.35; sl.add(st); }
+  /* 양옆 김말이 */
+  for(const sx of [1,-1]){ const m=new THREE.Group(); m.position.set(sx*1.12,.85,.3); body.add(m); const roll=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,1.6,16),nori); roll.rotation.x=Math.PI/2; m.add(roll);
+    for(const z of [.81,-.81]){ const fc=new THREE.Mesh(new THREE.CircleGeometry(.36,16),rice); fc.position.z=z; fc.rotation.y=z>0?0:Math.PI; m.add(fc); const fill=new THREE.Mesh(new THREE.CircleGeometry(.14,10),salmon); fill.position.z=z+(z>0?.01:-.01); fill.rotation.y=fc.rotation.y; m.add(fill); } }
+  /* 와사비 · 생강 */
+  const ws=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),wasabi); ws.scale.set(1,.7,1); ws.position.set(.45,.68,1.85); body.add(ws);
+  for(let k=0;k<3;k++){ const g=new THREE.Mesh(new THREE.CylinderGeometry(.26,.26,.05,12),ginger); g.position.set(-.45,.6+k*.06,1.8-k*.05); g.rotation.set(.3,0,.2*k); body.add(g); }
+  const seat=new THREE.Group(); seat.position.set(0,1.75,-.35); body.add(seat);
+  const rim=Lam(0x2a2c33); const wheels=[wheel(root,.85,1.4,.32,rim),wheel(root,-.85,1.4,.32,rim),wheel(root,.85,-1.4,.32,rim),wheel(root,-.85,-1.4,.32,rim)];
+  CARS.sushi={paint:[salmon],root,body,wheels,exhaust:[[.4,.5,-2.2],[-.4,.5,-2.2]],shadow:[1.1,2.3],camDist:7.4,tagY:3.6,seat:{pos:[0,0,0],scale:.45,parent:seat}};
+})();
 // ===== 구렁이 뱀 (몸이 구불구불 물결치며 기어감, 캐릭터는 목 뒤 안장에) =====
 (function(){
   const root=new THREE.Group(), body=new THREE.Group(); root.add(body);
@@ -5104,7 +5128,7 @@ const CARVO={
   bike:["부릉부릉~ 1등은 내 자리!","헬멧 끈 꽉 매라!","이 맛에 두 바퀴 탄다!"],
   giant:["쿵! 쿵! 쿵! 1등이다!","돌은 굴러가면 못 멈춘다!","산도 내 뒤에 있다!"],
   rearcart:["리어카 나가신다~ 비켜라!","이 할애비 아직 쌩쌩해!","배추 떨어진다, 조심혀!"],
-  volt:["소리 없이 빠르게~","충전 완료! 출발!","전기의 힘을 보여주마!"], ruby:["바람 맞으며 달린다~","지붕 열고 한 바퀴!","빨간 차가 제일 빨라!"], storm:["윙 펼치고 간다!","폭풍처럼 지나간다!","다운포스 최고!"], panther:["어둠 속의 파란 눈빛!","으르렁! 비켜라!","검은 표범 출격!"], dozer:["삽날 내려간다~ 비켜!","공사 중! 길 막지 마라!","다 밀어버린다!"], ringbike:["빛의 속도로!","링이 빛난다~","네온 길을 남기고 간다!"], horse:["이랴! 달려라!","히이잉~ 비켜라!","말발굽 소리 들리지?"],
+  volt:["소리 없이 빠르게~","충전 완료! 출발!","전기의 힘을 보여주마!"], ruby:["바람 맞으며 달린다~","지붕 열고 한 바퀴!","빨간 차가 제일 빨라!"], storm:["윙 펼치고 간다!","폭풍처럼 지나간다!","다운포스 최고!"], panther:["어둠 속의 파란 눈빛!","으르렁! 비켜라!","검은 표범 출격!"], dozer:["삽날 내려간다~ 비켜!","공사 중! 길 막지 마라!","다 밀어버린다!"], ringbike:["빛의 속도로!","링이 빛난다~","네온 길을 남기고 간다!"], horse:["이랴! 달려라!","히이잉~ 비켜라!","말발굽 소리 들리지?"], sushi:["신선한 연어 배달이요~","와사비 맛 좀 볼래?","초밥은 속도가 생명!"],
   trike:["따릉따릉~ 비켜주세요!","페달 밟는 다리가 안 보이지?","작다고 무시하지 마!"],
   gt:["썬더 GT 출격! 비켜비켜~","코너는 이렇게 도는 거야!","노란 번개 지나간다!"],
   nova:["미래에서 왔다! 슈웅~","날개 펴고 간다!","중력? 잠깐 꺼둘게!"],
@@ -5374,7 +5398,7 @@ function updateMyTag(){ if(typeof MP==="undefined"||!MP||typeof kart==="undefine
   const nm=cleanName(MP.nick); if(!nm) return; myTag=mpTag(nm,hexCol(CHAR.helmet)); myTag.position.y=(CAR.tagY||(CAR.giant?9.6:CAR.id==="tank"?4.4:3.1))+(CHAR.big&&!CAR.giant?2.6:0); kart.add(myTag); }
 // 차량 설명 말풍선: 썸네일 오른쪽 위 ⓘ 에 마우스를 올리거나(폰은 누르면) 표시
 const KTIP={blue:"균형형 · 모든 능력이 무난함",gold:"최고속도형 · 가속·조향은 조금 둔함",kart:"가벼움 · 부스터 중 한 번 더 = 2단 부스터 400km",scoot:"가속·조향 최고 · 가장 가벼움",tank:"무거움 · 포물선 포탄 (약 40m)",
-  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",rearcart:"최고 301km · 무겁지만 엄청 빠름",volt:"가속 최고 · 전기 오픈카",ruby:"코너 최고 · 균형형 컨버터블",storm:"최고속도 높음 · 조향 조금 둔함",panther:"부스터 강함 · 조금 묵직함",dozer:"아주 무거움 · 삽날로 밀어냄 · 긴 부스터",ringbike:"빠르고 가벼움 · 조금 미끄러움",horse:"빠르고 코너 좋음 · 다리로 달림",trike:"휠체어급 성능 · 작고 민첩",gt:"미드십 스포츠카 · 보통 성능",nova:"미래형 호버 레이서 · 보통 성능",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"부스터 = 순간 450km 급가속 → 점점 감속",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
+  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",rearcart:"최고 301km · 무겁지만 엄청 빠름",volt:"가속 최고 · 전기 오픈카",ruby:"코너 최고 · 균형형 컨버터블",storm:"최고속도 높음 · 조향 조금 둔함",panther:"부스터 강함 · 조금 묵직함",dozer:"아주 무거움 · 삽날로 밀어냄 · 긴 부스터",ringbike:"빠르고 가벼움 · 조금 미끄러움",horse:"빠르고 코너 좋음 · 다리로 달림",sushi:"균형형 · 코너 조금 좋음 · 스모와 시너지",trike:"휠체어급 성능 · 작고 민첩",gt:"미드십 스포츠카 · 보통 성능",nova:"미래형 호버 레이서 · 보통 성능",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"부스터 = 순간 450km 급가속 → 점점 감속",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
 function kInfoIcon(k){ const s=document.createElement("span"); s.className="kinfo"; s.textContent="i"; s.setAttribute("aria-label",k.name+" 설명");
   const show=()=>{ let t=document.getElementById("kTip"); if(!t){ t=document.createElement("div"); t.id="kTip"; document.body.appendChild(t); }
     t.innerHTML=""; const b=document.createElement("b"); b.textContent=k.name; const d=document.createElement("div"); d.className="one"; d.textContent=KTIP[k.id]||k.desc||""; t.append(b,d);
