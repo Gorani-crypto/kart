@@ -307,7 +307,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0214</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0219</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -1715,8 +1715,22 @@ function decorateOsaka(tr){
     nmInst(tr,new THREE.CylinderGeometry(.35,.55,1,6),Lam(0x4a2e22),trunk); [0xffb7d5,0xffd6ea,0xff9ec8].forEach((c,k)=>nmInst(tr,new THREE.DodecahedronGeometry(1,1),new THREE.MeshBasicMaterial({color:c}),crown[k]));
     const pet=[]; for(let k=0;k<400;k++){ const a=rnd()*6.28, r=rnd()*HR; pet.push([HC[0]+Math.cos(a)*r,hy(HC[0]+Math.cos(a)*r,HC[1]+Math.sin(a)*r)+.1,HC[1]+Math.sin(a)*r,rnd()*6,1]); } nmInst(tr,new THREE.CircleGeometry(.6,5).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffc8e0,side:THREE.DoubleSide}),pet); }
   /* 처마 길 가 붉은 난간 기둥 + 등불 */
-  { const ps=[], lt=[]; for(const zk of ["roof","top"]) for(const i of nmFz(tr,Z[zk])) if(i%3===0) for(const sd of [1,-1]){ const p=P[i].clone().addScaledVector(NR[i],sd*(WS(i)+1.4)); ps.push([p.x,Y[i]+1,p.z,0,1,0,0,2]); if(i%9===0) lt.push([p.x,Y[i]+2.6,p.z,0,1]); }
+  { const ps=[], lt=[]; for(const zk of ["roof","top"]) for(const i of nmFz(tr,Z[zk])) if(i%3===0&&!tr.noWall.has(i)) for(const sd of [1,-1]){ const p=P[i].clone().addScaledVector(NR[i],sd*(WS(i)+1.4)); ps.push([p.x,Y[i]+1,p.z,0,1,0,0,2]); if(i%9===0) lt.push([p.x,Y[i]+2.6,p.z,0,1]); }
     nmInst(tr,new THREE.BoxGeometry(.5,1,.5),Lam(0xb8242a),ps); nmInst(tr,new THREE.SphereGeometry(.7,8,6),new THREE.MeshBasicMaterial({color:0xff9a5a}),lt); }
+  /* 떨어질 수 있는 처마: 기둥·등불 없이 부서진 난간 조각 + 낭떠러지 주의 표지판 */
+  if(tr.noWall.size){ const red=Lam(0xb8242a), dk=Lam(0x5a1a14), wood=Lam(0x6a4a2c), stub=[], beam=[], chip=[], R=rnd;
+    const idx=[...tr.noWall].sort((a,b)=>a-b), runs=[]; let cur=[]; for(const i of idx){ if(cur.length&&i!==cur[cur.length-1]+1){ runs.push(cur); cur=[]; } cur.push(i); } if(cur.length) runs.push(cur);
+    for(const i of idx) if(i%4===0) for(const sd of [1,-1]){ const p=P[i].clone().addScaledVector(NR[i],sd*(WS(i)+1.4)), r=R();
+      if(r<.45){ const h=.25+R()*.55; stub.push([p.x,Y[i]+h/2,p.z,R()*3,1,(R()-.5)*.6,(R()-.5)*.6,h]); } /* 부러진 기둥 밑동 */
+      else if(r<.6){ const a=Math.atan2(T[i].x,T[i].z)+(R()-.5)*1.2; beam.push([p.x,Y[i]+.18,p.z,a,1,(R()-.5)*.3,(R()-.5)*.3,1]); } /* 바닥에 쓰러진 난간대 */
+      for(let k=0;k<2;k++) if(R()<.5) chip.push([p.x+(R()-.5)*1.6,Y[i]+.08,p.z+(R()-.5)*1.6,R()*6,1,R()*2,R()*2,1]); } /* 나뭇조각 */
+    nmInst(tr,new THREE.BoxGeometry(.5,1,.5),red,stub); nmInst(tr,new THREE.BoxGeometry(.28,.28,3.2),dk,beam); nmInst(tr,new THREE.BoxGeometry(.5,.12,.18),wood,chip);
+    const sc=document.createElement("canvas"); sc.width=256; sc.height=256; { const x=sc.getContext("2d"); x.fillStyle="#ffcf1a"; x.beginPath(); x.moveTo(128,8); x.lineTo(250,226); x.lineTo(6,226); x.closePath(); x.fill(); x.lineWidth=14; x.strokeStyle="#1a1a1a"; x.stroke(); x.fillStyle="#1a1a1a"; x.font="900 120px sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText("!",128,150); }
+    const pc=document.createElement("canvas"); pc.width=256; pc.height=96; { const x=pc.getContext("2d"); x.fillStyle="#ffcf1a"; x.fillRect(0,0,256,96); x.fillStyle="#1a1a1a"; for(let k=-2;k<12;k++){ x.beginPath(); x.moveTo(k*28,0); x.lineTo(k*28+14,0); x.lineTo(k*28-14,16); x.lineTo(k*28-28,16); x.fill(); x.beginPath(); x.moveTo(k*28,80); x.lineTo(k*28+14,80); x.lineTo(k*28-14,96); x.lineTo(k*28-28,96); x.fill(); } x.font="900 44px sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText("낭떠러지 주의",128,49); }
+    const triM=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sc),transparent:true,side:THREE.DoubleSide}), plM=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(pc),side:THREE.DoubleSide}), poleM=Lam(0x9a9a9a);
+    const sign=(i,sd)=>{ const t=T[i], p=P[i].clone().addScaledVector(NR[i],sd*(WS(i)-.6)), g=new THREE.Group(); g.position.set(p.x,Y[i],p.z); g.rotation.y=Math.atan2(t.x,t.z)+Math.PI;
+      const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,3.2,6),poleM); pole.position.y=1.6; g.add(pole); const tri=new THREE.Mesh(new THREE.PlaneGeometry(1.9,1.9),triM); tri.position.y=3.3; g.add(tri); const pl=new THREE.Mesh(new THREE.PlaneGeometry(2.4,.9),plM); pl.position.y=2.0; g.add(pl); nmAdd(tr,g); };
+    for(const run of runs){ const i0=run[0]; portalSign(tr,(i0-12+N)%N,"⚠ 낭떠러지 주의 · 난간 없음","#ffcf1a",12); for(let k=0;k<run.length;k+=45){ const i=run[k]; sign(i,1); sign(i,-1); } } }
   /* 배경 마을 지붕 · 먼 산 */
   for(const [x,z] of nmSpots(tr,70,{min:40,max:500,pad:450})){ if(inCastle(x,z,30)) continue; const w=12+rnd()*14, h=6+rnd()*8, b=new THREE.Mesh(new THREE.BoxGeometry(w,h,w*.8),new THREE.MeshBasicMaterial({color:0x2a2a3a})); b.position.set(x,h/2,z); nmAdd(tr,b); const r=new THREE.Mesh(new THREE.ConeGeometry(w*.8,5,4),Lam(0x1a2a3a)); r.position.set(x,h+2.5,z); r.rotation.y=Math.PI/4; nmAdd(tr,r); const wl=new THREE.Mesh(new THREE.PlaneGeometry(w*.5,h*.4),new THREE.MeshBasicMaterial({color:0xffcf7a})); wl.position.set(x,h*.5,z+w*.41); nmAdd(tr,wl); }
   nmParticles(tr,500,0xffc8e0,3,0,160,false);
@@ -1857,7 +1871,7 @@ function buildTrack(def){
   }
   if(tr.narrow){ const gc=new THREE.Color(def.ground!==undefined?def.ground:0x6fbf5a), gc2=gc.clone().offsetHSL(0,0,-.04), wc=new THREE.Color(def.wall?def.wall[0]:0xd8d0c2), wc2=wc.clone().offsetHSL(0,0,-.05);
     group.add(ribbon(P,NR,Y,true,i=>HWi(i)+1.4,HW+1.7,.075,i=>WS[i]<.999||WS[(i+1)%N]<.999?(Y[i]>.4?((Math.floor(i/5)%2)?wc:wc2):((Math.floor(i/5)%2)?gc:gc2)):null));
-    const pm=Lam(0xf4f4f4), pr=Lam(0xe8344a); for(let k=0;k<tr.narrow.n;k+=9){ const i=(tr.narrow.a+k)%N; if(WS[i]>.97) continue; for(const sd of [1,-1]){ const q=P[i].clone().addScaledVector(NR[i],sd*(HWi(i)+5)); const c=new THREE.Mesh(new THREE.ConeGeometry(.7,2.2,8),(k/9)%2?pm:pr); c.position.set(q.x,Y[i]+1.1,q.z); group.add(c); } } }
+    const pm=Lam(0xf4f4f4), pr=Lam(0xe8344a); for(let k=0;k<tr.narrow.n;k+=9){ const i=(tr.narrow.a+k)%N; if(WS[i]>.97||(def.id==="osaka"&&noWall.has(i))) continue; for(const sd of [1,-1]){ const q=P[i].clone().addScaledVector(NR[i],sd*(HWi(i)+5)); const c=new THREE.Mesh(new THREE.ConeGeometry(.7,2.2,8),(k/9)%2?pm:pr); c.position.set(q.x,Y[i]+1.1,q.z); group.add(c); } } }
   /* 재미 요소 표시 */
   { const padT=(()=>{ const c=document.createElement("canvas"); c.width=64; c.height=64; const x=c.getContext("2d"); x.fillStyle="#0b3a52"; x.fillRect(0,0,64,64); x.fillStyle="#3ee6ff"; for(let k=0;k<3;k++){ x.beginPath(); x.moveTo(8,52-k*18); x.lineTo(32,36-k*18); x.lineTo(56,52-k*18); x.lineTo(56,60-k*18); x.lineTo(32,44-k*18); x.lineTo(8,60-k*18); x.fill(); } return new THREE.CanvasTexture(c); })();
     const pm=new THREE.MeshBasicMaterial({map:padT,transparent:true,opacity:.95}); tr.padMats=pm;
@@ -6032,7 +6046,7 @@ function render(dt){
     const base=CONFIG.maxSpeed*KART.speed;
     if(CAR.near){ S.zoomT=(state==="race"||state==="finish")?Math.min(1,(S.zoomT||0)+dt/1.2):0; } const zz=CAR.near?(S.zoomT*S.zoomT*(3-2*S.zoomT)):0, cD=CAR.near?lerp(CAR.camDist,CAR.near.d,zz):CAR.camDist, cH=CAR.near?lerp(CAR.camH,CAR.near.h,zz):(CAR.camH||CAM_H), cL=CAR.near?lerp(CAR.lookY,CAR.near.l,zz):(CAR.lookY||.9);
     const dist=cD*gmCamK()+clamp(fsNow/base,0,1.4)*.9;
-    const tx=F_.x-Math.sin(cam.yaw)*dist, tz=F_.z-Math.cos(cam.yaw)*dist;
+    const lagC=S.rail?0:.06, tx=F_.x-Math.sin(cam.yaw)*dist+S.vx*lagC, tz=F_.z-Math.cos(cam.yaw)*dist+S.vz*lagC; /* 빠를수록 카메라가 뒤처져 멀어지던 것 보정 */
     const k=1-Math.exp(-(S.rail?24:10)*dt);
     cam.x=lerp(cam.x,tx,k); cam.z=lerp(cam.z,tz,k); cam.y=lerp(cam.y,F_.y+cH*gmCamK(),1-Math.exp(-6*dt));
     S.shake*=Math.exp(-8*dt);
@@ -6043,7 +6057,7 @@ function render(dt){
   if(CAR.giant||CAR.titan){ heatTick(myHeat,CAR.root,S.superT>0,dt,S.x,S.y,S.z); } myMeteor.scale.setScalar(CAR.titan?7:1);
   if(myMeteor.parent!==kart) kart.add(myMeteor); meteorUpd(myMeteor,S.superT>0?Math.max(.08,sprog):0,dt); if(sprog>0) meteorEmbers(S.x,S.y,S.z,S.h,sprog,S.vx,S.vz);
   if(sprog>0) S.shake=Math.max(S.shake,.04+.3*sprog*sprog);
-  const targetFov=70+(S.rail?16:S.superT>0?4+26*sprog*sprog:S.boostT>0?9:S.instT>0?3:0)+12*(S.kick||0);
+  const targetFov=70+(S.rail?16:S.superT>0?4+16*sprog*sprog:S.novaT>0?8:S.boostT>0?5:S.instT>0?2:0)+12*(S.kick||0);
   camera.fov=lerp(camera.fov,targetFov,.08); camera.updateProjectionMatrix();
   skyDome.position.set(camera.position.x,0,camera.position.z); if(NIGHT) NIGHT.position.copy(skyDome.position);
   renderer.render(scene,camera);
