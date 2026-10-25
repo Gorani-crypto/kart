@@ -308,7 +308,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-1028</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-1031</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -449,7 +449,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"bike", name:"슈퍼바이크", desc:"가장 빠르지만 잘 미끄러지고 덜 꺾여서 다루기 어려움. 벽·무거운 차에 부딪히면 사람이 날아가서 걸어가 다시 타야 함", speed:1.89, accel:1.6, turn:1.06, grip:.72, boost:1.14, mass:.7, eject:true},
   {id:"snake", name:"구렁이 뱀", desc:"구불구불 기어가는 뱀 · 코너를 가장 잘 돔 · 가볍고 미끄러지듯 달림", speed:1.31, accel:1.36, turn:1.32, boost:1.2, mass:.9, fly:1.2},
   {id:"jet", name:"제트 로드스터", desc:"능력카 · 비행: Space(비행 버튼)를 누르고 있는 동안 공중에 떠서 날아감 · 비행 게이지는 땅에서 달려야 참 (2초 주행 = 1초 비행, 10초 달리면 꽉 차서 최대 5초 비행) · 부스터 쓰면 옆으로 한 바퀴 회전", hover:true, speed:1.27714, accel:1.4, turn:1.05, boost:1.22426, mass:1},
-  {id:"nova", name:"노바 스러스터", desc:"능력카 · 폭격 비행: 부스터 쓰면 4초 동안 공중으로 날아오르며 시속 470km · 0.5초마다 포탄을 자동으로 떨어뜨림 (한 번에 8발) · 대신 부스터 게이지가 가장 느리게 참", speed:1.3, accel:1.35, turn:1.05, boost:1.2425, mass:1, nova:true, gaugeMul:.15},
+  {id:"nova", name:"노바 스러스터", desc:"능력카 · 폭격 비행: 부스터 쓰면 4초 동안 공중으로 날아오르며 시속 500km · 0.5초마다 포탄을 자동으로 떨어뜨림 (한 번에 8발) · 대신 부스터 게이지가 가장 느리게 참", speed:1.3, accel:1.35, turn:1.05, boost:1.2425, mass:1, nova:true, gaugeMul:.15},
   {id:"gt", name:"썬더 GT", desc:"낮고 넓은 미드십 스포츠카 · 큰 리어윙 · 빠르고 코너도 잘 도는 보통 성능", speed:1.33, accel:1.4, turn:1.08, boost:1.2322, mass:.95},
   {id:"trike", name:"세발 자전거", desc:"앞바퀴 페달을 열심히 밟는 어린이 세발자전거 · 휠체어급 성능 · 작고 민첩", speed:1.27, accel:1.4, turn:1.25, boost:1.235, mass:.8},
   {id:"rearcart", name:"리어카", desc:"할아버지가 끄는 짐 가득 리어카 · 최고속도 301km · 묵직하지만 엄청 빠름", speed:1.4133, accel:1.05, turn:.85, boost:1.2791, mass:1.4, driftEff:.7, driftDrag:.1},
@@ -4303,7 +4303,7 @@ function physics(dt, controls){
   const brake=controls&&input.brake, accel=controls&&!brake&&(input.accel||touchMode);
   if(controls&&!accel&&(S.boostT>0||S.instT>0||S.stackT>0||S.superT>0||S.novaT>0)){ S.boostT=0; S.instT=0; S.stackT=0; S.superT=0; S.novaT=0; } if(controls&&!accel){ S.padT=0; S.padHold=0; } /* 전진키를 떼면 부스터가 끊김 */
   const boosting=S.boostT>0||S.instT>0, ground=S.grounded||!!S.flying; /* 비행 중에도 땅처럼 가속·조향 */
-  const roadMax=S.novaT>0?470/C.kmh:S.superT>0?superRamp(SUPER_T-S.superT,S.superV0||30):S.stackT>0?DUAL_V:S.boostT>0?(gmM===1?base*(K.boost||C.boostRatio):base+base/gmM*((K.boost||C.boostRatio)-1)):(S.instT>0?(gmM===1?base*C.instRatio:base+base/gmM*(C.instRatio-1)):base);
+  const roadMax=S.novaT>0?500/C.kmh:S.superT>0?superRamp(SUPER_T-S.superT,S.superV0||30):S.stackT>0?DUAL_V:S.boostT>0?(gmM===1?base*(K.boost||C.boostRatio):base+base/gmM*((K.boost||C.boostRatio)-1)):(S.instT>0?(gmM===1?base*C.instRatio:base+base/gmM*(C.instRatio-1)):base);
   let gf=1; if(S.offroad){ const gc=C.grassCurve, t=S.grassT; gf=gc[gc.length-1][1];
     for(let k=0;k<gc.length-1;k++){ if(t<gc[k+1][0]){ gf=lerp(gc[k][1],gc[k+1][1],(t-gc[k][0])/(gc[k+1][0]-gc[k][0])); break; } } }
   const inSlow=TR.slowSet&&TR.slowSet.size&&S.grounded&&TR.slowSet.has(S.idx)&&!(S.boostT>0||S.superT>0); const max=roadMax*gf*(inSlow?.6:1);
@@ -4311,7 +4311,7 @@ function physics(dt, controls){
   if(ground){
     if(accel&&!boosting&&fs<max) fs=Math.min(max, fs+C.accel*K.accel*(S.spdMul||1)*(1-Math.pow(Math.max(0,fs)/max,2))*dt+.4*dt);
     if(S.superT>0&&fs<max) fs=Math.min(max, fs+400*dt); /* 곡선을 그대로 따라감 */
-    else if(S.novaT>0&&fs<max) fs=Math.min(max, fs+260*dt); /* 노바 폭격 비행: 470km까지 */
+    else if(S.novaT>0&&fs<max) fs=Math.min(max, fs+260*dt); /* 노바 폭격 비행: 500km까지 */
     else if(S.boostT>0&&fs<max) fs=Math.min(max, fs+C.boostAccel*K.accel*dt);
     else if(S.instT>0&&fs<max) fs=Math.min(max, fs+C.instAccel*K.accel*dt);
     if(brake){ if(fs>0) fs-=C.brake*dt; else fs=Math.max(fs-C.accel*.6*dt,-C.reverseMax); }
@@ -4372,7 +4372,7 @@ function physics(dt, controls){
     const tap=edge("accel")||(touchMode&&edge("boost"));
     if(controls&&tap&&fs>8){S.instT=C.instTime;S.instWin=0;usedTap=true;toast("순간 부스터!","#ffcf2e"); warp(false);} }
   if(K.noBoost){ S.items=0; S.gauge=0; }
-  if(controls&&!usedTap&&edge("boost")&&S.items>0&&!K.noBoost){S.items--; if(K.nova){ S.novaT=4; S.boostT=4; S.novaDrop=0; S.novaN=0; toast("노바 폭격 비행! 470km","#b48cff"); S.shake=Math.max(S.shake,.4); } else if(K.superBoost){ S.boostT=SUPER_T; S.superT=SUPER_T; toast("거인 돌진!","#ff7a1a"); S.superV0=Math.max(25,Math.hypot(S.vx,S.vz)); S.shake=Math.max(S.shake,.6); thud(); } else if(K.thrust){ S.boostT=K.boostTime||C.boostTime; fs=Math.max(fs,base*(K.boost||C.boostRatio)*1.12); if(S.grounded){ S.vy=Math.max(S.vy,7); S.grounded=false; S.y+=.2; } S.thrustT=1.4; S.shake=Math.max(S.shake,.4); toast("공기 분사! 떠올라 활공","#b48cff"); }
+  if(controls&&!usedTap&&edge("boost")&&S.items>0&&!K.noBoost){S.items--; if(K.nova){ S.novaT=4; S.boostT=4; S.novaDrop=0; S.novaN=0; toast("노바 폭격 비행! 500km","#b48cff"); S.shake=Math.max(S.shake,.4); } else if(K.superBoost){ S.boostT=SUPER_T; S.superT=SUPER_T; toast("거인 돌진!","#ff7a1a"); S.superV0=Math.max(25,Math.hypot(S.vx,S.vz)); S.shake=Math.max(S.shake,.6); thud(); } else if(K.thrust){ S.boostT=K.boostTime||C.boostTime; fs=Math.max(fs,base*(K.boost||C.boostRatio)*1.12); if(S.grounded){ S.vy=Math.max(S.vy,7); S.grounded=false; S.y+=.2; } S.thrustT=1.4; S.shake=Math.max(S.shake,.4); toast("공기 분사! 떠올라 활공","#b48cff"); }
     else if(K.burst){ fs=Math.max(fs,K.burst/C.kmh); S.padT=1; S.padV=K.burst/C.kmh; S.padHold=0; S.padRate=1/1.6; toast("급가속! "+K.burst+"km","#7ae8ff"); }
     else if(K.dual&&S.boostT>0){ const bt=K.boostTime||C.boostTime; S.stackT=bt; S.boostT=Math.max(S.boostT,bt); toast("2단 부스터! 시속 400km","#ff4fd8"); S.shake=Math.max(S.shake,.35); } else { S.boostT=K.boostTime||C.boostTime; toast("부스터!","#3ee6ff"); if(K.id==="jet"){ S.barrelT=S.barrelD=S.boostT; } } warp(true);}
   if(S.novaT>0){ S.novaDrop-=dt; if(S.novaDrop<=0&&(S.novaN||0)<8){ S.novaDrop+=.5; S.novaN=(S.novaN||0)+1; novaBomb(); } } S.novaT=Math.max(0,S.novaT-dt); S.stackT=Math.max(0,S.stackT-dt); S.superT=Math.max(0,S.superT-dt); S.boostT=Math.max(0,S.boostT-dt); S.instT=Math.max(0,S.instT-dt);
@@ -5497,11 +5497,11 @@ function updateMyTag(){ if(typeof MP==="undefined"||!MP||typeof kart==="undefine
   const nm=cleanName(MP.nick); if(!nm) return; myTag=mpTag(nm,hexCol(CHAR.helmet)); myTag.position.y=(CAR.tagY||(CAR.giant?9.6:CAR.id==="tank"?4.4:3.1))+(CHAR.big&&!CAR.giant?2.6:0); kart.add(myTag); }
 // 차량 설명 말풍선: 썸네일 오른쪽 위 ⓘ 에 마우스를 올리거나(폰은 누르면) 표시
 const KTIP={blue:"균형형 · 모든 능력이 무난함",gold:"최고속도형 · 가속·조향은 조금 둔함",kart:"가벼움 · 부스터 중 한 번 더 = 2단 부스터 400km",scoot:"가속·조향 최고 · 가장 가벼움",tank:"무거움 · 포물선 포탄 (약 40m)",
-  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",rearcart:"최고 301km · 무겁지만 엄청 빠름",volt:"가속 최고 · 전기 오픈카",ruby:"코너 최고 · 균형형 컨버터블",storm:"최고속도 높음 · 조향 조금 둔함",panther:"부스터 강함 · 조금 묵직함",dozer:"아주 무거움 · 삽날로 밀어냄 · 긴 부스터",ringbike:"빠르고 가벼움 · 조금 미끄러움",horse:"빠르고 코너 좋음 · 다리로 달림",sushi:"균형형 · 코너 조금 좋음 · 스모와 시너지",stroller:"가볍고 코너 좋음 · 자이언트 베이비와 시너지",trike:"휠체어급 성능 · 작고 민첩",gt:"미드십 스포츠카 · 보통 성능",nova:"부스터 = 4초 폭격 비행 470km · 포탄 8발 자동 투하",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"Space 꾹 = 비행 · 달린 시간의 절반만큼 날 수 있음 (최대 5초)",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
+  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",rearcart:"최고 301km · 무겁지만 엄청 빠름",volt:"가속 최고 · 전기 오픈카",ruby:"코너 최고 · 균형형 컨버터블",storm:"최고속도 높음 · 조향 조금 둔함",panther:"부스터 강함 · 조금 묵직함",dozer:"아주 무거움 · 삽날로 밀어냄 · 긴 부스터",ringbike:"빠르고 가벼움 · 조금 미끄러움",horse:"빠르고 코너 좋음 · 다리로 달림",sushi:"균형형 · 코너 조금 좋음 · 스모와 시너지",stroller:"가볍고 코너 좋음 · 자이언트 베이비와 시너지",trike:"휠체어급 성능 · 작고 민첩",gt:"미드십 스포츠카 · 보통 성능",nova:"부스터 = 4초 폭격 비행 500km · 포탄 8발 자동 투하",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"Space 꾹 = 비행 · 달린 시간의 절반만큼 날 수 있음 (최대 5초)",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
 function kInfoIcon(k){ const s=document.createElement("span"); s.className="kinfo"; s.textContent="i"; s.setAttribute("aria-label",k.name+" 설명");
   const show=()=>{ let t=document.getElementById("kTip"); if(!t){ t=document.createElement("div"); t.id="kTip"; document.body.appendChild(t); }
     t.innerHTML=""; const b=document.createElement("b"); b.textContent=k.name; const d=document.createElement("div"); d.className="one"; d.textContent=KTIP[k.id]||k.desc||""; t.append(b,d);
-    const KM=CONFIG.maxSpeed*CONFIG.kmh, base=q=>q.speed*KM, top=q=>q.superBoost?800:q.nova?470:q.dual?400:q.speed*(q.boost||CONFIG.boostRatio)*KM;
+    const KM=CONFIG.maxSpeed*CONFIG.kmh, base=q=>q.speed*KM, top=q=>q.superBoost?800:q.nova?500:q.dual?400:q.speed*(q.boost||CONFIG.boostRatio)*KM;
     const stats=[["기본속도","#ffb36b",base,v=>Math.round(v)+"km"],["최고속도","#ff4d3a",top,v=>Math.round(v)+"km"],["가속",'#ffcf2e',q=>q.accel],["조향","#46e08a",q=>q.turn],["게이지 충전","#3ee6ff",q=>q.gaugeMul||1,v=>v===1?"보통":"×"+v],["부스터 시간","#7fd8ff",q=>q.superBoost?SUPER_T:(q.boostTime||CONFIG.boostTime),v=>v+"초"],["무게","#b98cff",q=>q.mass||1,v=>String(v)]];
     for(const [lab,col,fn,fmtv] of stats){ const vals=KARTS.map(fn).filter(v=>v<900), lo=Math.min(...vals), hi=Math.max(...vals), v=fn(k), p=v>=900?1:.15+.85*(v-lo)/((hi-lo)||1);
       const row=document.createElement("div"); row.className="bar"; const l=document.createElement("span"); l.textContent=lab; const tr=document.createElement("i"), fl=document.createElement("em"); fl.style.width=Math.round(Math.min(1,p)*100)+"%"; fl.style.background=col; tr.appendChild(fl); row.append(l,tr);
