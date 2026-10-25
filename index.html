@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-2240</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1026-0145</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -1925,7 +1925,14 @@ function decorateTerra(tr){ const n0=tr.group.children.length; decorateStreet(tr
     const roof=new THREE.Mesh(new THREE.CylinderGeometry(span/2,span/2,z1-z0,40,1,true,-Math.PI/2,Math.PI),new THREE.MeshBasicMaterial({color:0xcfe6ff,transparent:true,opacity:.18,side:THREE.DoubleSide,depthWrite:false})); roof.rotation.x=Math.PI/2; roof.rotation.z=Math.PI/2; roof.scale.set(1,1,.32); roof.position.set(cx,0,(z0+z1)/2); nmAdd(tr,roof); }
   /* 터널 3곳 */
   for(const c of D.covers||[]){ if(c[0]==="tunnel") caveCover(tr,coverIdx(tr,c),{rock:0x6f7480,rock2:0x5d626e,in1:0x4f545e,in2:0x454a54,crystal:0xffd27a,name:"갱도 터널",signCol:"#ffb45a"});
-    if(c[0]==="gate") caveCover(tr,coverIdx(tr,c),{rock:0x9a9488,rock2:0x86806f,in1:0x6f6a60,in2:0x5f5a52,crystal:0xff4a3a,name:"성문 터널",signCol:"#ff6a4a"}); }
+    if(c[0]==="gate"){ const idx=coverIdx(tr,c), i=idx[idx.length>>1], p=P[i], n=NR[i], y=Y[i], grp=new THREE.Group(), stone=Lam(0x9a9488), red=Lam(0xb8332a), roofM=Lam(0x3a3f4a);
+      const L=Math.max(14,idx.length*1.3);
+      for(const sd of [1,-1]){ const tw=new THREE.Mesh(new THREE.BoxGeometry(10,16,L),stone); tw.position.set(sd*(HW+6),8,0); grp.add(tw); }
+      const top=new THREE.Mesh(new THREE.BoxGeometry(2*HW+22,5,L),stone); top.position.y=18.5; grp.add(top);
+      for(let k=-3;k<=3;k++){ const mer=new THREE.Mesh(new THREE.BoxGeometry(3,2.4,L),stone); mer.position.set(k*(2*HW+18)/6,22.2,0); grp.add(mer); }
+      const hall=new THREE.Mesh(new THREE.BoxGeometry(2*HW,7,L*.7),red); hall.position.y=24.5; grp.add(hall);
+      const rf=new THREE.Mesh(new THREE.CylinderGeometry(HW*.75,HW*1.5,5,4),roofM); rf.rotation.y=Math.PI/4; rf.scale.z=L/(HW*2.2); rf.position.y=30.5; grp.add(rf);
+      grp.position.set(p.x,y,p.z); grp.rotation.y=Math.atan2(T[i].x,T[i].z); nmAdd(tr,grp); } }
   /* 운하 (출발 직선 옆 물 + 돌 둑) */
   { const a=near(...D.canal[0]), b=near(...D.canal[1]), idx=[]; for(let i=Math.min(a,b)-40;i<=Math.max(a,b)+10;i++) idx.push((i+N)%N);
     nmStrip(tr,idx,HW+4,HW+14,-.35,new THREE.MeshBasicMaterial({color:0x3a8ad8,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}),8,false);
@@ -2162,6 +2169,14 @@ function buildTrack(def){
           if(ch) o.instanceMatrix.needsUpdate=true; return; }
         if(small(o.geometry,o.matrixWorld)&&vtx(o.geometry,o.matrixWorld)) kill.push(o); }); }
     for(const o of kill){ tr.cleaned.push([Math.round(o.position.x),Math.round(o.position.z),o.geometry.type]); if(o.parent) o.parent.remove(o); } }
+  /* 출발→도착 코스: 숨겨진 되돌아가는 길(출발점 근처) 위에 놓인 장식은 지움 */
+  if(def.p2p&&tr.hole){ const hs=new Set(); { let i=tr.hole.a; for(let k=0;k<N&&i!==tr.hole.b;k++){ hs.add(i); i=(i+1)%N; } }
+    const nearIdx=(x,z)=>{ let bi=0,bd=1e9,vd=1e9; for(let i=0;i<N;i+=2){ const d=(P[i].x-x)**2+(P[i].z-z)**2; if(d<bd){bd=d;bi=i;} if(!hs.has(i)&&d<vd) vd=d; } return [Math.sqrt(vd)>HW+45?bi:-1,Math.sqrt(bd)]; };
+    const bx=new THREE.Box3(), ct=new THREE.Vector3(), rm=[];
+    for(const c of group.children.slice(n0dec)){ if(c.userData.onRoad||c.isInstancedMesh) continue; bx.setFromObject(c); if(bx.isEmpty()) continue; bx.getCenter(ct); const sz=bx.getSize(new THREE.Vector3()); if(Math.max(sz.x,sz.z)>200) continue; const [bi]=nearIdx(ct.x,ct.z); if(hs.has(bi)) rm.push(c); }
+    for(const c of rm) group.remove(c);
+    for(const im of group.children){ if(!im.isInstancedMesh) continue; const m4=new THREE.Matrix4(), v=new THREE.Vector3(), zero=new THREE.Matrix4().makeScale(0,0,0); let ch=false; for(let k=0;k<im.count;k++){ im.getMatrixAt(k,m4); v.setFromMatrixPosition(m4); const [bi]=nearIdx(v.x,v.z); if(hs.has(bi)){ im.setMatrixAt(k,zero); ch=true; } } if(ch) im.instanceMatrix.needsUpdate=true; }
+    tr.retClean=rm.length; }
   // 전차 포탄에 부서지는 소품 목록 (작은 물체만)
   tr.props=[]; const bx=new THREE.Box3(), sz=new THREE.Vector3(), ct=new THREE.Vector3();
   for(const o of group.children){ if(o.userData.noProp) continue; bx.setFromObject(o); if(bx.isEmpty()) continue; bx.getSize(sz); const m=Math.max(sz.x,sz.y,sz.z); if(m>(def.propMax||26)) continue; bx.getCenter(ct); if(ct.y>(def.propYMax||30)) continue;
