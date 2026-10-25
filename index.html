@@ -233,6 +233,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 #mpTracks .th-wrap>.th-tabs button{flex:0 0 40px;border-radius:12px;padding:0 10px;text-align:left;justify-content:flex-start}#mpTracks .th-wrap>.th-tabs button[aria-pressed="true"]{background:#ffcf2e;color:#1b1f33;border-color:#ffcf2e}#mpTracks .th-maps>button{border-radius:12px;padding:6px}
 .kt-tabs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;position:sticky;top:0;z-index:2;background:#0d1533;padding:4px 0 6px}.kt-tabs button{font:800 13px var(--body,sans-serif);color:var(--ink,#fff);background:rgba(255,255,255,.06);border:2px solid var(--panel-line,#2a3a6a);border-radius:999px;padding:6px 12px;cursor:pointer}.kt-tabs button[aria-pressed="true"]{border-color:#ffcf2e;background:rgba(255,207,46,.16);color:#ffcf2e}.kt-tabs button small{opacity:.7;font-weight:700;margin-left:3px}.kt-tabs .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#ffcf2e;margin-left:4px;vertical-align:middle}.mp-sheet .mp-pick .kt-tabs button{width:auto}#kartOpts{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:186px;max-height:calc(186px*3 + 8px*3 + 52px)!important}#kartOpts .kt-tabs{grid-row:auto;height:auto;align-self:start}#kartOpts .opt{height:186px;overflow:hidden;gap:3px}#kartOpts .opt .thumb{aspect-ratio:2;object-fit:cover;border-radius:6px}#kartOpts .opt b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#kartOpts .opt>span:not(.stat):not(.bar){display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;line-height:1.35}#kartOpts .opt .stat{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mp-sheet #mpKarts{grid-template-columns:repeat(4,minmax(0,1fr))}#mpLobby .card{width:min(1120px,100%)}.mp-pick .kt-tabs{background:#101a3a}.mp-pick .kt-tabs button{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:2px!important;width:auto!important;padding:6px 12px!important;border-radius:999px!important}.mp-sheet-card{width:min(1000px,100%)!important}@media (max-width:640px){#kartOpts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 #mpTracks .th-wrap{grid-template-columns:170px minmax(0,1fr)}.th-wrap>.th-tabs button,#mpTracks .th-wrap>.th-tabs button{flex:0 0 60px!important;height:60px;width:100%!important;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;font-size:15px!important;padding:0 12px!important;border-radius:14px!important}.th-wrap>.th-tabs{max-height:258px!important;gap:6px}.th-wrap::before{top:250px!important}#mpTracks .th-maps{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-rows:206px;max-height:420px!important;gap:8px}#mpTracks .th-maps>button{width:auto!important;height:206px;justify-content:flex-start;padding:6px!important}#mpTracks .th-maps>button img{width:100%!important;height:146px!important;object-fit:cover;border-radius:10px}#mpTracks .th-maps>button span{font-size:13px}@media (max-width:640px){#mpTracks .th-wrap{grid-template-columns:110px minmax(0,1fr)}.th-wrap>.th-tabs button,#mpTracks .th-wrap>.th-tabs button{flex-basis:52px!important;height:52px;font-size:13px!important;padding:0 8px!important}.th-wrap>.th-tabs{max-height:226px!important}.th-wrap::before{top:218px!important}#mpTracks .th-maps{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:150px;max-height:308px!important}#mpTracks .th-maps>button{height:150px}#mpTracks .th-maps>button img{height:96px!important}}
+#menu .card{width:min(1120px,100%)}#menu #botInfo{display:none}.solo-room .mp-sec{font-weight:800}#soSheet .mp-sheet-card{width:min(1000px,100%)}#soSheet .pick{margin:0}.solo-room>.row .btn{font-size:16px;padding:9px 16px}
 </style>
 
 <canvas id="game"></canvas>
@@ -308,15 +309,22 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-1031</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-1035</div>
     <h1>카트 리빌드</h1>
-    <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
-    <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
-    <div class="rankBox" id="rankMenu"></div>
-    <div class="pick"><div class="pick-label">카트</div><div class="opts" id="kartOpts"></div></div>
-    <div class="pick"><div class="pick-label">캐릭터</div><div class="opts" id="charOpts"></div></div>
-    <div class="pick"><div class="pick-label">차 색상</div><div class="swatches" id="colorOpts"></div></div>
-    <div class="keys" id="keyhelp">
+    <div class="mp-room solo-room">
+      <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
+      <div class="mp-grid" id="soList"></div>
+      <div class="mp-bar4"><button class="btn" id="startBtn">출발!</button><button class="btn ghost so-open" data-pane="kart" type="button">🏎️ 카트<small id="soSumK"></small></button><button class="btn ghost so-open" data-pane="char" type="button">🙂 캐릭터<small id="soSumC"></small></button><button class="btn ghost so-open" data-pane="color" type="button">🎨 색상<small id="soSumL"></small></button></div>
+      <div class="mp-bar3"><button class="btn ghost so-open" data-pane="track" type="button">🗺️ 트랙<small id="soSumT"></small></button><button class="btn ghost so-open" data-pane="mode" type="button">🎮 모드<small id="soSumM"></small></button><button class="btn ghost so-open" data-pane="keys" type="button">⌨️ 조작법<small>키 안내</small></button></div>
+      <div class="mp-bar3"><button class="btn ghost" id="botAddBtn" type="button">🤖 AI 추가</button><button class="btn ghost" id="voiceBtn" type="button">🔊 음성 테스트</button><button class="btn" id="mpBtn" type="button">🌐 온라인 대전</button></div>
+      <div class="row"><button class="btn ghost" id="menuHome" type="button">← 처음으로</button><button class="btn ghost" id="botClrBtn" type="button">AI 모두 빼기</button><button class="btn ghost" id="hubBack" type="button">← 미니게임방</button></div>
+      <div class="mp-sheet" id="soSheet" hidden><div class="mp-sheet-card"><div class="mp-sheet-hd"><b id="soSheetT">선택</b><button class="btn" id="soSheetX" type="button">확인</button></div><div class="mp-sheet-bd">
+        <div class="mp-pane" data-pane="track" data-t="🗺️ 트랙 고르기"><div class="pick"><div class="opts" id="trackOpts"></div></div><div class="rankBox" id="rankMenu"></div></div>
+        <div class="mp-pane" data-pane="mode" data-t="🎮 게임 모드"><div class="pick"><div class="opts gm-opts" id="gmOpts"></div></div></div>
+        <div class="mp-pane" data-pane="kart" data-t="🏎️ 내 카트"><div class="pick"><div class="opts" id="kartOpts"></div></div></div>
+        <div class="mp-pane" data-pane="char" data-t="🙂 내 캐릭터"><div class="pick"><div class="opts" id="charOpts"></div></div></div>
+        <div class="mp-pane" data-pane="color" data-t="🎨 내 차 색상"><div class="pick"><div class="swatches" id="colorOpts"></div></div></div>
+        <div class="mp-pane" data-pane="keys" data-t="⌨️ 조작법"><div class="keys" id="keyhelp">
       <kbd>← →</kbd><span>조향</span>
       <kbd>↑ / ↓</kbd><span>가속 / 브레이크</span>
       <kbd>Shift</kbd><span>드리프트 (누르고 있는 만큼 미끄러짐)</span>
@@ -326,8 +334,9 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
       <kbd>드리프트 직후 ↑</kbd><span>↑를 떼었다 다시 누르면 순간부스터</span>
       <kbd>GO ±0.5초 ↑</kbd><span>출발 부스터 (↑를 떼었다가 GO 타이밍에 누르기 · 폰은 부스터 버튼)</span>
       <kbd>R / Esc</kbd><span>재시작 / 메뉴</span>
+    </div></div>
+      </div></div></div>
     </div>
-    <div class="row"><button class="btn ghost" id="menuHome" type="button">← 처음으로</button><button class="btn" id="startBtn">출발</button><button class="btn ghost" id="botAddBtn" type="button">🤖 AI 추가</button><button class="btn ghost" id="botClrBtn" type="button">AI 빼기</button><button class="btn ghost" id="voiceBtn" type="button">🔊 음성 테스트</button><button class="btn" id="mpBtn" type="button">온라인 대전</button><button class="btn ghost" id="hubBack" type="button">← 미니게임방</button></div>
   </div>
 </div>
 
@@ -458,7 +467,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"storm", name:"스톰 윙", desc:"흰색·파랑 하이퍼카 · 큰 리어윙 · 최고속도 높음, 조향은 조금 둔함", speed:1.33818, accel:1.32, turn:1.02, boost:1.24211, mass:1},
   {id:"panther", name:"블랙 팬서", desc:"파란 눈빛의 검정 슈퍼카 · 부스터가 강하고 조금 묵직함", speed:1.31, accel:1.36, turn:1.04, boost:1.27, mass:1.1},
   {id:"dozer", name:"불도저", desc:"큰 삽날 달린 무한궤도 불도저 · 느리지만 아주 무거워서 앞을 막는 차를 삽날로 밀어냄 · 부스터 빠르고 4초로 김", speed:1.17, accel:.95, turn:.84, boost:1.4, boostTime:4, gaugeMul:.85, mass:3.1, rad:2.1, ram:1},
-  {id:"ringbike", name:"네온 링 바이크", desc:"바퀴살 없이 빛나는 링 바퀴의 미래형 바이크 · 빠르고 가벼움 · 조금 미끄러움(넘어지진 않음)", speed:1.37574, accel:1.5, turn:1.12, grip:.85, boost:1.22184, mass:.7, fly:1.4},
+  {id:"ringbike", name:"네온 링 바이크", desc:"바퀴살 없이 빛나는 링 바퀴의 미래형 바이크 · 빠르고 가벼움 · 조금 미끄러움(넘어지진 않음)", speed:1.32879, accel:1.5, turn:1.12, grip:.85, boost:1.22968, mass:.7, fly:1.4},
   {id:"sushi", name:"연어 초밥", desc:"거대한 연어 초밥 위에 올라타 달리는 카트 · 양옆 김말이 · 균형 잡힌 성능, 코너 조금 좋음 · 스모 선수와 시너지", speed:1.32, accel:1.4, turn:1.12, boost:1.23, mass:1.05},
   {id:"stroller", name:"유모차", desc:"지붕 달린 아기 유모차 · 가볍고 코너를 잘 돎, 최고속도는 조금 낮음 · 자이언트 베이비와 시너지", speed:1.27, accel:1.46, turn:1.24, boost:1.24, mass:.8},
   {id:"horse", name:"질주 말", desc:"달릴수록 네 다리가 힘차게 뛰는 갈색 말 · 빠르고 코너도 잘 돎 · 조금 묵직함", speed:1.34, accel:1.42, turn:1.12, boost:1.22, mass:1.1}
@@ -4596,7 +4605,7 @@ function kInTab(k,w){ const t=KTAB[w]; if(t==="전체") return true; const c=KAR
 function ktabHTML(w){ const cur=KARTS[selKart]&&KARTS[selKart].id; return '<div class="kt-tabs">'+[{n:"전체",ids:KARTS.map(k=>k.id)}].concat(KART_CATS).map(c=>`<button type="button" data-kt="${c.n}" aria-pressed="${KTAB[w]===c.n}">${c.n}<small>${c.ids.filter(id=>KARTS.some(k=>k.id===id)).length}</small>${c.n!=="전체"&&c.ids.includes(cur)?'<span class="dot"></span>':''}</button>`).join("")+'</div>'; }
 function keepScroll(sels){ const L=[]; for(const q of sels) document.querySelectorAll(q).forEach((e,k)=>L.push([q,k,e.scrollTop,e.scrollLeft])); return ()=>{ for(const [q,k,t,l] of L){ const e=document.querySelectorAll(q)[k]; if(e){ e.scrollTop=t; e.scrollLeft=l; } } }; }
 const KEEP_SC=["#trackOpts .th-maps","#trackOpts .th-tabs","#kartOpts","#charOpts","#mpTracks .th-maps","#mpTracks .th-tabs","#mpKarts","#mpChars",".mp-sheet-bd","#menu .card","#mpLobby .card"];
-function renderOptions(){ const _ks=keepScroll(KEEP_SC); try{ renderOptions0(); } finally{ _ks(); requestAnimationFrame(_ks); } }
+function renderOptions(){ const _ks=keepScroll(KEEP_SC); try{ renderOptions0(); } finally{ _ks(); requestAnimationFrame(_ks); try{ soloRender(); }catch(_){} } }
 function renderOptions0(){ setTimeout(rankRenderAll,0); gmRenderMenu();
   { const grps=trackGroups(), tab=thTab("menu",grps,selTrack); $("trackOpts").innerHTML=`<button class="opt rnd-card" type="button" id="trk-random" aria-pressed="${selRandom}"><span class="rnd-ico">🎲</span><span style="display:flex;flex-direction:column;gap:2px"><b>랜덤 맵</b><span>출발하면 룰렛이 돌아가서 ${TRACKS.length}개 맵 중 하나를 뽑아요</span></span></button>`+`<div class="th-wrap"><div class="th-tabs">${grps.map(g=>`<button type="button" data-th="${g.n}" aria-pressed="${g.n===tab}">${g.n}${!selRandom&&g.L.includes(selTrack)?'<span class="dot"></span>':""}</button>`).join("")}</div><div class="th-maps">`+(grps.find(g=>g.n===tab)||grps[0]).L.map(i=>{ const t=TRACKS[i]; return `<button class="opt" type="button" id="trk-${t.id}" aria-pressed="${!selRandom&&i===selTrack}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>trackThumb(t))}"><b>${t.name}</b><i class="diff">난이도 ${"●".repeat(t.diff||2)}${"○".repeat(5-(t.diff||2))}</i><span>${t.desc}</span>${t.records?`<span class="stat">랭킹 1위 ${t.records[0].name} ${fmtT(t.records[0].t)}</span>`:""}</button>`; }).join("")+`</div></div>`; { const tg=$("trackOpts").querySelector(".th-tabs [aria-pressed=true]"); if(tg&&tg.parentNode) tg.parentNode.scrollTop=Math.max(0,tg.offsetTop-tg.parentNode.offsetTop-90); } thCue($("trackOpts")); }
   $("kartOpts").innerHTML=ktabHTML("menu")+KARTS.map((k,i)=>{ if(!kInTab(k,"menu")) return ""; const top=Math.round(CONFIG.maxSpeed*k.speed*CONFIG.kmh), bst=Math.round(CONFIG.maxSpeed*k.speed*(k.boost||CONFIG.boostRatio)*CONFIG.kmh);
@@ -5113,7 +5122,24 @@ function startRace(){ autoBackStop();
 }
 function openMenu(){ autoBackStop(); gmEnd(); for(const k of ["titleScr","roomScr","rModal"]){ const e=document.getElementById(k); if(e) e.hidden=true; } if(MP.racing){ mpToLobby(); return; } botsClear(); raceEndReset(); endCeremony(); $m("mpRank").parentNode.hidden=true; state="menu"; $("finish").hidden=true; $("count").hidden=true; $("menu").hidden=false; renderOptions(); }
 $("startBtn").addEventListener("click",()=>{ if(ROUL.busy) return; if(selRandom){ const tr=pickRandomTrack(); rouletteRun(tr,()=>{ selTrack=tr; startRace(); }); } else startRace(); });
-function botInfoUpd(){ let p=document.getElementById("botInfo"); const row=$("startBtn").parentNode; if(!p){ p=document.createElement("p"); p.id="botInfo"; p.className="keys"; p.style.margin="0"; p.style.fontSize="12px"; p.style.color="var(--ink-dim)"; row.parentNode.insertBefore(p,row); } p.textContent="🤖 "+botInfoText(); $("botClrBtn").hidden=!BOT.cfg.length; }
+function botInfoUpd(){ let p=document.getElementById("botInfo"); const row=$("startBtn").parentNode; if(!p){ p=document.createElement("p"); p.id="botInfo"; p.className="keys"; p.style.margin="0"; p.style.fontSize="12px"; p.style.color="var(--ink-dim)"; row.parentNode.insertBefore(p,row); } p.textContent="🤖 "+botInfoText(); $("botClrBtn").hidden=!BOT.cfg.length; try{ soloRender(); }catch(_){} }
+function soloRender(){ const G=document.getElementById("soList"); if(!G) return; G.innerHTML=""; const me={ch:selChar,k:selKart,cl:selColor,n:(typeof myNick==="function"?myNick():"나")};
+  const list=[{me:1,ch:selChar,k:selKart,cl:selColor}].concat(BOT.cfg.map(c=>({bot:c,ch:c.ch,k:c.k,cl:c.cl})));
+  for(let i=0;i<8;i++){ const p=list[i], cell=document.createElement("div"); if(!p){ cell.className="mp-slot empty"; cell.textContent="빈 자리"; G.appendChild(cell); continue; }
+    const ch=CHARS[p.ch]||CHARS[0], kt=KARTS[p.k]||KARTS[0]; cell.className="mp-slot"+(p.me?" me":" ok bot");
+    const img=document.createElement("img"); img.alt=""; img.src=safeThumb(()=>carThumb(kt,ch,+p.cl||0));
+    const tag=document.createElement("span"); tag.className="tag"+(p.me?" host":" ok"); tag.textContent=p.me?"나":"AI";
+    const b=document.createElement("b"); b.textContent=p.me?"나 · 라이더":p.bot.n; const sm=document.createElement("small"); sm.textContent=(SYN[kt.id]===ch.id?"★ ":"")+kt.name+" · "+ch.name;
+    cell.append(img,tag,b,sm); cell.appendChild(kInfoIcon(kt));
+    if(p.bot){ cell.lastChild.style.right="32px"; const x=document.createElement("button"); x.type="button"; x.className="bot-x"; x.textContent="✕"; x.title="AI 빼기"; x.onclick=()=>{ botRemove(p.bot.id); botInfoUpd(); }; cell.appendChild(x); }
+    else { cell.style.cursor="pointer"; cell.onclick=e=>{ if(e.target.closest("button")) return; soOpen("kart"); }; }
+    G.appendChild(cell); }
+  const t=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+  t("soCount","("+list.length+"/8)"); t("soSumK",KARTS[selKart].name); t("soSumC",CHARS[selChar].name); { const e=document.getElementById("soSumL"); if(e) e.innerHTML=PAINTS[selColor]?'<span class="sw-dot" style="background:#'+PAINTS[selColor].toString(16).padStart(6,"0")+'"></span>':"기본색"; } t("soSumT",selRandom?"🎲 랜덤 맵":TRACKS[selTrack].name); t("soSumM",gmLabel(GM.sel.mode,GM.sel.team)); }
+function soOpen(pane){ const sh=document.getElementById("soSheet"); if(!sh) return; sh.hidden=false; sh.querySelectorAll(".mp-pane").forEach(p=>p.hidden=p.dataset.pane!==pane); const p=sh.querySelector('.mp-pane[data-pane="'+pane+'"]'); document.getElementById("soSheetT").textContent=p?p.dataset.t:"선택"; }
+document.querySelectorAll(".so-open").forEach(b=>b.addEventListener("click",()=>soOpen(b.dataset.pane)));
+document.getElementById("soSheetX").addEventListener("click",()=>{ document.getElementById("soSheet").hidden=true; soloRender(); });
+document.getElementById("soSheet").addEventListener("click",e=>{ if(e.target.id==="soSheet"){ e.currentTarget.hidden=true; soloRender(); } });
 $("botAddBtn").addEventListener("click",()=>{ botAdd(); botInfoUpd(); }); $("botClrBtn").addEventListener("click",()=>{ BOT.cfg=[]; botInfoUpd(); }); botInfoUpd();
 { const vb=document.getElementById("voiceBtn"); if(vb) vb.addEventListener("click",()=>{ initAudio(); voiceTest(); });
   const row=vb&&vb.parentNode; if(row&&!document.getElementById("voiceInfo")){ const p=document.createElement("p"); p.id="voiceInfo"; p.className="keys"; p.style.margin="0"; p.style.color="var(--ink-dim)"; p.style.fontSize="12px"; row.parentNode.insertBefore(p,row.nextSibling); } }
