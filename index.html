@@ -308,7 +308,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0934</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1025-0955</div>
     <h1>카트 리빌드</h1>
     <div class="pick"><div class="pick-label">게임 모드</div><div class="opts gm-opts" id="gmOpts"></div></div>
     <div class="pick"><div class="pick-label">트랙</div><div class="opts" id="trackOpts"></div></div>
@@ -4481,7 +4481,7 @@ function physics(dt, controls){
   S.y+=S.vy*dt;
   if(S.y<=gy+(S.grounded?.12:0)){ if(S.chute){ S.chute=false; toast("착지!","#ffcf2e"); }
     if(!S.grounded&&S.vy<-5){ thud(); S.shake=Math.min(.4,-S.vy*.03); if(S.air>.35) toast("나이스 점프!","#ffffff"); }
-    S.y=gy; S.vy=prevGy<-1e8?0:clamp((gy-prevGy)/dt,(TR.def.id==="summit"&&S.idx>=3040&&S.idx<=3345)?-90:-15,TR.def.softGround?Math.min(20,2+Math.abs(fs)*.3):20); S.grounded=true; S.air=0;
+    S.y=gy; S.vy=prevGy<-1e8?0:clamp((gy-prevGy)/dt,(TR.def.id==="summit"&&S.idx>=3040&&S.idx<=3345)?-90:-15,TR.def.softGround?Math.min(20,2+Math.abs(fs)*.3):Math.min(20,2.5+Math.abs(slope*fs)*1.6)); S.grounded=true; S.air=0;
   } else { S.grounded=false; S.air+=dt; }
   S.slope=S.grounded?slope:0;
   if(K.hover&&S.grounded&&Math.abs(fs)>8) S.flyG=Math.min(5,(S.flyG||0)+dt*.5); /* 제트: 땅에서 달린 만큼 비행 게이지 */
@@ -4594,7 +4594,10 @@ const KART_CATS=[{n:"🚗 자동차",ids:["blue","gold","kart","gt","volt","ruby
 const KTAB={menu:"전체",mp:"전체"};
 function kInTab(k,w){ const t=KTAB[w]; if(t==="전체") return true; const c=KART_CATS.find(c=>c.n===t); return !c||c.ids.includes(k.id); }
 function ktabHTML(w){ const cur=KARTS[selKart]&&KARTS[selKart].id; return '<div class="kt-tabs">'+[{n:"전체",ids:KARTS.map(k=>k.id)}].concat(KART_CATS).map(c=>`<button type="button" data-kt="${c.n}" aria-pressed="${KTAB[w]===c.n}">${c.n}<small>${c.ids.filter(id=>KARTS.some(k=>k.id===id)).length}</small>${c.n!=="전체"&&c.ids.includes(cur)?'<span class="dot"></span>':''}</button>`).join("")+'</div>'; }
-function renderOptions(){ setTimeout(rankRenderAll,0); gmRenderMenu();
+function keepScroll(sels){ const L=[]; for(const q of sels) document.querySelectorAll(q).forEach((e,k)=>L.push([q,k,e.scrollTop,e.scrollLeft])); return ()=>{ for(const [q,k,t,l] of L){ const e=document.querySelectorAll(q)[k]; if(e){ e.scrollTop=t; e.scrollLeft=l; } } }; }
+const KEEP_SC=["#trackOpts .th-maps","#trackOpts .th-tabs","#kartOpts","#charOpts","#mpTracks .th-maps","#mpTracks .th-tabs","#mpKarts","#mpChars",".mp-sheet-bd","#menu .card","#mpLobby .card"];
+function renderOptions(){ const _ks=keepScroll(KEEP_SC); try{ renderOptions0(); } finally{ _ks(); requestAnimationFrame(_ks); } }
+function renderOptions0(){ setTimeout(rankRenderAll,0); gmRenderMenu();
   { const grps=trackGroups(), tab=thTab("menu",grps,selTrack); $("trackOpts").innerHTML=`<button class="opt rnd-card" type="button" id="trk-random" aria-pressed="${selRandom}"><span class="rnd-ico">🎲</span><span style="display:flex;flex-direction:column;gap:2px"><b>랜덤 맵</b><span>출발하면 룰렛이 돌아가서 ${TRACKS.length}개 맵 중 하나를 뽑아요</span></span></button>`+`<div class="th-wrap"><div class="th-tabs">${grps.map(g=>`<button type="button" data-th="${g.n}" aria-pressed="${g.n===tab}">${g.n}${!selRandom&&g.L.includes(selTrack)?'<span class="dot"></span>':""}</button>`).join("")}</div><div class="th-maps">`+(grps.find(g=>g.n===tab)||grps[0]).L.map(i=>{ const t=TRACKS[i]; return `<button class="opt" type="button" id="trk-${t.id}" aria-pressed="${!selRandom&&i===selTrack}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>trackThumb(t))}"><b>${t.name}</b><i class="diff">난이도 ${"●".repeat(t.diff||2)}${"○".repeat(5-(t.diff||2))}</i><span>${t.desc}</span>${t.records?`<span class="stat">랭킹 1위 ${t.records[0].name} ${fmtT(t.records[0].t)}</span>`:""}</button>`; }).join("")+`</div></div>`; { const tg=$("trackOpts").querySelector(".th-tabs [aria-pressed=true]"); if(tg&&tg.parentNode) tg.parentNode.scrollTop=Math.max(0,tg.offsetTop-tg.parentNode.offsetTop-90); } thCue($("trackOpts")); }
   $("kartOpts").innerHTML=ktabHTML("menu")+KARTS.map((k,i)=>{ if(!kInTab(k,"menu")) return ""; const top=Math.round(CONFIG.maxSpeed*k.speed*CONFIG.kmh), bst=Math.round(CONFIG.maxSpeed*k.speed*(k.boost||CONFIG.boostRatio)*CONFIG.kmh);
     return `<button class="opt" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span><span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
@@ -5799,7 +5802,8 @@ function mpSums(){ const t=(id,v)=>{ const e=document.getElementById(id); if(e) 
 function mpSheet(p){ const sh=document.getElementById("mpSheet"); if(!p){ sh.hidden=true; return; } let tt=""; sh.querySelectorAll(".mp-pane").forEach(x=>{ const on=x.dataset.pane===p; x.hidden=!on; if(on) tt=x.dataset.t; }); document.getElementById("mpSheetT").textContent=tt; sh.hidden=false; document.getElementById("mpSheetB").scrollTop=0; thCue(sh); }
 document.querySelectorAll("#mpLobby .mp-open").forEach(b=>b.addEventListener("click",()=>mpSheet(b.dataset.pane)));
 document.getElementById("mpSheetX").addEventListener("click",()=>mpSheet(null)); document.getElementById("mpSheet").addEventListener("click",e=>{ if(e.target.id==="mpSheet") mpSheet(null); });
-function mpRender(){ rankRenderAll(); try{ if(MP.joined) requestAnimationFrame(mpSums); }catch(_){}
+function mpRender(){ const _ks=keepScroll(KEEP_SC); try{ mpRender0(); } finally{ _ks(); requestAnimationFrame(_ks); } }
+function mpRender0(){ rankRenderAll(); try{ if(MP.joined) requestAnimationFrame(mpSums); }catch(_){}
   $m("mpJoinBox").hidden=MP.joined; $m("mpRoomBox").hidden=!MP.joined; if(!MP.joined) return;
   const L=mpList(), host=mpHost(), amHost=mpIsHost();
   const sig=JSON.stringify([BOT.cfg.length,MP.code,MP.myPeer,MP.ready,selKart,selChar,selColor,selTrack,selRandom,THT.mp,GM.sel.mode,GM.sel.team,host&&host.peer,L.map(p=>[p.peer,p.presence.n,p.presence.k,p.presence.ch,p.presence.cl,p.presence.rd,p.presence.st,p.presence.tr,p.presence.rnd,p.presence.gm,p.presence.gt,p.presence.jt])]);
