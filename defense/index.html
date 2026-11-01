@@ -487,7 +487,7 @@ for(let L=2;L<=99;L++)CSTEP[L]=L<=8?1.65:L===9?Math.pow(1.7378,8)/Math.pow(1.65,
 function buildCurve(f,g,fh=1,evo3=false,lock=0){const D=[0,1],Cm=[0,1];for(let L=2;L<=101;L++)D[L]=D[L-1]*(1+(DSTEP[Math.min(L,100)]-1)*(L>30?fh:f));
   for(let L=2;L<=100;L++)Cm[L]=Cm[L-1]*(lock&&L>=lock?D[L+1]/D[L]:evo3&&L%10===9?3:(1+((CSTEP[L]||1)-1)*(L>=30?1:g))); /* 전직 직전(9→10, 19→20, …) 강화비는 직전 강화비의 정확히 3배(사용자 지정) */return{D,Cm};}
 // 스테이지별 무기: 뒤 스테이지 무기일수록 강화 1번당 피해 증가율이 더 큼(사용자 지정). 강화비 상승률은 완만형과 같음
-const CURVE={base:buildCurve(1,1,1,true),flat:buildCurve(.5,.5),mflat:buildCurve(.5,1,1,true),s2:buildCurve(1.2,.5,1.2,false,20),s3:buildCurve(1.4,.5,1.4,false,10),tk:(()=>{const c=buildCurve(1.2,.5,1.2,false,20);for(let L=2;L<=100;L++)c.Cm[L]*=Math.pow(1.02,L-1);return c;})(), /* 전차: 강화비가 강화마다 2%씩 더 가파르게 */nk:(()=>{const c=buildCurve(1.3,.5,1.3); /* 핵 강화당 피해 증가폭 상향(1.1→1.3) */for(let L=2;L<=100;L++)c.Cm[L]=c.Cm[L-1]*(1+((CSTEP[L]||1)-1)*.4);return c;})()}; /* 핵: 1발이 강한 대신 강화당 피해·강화비 증가폭이 다른 무기보다 작음 */
+const CURVE={base:buildCurve(1,1,1,true),flat:buildCurve(.5,.5),mflat:buildCurve(.5,1,1,true),s2:buildCurve(1.2,.5,1.2,false,20),s3:buildCurve(1.4,.5,1.4,false,10),tk:(()=>{const c=buildCurve(1.2,.5,1.2,false,20);for(let L=2;L<=100;L++)c.Cm[L]*=Math.pow(1.03,L-1);return c;})(), /* 전차: 강화비가 강화마다 3%씩 더 가파르게 */nk:(()=>{const c=buildCurve(1.3,.5,1.3); /* 핵 강화당 피해 증가폭 상향(1.1→1.3) */for(let L=2;L<=100;L++)c.Cm[L]=c.Cm[L-1]*(1+((CSTEP[L]||1)-1)*.4);return c;})()}; /* 핵: 1발이 강한 대신 강화당 피해·강화비 증가폭이 다른 무기보다 작음 */
 const curveOf=type=>{const T=TT[type];return CURVE[type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
 const upCost=t=>Math.ceil(TT[t.type].up*curveOf(t.type).Cm[Math.min(t.l,99)]);
@@ -1740,7 +1740,7 @@ $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
 $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{try{save();}catch(e){}showTitle();});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v232 · 11/01 12:06";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v233 · 11/01 12:07";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={};
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2427,5 +2427,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011204 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011205 */</script>
 </body></html>
