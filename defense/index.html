@@ -420,7 +420,7 @@ const TT={
     names:["대전차 소총","무반동총","대전차 미사일","전차포","코일건","레일건","가우스 캐논","입자 가속포","반물질 랜스","특이점 랜스","종말 레일"]},
   sniper:{label:"저격총",role:"보스 전용. 사거리가 매우 길고 보스를 먼저 노려 3배 피해를 준다",cost:700,up:337,dmg:188.021,rate:.4,range:5.5,unlock:15,
     names:["저격 초소","지정사수","대물 저격총","정밀 저격반","열상 저격 진지","레일 저격총","스텔스 저격소","전자기 저격포","양자 조준 저격","유도 탄두 저격","절대 명중"]},
-  flame:{label:"화염방사기",role:"사거리는 짧지만 주변 적을 한꺼번에 태운다",cost:1000,up:562,dmg:4.05,rate:7,range:1.7,splash:.6,unlock:25,
+  flame:{label:"화염방사기",role:"사거리는 짧지만 주변 적을 한꺼번에 태운다",cost:1000,up:600,dmg:4.05,rate:7,range:1.7,splash:.6,unlock:25,
     names:["화염방사기","강화 화염방사기","네이팜 방사기","화염 전차","고열 플라즈마 분사기","백린 분사포","태양로 분사기","항성 화염로","핵융합 화염포","지옥불 진지","겁화"]},
   gas:{label:"최루탄",role:"맞은 적을 느리게 만든다(2초, 전직마다 +1초). 2차 전직부터 가스에 젖은 적은 모든 피해를 더 받는다",cost:1500,up:1672,dmg:2.7,rate:.45,range:2.8,splash:1.3,slow:.45,unlock:35,
     names:["최루탄 발사기","연막 최루포","신경 교란탄","저온 가스포","마비 가스 포대","중력 교란기","시간 지연 장치","정체장 발생기","절대 영도포","시공 정지기","영원한 정지"]},
@@ -1740,7 +1740,7 @@ $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
 $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{try{save();}catch(e){}showTitle();});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v231 · 11/01 10:30";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v232 · 11/01 12:06";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={};
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2384,7 +2384,7 @@ function setSave(mode){$("saveSt").innerHTML=`<span class="dot ${mode?"ok":""}">
 function save(force){S.t=Date.now();const j=ser();let ok=false;try{localStorage.setItem(LS,j);ok=true;}catch(e){}
   if(db&&uid&&(force||Date.now()-lastRemote>12000)){lastRemote=Date.now();db.doc("data/users/"+uid+"/save").set({json:j,t:S.t}).then(()=>setSave("acct")).catch(()=>{});}
   if(!db)setSave(ok?"local":"");}
-function offline(prevT){const mins=Math.min(1440,(Date.now()-prevT)/60000);if(mins<1||S.gpm<=0)return;const gain=Math.floor(S.gpm*mins*.5);if(gain<=0)return;
+function offline(prevT){const mins=Math.min(240,(Date.now()-prevT)/60000);if(mins<1||S.gpm<=0)return;const gain=Math.floor(S.gpm*mins*.5);if(gain<=0)return;
   earn(gain);$("modalBox").innerHTML=`<h2>작전 보고</h2><p>자리를 비운 ${mins>=60?Math.floor(mins/60)+"시간 "+Math.round(mins%60)+"분":Math.round(mins)+"분"} 동안 부대가 방어선을 지키며 <b style="color:var(--accent)">${fmt(gain)}</b>을 확보했습니다.</p><button class="btn pri" id="mOk">수령</button>`;
   $("modal").hidden=false;$("mOk").onclick=()=>{$("modal").hidden=true;};}
 function paintHeaderFlag(){const f=$("hFlag"),g=f.getContext("2d");drawFlag(g,0,0,84,56,0,false);}
@@ -2427,5 +2427,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011025 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011204 */</script>
 </body></html>
