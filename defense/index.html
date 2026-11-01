@@ -1231,16 +1231,16 @@ function hut(g,x,y,R){g.fillStyle="#7a5a3a";g.fillRect(x-R*.7,y-R*.3,R*1.4,R*.8)
 const BGM={ctx:null,master:null,rev:null,timer:null,next:0,step:0,on:true};
 function bgmPref(){try{const v=localStorage.getItem("lastline-bgm");return v===null?true:v==="1";}catch(e){return true;}}
 function bgmSetPref(v){try{localStorage.setItem("lastline-bgm",v?"1":"0");}catch(e){}}
-function bgmInit(){if(BGM.ctx)return true;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;const c=new AC();BGM.ctx=c;
-  BGM.master=c.createGain();BGM.master.gain.value=0;const comp=c.createDynamicsCompressor();BGM.master.connect(comp);comp.connect(c.destination);
-  const len=c.sampleRate*2.6,ir=c.createBuffer(2,len,c.sampleRate);for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);}
+function bgmInit(){if(BGM.ctx)return true;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;let c;try{c=new AC({latencyHint:"playback"});}catch(e){c=new AC();}BGM.ctx=c; /* v274: 큰 버퍼로 폰에서 끊김(지지직) 방지 */
+  BGM.master=c.createGain();BGM.master.gain.value=0;const comp=c.createDynamicsCompressor();comp.threshold.value=-16;comp.knee.value=8;comp.ratio.value=8;comp.attack.value=.004;comp.release.value=.2;const out=c.createGain();out.gain.value=.85;BGM.master.connect(comp);comp.connect(out);out.connect(c.destination);
+  const len=Math.floor(c.sampleRate*1.6),ir=c.createBuffer(2,len,c.sampleRate);for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6);}
   BGM.rev=c.createConvolver();BGM.rev.buffer=ir;const rg=c.createGain();rg.gain.value=.55;BGM.rev.connect(rg);rg.connect(BGM.master);
   BGM.noise=c.createBuffer(1,c.sampleRate*.5,c.sampleRate);const nd=BGM.noise.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;return true;}
 const hz=m=>440*Math.pow(2,(m-69)/12);
 function bOut(g,wet){g.connect(BGM.master);if(wet){const w=BGM.ctx.createGain();w.gain.value=wet;g.connect(w);w.connect(BGM.rev);}}
 function bPad(m,t,d,v){const c=BGM.ctx,g=c.createGain(),f=c.createBiquadFilter();f.type="lowpass";f.frequency.value=900;f.Q.value=.4;
-  for(const det of[-7,0,7]){const o=c.createOscillator();o.type="sawtooth";o.frequency.value=hz(m);o.detune.value=det;o.connect(f);o.start(t);o.stop(t+d+1.6);}
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.9);g.gain.setValueAtTime(v,t+d-.2);g.gain.linearRampToValueAtTime(0,t+d+1.4);f.connect(g);bOut(g,.6);}
+  for(const det of[-7,7]){const o=c.createOscillator();o.type="sawtooth";o.frequency.value=hz(m);o.detune.value=det;o.connect(f);o.start(t);o.stop(t+d+1.6);}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*1.2,t+.9);g.gain.setValueAtTime(v,t+d-.2);g.gain.linearRampToValueAtTime(0,t+d+1.4);f.connect(g);bOut(g,.6);}
 function bBrass(m,t,d,v){const c=BGM.ctx,g=c.createGain(),f=c.createBiquadFilter(),o=c.createOscillator(),o2=c.createOscillator(),lfo=c.createOscillator(),lg=c.createGain();
   o.type="sawtooth";o2.type="square";o.frequency.value=hz(m);o2.frequency.value=hz(m)/2;lfo.frequency.value=5.2;lg.gain.value=4;lfo.connect(lg);lg.connect(o.detune);
   f.type="lowpass";f.Q.value=2;f.frequency.setValueAtTime(500,t);f.frequency.linearRampToValueAtTime(2200,t+.12);f.frequency.exponentialRampToValueAtTime(1100,t+d);
@@ -1248,9 +1248,9 @@ function bBrass(m,t,d,v){const c=BGM.ctx,g=c.createGain(),f=c.createBiquadFilter
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.07);g.gain.setValueAtTime(v*.85,t+d*.8);g.gain.linearRampToValueAtTime(0,t+d+.25);
   for(const x of[o,o2,lfo]){x.start(t);x.stop(t+d+.4);}bOut(g,.45);}
 function bTimp(t,v,m=38){const c=BGM.ctx,o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.setValueAtTime(hz(m)*1.6,t);o.frequency.exponentialRampToValueAtTime(hz(m),t+.08);
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+1.1);o.connect(g);o.start(t);o.stop(t+1.2);bOut(g,.35);}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+1.1);o.connect(g);o.start(t);o.stop(t+1.2);bOut(g,.35);}
 function bSnare(t,v){const c=BGM.ctx,n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();n.buffer=BGM.noise;f.type="bandpass";f.frequency.value=1800;f.Q.value=.8;
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.16);n.connect(f);f.connect(g);n.start(t);n.stop(t+.2);bOut(g,.25);}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+.16);n.connect(f);f.connect(g);n.start(t);n.stop(t+.2);bOut(g,.25);}
 /* 16마디 반복: 앞 8마디는 금관 주제, 뒤 8마디는 현악과 북만으로 숨을 고른다 */
 const BPM=66,BEAT=60/BPM,CH=[[50,57,62,65],[46,53,58,62],[43,50,55,58],[45,52,57,61]],BASS=[38,34,31,33];
 const MEL=[[[62,2],[65,1],[69,1]],[[70,3],[69,1]],[[67,2],[70,1],[74,1]],[[73,2],[69,2]],[[74,2],[72,1],[69,1]],[[65,2],[67,1],[69,1]],[[70,1],[69,1],[67,1],[65,1]],[[64,2],[69,2]]];
@@ -1263,23 +1263,23 @@ function bgmBar(t,bar){const ci=bar%4,b16=bar%16,ch=CH[ci];
   if(b16===7||b16===15)for(let i=0;i<8;i++)bSnare(t+BEAT*2+i*BEAT/4,.05+i*.015);}
 /* ═════════ 전투 BGM (v272) — 주력 보스 단계: 공통 긴장곡 · 최종 보스 단계: 나라별 전투곡 ═════════ */
 function bNoiseHit(t,v,type,freq,q,dec,wet){const c=BGM.ctx,n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();n.buffer=BGM.noise;n.loop=dec>.45;f.type=type;f.frequency.value=freq;f.Q.value=q;
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+dec);n.connect(f);f.connect(g);n.start(t);n.stop(t+dec+.05);bOut(g,wet||.2);}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+dec);n.connect(f);f.connect(g);n.start(t);n.stop(t+dec+.05);bOut(g,wet||.2);}
 function bHat(t,v){bNoiseHit(t,v,"highpass",7500,.7,.05,.1);}
 function bCrash(t,v){bNoiseHit(t,v,"highpass",4500,.5,1.6,.5);}
 function bKick(t,v){const c=BGM.ctx,o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(42,t+.12);
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.connect(g);o.start(t);o.stop(t+.5);bOut(g,.08);}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.connect(g);o.start(t);o.stop(t+.5);bOut(g,.08);}
 function bTom(t,v,f0,dec){const c=BGM.ctx,o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.setValueAtTime(f0*1.5,t);o.frequency.exponentialRampToValueAtTime(f0,t+.06);
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+(dec||.35));o.connect(g);o.start(t);o.stop(t+(dec||.35)+.05);bOut(g,.25);}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+(dec||.35));o.connect(g);o.start(t);o.stop(t+(dec||.35)+.05);bOut(g,.25);}
 function bPluck(m,t,v,dec,type,cut,wet){const c=BGM.ctx,o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type=type||"triangle";o.frequency.value=hz(m);
   f.type="lowpass";f.Q.value=3;f.frequency.setValueAtTime(cut||3000,t);f.frequency.exponentialRampToValueAtTime(300,t+dec);
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+dec);o.connect(f);f.connect(g);o.start(t);o.stop(t+dec+.05);bOut(g,wet==null?.3:wet);}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+dec);o.connect(f);f.connect(g);o.start(t);o.stop(t+dec+.05);bOut(g,wet==null?.3:wet);}
 function bStr(m,t,d,v){const c=BGM.ctx,f=c.createBiquadFilter(),g=c.createGain();f.type="lowpass";f.frequency.value=2600;f.Q.value=.6;
   for(const det of[-6,6]){const o=c.createOscillator();o.type="sawtooth";o.frequency.value=hz(m);o.detune.value=det;o.connect(f);o.start(t);o.stop(t+d+.15);}
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(v*.4,t+d);g.gain.linearRampToValueAtTime(0,t+d+.1);f.connect(g);bOut(g,.35);}
 function bSub(m,t,d,v){const c=BGM.ctx,o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=hz(m);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.02);
   g.gain.setValueAtTime(v,t+d*.7);g.gain.linearRampToValueAtTime(0,t+d);o.connect(g);o.start(t);o.stop(t+d+.05);bOut(g,0);}
 function bSq(m,t,d,v,cut){const c=BGM.ctx,o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type="square";o.frequency.value=hz(m);f.type="lowpass";f.frequency.value=cut||1800;f.Q.value=6;
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(f);f.connect(g);o.start(t);o.stop(t+d+.05);bOut(g,.4);}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(f);f.connect(g);o.start(t);o.stop(t+d+.05);bOut(g,.4);}
 function bMel(seq,t,B,fn){let o=0;for(const[m,d]of seq){if(m)fn(m,t+o*B,d*B);o+=d;}}
 const BTRK={
  /* 주력 보스 공통: C단조 i–VI–iv–V, 16분 현악 오스티나토 + 저음 금관 + 북 */
@@ -1382,7 +1382,7 @@ function bgmTick(){const c=BGM.ctx;while(BGM.next<c.currentTime+1.2){const k=bgm
     if(k==="march"){bgmBar(BGM.next,BGM.step++);BGM.next+=BEAT*4;}else{const T=BTRK[k],B=60/T.bpm;try{T.bar(BGM.next,BGM.step++,B);}catch(e){}BGM.next+=B*4;}}}
 function bgmStart(){if(!BGM.on||!bgmInit())return;const c=BGM.ctx;if(c.state==="suspended")c.resume();
   if(!BGM.timer){BGM.next=c.currentTime+.15;BGM.timer=setInterval(bgmTick,250);bgmTick();}
-  BGM.master.gain.cancelScheduledValues(c.currentTime);BGM.master.gain.setTargetAtTime(.55,c.currentTime,.6);}
+  BGM.master.gain.cancelScheduledValues(c.currentTime);BGM.master.gain.setTargetAtTime(.5,c.currentTime,.6);}
 function bgmStop(){if(!BGM.ctx)return;const c=BGM.ctx;BGM.master.gain.cancelScheduledValues(c.currentTime);BGM.master.gain.setTargetAtTime(0,c.currentTime,.25);
   if(BGM.timer){clearInterval(BGM.timer);BGM.timer=null;}}
 function bgmToggle(){BGM.on=!BGM.on;bgmSetPref(BGM.on);if(BGM.on)bgmStart();else bgmStop();bgmLabels();}
@@ -1926,7 +1926,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v273 · 11/02 09:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v274 · 11/02 09:10";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2623,5 +2623,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020854 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020857 */</script>
 </body></html>
