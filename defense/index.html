@@ -149,7 +149,7 @@ html.rot #title .tc{inset:0;gap:6px;padding:8px}html.rot #title .tk{font-size:10
 #cut .dots i{width:28px;height:5px;border-radius:2px;background:#3a3f2c}
 #cut .dots i.on{background:var(--accent)}
 #modal{position:fixed;inset:0;background:rgba(5,7,3,.72);display:grid;place-items:center;padding:20px;z-index:20}
-#modal .box{max-width:400px;width:100%;border-color:var(--accent)}
+#modal .box{max-width:400px;width:100%;border-color:var(--accent);max-height:calc(100dvh - 24px);overflow-y:auto}html.rot #modal .box{max-height:calc(var(--sw) - 24px)}#modal .unls{display:flex;flex-direction:column;gap:8px}#modal #mOk{position:sticky;bottom:0}body.cmp #modal{padding:8px}body.cmp #modal .box{max-width:min(640px,100%);padding:10px 12px;gap:6px}body.cmp #modal h2{font-size:18px;margin:0}body.cmp #modal p{font-size:13px;line-height:1.45}body.cmp #modal .unls{display:grid;grid-template-columns:1fr 1fr;gap:6px}body.cmp #modal .unl{padding:5px 8px}body.cmp #modal .unl b{font-size:15px}body.cmp #modal .unl span{font-size:11.5px;line-height:1.35}body.cmp #modal .btn{padding:7px 10px}
 #modal p{margin:0;line-height:1.6}
 #modal .unl{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:2px solid var(--accent);border-radius:6px;background:var(--panel2)}
 #modal .unl b{font-family:var(--f-disp);font-weight:400;font-size:20px;color:var(--accent)}
@@ -636,7 +636,7 @@ function goCountry(c){if(c<1||c>COUNTRIES.length||c===S.country)return;if(c>1&&!
   if(c===2&&!S.fast8){S.fast8=true;unlockNotice("2스테이지 해금",[["전차 진지","100만 원. 강력한 전차포로 맞은 적과 주변(0.8칸)에 큰 피해. 아래 무기 줄에서 배치하세요."]]);}
   save(true);dirtyUI=true;}
 function unlockNotice(title,items){if(typeof document==="undefined"||!$("modalBox")||!$("modalBox").getAttribute)return;
-  $("modalBox").innerHTML=`<div class="lbl">새로 해금</div><h2>${title}</h2>${items.map(([a,b])=>`<div class="unl"><b>${a}</b><span>${b}</span></div>`).join("")}<button class="btn pri" id="mOk">확인</button>`;
+  $("modalBox").innerHTML=`<div class="lbl">새로 해금</div><h2>${title}</h2><div class="unls">${items.map(([a,b])=>`<div class="unl"><b>${a}</b><span>${b}</span></div>`).join("")}</div><button class="btn pri" id="mOk">확인</button>`;
   $("modal").hidden=false;$("mOk").onclick=()=>{$("modal").hidden=true;};}
 function setStage(s){const n=Math.max(1,Math.min(S.best,lastOf(),s));if(n===S.wave&&phase==="idle")return;
   if(phase!=="idle"){enemies=[];queue=[];shells=[];phase="idle";}S.wave=n;autoT=2;save();dirtyUI=true;}
@@ -1335,9 +1335,49 @@ const BTRK={
    if(b8>=4){const M=[[[72,2],[73,2]],[[76,2],[70,2]],[[72,1],[78,1],[73,2]],[[67,4]]][ci];bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.9,.05));}
    if(bar%8===0)bCrash(t,.1);}}
 };
-function bgmTrack(){if(typeof titleOn!=="undefined"&&titleOn)return"march";if(typeof S==="undefined"||!S||!COUNTRY)return"march";const s=S.wave;
-  if(COUNTRY.inf)return s%10===0?"boss":"march";if(COUNTRY.alien)return s===10?"f6":s>=6?"boss":"march";
-  if(s===100)return"f"+Math.min(5,S.country);const b=BOSS[s];return b&&b[2]===1?"boss":"march";}
+/* v273: 스토리 곡 + 나라별 일반 단계 곡 */
+Object.assign(BTRK,{
+ /* 스토리·컷신: 느린 비가(D단조→F장조), 현악 패드 + 맑은 뜯는 소리 선율 + 낮은 북 */
+ story:{bpm:72,bar(t,bar,B){const CH=[[50,57,62,65],[46,53,58,62],[41,48,53,57],[45,52,57,61],[50,57,62,65],[43,50,55,58],[48,55,60,64],[45,52,57,61]],ci=bar%8,ch=CH[ci];
+   for(const m of ch)bPad(m,t,B*4,.03);bSub(ch[0]-12,t,B*4,.08);
+   const ar=[ch[0]+12,ch[1]+12,ch[2]+12,ch[3]+12,ch[2]+12,ch[1]+12,ch[2]+12,ch[3]+12];for(let i=0;i<8;i++)bPluck(ar[i],t+i*B/2,.055,1.2,"triangle",2500,.5);
+   const M=[[[74,2],[72,1],[69,1]],[[70,3],[69,1]],[[69,2],[72,1],[74,1]],[[73,4]],[[74,2],[77,1],[76,1]],[[74,3],[70,1]],[[72,2],[76,1],[79,1]],[[76,4]]][ci];
+   if(bar%16>=8)bMel(M,t,B,(m,s,d)=>bStr(m,s,d*.95,.045));
+   if(ci===0||ci===4)bTimp(t,.22,ch[0]-12);}},
+ /* 1 카라부 일반 단계: 발라폰 5음계 반복 + 가벼운 젬베 + 피리 */
+ s1:{bpm:104,bar(t,bar,B){const T=B/3,P=[50,53,55,57,60,62,65,67,69,72],ci=bar%4,b8=bar%8,root=[50,48,50,45][ci];
+   for(let i=0;i<12;i++){if([0,3,5,6,9].includes(i))bTom(t+i*T,i%6===0?.22:.12,i%6===0?110:220,.18);bNoiseHit(t+i*T,.02,"highpass",6500,.6,.035,.05);}
+   bSub(root-12,t,B*4,.06);bPad(root,t,B*4,.012);const pat=[0,2,4,2,5,4,2,4,7,5,4,2];for(let i=0;i<12;i++)bPluck(P[(pat[i]+ci)%P.length]+12,t+i*T,.04,.22,"triangle",3500,.2);
+   if(b8>=4){const M=[[[74,1.5],[72,.5],[69,2]],[[67,1],[69,1],[72,2]],[[74,1],[72,1],[69,1],[67,1]],[[69,4]]][ci];bMel(M,t,B,(m,s,d)=>bPluck(m+12,s,.05,d*B+.3,"sine",4000,.4));}}},
+ /* 2 북한 일반 단계: 느린 군가풍 — 작은북 행진 + 금관 합창 */
+ s2:{bpm:92,bar(t,bar,B){const CH=[[43,50,55,58],[48,55,60,63],[46,53,58,62],[38,45,50,54]],ci=bar%4,b8=bar%8,ch=CH[ci];
+   bKick(t,.4);bKick(t+B*2,.35);for(let i=0;i<4;i++)bSnare(t+i*B,.07);bSnare(t+B*3.5,.05);bSnare(t+B*3.75,.06);
+   for(const m of ch)bSq(m,t,B*4,.009,800);bSub(ch[0]-12,t,B*4,.07);
+   const M=[[[67,2],[70,1],[74,1]],[[72,2],[70,1],[67,1]],[[70,1.5],[69,.5],[67,1],[65,1]],[[66,3],[62,1]]][ci];if(b8<4||b8>=6)bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.9,.05));}},
+ /* 3 중동 일반 단계: 우드 즉흥풍 + 다르부카 + 낮은 지속음 */
+ s3:{bpm:96,bar(t,bar,B){const ci=bar%4,E=B/2,dt=["D","T","","T","D","","T",""];
+   for(let i=0;i<8;i++){if(dt[i]==="D")bTom(t+i*E,.3,90,.35);else if(dt[i]==="T")bNoiseHit(t+i*E,.06,"bandpass",3200,2,.06,.12);}
+   bPad(50,t,B*4,.014);bPad(57,t,B*4,.01);bSub(38,t,B*4,.06);
+   const M=[[[62,1],[63,.5],[66,.5],[67,2]],[[69,1],[67,.5],[66,.5],[63,2]],[[62,.5],[63,.5],[66,.5],[67,.5],[69,1],[70,1]],[[69,.5],[67,.5],[66,1],[62,2]]][ci];
+   bMel(M,t,B,(m,s,d)=>bPluck(m+12,s,.07,Math.min(.7,d*B+.15),"sawtooth",4200,.3));}},
+ /* 4 독일 일반 단계: 행진하는 현악 + 호른 선율(E단조) */
+ s4:{bpm:108,bar(t,bar,B){const CH=[[40,47,52,55],[36,43,48,52],[38,45,50,54],[35,42,47,51]],ci=bar%4,b8=bar%8,ch=CH[ci],r=ch[0];
+   for(let i=0;i<8;i++)bStr([r+12,r+19][i%2],t+i*B/2,B/2*.7,.025);for(const m of ch)bPad(m+12,t,B*4,.012);bSub(r-12,t,B*4,.07);
+   bTimp(t,.35,r);bTimp(t+B*2,.25,r);bSnare(t+B,.06);bSnare(t+B*3,.06);
+   if(b8>=2){const M=[[[64,2],[67,1],[71,1]],[[72,2],[71,1],[67,1]],[[69,1],[71,1],[72,1],[74,1]],[[71,4]]][ci];bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.92,.045));}}},
+ /* 5 미국 일반 단계: 아메리카나 군악 — 스네어 케이던스 + 장조 금관 */
+ s5:{bpm:116,bar(t,bar,B){const CH=[[45,52,57,61],[50,57,62,66],[52,59,64,68],[45,52,57,61]],ci=bar%4,b8=bar%8,ch=CH[ci];
+   bKick(t,.4);bKick(t+B*2,.35);for(let i=0;i<16;i++)if([0,2,3,4,6,8,10,11,12,14].includes(i))bSnare(t+i*B/4,i%4===0?.08:.04);
+   for(const m of ch)bPad(m,t,B*4,.012);bSub(ch[0]-12,t,B*4,.07);
+   const M=[[[69,1],[73,1],[76,2]],[[74,1.5],[73,.5],[69,2]],[[71,1],[73,1],[76,1],[78,1]],[[76,3],[73,1]]][ci];if(b8<6)bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.9,.05));}},
+ /* 6 외계·무한 일반 단계: 차가운 신스 앰비언트 + 느린 펄스 */
+ s6:{bpm:90,bar(t,bar,B){const ci=bar%4,S=[[36,43,48,51],[34,41,46,50],[37,44,49,52],[35,42,47,50]][ci];
+   for(let i=0;i<4;i++){bSub(S[0]-12,t+i*B,B*.9,.08);bKick(t+i*B,.2);}for(const m of S)bPad(m+24,t,B*4,.01);
+   for(let i=0;i<8;i++)bSq(S[(i*3)%4]+36,t+i*B/2,B*.9,.02,900+500*Math.sin((bar*8+i)/5));bNoiseHit(t+B*3,.06,"bandpass",3000,20,.6,.5);}}
+});
+function bgmTrack(){if(typeof cutOn!=="undefined"&&cutOn)return"story";if(typeof titleOn!=="undefined"&&titleOn)return"march";if(typeof S==="undefined"||!S||!COUNTRY)return"march";const s=S.wave;
+  if(COUNTRY.inf)return s%10===0?"boss":"s6";if(COUNTRY.alien)return s===10?"f6":s>=6?"boss":"s6";
+  if(s===100)return"f"+Math.min(5,S.country);const b=BOSS[s];return b&&b[2]===1?"boss":"s"+Math.min(5,S.country);}
 function bgmTick(){const c=BGM.ctx;while(BGM.next<c.currentTime+1.2){const k=bgmTrack();if(k!==BGM.track){BGM.track=k;BGM.step=0;}
     if(k==="march"){bgmBar(BGM.next,BGM.step++);BGM.next+=BEAT*4;}else{const T=BTRK[k],B=60/T.bpm;try{T.bar(BGM.next,BGM.step++,B);}catch(e){}BGM.next+=B*4;}}}
 function bgmStart(){if(!BGM.on||!bgmInit())return;const c=BGM.ctx;if(c.state==="suspended")c.resume();
@@ -1886,7 +1926,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v272 · 11/02 08:55";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v273 · 11/02 09:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2042,7 +2082,7 @@ function drawCredits(p,T){const cv=$("cutCv"),g=cv.getContext("2d"),W=cv.width,H
     g.fillStyle=j===0?"#ffd84a":t.startsWith("—")?"#ffd84a":"#f4f1e6";g.font=j===0?`700 ${Math.round(H*.1)}px "Do Hyeon",sans-serif`:`500 ${Math.round(H*.045)}px "IBM Plex Sans KR",sans-serif`;g.fillText(t,W/2,y);});
   g.globalAlpha=1;if(p>.85){const k=(p-.85)/.15;g.fillStyle=`rgba(0,0,0,${k})`;g.fillRect(0,0,W,H);g.globalAlpha=k;g.fillStyle="#f4f1e6";g.font=`700 ${Math.round(H*.12)}px "Do Hyeon",sans-serif`;g.fillText("끝",W/2,H/2);g.globalAlpha=1;}
   g.textAlign="left";g.restore();}
-function startIntro(){cutData={intro:true,c:0};cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=8.99;};$("cutCv").onclick=()=>{cutT=Math.min(9,Math.floor(cutT/3)*3+3);};requestAnimationFrame(cutLoop);}
+function startIntro(){cutData={intro:true,c:0};cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=8.99;};$("cutCv").onclick=cutNav;if(BGM.on)bgmStart();requestAnimationFrame(cutLoop);}
 /* ═════════ 최종 엔딩: 영화식 6장면 (자막 · 암전 전환 · 느린 카메라) ═════════ */
 const FIN_D=[6.5,6.5,7,7,6.5,10],FIN_T=FIN_D.reduce((a,b)=>a+b,0);
 const FIN_SUB=[["포성이 멎었다.","…이것이, 지구인의 힘인가."],["하늘을 뒤덮었던 그림자가, 물러간다."],["우리는, 살아남았다."],["그리고 끝내 돌아오지 못한 이들이 있었다."],["세계는 다시, 같은 아침을 맞는다."],[""]];
@@ -2213,14 +2253,17 @@ function drawCine(L,t,T){const cv=$("cutCv"),g=cv.getContext("2d"),W=cv.width,H=
   const subs=S0.sub||[];subs.forEach((s,j)=>{if(!s.t)return;const st=j===0?.9:Math.max(1.8,S0.d*.45),en=S0.d-.8,a=Math.min(1,Math.max(0,(lt-st)/1))*Math.min(1,Math.max(0,(en-lt)/.7));if(a<=0)return;const two=subs.length>1&&subs[1].t,y=H-bar-H*(two&&j===0?.085:.035);
     g.globalAlpha=a;g.textAlign="center";g.textBaseline="middle";g.font=`${s.v?400:700} ${Math.round(H*(s.v?.036:.04))}px "Nanum Myeongjo","IBM Plex Sans KR",serif`;g.fillStyle="rgba(0,0,0,.65)";g.fillText(s.t,W/2+2,y+2);g.fillStyle=s.v?"#dcbcff":"#f6eedc";g.fillText(s.t,W/2,y);g.globalAlpha=1;g.textAlign="left";});
   const last=i===L.length-1,fi=Math.max(0,1-lt/1),fo=Math.max(0,1-(S0.d-lt)/1),dark=Math.max(fi,last&&!L.final?0:last?0:fo);if(dark>0){g.fillStyle=`rgba(0,0,0,${dark})`;g.fillRect(0,0,W,H);}g.restore();}
+function cutNav(e){if(!cutOn||!cutData||cutData.credits)return;const r=$("cutCv").getBoundingClientRect(),left=e&&(ROT()?e.clientY<r.top+r.height/2:e.clientX<r.left+r.width/2),st=sceneStarts(cutData),T=sceneTotal(cutData);let k=0;for(let q=0;q<st.length;q++)if(st[q]<=cutT+.05)k=q;
+  if(left){if(cutT>=T-.02){clearInterval(cutTimer);clearTimeout(cutTimer);cutTimer=null;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=T-.01;};}cutT=k>0&&cutT-st[k]<.6?st[k-1]+.01:st[k]+.01;if(cutT>=T-.02)cutT=st[Math.max(0,k-1)]+.01;}
+  else cutT=k<st.length-1?st[k+1]+.01:T-.01;} /* v273: 컷신·스토리 화면 왼쪽 = 이전 장면, 오른쪽 = 다음 장면 */
 function startCutscene(cc,replay){const c=cc||S.country;cutData={replay:!!replay,from:COUNTRIES[c-1],to:COUNTRIES[c]||null,c,kills:S.kills,earned:S.earned,top:Math.max(1,...S.towers.map(t=>t.l))};
   cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=isCine(cutData)?cineTot(cineList(cutData))-.01:cutNP(cutData)*3-.01;};
-  $("cutCv").onclick=()=>{cutT=isCine(cutData)?Math.min(cineTot(cineList(cutData))-.01,cineNext(cineList(cutData),cutT)):Math.min(cutNP(cutData)*3,Math.floor(cutT/3)*3+3);};try{document.fonts&&document.fonts.load('700 40px "Nanum Myeongjo"');}catch(e){}requestAnimationFrame(cutLoop);}
+  $("cutCv").onclick=cutNav;if(BGM.on)bgmStart();try{document.fonts&&document.fonts.load('700 40px "Nanum Myeongjo"');}catch(e){}requestAnimationFrame(cutLoop);}
 let cutTimer=null;
 /* 엔딩을 본 뒤 메인 메뉴의 '스토리 다시 보기': 오프닝 → 나라별 점령 장면 → 최종 엔딩 → 크레딧을 이어서 재생 */
 let storyQ=null,storyI=0;const STORY_SEQ=["intro",1,2,3,4,5,6,"credits"];
 /* 스토리 몰아보기: 화면 왼쪽 클릭 = 이전 장면, 오른쪽 클릭 = 다음 장면 (건너뛰기 버튼 없음) */
-function storyAll(){cancelAnimationFrame(titleRaf);$("title").hidden=true;titleOn=true;storyQ=STORY_SEQ;storyPlay(0,false);}
+function storyAll(){if(BGM.on)bgmStart();cancelAnimationFrame(titleRaf);$("title").hidden=true;titleOn=true;storyQ=STORY_SEQ;storyPlay(0,false);}
 function storyExit(){storyQ=null;clearTimeout(cutTimer);cutOn=false;$("cut").hidden=true;showTitle();}
 function storyNext(){storyPlay(storyI+1,false);}
 function sceneStarts(d){if(d.credits)return[0];if(isCine(d)){const L=cineList(d),r=[];let a=0;for(const s of L){r.push(a);a+=s.d;}return r;}const n=d.intro?3:cutNP(d);return Array.from({length:n},(_,k)=>k*3);}
@@ -2580,5 +2623,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020846 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020854 */</script>
 </body></html>
