@@ -430,13 +430,13 @@ const TCOL=["#8b916b","#a4ad72","#b7b9ae","#c98d4b","#d6dae0","#ecbc3f","#f07b3c
 const TT={
   rifle:{label:"소총",role:"기본 단일 공격. 연사가 빠르다",cost:60,up:76,dmg:10.7224,rate:2.2,range:2.6,unlock:1,
     names:["소총 초소","경기관총","분대지원화기","중기관총","쌍열 기관총","개틀링 진지","회전 포탑","레이저 개틀링","펄스 기관포","플라즈마 연사포","오메가 연사포"]},
-  mortar:{label:"박격포",role:"광역 피해. 몰려오는 병력에 강하다",cost:300,up:204,dmg:16.6667,rate:.25,range:3.6,splash:1.4,unlock:3,
+  mortar:{label:"박격포",role:"광역 피해. 몰려오는 병력에 강하다",cost:300,up:204,dmg:25,rate:.25,range:3.6,splash:1.4,unlock:3,
     names:["60mm 박격포","81mm 박격포","4.2인치 박격포","견인 곡사포","자주 곡사포","다연장 로켓","열압력탄 포대","집속탄 포대","궤도 포격 유도기","천벌 포대","종말 포격"]},
-  rail:{label:"레일건",role:"관통 빔. 직선 위의 적을 모두 꿰뚫는다",cost:500,up:340,dmg:50,rate:.5,range:3.3,unlock:8,
+  rail:{label:"레일건",role:"관통 빔. 직선 위의 적을 모두 꿰뚫는다",cost:500,up:340,dmg:75,rate:.5,range:3.3,unlock:8,
     names:["대전차 소총","무반동총","대전차 미사일","전차포","코일건","레일건","가우스 캐논","입자 가속포","반물질 랜스","특이점 랜스","종말 레일"]},
   sniper:{label:"저격총",role:"보스 전용. 사거리가 매우 길고 보스를 먼저 노려 3배 피해를 준다",cost:700,up:334,dmg:188.021,rate:.4,range:5.5,unlock:15,
     names:["저격 초소","지정사수","대물 저격총","정밀 저격반","열상 저격 진지","레일 저격총","스텔스 저격소","전자기 저격포","양자 조준 저격","유도 탄두 저격","절대 명중"]},
-  flame:{label:"화염방사기",role:"사거리는 짧지만 주변 적을 한꺼번에 태운다",cost:1200,up:728,dmg:2.43,rate:7,range:1.7,splash:.6,unlock:25,
+  flame:{label:"화염방사기",role:"사거리는 짧지만 주변 적을 한꺼번에 태운다",cost:1200,up:728,dmg:3.645,rate:7,range:1.7,splash:.6,unlock:25,
     names:["화염방사기","강화 화염방사기","네이팜 방사기","화염 전차","고열 플라즈마 분사기","백린 분사포","태양로 분사기","항성 화염로","핵융합 화염포","지옥불 진지","겁화"]},
   gas:{label:"최루탄",role:"맞은 적을 느리게 만든다(2초, 전직마다 +1초). 2차 전직부터 가스에 젖은 적은 모든 피해를 더 받는다",cost:1500,up:1663,dmg:2.7,rate:.45,range:2.8,splash:1.3,slow:.45,unlock:35,
     names:["최루탄 발사기","연막 최루포","신경 교란탄","저온 가스포","마비 가스 포대","중력 교란기","시간 지연 장치","정체장 발생기","절대 영도포","시공 정지기","영원한 정지"]},
@@ -1771,7 +1771,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v246 · 11/01 16:58";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v247 · 11/01 17:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2465,5 +2465,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011651 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011703 */</script>
 </body></html>
