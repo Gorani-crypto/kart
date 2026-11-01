@@ -275,10 +275,26 @@ const COUNTRIES=[
   {name:"미국",desc:"세계 최강의 군사 대국. 끝없는 물량과 최첨단 장비로 마지막 방어선을 시험한다.",flag:"us",titles:{},bg:"usa",pos:[-77,39],veh:"plane",
    uniform:"#a89c7a",camo:"#7b7353",helmet:"#8b8060",beret:"#1d1d1f"},
   {name:"외계 침공군",desc:"모든 전쟁의 흑막. 세계 각국을 마인드 컨트롤해 서로 싸우게 만든 외계 함대. 세뇌된 장성들을 앞세우고, 끝내 본대가 내려온다.",flag:"alien",titles:{"국방부장관":"외계 황제"},bg:"alien",pos:[-40,55],alien:true,
+   uniform:"#5a3a7a",camo:"#3a2a5a",helmet:"#7a5aa0",beret:"#2a1a4a"},
+  {name:"무한 침공",desc:"끝없이 밀려오는 외계 생물. 단계마다 일정 비율로 강해지고, 전선은 지구에서 태양계·우리은하·다른 은하계를 지나 멀티버스까지 넓어진다.",flag:"alien",titles:{},bg:"alien",pos:[-40,55],inf:true,
    uniform:"#5a3a7a",camo:"#3a2a5a",helmet:"#7a5aa0",beret:"#2a1a4a"}];
 let COUNTRY=COUNTRIES[0];
 const LAST=100;
-const lastOf=()=>COUNTRY&&COUNTRY.alien?10:LAST;
+const lastOf=()=>COUNTRY&&COUNTRY.inf?1e9:COUNTRY&&COUNTRY.alien?10:LAST;
+/* ═════════ 게임 모드: EASY / HARD(모든 비용 1.5배) · 최종장 클리어 뒤 무한 모드 ═════════ */
+const costMul=()=>typeof S!=="undefined"&&S&&S.mode==="hard"?1.5:1;
+const modeTag=m=>(m||"easy")==="hard"?"HARD":"EASY";
+function metaGet(){let m={};try{m=JSON.parse(localStorage.getItem("lld_meta")||"{}")||{};}catch(e){}if(typeof S!=="undefined"&&S&&S.meta)Object.assign(m,S.meta);if(typeof S!=="undefined"&&S&&S.endSeen)m[S.mode||"easy"]=true;return m;}
+function metaSet(k){const m=metaGet();m[k]=true;try{localStorage.setItem("lld_meta",JSON.stringify(m));}catch(e){}if(typeof S!=="undefined"&&S)S.meta=m;}
+/* 무한 모드: 단계마다 외계 생물 100기, 체력이 일정 비율(×1.09)로 계속 상승 · 10단계마다 보스 */
+const INF_N=100,INF_G=1.09,INF_RG=1.085;
+const infHp=s=>6e16*Math.pow(INF_G,s-1),infRew=s=>1.2e16*Math.pow(INF_RG,s-1);
+const INF_REG=[[1,"지구",["대기권","성층권","저궤도","정지궤도","달 궤도"],"외계 강하 지휘체","walker"],[21,"태양계",["달","화성","소행성대","목성","토성","천왕성","해왕성","명왕성","카이퍼 벨트","오르트 구름"],"행성 포식자","saucer"],
+  [51,"우리은하",["오리온 팔","페르세우스 팔","궁수자리 팔","은하 원반","은하 중심 · 궁수자리 A*"],"항성 파괴자","walker"],[81,"다른 은하계",["대마젤란 은하","안드로메다 은하","삼각형자리 은하","처녀자리 은하단","라니아케아 초은하단"],"은하 군주","ship"],[121,"멀티버스",null,"차원의 지배자","ship"]];
+function infReg(s){let i=0;while(i+1<INF_REG.length&&s>=INF_REG[i+1][0])i++;const R=INF_REG[i],a=R[0],b=i+1<INF_REG.length?INF_REG[i+1][0]:0;
+  const loc=R[2]?R[2][Math.min(R[2].length-1,Math.floor((s-a)*R[2].length/(b-a)))]:`제${s-a+1}평행우주`;return{area:R[1],loc,boss:R[3],shape:R[4]};}
+function mkInfSq(s,bw){const h=infHp(s);return{r:17,alien:"grunt",n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*1.1,rew:infRew(s)/INF_N*(bw?.7:1),lk:2,dmg:1,size:.34,boss:false,d:0,id:nextId++,step:0};}
+function mkInfBoss(s){const R=infReg(s),h=infHp(s)*40;return{r:18,alien:R.shape,title:`${R.loc}의 ${R.boss}`,n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(R.shape==="ship"?.22:R.shape==="walker"?.28:.34),rew:Math.round(infRew(s)*.3),kind:1,dmg:MAXLIFE,size:R.shape==="ship"?.8:.62,boss:true,d:0,id:nextId++,step:0};}
 // 계급: 이름, 계급장 종류, 개수
 const RK=[["이병","bar",1],["일병","bar",2],["상병","bar",3],["병장","bar",4],["하사","chev",1],["중사","chev",2],["상사","chev",3],["원사","chev",4],
   ["소위","dia",1],["중위","dia",2],["대위","dia",3],["소령","leaf",1],["중령","leaf",2],["대령","leaf",3],["준장","star",1],["소장","star",2],["중장","star",3],["대장","star",4],["국방부장관","min",0]];
@@ -490,14 +506,14 @@ function buildCurve(f,g,fh=1,evo3=false,lock=0){const D=[0,1],Cm=[0,1];for(let L
 const CURVE={base:buildCurve(1,1,1,true),flat:buildCurve(.5,.5),mflat:buildCurve(.5,1,1,true),s2:buildCurve(1.2,.5,1.2,false,20),s3:buildCurve(1.4,.5,1.4,false,10),tk:(()=>{const c=buildCurve(1.2,.5,1.2,false,20);for(let L=2;L<=100;L++)c.Cm[L]*=Math.pow(1.045,L-1)*Math.pow(1.5,[10,20,30,40].filter(m=>L>=m).length);return c;})(), /* 전차: 강화마다 4.5%씩 + 10·20·30·40렙 강화 때 ×1.5 (이후 비율 유지) */nk:(()=>{const c=buildCurve(1.3,.5,1.3); /* 핵 강화당 피해 증가폭 상향(1.1→1.3) */for(let L=2;L<=100;L++)c.Cm[L]=c.Cm[L-1]*(1+((CSTEP[L]||1)-1)*.4);return c;})()}; /* 핵: 1발이 강한 대신 강화당 피해·강화비 증가폭이 다른 무기보다 작음 */
 const curveOf=type=>{const T=TT[type];return CURVE[type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
-const upCost=t=>Math.ceil(TT[t.type].up*curveOf(t.type).Cm[Math.min(t.l,99)]);
-const placeCost=type=>TT[type].cost; // 개수와 무관한 고정 설치비
+const upCost=t=>Math.ceil(TT[t.type].up*curveOf(t.type).Cm[Math.min(t.l,99)]*costMul());
+const placeCost=type=>Math.ceil(TT[type].cost*costMul()); // 개수와 무관한 고정 설치비
 function avgRew(s){const m=mix(s);let v=0;for(const r in m)v+=m[r]*rewOf(s,+r);return v;}
 const depotPay=(t,s)=>Math.floor(avgRew(s)*BAL.dpA*Math.pow(BAL.dpG,t.l-1));
 
 /* ═════════ 상태 ═════════ */
 let S=fresh();
-function fresh(){return{v:2,country:1,bestBy:{},waveBy:{},conqBy:{},gold:150,wave:1,lives:MAXLIFE,best:1,towers:[],speed:1,auto:true,earned:0,kills:0,gpm:0,conquered:false,t:Date.now()};}
+function fresh(){return{v:2,country:1,bestBy:{},waveBy:{},conqBy:{},gold:150,wave:1,lives:MAXLIFE,best:1,towers:[],speed:1,auto:true,earned:0,kills:0,gpm:0,conquered:false,mode:"easy",t:Date.now()};}
 let hasSave=false,scorch=[],spawnGap=.26,shakeT=0,buildCell=null,enemies=[],queue=[],shells=[],fx=[],phase="idle",spawnT=0,autoT=2.5,nextId=1,sel=null,buildType=null,hover=null,dirtyUI=true,paused=false,waveTotal=0;
 const HOOK={};
 
@@ -508,7 +524,9 @@ function fmt(n){n=Math.floor(n);if(n<1e4)return n.toLocaleString("ko-KR");
 /* ═════════ 단계 진행 ═════════ */
 function pick(m){let x=Math.random();for(const r in m){x-=m[r];if(x<=0)return+r;}return+Object.keys(m).pop();}
 function startWave(){if(phase!=="idle")return;
-  if(!window.__SIM__&&!bossIntroOk&&!bossIntro&&(COUNTRY.alien?S.wave===10:S.wave===100)){bossIntro={t:0,T:COUNTRY.alien?5:S.country>=3?3.8:2.6,c:S.country};banner("");return;}bossIntroOk=false;
+  if(!window.__SIM__&&!bossIntroOk&&!bossIntro&&!COUNTRY.inf&&(COUNTRY.alien?S.wave===10:S.wave===100)){bossIntro={t:0,T:COUNTRY.alien?5:S.country>=3?3.8:2.6,c:S.country};banner("");return;}bossIntroOk=false;
+  if(COUNTRY.inf){const s=S.wave,R=infReg(s),bw=s%10===0;queue=[];for(let i=0;i<INF_N;i++)queue.push(mkInfSq(s,bw));if(bw)queue.splice(70,0,mkInfBoss(s));spawnGap=.35;
+    waveTotal=queue.length;phase="wave";spawnT=0;shakeT=.6;banner(`무한 ${s}단계 · ${R.area} · ${R.loc}${bw?" · "+R.boss+" 출현":""}`);dirtyUI=true;return;}
   if(COUNTRY.alien){const s=S.wave;queue=[];
     if(s<=5){ALC[s-1].names.forEach((_,i)=>queue.push(mkCommander(s,i)));spawnGap=180;} /* 1~5단계: 3분마다 총사령관 1명 */
     else{const U=alUnits(s);for(let i=0;i<U;i++)queue.push(mkAlienSquad(s));queue.splice(Math.floor(U*.7),0,mkAlien(s));spawnGap=.35;}
@@ -563,7 +581,8 @@ function goCountry(c){if(c<1||c>COUNTRIES.length||c===S.country)return;if(c>1&&!
   S.bestBy[S.country]=S.best;S.waveBy[S.country]=S.wave;S.country=c;COUNTRY=COUNTRIES[c-1];S.best=S.bestBy[c]||1;S.wave=Math.min(S.best,S.waveBy[c]||1);
   enemies=[];queue=[];shells=[];phase="idle";S.lives=MAXLIFE;autoT=3;sel=null;buildCell=null;bossIntro=null;bossIntroOk=false;endless=null;
   if(typeof document!=="undefined"&&$("cv")&&$("cv").getContext){try{buildBG();paintHeaderFlag();makeThumbs();}catch(e){}}
-  banner(`${c}스테이지 · ${COUNTRY.name}`);
+  banner(COUNTRY.inf?`♾ 무한 모드 · ${modeTag(S.mode)}`:`${c}스테이지 · ${COUNTRY.name}`);
+  if(c===7&&!S.unl7){S.unl7=true;unlockNotice(`무한 모드 · ${modeTag(S.mode)}`,[["끝없는 외계 생물","단계마다 100기씩, 체력이 계속 일정 비율로 강해집니다. 10단계마다 보스가 함께 옵니다."],["전선 확장","지구 → 태양계 → 우리은하 → 다른 은하계 → 멀티버스. 얼마나 멀리 갈 수 있는지 도전하세요."]]);}
   if(c===6&&!S.unl6){S.unl6=true;unlockNotice("외계 침공",[["6스테이지 · 10단계","1~6단계: 외계인에게 세뇌돼 더 강해진 각 대륙의 장성들. 7~10단계: 외계군 본대. 10단계 외계 황제를 막으면 인류의 승리. 매우 어렵습니다."],["최고 레벨 100","미국을 점령해 모든 무기를 100레벨(10차 전직)까지 키울 수 있습니다."]]);}
   if(c===3&&!S.unl3){S.unl3=true;unlockNotice("3스테이지 해금",[["테슬라 코일","1.5억 원 · 1단계. 번개가 분대 사이를 연쇄로 튀며 분대 전원을 감전."],["위성 레이저","5억 원 · 25단계. 하늘에서 레이저 기둥을 내리꽂는 광역 타격."],["핵 사일로","25억 원 · 50단계. 10분 충전 뒤 지도 위 모든 적을 한꺼번에 타격."],["궤도 방어 플랫폼","30억 원 · 75단계. 여러 줄기 펄스 레이저로 동시에 여러 분대를 지짐."]]);}
   if(c===2&&!S.fast8){S.fast8=true;unlockNotice("2스테이지 해금",[["전차 진지","100만 원. 강력한 전차포로 맞은 적과 주변(0.8칸)에 큰 피해. 아래 무기 줄에서 배치하세요."]]);}
@@ -1205,7 +1224,7 @@ function bgmLabels(){const a=$("tBgm"),b=$("bgmBtn");if(a){a.textContent=BGM.on?
 if(typeof document!=="undefined"&&document.addEventListener)document.addEventListener("visibilitychange",()=>{if(!BGM.ctx)return;if(document.hidden)BGM.ctx.suspend();else if(BGM.on)BGM.ctx.resume();});
 
 /* ═════════ 타이틀 화면 그림 — 불타는 지평선, 탐조등, 능선 위 병사들과 태극기 ═════════ */
-let newArm=0;function newGame(){S=fresh();gAcc=0;gClock=performance.now();COUNTRY=COUNTRIES[0];enemies=[];queue=[];shells=[];fx=[];scorch=[];phase="idle";sel=null;buildType=null;endless=null;bossIntro=null;bossIntroOk=false;nukeCin=0;dmgKey="";
+let newArm=0;function newGame(mode){const mt=metaGet();S=fresh();S.mode=mode==="hard"?"hard":"easy";S.meta=mt;gAcc=0;gClock=performance.now();COUNTRY=COUNTRIES[0];enemies=[];queue=[];shells=[];fx=[];scorch=[];phase="idle";sel=null;buildType=null;endless=null;bossIntro=null;bossIntroOk=false;nukeCin=0;dmgKey="";
   try{buildBG();paintHeaderFlag();makeThumbs();}catch(e){}save(true);dirtyUI=true;}
 let titleOn=false,titleRaf=0,TF=null;const EMB=[];
 function titleFlag(){if(TF)return TF;TF=document.createElement("canvas");TF.width=240;TF.height=160;const g=TF.getContext("2d");drawKorea(g,0,0,240,160);return TF;}
@@ -1237,7 +1256,7 @@ function drawTitle(now){if(!titleOn)return;const cv=$("titleCv"),dpr=Math.min(2,
   for(let i=EMB.length-1;i>=0;i--)if(EMB[i].l<=0)EMB.splice(i,1);
   const vg=g.createRadialGradient(W/2,H*.45,Math.min(W,H)*.3,W/2,H*.5,Math.max(W,H)*.75);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.75)");g.fillStyle=vg;g.fillRect(0,0,W,H);
   titleRaf=requestAnimationFrame(drawTitle);}
-function showTitle(){titleOn=true;$("title").hidden=false;$("tStory").hidden=!(S.endSeen||(S.conqBy&&S.conqBy[6]));const hs=S.earned>0;$("tPlay").hidden=!hs;$("tNew").textContent="새 게임";$("tNew").classList.remove("warn");newArm=0;const c=COUNTRIES[S.country-1];$("tSave").textContent=S.earned>0?`진행 기록 · ${S.country}스테이지 ${c?c.name:""} · ${S.wave}단계`:"새 작전";bgmLabels();titleRaf=requestAnimationFrame(drawTitle);}
+function showTitle(){titleOn=true;$("title").hidden=false;$("tStory").hidden=!(S.endSeen||(S.conqBy&&S.conqBy[6]));const hs=S.earned>0;$("tPlay").hidden=!hs;$("tNew").textContent="새 게임";$("tNew").classList.remove("warn");newArm=0;const c=COUNTRIES[S.country-1];$("tSave").textContent=S.earned>0?`진행 기록 · ${modeTag(S.mode)} · ${c&&c.inf?"무한 모드":S.country+"스테이지 "+(c?c.name:"")} · ${S.wave}단계`:"새 작전";bgmLabels();titleRaf=requestAnimationFrame(drawTitle);}
 function landLock(){try{const m=matchMedia("(pointer:coarse)").matches;if(!m)return;const go=()=>{try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{});}catch(e){}};const de=document.documentElement;if(!document.fullscreenElement&&de.requestFullscreen&&!matchMedia("(display-mode: fullscreen)").matches&&!matchMedia("(display-mode: standalone)").matches)de.requestFullscreen({navigationUI:"hide"}).then(go).catch(go);else go();}catch(e){}} /* 폰에서 게임 시작 시 가로 고정(지원 기기) */
 function hideTitle(){titleOn=false;cancelAnimationFrame(titleRaf);$("title").hidden=true;last=0;if(!S.intro&&!(S.earned>0))setTimeout(()=>{if(!S.intro&&!(S.earned>0))startIntro();},300);}
 function drawKorea(g,x,y,w,h){g.save();g.fillStyle="#ffffff";g.fillRect(x,y,w,h);const cx=x+w/2,cy=y+h/2,R=h/4,an=Math.atan2(2,3);g.translate(cx,cy);g.rotate(an);
@@ -1740,17 +1759,17 @@ $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
 $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{try{save();}catch(e){}showTitle();});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v238 · 11/01 12:50";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v239 · 11/01 13:10";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={};
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
-function slotLabel(o){const c=COUNTRIES[(o.country||1)-1];return`${o.country}스테이지 ${c?c.name:""} · ${o.wave}단계`;}
+function slotLabel(o){const c=COUNTRIES[(o.country||1)-1];return`${modeTag(o.mode)} · ${c&&c.inf?"무한 모드":o.country+"스테이지 "+(c?c.name:"")} · ${o.wave}단계`;}
 async function slotOpen(mode){slotMode=mode;slotArm=0;try{save(true);}catch(e){}$("slTitle").textContent=mode==="save"?"저장하기":"불러오기";$("slHint").textContent=mode==="save"?"저장할 칸을 고르세요. 이미 저장된 칸은 한 번 더 누르면 덮어씁니다.":"이어서 할 저장소를 고르세요.";$("slMsg").textContent="";
   $("slotPanel").hidden=false;document.body.classList.remove("drawer");if(!titleOn)paused=true;$("slList").innerHTML="<p>불러오는 중…</p>";for(let i=1;i<=SLOTN;i++)slotCache[i]=await slotRead(i);slotRender();}
 function slotRender(){$("slList").innerHTML=Array.from({length:SLOTN},(_,k)=>{const i=k+1,v=slotCache[i];let o=null;try{o=v&&JSON.parse(v.json);}catch(e){}
   const d=v&&v.t?new Date(v.t):null,ds=d?`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`:"";
   return`<button class="sl${o?"":" empty"}${slotArm===i?" arm":""}" data-i="${i}"><b>저장소 ${i}</b><span>${o?slotLabel(o):"비어 있음"}</span><small>${slotArm===i?"한 번 더 누르면 덮어쓰기":ds}</small></button>`;}).join("");}
-$("slList").addEventListener("click",async e=>{const b=e.target.closest(".sl");if(!b)return;const i=+b.dataset.i,v=slotCache[i];
+$("slList").addEventListener("click",async e=>{const b=e.target.closest(".sl");if(!b||b.dataset.m||slotMode==="mode")return;const i=+b.dataset.i,v=slotCache[i];
   if(slotMode==="save"){if(v&&slotArm!==i){slotArm=i;slotRender();return;}const rec={json:ser(),t:Date.now()};try{localStorage.setItem(slotKey(i),JSON.stringify(rec));}catch(e){}if(db&&uid){try{await db.doc("data/users/"+uid+"/slot"+i).set(rec);}catch(e){}}slotCache[i]=rec;slotArm=0;slotRender();$("slMsg").textContent=`저장소 ${i}에 저장했어요.`;return;}
   if(!v){$("slMsg").textContent="비어 있는 저장소예요.";return;}let o=null;try{o=JSON.parse(v.json);}catch(e){}if(!o||!apply(o)){$("slMsg").textContent="불러올 수 없는 저장소예요.";return;}
   hasSave=true;save(true);$("slotPanel").hidden=true;paused=false;if(titleOn){hideTitle();}else{dirtyUI=true;renderUI();}resize();banner(`저장소 ${i} 불러옴 · ${slotLabel(o)}`);});
@@ -1758,8 +1777,12 @@ $("slClose").addEventListener("click",()=>{$("slotPanel").hidden=true;if(!titleO
 $("saveSlotBtn").addEventListener("click",()=>slotOpen("save"));$("loadSlotBtn").addEventListener("click",()=>slotOpen("load"));$("tLoad").addEventListener("click",()=>slotOpen("load"));
 $("tMove").addEventListener("click",()=>{$("mvMsg").textContent="";$("mvCode").value="";$("movePanel").hidden=false;});$("mvClose").addEventListener("click",()=>{$("movePanel").hidden=true;});
 $("mvMake").addEventListener("click",async()=>{try{save(true);}catch(e){}const code="LLD1."+btoa(unescape(encodeURIComponent(ser())));$("mvCode").value=code;$("mvCode").select();let ok=false;try{await navigator.clipboard.writeText(code);ok=true;}catch(e){try{ok=document.execCommand("copy");}catch(e2){}}$("mvMsg").textContent=ok?"복사했어요. 새 기기에 붙여 넣으세요.":"코드를 길게 눌러 전체 복사하세요.";});
-$("mvLoad").addEventListener("click",()=>{const raw=($("mvCode").value||"").trim().replace(/^LLD1\./,"");try{const o=JSON.parse(decodeURIComponent(escape(atob(raw))));if(!apply(o))throw 0;hasSave=true;save(true);$("mvMsg").textContent="불러왔어요! "+S.country+"스테이지 · "+S.wave+"단계";showTitle();}catch(e){$("mvMsg").style.color="#d9573c";$("mvMsg").textContent="코드가 올바르지 않아요.";setTimeout(()=>{$("mvMsg").style.color="";},2000);}});$("tNew").addEventListener("click",()=>{const b=$("tNew");if(S.earned>0&&Date.now()-newArm>3000){newArm=Date.now();b.textContent="기록이 지워집니다 · 한 번 더 누르면 시작";b.classList.add("warn");setTimeout(()=>{if(titleOn&&Date.now()-newArm>=3000){b.textContent="새 게임";b.classList.remove("warn");}},3100);return;}
-  if(BGM.on)bgmStart();if(S.earned>0||S.country!==1)newGame();hideTitle();});
+$("mvLoad").addEventListener("click",()=>{const raw=($("mvCode").value||"").trim().replace(/^LLD1\./,"");try{const o=JSON.parse(decodeURIComponent(escape(atob(raw))));if(!apply(o))throw 0;hasSave=true;save(true);$("mvMsg").textContent="불러왔어요! "+S.country+"스테이지 · "+S.wave+"단계";showTitle();}catch(e){$("mvMsg").style.color="#d9573c";$("mvMsg").textContent="코드가 올바르지 않아요.";setTimeout(()=>{$("mvMsg").style.color="";},2000);}});$("tNew").addEventListener("click",()=>{const b=$("tNew");if(metaGet().easy){modeOpen();return;}if(S.earned>0&&Date.now()-newArm>3000){newArm=Date.now();b.textContent="기록이 지워집니다 · 한 번 더 누르면 시작";b.classList.add("warn");setTimeout(()=>{if(titleOn&&Date.now()-newArm>=3000){b.textContent="새 게임";b.classList.remove("warn");}},3100);return;}
+  if(BGM.on)bgmStart();if(S.earned>0||S.country!==1)newGame("easy");hideTitle();});
+let modeArm="";function modeOpen(){slotMode="mode";modeArm="";$("slTitle").textContent="게임 모드";$("slHint").textContent="새 게임의 난이도를 고르세요."+(S.earned>0?" 지금 진행 기록은 지워집니다(저장소에 저장해 두면 나중에 불러올 수 있어요).":"");$("slMsg").textContent="";$("slotPanel").hidden=false;modeRender();}
+function modeRender(){const m=metaGet(),it=[["easy","EASY","기본 난이도",true],["hard","HARD","모든 비용 1.5배 · 방치 수입 최대 2시간",!!m.easy]];
+  $("slList").innerHTML=it.map(([k,n,d,ok])=>`<button class="sl${ok?"":" empty"}${modeArm===k?" arm":""}" data-m="${k}"><b>${n}</b><span>${ok?d:"EASY 최종장을 깨면 열립니다"}</span><small>${modeArm===k?"한 번 더 누르면 시작":m[k]?"클리어 ✓":""}</small></button>`).join("")+`<p style="margin:8px 0 0">♾ 무한 모드: EASY·HARD 최종장(외계 침공)을 깨면 이어서 할 수 있어요.${m.easy?" 엔딩을 본 기록에서 6스테이지 화면의 <b>무한 모드 ▶</b>로도 들어갈 수 있어요.":""}</p>`;}
+$("slList").addEventListener("click",e=>{const b=e.target.closest(".sl[data-m]");if(!b||slotMode!=="mode")return;const k=b.dataset.m;if(k==="hard"&&!metaGet().easy){$("slMsg").textContent="EASY 최종장을 먼저 깨야 해요.";return;}if(S.earned>0&&modeArm!==k){modeArm=k;modeRender();return;}$("slotPanel").hidden=true;slotMode="";if(BGM.on)bgmStart();newGame(k);hideTitle();},true);
 $("go").addEventListener("click",()=>{if(paused)togglePause();startWave();});
 $("stageBox").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.c){goCountry(+b.dataset.c);return;}if(b.dataset.replay){startCutscene(+b.dataset.replay,true);return;}if(b.dataset.to){setStage(+b.dataset.to);banner(`${S.wave}단계로 이동`);return;}if(b.dataset.d)setStage(S.wave+(+b.dataset.d));});
 let drag=null;
@@ -1789,12 +1812,12 @@ function renderStage(){const s=S.wave,m=mix(s),boss=BOSS[s];
   const bl=(boss?`<span class="chip boss">${BKIND[boss[2]]} · ${BT(boss[1])}${BT(boss[1])===RK[boss[0]][0]?"":" ("+RK[boss[0]][0]+")"}</span>`+(escOf(s)?`<span class="chip boss">${BT(escOf(s)[1])}${escOf(s)===PRES?" (최종 보스)":" ("+RK[escOf(s)[0]][0]+")"}</span>`:""):"")+air;
   const live=phase==="wave"?`<div class="progress" aria-label="남은 병력"><i style="width:${waveTotal?100*(1-(queue.length+enemies.length)/waveTotal):0}%"></i></div>`:"";
   const nb=Object.keys(BOSS).map(Number).find(b=>b>=s);
-  const cNav=(S.country>1||S.conqBy[S.country])?`<div class="row">${S.country>1?`<button class="btn" data-c="${S.country-1}">◀ ${S.country-1}스테이지</button>`:""}${S.conqBy[S.country]&&S.country<COUNTRIES.length?`<button class="btn" data-c="${S.country+1}">${S.country+1}스테이지로 진군 ▶</button>`:""}</div>`:"";
-  $("stageBox").innerHTML=`<div class="lbl">${S.country}스테이지 · ${COUNTRY.name}${S.conqBy[S.country]?" · 점령 완료":""}</div>${cNav}${S.conqBy[S.country]?`<button class="btn" data-replay="${S.country}">🎬 점령 장면 다시 보기</button>`:""}
-    <div class="stagebar"><button class="btn" data-d="-1" ${s<=1?"disabled":""} aria-label="이전 단계">◀</button><b>${s} / ${lastOf()} 단계</b><button class="btn" data-d="1" ${s>=S.best?"disabled":""} aria-label="다음 단계">▶</button></div>
+  const cNav=(S.country>1||S.conqBy[S.country])?`<div class="row">${S.country>1?`<button class="btn" data-c="${S.country-1}">◀ ${S.country-1}스테이지</button>`:""}${S.conqBy[S.country]&&S.country<COUNTRIES.length?`<button class="btn" data-c="${S.country+1}">${S.country===6?"♾ 무한 모드 ▶":S.country+1+"스테이지로 진군 ▶"}</button>`:""}</div>`:"";
+  $("stageBox").innerHTML=`<div class="lbl">${modeTag(S.mode)} · ${COUNTRY.inf?"무한 모드":S.country+"스테이지 · "+COUNTRY.name}${S.conqBy[S.country]?" · 점령 완료":""}</div>${cNav}${S.conqBy[S.country]?`<button class="btn" data-replay="${S.country}">🎬 점령 장면 다시 보기</button>`:""}
+    <div class="stagebar"><button class="btn" data-d="-1" ${s<=1?"disabled":""} aria-label="이전 단계">◀</button><b>${s} / ${COUNTRY.inf?"∞":lastOf()} 단계</b><button class="btn" data-d="1" ${s>=S.best?"disabled":""} aria-label="다음 단계">▶</button></div>
     ${s<S.best?`<button class="btn pri skipb" data-to="${s+1}" title="이미 깬 단계를 하나 건너뜁니다">⏭ 한 단계 넘기기 · ${s+1}단계로</button>`:""}
-    ${live}${COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
-    ${!COUNTRY.alien&&!boss&&nb?`<div class="next">다음 ${BKIND[BOSS[nb][2]]} <b>${nb}단계 ${BT(BOSS[nb][1])}</b></div>`:""}`;}
+    ${live}${COUNTRY.inf?(()=>{const R=infReg(s),bw=s%10===0;return`<div class="lbl">이번 단계 · ${R.area} · ${R.loc}</div><div class="comp">${bw?`<span class="chip boss">보스 · ${R.boss}</span>`:""}<span class="chip">외계 생물 ${INF_N}기</span></div><div class="next">1기 체력 <b>${fmt(infHp(s))}</b>${bw?` · 보스 체력 <b>${fmt(infHp(s)*40)}</b>`:` · 다음 보스 <b>${Math.ceil(s/10)*10}단계</b>`}</div>`;})():COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
+    ${!COUNTRY.alien&&!COUNTRY.inf&&!boss&&nb?`<div class="next">다음 ${BKIND[BOSS[nb][2]]} <b>${nb}단계 ${BT(BOSS[nb][1])}</b></div>`:""}`;}
 let popKey="";
 function popAt(p,cx,cy){const F=C.clientWidth,ox=C.offsetLeft,oy=C.offsetTop,cs=F/COLS,pw=p.offsetWidth,ph=p.offsetHeight;
   let x=(cx+1.1)*cs;if(x+pw>F-6)x=cx*cs-pw-cs*.1;if(x<6)x=6;
@@ -1803,7 +1826,7 @@ function renderPop(){const p=$("pop");
   if(buildCell&&!sel){if(!canPlace(buildCell[0],buildCell[1])){buildCell=null;p.hidden=true;return;}
     const here=ORDER.filter(k=>(TT[k].stage||1)<=S.country&&!TT[k].wip);const key="b|"+buildCell+"|"+here.map(k=>!lockText(k)&&S.gold>=placeCost(k)).join();
     if(key!==popKey){popKey=key;p.innerHTML=`<div class="ph"><b>무기 배치</b><span>칸 ${String.fromCharCode(65+buildCell[0])}${buildCell[1]+1}</span><button class="x" data-a="close" aria-label="닫기">×</button></div>
-      <div class="bgrid">${here.map(k=>{const T=TT[k],lock=lockText(k);return`<button class="btn bopt" data-b="${k}" ${lock||S.gold<T.cost?"disabled":""} title="${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span>${T.label}</span><small>${lock?T.unlock+"단계":fmt(T.cost)}</small></button>`;}).join("")}</div>`;}
+      <div class="bgrid">${here.map(k=>{const T=TT[k],lock=lockText(k);return`<button class="btn bopt" data-b="${k}" ${lock||S.gold<placeCost(k)?"disabled":""} title="${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span>${T.label}</span><small>${lock?T.unlock+"단계":fmt(placeCost(k))}</small></button>`;}).join("")}</div>`;}
     p.hidden=false;popAt(p,buildCell[0],buildCell[1]);return;}
   if(!(sel&&S.towers.includes(sel))){p.hidden=true;popKey="";return;}
   const t=sel,T=TT[t.type],s=st(t),c=upCost(t),max=t.l>=maxL(),into=t.l%10,poor=S.gold<c;
@@ -1816,7 +1839,7 @@ function renderPop(){const p=$("pop");
     <div class="row"><button class="btn warn" data-a="sell">해체 +${fmt(t.inv*.7)}</button></div>`;}
   p.hidden=false;popAt(p,t.x,t.y);}
 let barKey="";
-function renderUI(){renderPop();$("countryLine").textContent=`${S.country}스테이지 · ${COUNTRY.name}`;
+function renderUI(){renderPop();$("countryLine").textContent=`${modeTag(S.mode)} · ${COUNTRY.inf?"무한 모드 · "+S.wave+"단계":S.country+"스테이지 · "+COUNTRY.name}`;
   $("sGold").textContent=fmt(S.gold);$("sWave").textContent=S.wave;$("sBest").textContent=S.best;$("sLife").textContent=Math.max(0,S.lives)+" / "+MAXLIFE;
   $("sLifeBox").classList.toggle("low",S.lives<=15);$("pauseVeil").hidden=!paused;
   $("pause").setAttribute("aria-pressed",paused);$("pause").textContent=paused?"재개":"일시정지";
@@ -1826,9 +1849,9 @@ function renderUI(){renderPop();$("countryLine").textContent=`${S.country}스테
   for(const b of $("speed").children)b.setAttribute("aria-pressed",+b.dataset.sp===S.speed);
   $("auto").setAttribute("aria-pressed",S.auto);$("go").disabled=phase!=="idle";$("go").textContent=phase==="idle"?"출격":"교전 중";
   renderStage();
-  const bk=ORDER.map(k=>[k,lockText(k),S.gold>=(TT[k].cost||0),buildType===k].join()).join("|")+Object.keys(THUMB).length;
+  const bk=ORDER.map(k=>[k,lockText(k),S.gold>=(TT[k].cost?placeCost(k):0),buildType===k].join()).join("|")+Object.keys(THUMB).length;
   if(bk!==barKey&&!drag){barKey=bk;$("bar").innerHTML=ORDER.map(k=>{const T=TT[k],lock=lockText(k);
-    return`<button class="slot${lock?" locked":""}${!lock&&S.gold<T.cost?" poor":""}" data-t="${k}" aria-pressed="${buildType===k}" title="${T.label} — ${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span class="nm">${T.label}</span><span class="pr">${lock?lock.replace(" 해금",""):fmt(T.cost)}</span></button>`;}).join("");}
+    return`<button class="slot${lock?" locked":""}${!lock&&S.gold<placeCost(k)?" poor":""}" data-t="${k}" aria-pressed="${buildType===k}" title="${T.label} — ${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span class="nm">${T.label}</span><span class="pr">${lock?lock.replace(" 해금",""):fmt(placeCost(k))}</span></button>`;}).join("");}
   const box=$("sel");
   if(sel&&S.towers.includes(sel)){const t=sel,T=TT[t.type],s=st(t),n={...t,l:Math.min(maxL(),t.l+1)},ns=st(n),c=upCost(t),max=t.l>=maxL();
     const into=t.l%10,nextT=s.tier<10?T.names[s.tier+1]:null;let rows="";
@@ -1857,7 +1880,7 @@ function renderUI(){renderPop();$("countryLine").textContent=`${S.country}스테
       <dl class="kv">${rows}</dl>
       <p class="hint">강화와 해체는 지도 위 무기 옆에 뜨는 창에서 합니다.</p>`;}
   else if(buildType){const T=TT[buildType];box.innerHTML=`<h2>${T.label} 배치</h2><p class="hint">${T.role}${T.dmg?` · 1레벨 초당 공격력 <b style="color:var(--accent)">${fmt(dpsOf({type:buildType,l:1}))}</b>`:""}. 길과 적국 국기 칸을 제외한 지도의 아무 빈 칸이나 눌러 설치하세요. 설치비는 몇 개를 짓든 같습니다.</p><p class="hint">10레벨마다 전직하며 외형과 효과가 바뀝니다. 지금은 30레벨, 3차 전직까지 열려 있습니다.</p>`;}
-  else box.innerHTML=`<h2>작전 지침</h2><p class="hint">${COUNTRY.desc}${COUNTRY.alien?" 10단계를 모두 막으면 지구를 지켜냅니다.":` 이병부터 ${BT("국방부장관")}까지 100단계를 돌파하면 이 나라를 점령합니다.${S.country>1?" 계급은 같아도 1스테이지보다 훨씬 튼튼합니다.":""}`}</p><p class="hint">10단계마다 지휘관이 소속 부대를 이끌고 옵니다. 기지 내구도가 0이 되면 3단계 뒤로 후퇴합니다. 스페이스 바로 일시정지할 수 있습니다.</p>`;
+  else box.innerHTML=`<h2>작전 지침</h2><p class="hint">${COUNTRY.desc}${COUNTRY.inf?" 끝이 없습니다. 최고 기록에 도전하세요.":COUNTRY.alien?" 10단계를 모두 막으면 지구를 지켜냅니다.":` 이병부터 ${BT("국방부장관")}까지 100단계를 돌파하면 이 나라를 점령합니다.${S.country>1?" 계급은 같아도 1스테이지보다 훨씬 튼튼합니다.":""}`}</p><p class="hint">10단계마다 지휘관이 소속 부대를 이끌고 옵니다. 기지 내구도가 0이 되면 3단계 뒤로 후퇴합니다. 스페이스 바로 일시정지할 수 있습니다.</p>`;
   dirtyUI=false;}
 function conquest(){if(typeof document==="undefined"||!$("cut")||!$("cut").getAttribute)return;startCutscene();}
 function conquestModal(){const c=S.country,nx=COUNTRIES[c];
@@ -2081,8 +2104,10 @@ function storyPlay(i,atEnd){if(i<0)i=0;if(i>=STORY_SEQ.length){storyExit();retur
   $("cutCv").onclick=e=>{const r=$("cutCv").getBoundingClientRect(),left=ROT()?e.clientY<r.top+r.height/2:e.clientX<r.left+r.width/2,st=sceneStarts(cutData);let k=0;for(let q=0;q<st.length;q++)if(st[q]<=cutT+.05)k=q;
     if(left){if(k>0)cutT=st[k-1]+.01;else if(storyI>0)storyPlay(storyI-1,true);else cutT=0;}
     else{if(k<st.length-1)cutT=st[k+1]+.01;else if(storyI<STORY_SEQ.length-1)storyPlay(storyI+1,false);else storyExit();}};}
-function cutEnd(){const d=cutData;if(d.from&&d.from.alien&&!d.credits&&!S.endSeen){S.endSeen=true;try{save();}catch(e){}}
-  if(storyQ&&!d.credits){storyNext();return;}if(d.from&&d.from.alien&&!d.credits){startCredits();return;}if(d.credits){const toMain=()=>{clearTimeout(cutTimer);storyQ=null;cutOn=false;$("cut").hidden=true;try{save();}catch(e){}showTitle();};$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">메인 메뉴로</button>`;$("cutGo").onclick=toMain;clearTimeout(cutTimer);cutTimer=setTimeout(toMain,2500);return;} /* "끝" 뒤 2.5초 후 메인 메뉴로 */if(d.replay){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">닫기</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;};return;}if(d.intro){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">방어 시작</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;S.intro=true;save();};return;}const goLbl=d.to?`계속하기 · ${d.c+1}스테이지로 진군`:"계속하기";
+function cutEnd(){const d=cutData;if(d.from&&d.from.alien&&!d.credits&&!storyQ){if(!S.endSeen)S.endSeen=true;metaSet(S.mode||"easy");try{save();}catch(e){}}
+  if(storyQ&&!d.credits){storyNext();return;}if(d.from&&d.from.alien&&!d.credits){startCredits();return;}if(d.credits&&!storyQ&&S.country===6&&S.conqBy[6]){clearTimeout(cutTimer);const toMain=()=>{cutOn=false;$("cut").hidden=true;try{save(true);}catch(e){}showTitle();},toInf=()=>{cutOn=false;$("cut").hidden=true;goCountry(7);try{save(true);}catch(e){}};
+    $("cutBtns").innerHTML=`<span style="align-self:center;margin-right:8px;color:#f1e3b0">${modeTag(S.mode)} 클리어 · 무한 모드로 계속하시겠습니까?</span><button class="btn" id="cutMain">메인 메뉴로</button><button class="btn pri" id="cutGo">♾ 무한 모드로 계속</button>`;$("cutMain").onclick=toMain;$("cutGo").onclick=toInf;return;}
+  if(d.credits){const toMain=()=>{clearTimeout(cutTimer);storyQ=null;cutOn=false;$("cut").hidden=true;try{save();}catch(e){}showTitle();};$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">메인 메뉴로</button>`;$("cutGo").onclick=toMain;clearTimeout(cutTimer);cutTimer=setTimeout(toMain,2500);return;} /* "끝" 뒤 2.5초 후 메인 메뉴로 */if(d.replay){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">닫기</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;};return;}if(d.intro){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">방어 시작</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;S.intro=true;save();};return;}const goLbl=d.to?`계속하기 · ${d.c+1}스테이지로 진군`:"계속하기";
   $("cutBtns").innerHTML=d.to?`<button class="btn" id="cutStay">더 머물기</button><button class="btn pri" id="cutGo"></button>`:`<button class="btn pri" id="cutGo"></button>`;
   const close=()=>{clearInterval(cutTimer);cutTimer=null;cutOn=false;$("cut").hidden=true;};
   if(d.to)$("cutStay").onclick=close;
@@ -2377,14 +2402,14 @@ function cutMood(g,W,H,c,i,T){if(c>=6&&i!==1)return;if(isAlEnd(cutData))return;i
 /* ═════════ 저장 (계정 DB + 브라우저) ═════════ */
 const LS="lastline-save-v2";let db=null,uid=null,lastRemote=0;
 function ser(){return JSON.stringify({...S,t:Date.now(),towers:S.towers.map(t=>({type:t.type,x:t.x,y:t.y,l:t.l,inv:t.inv,kills:t.kills||0,...(t.tg?{tg:t.tg}:{}),...(t.type==="nuke"?{cd:Math.max(0,t.cd||0)}:{})}))});}
-function apply(o){if(!o||o.v!==2)return false;gAcc=0;gClock=performance.now();const n=fresh();Object.assign(n,o);n.country=n.country||1;n.gpm=Math.min(n.gpm||0,n.earned||0); /* 다른 기록의 분당 수입이 섞여 들어온 경우 바로잡기 */n.bestBy=n.bestBy||{};n.waveBy=n.waveBy||{};n.conqBy=n.conqBy||(o.conquered?{1:true}:{});COUNTRY=COUNTRIES[n.country-1]||COUNTRIES[0];if(![1,2,4,8,16].includes(n.speed))n.speed=1;for(const t of (o.towers||[]))if(!TT[t.type])n.gold=(n.gold||0)+(t.inv||0);n.towers=(o.towers||[]).filter(t=>TT[t.type]&&canPlaceRaw(t.x,t.y)).map(t=>({...t,id:nextId++,cd:t.cd||0,ang:-Math.PI/2}));n.lives=MAXLIFE;if(n.speed>4&&n.speed!==20)n.speed=4;{const ml=n.conqBy[5]?100:50;for(const t of n.towers)if(t.l>ml)t.l=ml;}S=n;
+function apply(o){if(!o||o.v!==2)return false;gAcc=0;gClock=performance.now();const n=fresh();Object.assign(n,o);n.country=n.country||1;n.gpm=Math.min(n.gpm||0,n.earned||0); /* 다른 기록의 분당 수입이 섞여 들어온 경우 바로잡기 */n.bestBy=n.bestBy||{};n.waveBy=n.waveBy||{};n.conqBy=n.conqBy||(o.conquered?{1:true}:{});COUNTRY=COUNTRIES[n.country-1]||COUNTRIES[0];if(![1,2,4,8,16].includes(n.speed))n.speed=1;for(const t of (o.towers||[]))if(!TT[t.type])n.gold=(n.gold||0)+(t.inv||0);n.towers=(o.towers||[]).filter(t=>TT[t.type]&&canPlaceRaw(t.x,t.y)).map(t=>({...t,id:nextId++,cd:t.cd||0,ang:-Math.PI/2}));n.lives=MAXLIFE;if(n.speed>4&&n.speed!==20)n.speed=4;{const ml=n.conqBy[5]?100:50;for(const t of n.towers)if(t.l>ml)t.l=ml;}n.mode=n.mode==="hard"?"hard":"easy";S=n;S.meta=metaGet();try{localStorage.setItem("lld_meta",JSON.stringify(S.meta));}catch(e){}
   enemies=[];queue=[];shells=[];phase="idle";autoT=2;sel=null;dirtyUI=true;return true;}
 const canPlaceRaw=(x,y)=>!PATH.has(x+","+y)&&!BLOCK.has(x+","+y);
 function setSave(mode){$("saveSt").innerHTML=`<span class="dot ${mode?"ok":""}"></span>${mode==="acct"?"계정에 자동 저장":mode==="local"?"이 브라우저에 자동 저장":"저장 안 됨"}`;}
 function save(force){S.t=Date.now();const j=ser();let ok=false;try{localStorage.setItem(LS,j);ok=true;}catch(e){}
   if(db&&uid&&(force||Date.now()-lastRemote>12000)){lastRemote=Date.now();db.doc("data/users/"+uid+"/save").set({json:j,t:S.t}).then(()=>setSave("acct")).catch(()=>{});}
   if(!db)setSave(ok?"local":"");}
-function offline(prevT){const mins=Math.min(240,(Date.now()-prevT)/60000);if(mins<1||S.gpm<=0)return;const gain=Math.floor(S.gpm*mins*.5);if(gain<=0)return;
+function offline(prevT){const mins=Math.min(S.mode==="hard"||S.country===7?120:240,(Date.now()-prevT)/60000); /* EASY 4시간 · HARD·무한 모드 2시간 */if(mins<1||S.gpm<=0)return;const gain=Math.floor(S.gpm*mins*.5);if(gain<=0)return;
   earn(gain);$("modalBox").innerHTML=`<h2>작전 보고</h2><p>자리를 비운 ${mins>=60?Math.floor(mins/60)+"시간 "+Math.round(mins%60)+"분":Math.round(mins)+"분"} 동안 부대가 방어선을 지키며 <b style="color:var(--accent)">${fmt(gain)}</b>을 확보했습니다.</p><button class="btn pri" id="mOk">수령</button>`;
   $("modal").hidden=false;$("mOk").onclick=()=>{$("modal").hidden=true;};}
 function paintHeaderFlag(){const f=$("hFlag"),g=f.getContext("2d");drawFlag(g,0,0,84,56,0,false);}
@@ -2427,5 +2452,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011248 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011258 */</script>
 </body></html>
