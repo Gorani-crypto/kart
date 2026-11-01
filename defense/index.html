@@ -472,7 +472,7 @@ const AOEK={mortar:1,flame:1,gas:1,missile:1,tank:1,emp:1,tesla:1,laser:1,nuke:1
 function st(t){if(t._sl===t.l&&t._sk===t.type&&t._st)return t._st;const r=st0(t);if(t.id!==undefined){t._sl=t.l;t._sk=t.type;t._st=r;}return r;}
 function st0(t){const T=TT[t.type],L=t.l,tier=tierOf(L),k=t.type,e1=tier>=1;
   return{tier,multi:(T.multi||0)+Math.floor(tier/3)+(e1&&k==="missile"?2:0),slow:k==="gas"?Math.min(.85,.3+.3*(L-1)/49+tier*.05):0,slowDur:2+tier,
-    dmg:(T.dmg||0)*BAL.atk*lvMult(L,k)*(e1&&k==="gas"?3:1)*(k==="rail"&&tier>=4?1.5:1)*(k==="flame"&&tier>=4?2:1)*(AOE1[k]?BAL.aoe1:AOE2[k]?BAL.aoe2:1),rate:k==="emp"?1/empCd(L):k==="nuke"?1/(60*Math.max(1,10-tier)):(T.rate||0)*(1+.06*tier)*(k==="tank"&&tier>=4?1.3:1)*(e1&&k==="nuke"?1/.7:e1&&k==="rifle"?1.4*(tier>=2?1.15:1)*(tier>=3?1.15:1)*(tier>=4?1.3:1):e1&&k==="tank"?1.25:e1&&k==="drone"?1.3:1),nDrone:2+(e1?1:0)+Math.floor(tier/3),stun:1.2*(e1&&k==="emp"?1.5:1),
+    dmg:(T.dmg||0)*BAL.atk*lvMult(L,k)*(e1&&k==="gas"?3:1)*(k==="rail"&&tier>=4?1.5:1)*(k==="flame"&&tier>=4?2:1)*(k==="tank"&&tier>=4?.4931:1)*(AOE1[k]?BAL.aoe1:AOE2[k]?BAL.aoe2:1),rate:k==="emp"?1/empCd(L):k==="nuke"?1/(60*Math.max(1,10-tier)):(T.rate||0)*(1+.06*tier)*(k==="tank"&&tier>=4?1.3:1)*(e1&&k==="nuke"?1/.7:e1&&k==="rifle"?1.4*(tier>=2?1.15:1)*(tier>=3?1.15:1)*(tier>=4?1.3:1):e1&&k==="tank"?1.25:e1&&k==="drone"?1.3:1),nDrone:2+(e1?1:0)+Math.floor(tier/3),stun:1.2*(e1&&k==="emp"?1.5:1),
     range:(T.range||0)+.12*tier+(e1&&k==="sniper"?1.5:0)+(k==="sniper"?(tier>=2?1:0)+(tier>=3?1:0):0)+(e1&&k==="emp"?1:0)+(e1&&k==="drone"?1:0)+(e1&&k==="laser"?1:0)+(e1&&k==="rail"?1:0)+(e1&&k==="mortar"?1:0)+(k==="orbit"&&tier>=4?1.5:0),splash:(T.splash||0)*(1+.06*tier)*(e1&&k==="mortar"?1.35:e1&&k==="tank"?1.5:e1&&k==="laser"?1.5:1),beamW:k==="rail"?(tier>=2?1.2:e1?.6:.3):0,
     bossX:k==="sniper"?(tier>=3?12:tier>=2?8:e1?5:3):1,burn:e1&&k==="mortar",chill:e1&&k==="flame",
     chain:3+(e1?1:0)+Math.floor(tier/3),nBeam:4+(e1?2:0)+Math.floor(tier/3),zapStun:e1&&k==="tesla"?.4:0};}
@@ -1740,7 +1740,7 @@ $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
 $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{try{save();}catch(e){}showTitle();});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v235 · 11/01 12:20";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v236 · 11/01 12:22";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={};
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2427,5 +2427,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011214 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011220 */</script>
 </body></html>
