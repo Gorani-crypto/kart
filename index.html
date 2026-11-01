@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1027-0803</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1101-1024</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -456,7 +456,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"roach", name:"바퀴벌레", desc:"빠르고 민첩 · 아주 가벼워서 부딪히면 휙 날아가고 돌아감", speed:1.38, accel:1.38, turn:1.25, boost:1.159, mass:.75, fly:1.7},
   {id:"trex", name:"티라노", desc:"2배 크기. 꼬리치기(Space/꼬리 버튼, 10초마다): 뒤쪽 넓은 범위의 차를 무게 상관없이 양옆 가드레일로 날려버림", speed:1.18, accel:.9, turn:.8, boost:1.36, gaugeMul:1.2, mass:2.6, rad:2.4, bite:true},
   {id:"chair", name:"엔진 휠체어", desc:"엔진 달린 휠체어. 가속·조향 좋고 조금 가벼움", speed:1.29123, accel:1.4, turn:1.25, boost:1.23273, mass:.85},
-  {id:"bike", name:"슈퍼바이크", desc:"가장 빠르지만 잘 미끄러지고 덜 꺾여서 다루기 어려움. 벽·무거운 차에 부딪히면 사람이 날아가서 걸어가 다시 타야 함", speed:1.89, accel:1.6, turn:1.06, grip:.72, boost:1.14, mass:.7, eject:true},
+  {id:"bike", name:"슈퍼바이크", desc:"가장 빠르지만 잘 미끄러지고 덜 꺾여서 다루기 어려움. 벽·무거운 차에 부딪히면 사람이 날아가서 걸어가 다시 타야 함", speed:1.70442, accel:1.6, turn:1.06, grip:.72, boost:1.26446, mass:.7, eject:true},
   {id:"snake", name:"구렁이 뱀", desc:"구불구불 기어가는 뱀 · 코너를 가장 잘 돔 · 가볍고 미끄러지듯 달림", speed:1.31, accel:1.36, turn:1.32, boost:1.2, mass:.9, fly:1.2},
   {id:"jet", name:"제트 로드스터", desc:"능력카 · 비행: Space(비행 버튼)를 누르고 있는 동안 공중에 떠서 날아감 · 비행 게이지는 땅에서 달려야 참 (2초 주행 = 1초 비행, 10초 달리면 꽉 차서 최대 5초 비행) · 부스터 쓰면 옆으로 한 바퀴 회전", hover:true, speed:1.27714, accel:1.4, turn:1.05, boost:1.22426, mass:1},
   {id:"nova", name:"노바 스러스터", desc:"능력카 · 폭격 비행: 부스터 쓰면 4초 동안 공중으로 날아오르며 시속 500km · 0.5초마다 포탄을 자동으로 떨어뜨림 (한 번에 8발) · 대신 부스터 게이지가 가장 느리게 참", speed:1.3, accel:1.35, turn:1.05, boost:1.2425, mass:1, nova:true, gaugeMul:.15},
