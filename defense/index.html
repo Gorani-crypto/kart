@@ -520,6 +520,14 @@ CURVE.b4r=(()=>{const B=CURVE.b4m,D=B.D.slice();const a=9e4/40800,b=5.5e12/9.968
 {const D=CURVE.b4m.D,a=8e4/54400;for(let L=20;L<D.length;L++)D[L]*=a*Math.pow(1/a,(Math.min(L,50)-20)/30);} /* v253 박격포: 20렙 약 8만, 50렙은 그대로 */
 for(const c of ["b4m","b4r","b4f"])for(let L=2;L<20;L++)CURVE[c].D[L]*=Math.pow(1.05,L-1); /* v253: 박격포·레일건·화염방사기 1~19렙 공격력 상승폭 렙당 +5% (20렙 목표: 박격포 8만·레일건 9만·화염방사기 20만) */
 for(const C of new Set(["b4m","b4r","b4f"].map(c=>CURVE[c].Cm)))for(let l=2;l<20;l++)C[l]*=Math.pow(.98,l-1); /* v251: 1~20렙 강화비 상승폭 렙당 -2% (19→20렙 강화비 약 0.7배, 20렙 이후 그대로) */
+/* v254 (사용자): 지정 레벨의 화력 배율을 찍고 그 사이는 로그로 고르게 — 강화비는 그대로
+   박격포·레일건·화염방사기: 15~20렙 상승폭 ↑(20렙 ×1.2), 10억으로 닿는 레벨(29·28·25렙) 300만·400만·600만, 100억 레벨(35·34·32렙) 2.24억·2.5억·3억
+   전차 진지: 10렙 절반, 22렙(100억) 10억, 40렙(3.9조)은 그대로 */
+function anchorMul(D,A){for(let L=1;L<D.length;L++){let f;if(L<=A[0][0])f=A[0][1];else if(L>=A[A.length-1][0])f=A[A.length-1][1];else{let i=0;while(A[i+1][0]<L)i++;const[l0,f0]=A[i],[l1,f1]=A[i+1];f=f0*Math.pow(f1/f0,(L-l0)/(l1-l0));}D[L]*=f;}}
+anchorMul(CURVE.b4m.D,[[14,1],[20,1.2],[29,3e6/1715450.47],[35,1]]);
+anchorMul(CURVE.b4r.D,[[14,1],[20,1.2],[28,4e6/1942891.15],[34,2.5e8/137815447.6],[50,1]]);
+anchorMul(CURVE.b4f.D,[[14,1],[20,1.2],[25,6e6/1489775.86],[32,3e8/123631526.6],[50,1]]);
+anchorMul(CURVE.tk.D,[[1,1],[10,.5],[22,1e9/454086128.4],[40,1]]);
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -1777,7 +1785,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v253 · 11/01 17:20";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v254 · 11/01 17:30";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2471,5 +2479,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011717 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011725 */</script>
 </body></html>
