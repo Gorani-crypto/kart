@@ -1757,23 +1757,24 @@ $("pause").addEventListener("click",togglePause);
 $("speed").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;S.speed=+b.dataset.sp;dirtyUI=true;});
 $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
 $("nukeBtn").addEventListener("click",nukeLaunch);
-$("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{try{save();}catch(e){}showTitle();});$("tBgm").addEventListener("click",bgmToggle);
+$("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
+  $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v241 · 11/01 13:12";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v242 · 11/01 13:16";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
-const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={};
+const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
 function slotLabel(o){const c=COUNTRIES[(o.country||1)-1];return`${modeTag(o.mode)} · ${c&&c.inf?"무한 모드":o.country+"스테이지 "+(c?c.name:"")} · ${o.wave}단계`;}
-async function slotOpen(mode){slotMode=mode;slotArm=0;try{save(true);}catch(e){}$("slTitle").textContent=mode==="save"?"저장하기":"불러오기";$("slHint").textContent=mode==="save"?"저장할 칸을 고르세요. 이미 저장된 칸은 한 번 더 누르면 덮어씁니다.":"이어서 할 저장소를 고르세요.";$("slMsg").textContent="";
+async function slotOpen(mode){slotMode=mode;slotArm=0;try{save(true);}catch(e){}$("slTitle").textContent=mode==="save"?"저장하기":"불러오기";$("slHint").textContent=mode==="save"?(slotExit?"저장할 칸을 고르면 저장 뒤 메인 메뉴로 나갑니다. ":"")+"저장할 칸을 고르세요. 이미 저장된 칸은 한 번 더 누르면 덮어씁니다.":"이어서 할 저장소를 고르세요.";$("slMsg").textContent="";
   $("slotPanel").hidden=false;document.body.classList.remove("drawer");if(!titleOn)paused=true;$("slList").innerHTML="<p>불러오는 중…</p>";for(let i=1;i<=SLOTN;i++)slotCache[i]=await slotRead(i);slotRender();}
 function slotRender(){$("slList").innerHTML=Array.from({length:SLOTN},(_,k)=>{const i=k+1,v=slotCache[i];let o=null;try{o=v&&JSON.parse(v.json);}catch(e){}
   const d=v&&v.t?new Date(v.t):null,ds=d?`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`:"";
   return`<button class="sl${o?"":" empty"}${slotArm===i?" arm":""}" data-i="${i}"><b>저장소 ${i}</b>${o?`<em class="mtag ${o.mode==="hard"?"hd":""}">${modeTag(o.mode)}</em>`:""}<span>${o?slotLabel(o).replace(/^(EASY|HARD) · /,""):"비어 있음"}</span><small>${slotArm===i?"한 번 더 누르면 덮어쓰기":ds}</small></button>`;}).join("");}
 $("slList").addEventListener("click",async e=>{const b=e.target.closest(".sl");if(!b||b.dataset.m||slotMode==="mode")return;const i=+b.dataset.i,v=slotCache[i];
-  if(slotMode==="save"){if(v&&slotArm!==i){slotArm=i;slotRender();return;}const rec={json:ser(),t:Date.now()};try{localStorage.setItem(slotKey(i),JSON.stringify(rec));}catch(e){}if(db&&uid){try{await db.doc("data/users/"+uid+"/slot"+i).set(rec);}catch(e){}}slotCache[i]=rec;slotArm=0;slotRender();$("slMsg").textContent=`저장소 ${i}에 저장했어요.`;return;}
+  if(slotMode==="save"){if(v&&slotArm!==i){slotArm=i;slotRender();return;}const rec={json:ser(),t:Date.now()};try{localStorage.setItem(slotKey(i),JSON.stringify(rec));}catch(e){}if(db&&uid){try{await db.doc("data/users/"+uid+"/slot"+i).set(rec);}catch(e){}}slotCache[i]=rec;slotArm=0;slotRender();$("slMsg").textContent=`저장소 ${i}에 저장했어요.`;if(slotExit){slotExit=false;try{save(true);}catch(e){}setTimeout(()=>{$("slotPanel").hidden=true;showTitle();},700);}return;}
   if(!v){$("slMsg").textContent="비어 있는 저장소예요.";return;}let o=null;try{o=JSON.parse(v.json);}catch(e){}if(!o||!apply(o)){$("slMsg").textContent="불러올 수 없는 저장소예요.";return;}
   hasSave=true;save(true);$("slotPanel").hidden=true;paused=false;if(titleOn){hideTitle();}else{dirtyUI=true;renderUI();}resize();banner(`저장소 ${i} 불러옴 · ${slotLabel(o)}`);});
-$("slClose").addEventListener("click",()=>{$("slotPanel").hidden=true;if(!titleOn)paused=false;});
+$("slClose").addEventListener("click",()=>{slotExit=false;$("slotPanel").hidden=true;if(!titleOn)paused=false;});
 $("saveSlotBtn").addEventListener("click",()=>slotOpen("save"));$("loadSlotBtn").addEventListener("click",()=>slotOpen("load"));$("tLoad").addEventListener("click",()=>slotOpen("load"));
 $("tMove").addEventListener("click",()=>{$("mvMsg").textContent="";$("mvCode").value="";$("movePanel").hidden=false;});$("mvClose").addEventListener("click",()=>{$("movePanel").hidden=true;});
 $("mvMake").addEventListener("click",async()=>{try{save(true);}catch(e){}const code="LLD1."+btoa(unescape(encodeURIComponent(ser())));$("mvCode").value=code;$("mvCode").select();let ok=false;try{await navigator.clipboard.writeText(code);ok=true;}catch(e){try{ok=document.execCommand("copy");}catch(e2){}}$("mvMsg").textContent=ok?"복사했어요. 새 기기에 붙여 넣으세요.":"코드를 길게 눌러 전체 복사하세요.";});
@@ -2453,5 +2454,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011306 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611011313 */</script>
 </body></html>
