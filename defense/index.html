@@ -550,6 +550,7 @@ anchorMul(CURVE.b4.D,[[9, 1], [10, 1.73388], [19, 1.68386], [20, 2.64701], [25, 
 anchorMul(CURVE.b4m.D,[[9, 1], [10, 1.10088], [19, 1.25015], [20, 1.59107], [25, 1], [29, 1.49931], [30, 1], [35, 1], [39, 1.23107], [40, 1], [45, 1], [49, 1.53488], [50, 1]]); /* mortar */
 anchorMul(CURVE.b4r.D,[[9, 1], [10, 1.10088], [19, 1.00012], [20, 1.33347], [25, 1], [35, 1], [39, 1.23872], [40, 1]]); /* rail */
 anchorMul(CURVE.b4f.D,[[9, 1], [10, 1.17989], [19, 0.99943], [20, 1.16673], [25, 1]]); /* flame */
+anchorMul(CURVE.mflat.D,[[5,1],[9,25e4/6/32500],[10,25e4/20e4],[13,1]]); /* v271 미사일: 10렙 25만, 9→10렙 ×6 이내(9렙 약 4.2만), 11~12렙 점점 원래로 */
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -1807,7 +1808,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v270 · 11/02 08:25";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v271 · 11/02 08:27";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2501,5 +2502,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020820 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020825 */</script>
 </body></html>
