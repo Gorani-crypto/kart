@@ -1261,7 +1261,85 @@ function bgmBar(t,bar){const ci=bar%4,b16=bar%16,ch=CH[ci];
   bTimp(t,.5,BASS[ci]);bTimp(t+BEAT*2,.32,BASS[ci]);
   if(b16>=4){bSnare(t+BEAT,.12);bSnare(t+BEAT*3,.12);bSnare(t+BEAT*3.5,.06);bSnare(t+BEAT*3.75,.08);}
   if(b16===7||b16===15)for(let i=0;i<8;i++)bSnare(t+BEAT*2+i*BEAT/4,.05+i*.015);}
-function bgmTick(){const c=BGM.ctx;while(BGM.next<c.currentTime+1.2){bgmBar(BGM.next,BGM.step++);BGM.next+=BEAT*4;}}
+/* ═════════ 전투 BGM (v272) — 주력 보스 단계: 공통 긴장곡 · 최종 보스 단계: 나라별 전투곡 ═════════ */
+function bNoiseHit(t,v,type,freq,q,dec,wet){const c=BGM.ctx,n=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();n.buffer=BGM.noise;n.loop=dec>.45;f.type=type;f.frequency.value=freq;f.Q.value=q;
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+dec);n.connect(f);f.connect(g);n.start(t);n.stop(t+dec+.05);bOut(g,wet||.2);}
+function bHat(t,v){bNoiseHit(t,v,"highpass",7500,.7,.05,.1);}
+function bCrash(t,v){bNoiseHit(t,v,"highpass",4500,.5,1.6,.5);}
+function bKick(t,v){const c=BGM.ctx,o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(42,t+.12);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.connect(g);o.start(t);o.stop(t+.5);bOut(g,.08);}
+function bTom(t,v,f0,dec){const c=BGM.ctx,o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.setValueAtTime(f0*1.5,t);o.frequency.exponentialRampToValueAtTime(f0,t+.06);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+(dec||.35));o.connect(g);o.start(t);o.stop(t+(dec||.35)+.05);bOut(g,.25);}
+function bPluck(m,t,v,dec,type,cut,wet){const c=BGM.ctx,o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type=type||"triangle";o.frequency.value=hz(m);
+  f.type="lowpass";f.Q.value=3;f.frequency.setValueAtTime(cut||3000,t);f.frequency.exponentialRampToValueAtTime(300,t+dec);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+dec);o.connect(f);f.connect(g);o.start(t);o.stop(t+dec+.05);bOut(g,wet==null?.3:wet);}
+function bStr(m,t,d,v){const c=BGM.ctx,f=c.createBiquadFilter(),g=c.createGain();f.type="lowpass";f.frequency.value=2600;f.Q.value=.6;
+  for(const det of[-6,6]){const o=c.createOscillator();o.type="sawtooth";o.frequency.value=hz(m);o.detune.value=det;o.connect(f);o.start(t);o.stop(t+d+.15);}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(v*.4,t+d);g.gain.linearRampToValueAtTime(0,t+d+.1);f.connect(g);bOut(g,.35);}
+function bSub(m,t,d,v){const c=BGM.ctx,o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=hz(m);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.02);
+  g.gain.setValueAtTime(v,t+d*.7);g.gain.linearRampToValueAtTime(0,t+d);o.connect(g);o.start(t);o.stop(t+d+.05);bOut(g,0);}
+function bSq(m,t,d,v,cut){const c=BGM.ctx,o=c.createOscillator(),f=c.createBiquadFilter(),g=c.createGain();o.type="square";o.frequency.value=hz(m);f.type="lowpass";f.frequency.value=cut||1800;f.Q.value=6;
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(f);f.connect(g);o.start(t);o.stop(t+d+.05);bOut(g,.4);}
+function bMel(seq,t,B,fn){let o=0;for(const[m,d]of seq){if(m)fn(m,t+o*B,d*B);o+=d;}}
+const BTRK={
+ /* 주력 보스 공통: C단조 i–VI–iv–V, 16분 현악 오스티나토 + 저음 금관 + 북 */
+ boss:{bpm:128,bar(t,bar,B){const CH=[[48,55,60,63],[44,51,56,60],[41,48,53,56],[43,50,55,59]],ci=bar%4,b8=bar%8,ch=CH[ci],r=ch[0];
+   for(let i=0;i<16;i++)bStr([r+12,r+24,r+19,r+24][i%4]+(i>=8&&ci===3?-1:0),t+i*B/4,B/4*.8,.028+(i%4===0?.012:0));
+   bSub(r-12,t,B*2,.09);bSub(r-12,t+B*2,B*2,.09);for(const m of ch)bPad(m,t,B*4,.012);
+   for(let i=0;i<4;i++){bKick(t+i*B,.5);bHat(t+i*B+B/2,.05);}bSnare(t+B,.13);bSnare(t+B*3,.13);if(b8===7)for(let i=0;i<8;i++)bSnare(t+B*2+i*B/4,.05+i*.016);
+   bTimp(t,.45,r-12);if(ci%2===0){bBrass(r,t,B*.45,.06);bBrass(r,t+B*1.5,B*.45,.06);bBrass(ch[1],t+B*3,B*.9,.06);}
+   if(b8>=4){const M=[[[72,1],[75,1],[74,1.5],[72,.5]],[[68,2],[67,1],[65,1]],[[65,1],[68,1],[72,1.5],[70,.5]],[[67,3],[71,1]]][ci];bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.92,.065));}
+   if(bar%16===0)bCrash(t,.12);}},
+ /* 1 카라부: 사헬 타악(젬베·셰이커) + 발라폰 5음계 + 호른 부름-응답, 12/8 느낌 */
+ f1:{bpm:116,bar(t,bar,B){const T=B/3,P=[50,53,55,57,60,62,65,67,69,72],ci=bar%4,b8=bar%8,root=[50,48,50,45][ci];
+   const dj=[1,0,1,1,0,1,1,0,1,1,0,0];for(let i=0;i<12;i++){if(dj[i])bTom(t+i*T,i%3===0?.38:.2,i%6===0?95:i%3===0?160:240,.22);bNoiseHit(t+i*T,.03+(i%3===0?.02:0),"highpass",6000,.6,.04,.05);}
+   bKick(t,.45);bKick(t+B*2,.4);bSub(root-12,t,B*4,.08);bPad(root,t,B*4,.014);bPad(root+7,t,B*4,.012);
+   const pat=[0,2,4,2,5,4,2,4,7,5,4,2];for(let i=0;i<12;i++)bPluck(P[(pat[i]+ci*2)%P.length]+12,t+i*T,.05,.25,"triangle",4000,.2);
+   if(b8<4){const M=[[[74,1.5],[72,.5],[69,2]],[[67,1],[69,1],[72,2]],[[74,1],[77,1],[74,1],[72,1]],[[69,4]]][ci];bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.9,.06));}
+   else{const R=[[[62,1],[0,1],[65,1],[62,1]],[[60,2],[57,2]],[[62,1],[65,1],[67,1],[69,1]],[[62,4]]][ci];bMel(R,t,B,(m,s,d)=>bBrass(m,s,d*.9,.05));}
+   if(bar%8===0)bCrash(t,.08);}},
+ /* 2 북한: 무거운 제식 행진 — 스네어 롤 + 큰북 + 금관 팡파르(G단조), 오르간 */
+ f2:{bpm:100,bar(t,bar,B){const CH=[[43,50,55,58],[39,46,51,55],[41,48,53,57],[38,45,50,54]],ci=bar%4,b8=bar%8,ch=CH[ci];
+   for(let i=0;i<4;i++){bKick(t+i*B,i%2?.35:.6);bTimp(t+i*B,.25,ch[0]-12);}
+   for(let i=0;i<16;i++)bSnare(t+i*B/4,(i%4===0?.14:.06)+(b8===7&&i>=8?.05:0));
+   for(const m of ch){const c=BGM.ctx;bSq(m,t,B*4,.012,900);}bSub(ch[0]-12,t,B*4,.09);
+   const M=[[[67,1.5],[67,.5],[70,1],[74,1]],[[75,2],[74,1],[70,1]],[[72,1.5],[70,.5],[69,1],[65,1]],[[66,2],[62,2]]][ci];
+   bMel(M,t,B,(m,s,d)=>{bBrass(m,s,d*.9,.065);bBrass(m-12,s,d*.9,.045);});if(b8>=4&&ci%2===1)bBrass(ch[3]+12,t+B*3,B*.9,.04);if(bar%4===0)bCrash(t,.1);}},
+ /* 3 중동 연합: 히자즈 음계(D–E♭–F♯–G–A–B♭–C) 우드 선율 + 다르부카(둠·텍) + 지속음 */
+ f3:{bpm:108,bar(t,bar,B){const H=[62,63,66,67,69,70,72,74],ci=bar%4,b8=bar%8,E=B/2;
+   const dt=["D","T","","T","D","","T",""];for(let i=0;i<8;i++){if(dt[i]==="D")bTom(t+i*E,.45,85,.4);else if(dt[i]==="T")bNoiseHit(t+i*E,.09,"bandpass",3200,2,.07,.15);}
+   if(b8%2===1)for(let i=0;i<4;i++)bNoiseHit(t+B*3+i*B/4,.05,"bandpass",3600,2,.05,.1);
+   bPad(50,t,B*4,.016);bPad(57,t,B*4,.012);bSub(38,t,B*4,.08);bKick(t,.35);
+   const M=[[[0,.5],[62,.5],[63,.5],[66,.5],[67,1],[66,.5],[63,.5]],[[62,1],[63,.5],[62,.5],[60,1],[62,1]],[[66,.5],[67,.5],[69,.5],[70,.5],[72,1],[70,.5],[69,.5]],[[67,.5],[66,.5],[63,1],[62,2]]][ci];
+   bMel(M,t,B,(m,s,d)=>{bPluck(m+12,s,.09,Math.min(.6,d+.2),"sawtooth",5000,.3);if(d>=1)bPluck(m+12,s+d*B/2,.04,.2,"sawtooth",4500,.2);});
+   if(b8>=4){bStr(H[(ci*2)%8]+12,t,B*2,.03);bStr(H[(ci*2+2)%8]+12,t+B*2,B*2,.03);}if(bar%8===0)bCrash(t,.07);}},
+ /* 4 독일: 바그너풍 — 무거운 현악 16분 오스티나토(E단조) + 저음 금관 코랄 + 팀파니 롤 + 합창 */
+ f4:{bpm:118,bar(t,bar,B){const CH=[[40,47,52,55],[36,43,48,52],[33,40,45,48],[35,42,47,51]],ci=bar%4,b8=bar%8,ch=CH[ci],r=ch[0];
+   for(let i=0;i<16;i++)bStr([r+12,r+19,r+24,r+19][i%4],t+i*B/4,B/4*.8,.03+(i%4===0?.012:0));
+   for(const m of ch){bPad(m+12,t,B*4,.014);bBrass(m,t,B*3.6,.028);}bSub(r-12,t,B*4,.1);
+   bTimp(t,.55,r);bTimp(t+B*2,.4,r);if(b8===3||b8===7)for(let i=0;i<12;i++)bTimp(t+B+i*B/4,.08+i*.02,r);
+   bKick(t,.45);bKick(t+B*2,.4);if(b8>=4){const M=[[[76,2],[79,1],[78,1]],[[76,2],[72,2]],[[69,1],[72,1],[76,1.5],[74,.5]],[[75,3],[71,1]]][ci];bMel(M,t,B,(m,s,d)=>{bBrass(m,s,d*.92,.06);bBrass(m-12,s,d*.92,.04);});}
+   if(bar%8===0)bCrash(t,.12);}},
+ /* 5 미국: 할리우드 액션 — 3-3-2 리듬 현악 + 영웅적 금관(A단조) + 큰 북 */
+ f5:{bpm:140,bar(t,bar,B){const CH=[[45,52,57,60],[41,48,53,57],[43,50,55,59],[40,47,52,56]],ci=bar%4,b8=bar%8,ch=CH[ci],r=ch[0],E=B/2,acc=[0,3,6];
+   for(let i=0;i<8;i++){const a=acc.includes(i);bStr(r+12+(a?0:7),t+i*E,E*.8,a?.045:.025);bStr(r+24,t+i*E,E*.8,a?.03:.015);if(a){bKick(t+i*E,.55);bTom(t+i*E,.3,70,.5);}bHat(t+i*E,.04);}
+   bSnare(t+B,.14);bSnare(t+B*3,.14);bSub(r-12,t,B*4,.1);for(const m of ch)bPad(m,t,B*4,.012);
+   const M=b8<4?[[[69,1.5],[72,.5],[76,2]],[[77,1.5],[76,.5],[72,2]],[[74,1],[76,1],[79,2]],[[80,3],[76,1]]][ci]:[[[81,2],[79,1],[76,1]],[[77,2],[81,2]],[[79,1.5],[77,.5],[74,2]],[[76,4]]][ci];
+   bMel(M,t,B,(m,s,d)=>{bBrass(m,s,d*.92,.07);bBrass(m-12,s,d*.92,.045);});if(bar%4===0)bCrash(t,.12);if(b8===7)for(let i=0;i<8;i++)bTom(t+B*2+i*B/4,.15+i*.03,180-i*12,.2);}},
+ /* 6 외계: 저음 펄스 + 불협 아르페지오(온음·감음정) + 금속성 타격 + 기묘한 고음 패드 */
+ f6:{bpm:100,bar(t,bar,B){const ci=bar%4,b8=bar%8,S=[[36,42,46,48],[37,43,47,49],[34,40,44,46],[35,41,45,49]][ci],E=B/2;
+   for(let i=0;i<8;i++){bSub(S[0]-12,t+i*E,E*.9,i%2?.06:.11);bKick(t+i*E,i%2?.18:.4);}
+   for(let i=0;i<16;i++)bSq(S[i%4]+24+(i%8>=4?12:0),t+i*B/4,B/4*1.6,.03,1200+600*Math.sin((bar*16+i)/6));
+   bPad(S[1]+36,t,B*4,.008);bPad(S[2]+36,t,B*4,.008);
+   for(const i of[1,3])bNoiseHit(t+i*B,.12,"bandpass",2400+ci*400,18,.5,.5);if(b8>=4)bNoiseHit(t+B*2.5,.09,"bandpass",5200,25,.3,.4);
+   if(b8>=4){const M=[[[72,2],[73,2]],[[76,2],[70,2]],[[72,1],[78,1],[73,2]],[[67,4]]][ci];bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.9,.05));}
+   if(bar%8===0)bCrash(t,.1);}}
+};
+function bgmTrack(){if(typeof titleOn!=="undefined"&&titleOn)return"march";if(typeof S==="undefined"||!S||!COUNTRY)return"march";const s=S.wave;
+  if(COUNTRY.inf)return s%10===0?"boss":"march";if(COUNTRY.alien)return s===10?"f6":s>=6?"boss":"march";
+  if(s===100)return"f"+Math.min(5,S.country);const b=BOSS[s];return b&&b[2]===1?"boss":"march";}
+function bgmTick(){const c=BGM.ctx;while(BGM.next<c.currentTime+1.2){const k=bgmTrack();if(k!==BGM.track){BGM.track=k;BGM.step=0;}
+    if(k==="march"){bgmBar(BGM.next,BGM.step++);BGM.next+=BEAT*4;}else{const T=BTRK[k],B=60/T.bpm;try{T.bar(BGM.next,BGM.step++,B);}catch(e){}BGM.next+=B*4;}}}
 function bgmStart(){if(!BGM.on||!bgmInit())return;const c=BGM.ctx;if(c.state==="suspended")c.resume();
   if(!BGM.timer){BGM.next=c.currentTime+.15;BGM.timer=setInterval(bgmTick,250);bgmTick();}
   BGM.master.gain.cancelScheduledValues(c.currentTime);BGM.master.gain.setTargetAtTime(.55,c.currentTime,.6);}
@@ -1808,7 +1886,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v271 · 11/02 08:27";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v272 · 11/02 08:55";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2502,5 +2580,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020825 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020846 */</script>
 </body></html>
