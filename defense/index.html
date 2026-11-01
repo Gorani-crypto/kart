@@ -440,7 +440,7 @@ const TT={
     names:["화염방사기","강화 화염방사기","네이팜 방사기","화염 전차","고열 플라즈마 분사기","백린 분사포","태양로 분사기","항성 화염로","핵융합 화염포","지옥불 진지","겁화"]},
   gas:{label:"최루탄",role:"맞은 적을 느리게 만든다(2초, 전직마다 +1초). 2차 전직부터 가스에 젖은 적은 모든 피해를 더 받는다",cost:1500,up:1663,dmg:2.7,rate:.45,range:2.8,splash:1.3,slow:.45,unlock:35,
     names:["최루탄 발사기","연막 최루포","신경 교란탄","저온 가스포","마비 가스 포대","중력 교란기","시간 지연 장치","정체장 발생기","절대 영도포","시공 정지기","영원한 정지"]},
-  missile:{label:"미사일",role:"여러 적에게 동시에 유도 로켓을 쏜다. 느리지만 한 발이 강하다",cost:100000,up:15783,dmg:1851.98,curve:"flat",rate:.3,range:4.4,splash:.6,multi:3,unlock:50,
+  missile:{label:"미사일",role:"여러 적에게 동시에 유도 로켓을 쏜다. 느리지만 한 발이 강하다",cost:100000,up:15783,dmg:1481.58,curve:"flat",rate:.3,range:4.4,splash:.6,multi:3,unlock:50,
     names:["휴대용 미사일","대전차 미사일 진지","다연장 미사일","순항 미사일 포대","극초음속 미사일","군집 미사일","스마트 탄두 포대","전술 탄도 미사일","궤도 미사일","반물질 탄두","최후의 일격"]},
   tank:{label:"전차 진지",role:"강력한 전차포. 맞은 적과 주변에 큰 피해",cost:1000000,up:1506107,dmg:3733.86,curve:"flat",rate:.5,range:3.2,splash:.8,unlock:1,stage:2,
     names:["전차 진지","주력 전차 진지","중전차 진지","강화 장갑 진지","120mm 전차포","자동 장전 포탑","복합 장갑 요새","레일 전차포","플라즈마 전차","중력 전차","타이탄 요새"]},
@@ -536,6 +536,7 @@ for(const c of ["b4m","b4r","b4f"]){const D=CURVE[c].D;for(let L=41;L<D.length;L
 for(const C of new Set(["b4m","b4r","b4f"].map(c=>CURVE[c].Cm)))for(let l=40;l<C.length;l++)C[l]*=Math.pow(1.03,Math.min(l,49)-39); /* v259: 41~50렙 강화비 렙당 +3% 누적 */
 anchorMul(CURVE.b4f.D,[[37,1],[39,2.55],[40,1],[42,1],[46,2.54],[50,1]]); /* v260 화염방사기: 10조(39렙) 약 400억, 1000조(46렙) 약 8조 */
 anchorMul(CURVE.tk.D,[[44,1],[49,2.5],[50,1]]); /* v260 전차 진지: 1000조~1경(44~49렙) 상승폭 ↑ */
+anchorMul(CURVE.mflat.D,[[15,1],[50,100e12/(1641.0e8*.8)]]); /* v261 미사일: 기본 공격력 ×0.8, 15렙부터 상승폭 ↑ → 50렙(1경 예산) 약 100조 */
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -1793,7 +1794,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v260 · 11/02 05:02";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v261 · 11/02 05:08";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2487,5 +2488,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020500 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020506 */</script>
 </body></html>
