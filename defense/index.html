@@ -768,7 +768,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
         if(s.tier>=2&&!e.dead){e.burnT=5;e.burnD=Math.max(e.burnD&&e.burnT>0?e.burnD:0,s.dmg/5);e.burnS=t;} /* 2차: 내 공격력만큼 5초 화상 */
         if(s.tier>=5&&!e.dead&&!(e.pbT>0)){e.pbT=5;e.pbS=t;}}; /* 5차: 5초 동안 최대 체력 10%(보스 0.5%) 화상 */
       if(s.tier>=3){t.frot=(t.frot||0)+2.4/s.rate;const RR=R2;for(const e of enemies){if(e.dead||e.air)continue;const ex=e.x-x,ey=e.y-y;if(ex*ex+ey*ey>RR)continue;const a=Math.atan2(ey,ex);let ok=false;for(let q=0;q<4;q++){let d=a-(t.frot+q*Math.PI/2);d=Math.atan2(Math.sin(d),Math.cos(d));if(Math.abs(d)<.5){ok=true;break;}}if(ok)fire(e);}
-        if(fx.length<440){const lava=s.tier>=4,rr=Math.sqrt(RR);for(let q=0;q<4;q++){const a=t.frot+q*Math.PI/2;for(let i=0;i<2;i++){const k=.25+Math.random()*.75;fx.push({k:"fl",x:x+Math.cos(a)*rr*k+(Math.random()-.5)*.2,y:y+Math.sin(a)*rr*k+(Math.random()-.5)*.2,life:.28,m:.28,col:lava?(Math.random()<.4?"#fff1a0":"#ff4a10"):"#ff8a2a",R:.12+k*.2});}}}
+        t.armT=.45;/* v332: 4방향 불꽃 원 입자 대신 fireArms가 휘어진 불줄기(용 꼬리처럼)를 그림 */
         t.ang=t.frot;}
       else for(const e of enemies){if(e.dead||e.air)continue;const ddx=e.x-best.x,ddy=e.y-best.y;if(ddx*ddx+ddy*ddy<=R3)fire(e);}
       if(fx.length<450)for(let i=0;i<2;i++){const k=.4+Math.random()*.6;fx.push({k:"fl",x:x+(best.x-x)*k+(Math.random()-.5)*.3,y:y+(best.y-y)*k+(Math.random()-.5)*.3,life:.25,m:.25,col:s.tier>=6?tc:"#ff8a2a",R:.12+k*.18});}}
@@ -1615,7 +1615,7 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
   if(buildCell){X.strokeStyle="#ffe08a";X.lineWidth=.05;X.setLineDash([.12,.08]);X.strokeRect(buildCell[0]+.05,buildCell[1]+.05,.9,.9);X.setLineDash([]);}
   if(buildType&&hover){const ok=canPlace(hover[0],hover[1]);X.fillStyle=ok?"rgba(147,194,92,.35)":"rgba(217,87,60,.35)";X.fillRect(hover[0],hover[1],1,1);}
   for(const t of S.towers)drawTower(t,T);
-  for(const t of S.towers)if(t.type==="flame"&&st(t).tier>=3)fireOrbs(t,t.x+.5,t.y+.5,T);
+  for(const t of S.towers)if(t.type==="flame"&&st(t).tier>=3){fireArms(t,t.x+.5,t.y+.5,T);fireOrbs(t,t.x+.5,t.y+.5,T);}
   if(sel){X.strokeStyle="#ffe08a";X.lineWidth=.05;X.strokeRect(sel.x+.04,sel.y+.04,.92,.92);}
   for(const c of scorch){const a=Math.min(1,c.life/2);X.globalAlpha=a*.35;X.fillStyle="#1d1a14";X.beginPath();X.ellipse(c.x,c.y,c.R,c.R*.8,c.rot,0,7);X.fill();if(c.glow){X.globalAlpha=Math.max(0,c.life-2.5)/1.5*.7;X.fillStyle="#ff6a3a";X.beginPath();X.ellipse(c.x,c.y,c.R*.5,c.R*.4,c.rot,0,7);X.fill();X.globalAlpha=a*.35;}X.globalAlpha=a*.35;X.fillStyle="#3a2c1a";for(let i=0;i<5;i++){const q=c.rot+i*1.26;X.beginPath();X.ellipse(c.x+Math.cos(q)*c.R*.9,c.y+Math.sin(q)*c.R*.9,c.R*.35,c.R*.12,q,0,7);X.fill();}}X.globalAlpha=1;
   for(const e of enemies)if(e.x!==undefined&&!e.air&&!e.fly)drawEnemy(e,T);
@@ -1796,7 +1796,12 @@ function drawReal(t,s,tier,col,T){const fl=t.flash>0,rc=fl?.04:0,hi=tier>=6;
   if(tier>=3){rGlow(col,8);X.fillStyle=col;X.globalAlpha=.6+.3*Math.sin(T*4);X.fillRect(-.06,-.02,.2,.04);X.globalAlpha=1;X.shadowBlur=0;}
   rCrew(-.12,.27,"#2e3324");X.fillStyle="#9aa38a";X.beginPath();X.arc(-.1,.27,.018,0,7);X.fill();if(fl){X.fillStyle=`rgba(190,220,140,.55)`;X.beginPath();X.arc(.42,0,.16,0,7);X.fill();}return;}}
 const FORB=(()=>{const mk=(stops)=>{const c=document.createElement("canvas");c.width=c.height=64;const g=c.getContext("2d"),gr=g.createRadialGradient(32,32,0,32,32,32);for(const[o,cl]of stops)gr.addColorStop(o,cl);g.fillStyle=gr;g.fillRect(0,0,64,64);return c;};
-  return{head:mk([[0,"rgba(255,250,220,1)"],[.35,"rgba(255,190,70,.95)"],[.7,"rgba(255,90,20,.55)"],[1,"rgba(200,30,0,0)"]]),tail:mk([[0,"rgba(255,200,70,.9)"],[.5,"rgba(255,110,25,.45)"],[1,"rgba(200,40,0,0)"]])};})();
+  return{head:mk([[0,"rgba(255,250,220,1)"],[.35,"rgba(255,190,70,.95)"],[.7,"rgba(255,90,20,.55)"],[1,"rgba(200,30,0,0)"]]),tail:mk([[0,"rgba(255,200,70,.9)"],[.5,"rgba(255,110,25,.45)"],[1,"rgba(200,40,0,0)"]]),arm:mk([[0,"rgba(255,150,40,.85)"],[.45,"rgba(235,70,15,.55)"],[1,"rgba(160,20,0,0)"]]),lava:mk([[0,"rgba(255,120,30,.9)"],[.45,"rgba(200,30,10,.6)"],[1,"rgba(120,0,0,0)"]])};})();
+function fireArms(t,x,y,T){/* v332 화염방사기 3차+ 회전 공격: 4갈래 휘어진 불줄기(용 꼬리처럼 흐름) */const dt=Math.min(.1,Math.max(0,T-(t.armL||T)));t.armL=T;t.armT=Math.max(0,(t.armT||0)-dt);if(!(t.armT>0)||t.frot==null)return;
+  if(t.vrot==null)t.vrot=t.frot;t.vrot+=(t.frot-t.vrot)*Math.min(1,dt*10);const s=st(t),rr=s.range,al=Math.min(1,t.armT/.2),lava=s.tier>=4;X.save();X.translate(x,y);X.globalCompositeOperation="lighter";
+  for(let q=0;q<4;q++){const a0=t.vrot+q*Math.PI/2;const N=26;for(let i=0;i<=N;i++){const k=i/N,r=.3+k*(rr-.3),a=a0-.75*k+.07*Math.sin(T*9+k*7+q),sz=.09+.1*k;const px=Math.cos(a)*r,py=Math.sin(a)*r;X.globalAlpha=al*(.35+.45*k);X.drawImage(lava?FORB.lava:FORB.arm,px-sz,py-sz,sz*2,sz*2);}
+    {const r=rr,a=a0-.75,px=Math.cos(a)*r,py=Math.sin(a)*r,sz=.17;X.globalAlpha=al*.9;X.drawImage(FORB.head,px-sz,py-sz,sz*2,sz*2);}}
+  X.globalAlpha=1;X.restore();}
 function fireOrbs(t,x,y,T){/* v323 화염방사기 3차+: 둘레를 공전하는 불덩이 구체(꼬리 불꽃) · v324 길쭉한 혜성형 + 미리 그린 그림 사용(성능) */const tier=st(t).tier,n=tier>=5?5:tier>=4?4:3,fl=t.flash>0,sp=T*(fl?2.2:1.1),R=.47;X.save();X.translate(x,y);X.globalCompositeOperation="lighter";
   for(let i=0;i<n;i++){const a0=sp+i*Math.PI*2/n,rr=R+.02*Math.sin(T*2+i*2);
     for(let q=12;q>=1;q--){const a=a0-q*.055,f=1-q/13,sz=.018+.045*f;X.globalAlpha=.25+.6*f;X.drawImage(FORB.tail,Math.cos(a)*rr-sz,Math.sin(a)*rr-sz,sz*2,sz*2);}
@@ -2154,7 +2159,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v331 · 11/02 17:13";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v332 · 11/02 17:25";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2851,5 +2856,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021711 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021721 */</script>
 </body></html>
