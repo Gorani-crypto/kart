@@ -584,7 +584,9 @@ for(const C of new Set(["b4m","b4r","b4f"].map(c=>CURVE[c].Cm)))for(let l=30;l<C
 anchorMul(CURVE.tk.D,[[14, 1], [15, 0.98132], [21, 0.93014], [29, 0.76615], [32, 0.55148], [36, 0.98805], [39, 1.4892], [42, 1.40912], [46, 2.03809]]); /* v303 전차 진지: 같은 돈 기준 1스테이지 최고 대비 10억 1.4배·100억 1.5배·1000억 1.7배·1조 2.0배·100조 2.4배·1000조 2.9배·1경 3.5배 */
 CURVE.ls={D:CURVE.s3.D.slice(),Cm:CURVE.s3.Cm}; /* v304: 위성 레이저 전용 화력 곡선(강화비는 3스테이지 공통) */
 anchorMul(CURVE.ls.D,[[1, 2.9425], [2, 3.65779], [3, 4.54696], [4, 5.652277], [5, 7.026284], [6, 8.734299], [7, 6.319371], [8, 4.572141], [9, 3.308], [10, 5.201257], [11, 4.319698], [12, 3.587554], [13, 2.979501], [14, 3.114853], [15, 3.256355], [16, 3.404284], [17, 3.558933], [18, 3.720608], [19, 3.889627], [20, 1.937502], [21, 1.980624], [22, 2.024705], [23, 2.069767], [24, 2.115832], [25, 1.803778], [26, 1.537747], [27, 1.310952], [28, 1.117606], [29, 0.952776], [30, 0.463759], [31, 0.512825], [32, 0.567082], [33, 0.62708], [34, 0.693425], [35, 0.659647], [36, 0.627514], [37, 0.596946], [38, 0.567868], [39, 0.540206], [40, 0.296577], [41, 0.351341], [42, 0.416218], [43, 0.493075], [44, 0.584124], [45, 0.691986], [46, 0.819765], [47, 0.971138], [48, 1.150464], [49, 1.362903], [50, 1.0]]); /* v304 위성 레이저: 같은 돈 기준 1스테이지 최고 대비 10억 1.0·100억 1.2·1000억 1.6·1조 2.2·1000조 3·1경 4배, 전직마다 4배·그 사이 고르게 */
-const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls"};
+CURVE.ob={D:CURVE.s3.D.slice(),Cm:CURVE.s3.Cm}; /* v305: 궤도 방어 플랫폼 전용 화력 곡선 */
+anchorMul(CURVE.ob.D,[[1, 12.048392], [2, 8.716828], [3, 6.306492], [4, 4.562651], [5, 3.301008], [6, 2.388229], [7, 1.727847], [8, 1.250071], [9, 0.904408], [10, 0.948016], [11, 0.948326], [12, 0.948637], [13, 0.948947], [14, 0.949258], [15, 0.949568], [16, 0.949879], [17, 0.95019], [18, 0.960446], [19, 0.970813], [20, 0.644776], [21, 0.723019], [22, 0.710057], [23, 0.697328], [24, 0.684827], [25, 0.672551], [26, 0.660494], [27, 0.648653], [28, 0.637025], [29, 0.625605], [30, 0.391513], [31, 0.44118], [32, 0.497147], [33, 0.475213], [34, 0.454247], [35, 0.434206], [36, 0.415049], [37, 0.396737], [38, 0.46763], [39, 0.55119], [40, 0.310366], [41, 0.365825], [42, 0.431194], [43, 0.508243], [44, 0.59906], [45, 0.706105], [46, 0.832278], [47, 0.980996], [48, 1.156288], [49, 1.362903], [50, 1.0]]); /* v305 궤도 방어 플랫폼: 같은 돈 기준 1스테이지 최고 대비 100억 1.2·1000억 1.6·1조 2.4·100조 3·1000조 4.4·1경 6배, 전직마다 4배 */
+const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls",orbit:"ob"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
 const upCost=t=>Math.ceil(TT[t.type].up*curveOf(t.type).Cm[Math.min(t.l,99)]*costMul());
@@ -2111,7 +2113,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v304 · 11/02 16:00";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v305 · 11/02 16:10";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2808,5 +2810,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021543 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021544 */</script>
 </body></html>
