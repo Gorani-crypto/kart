@@ -608,6 +608,7 @@ anchorMul(CURVE.dr.D,[[39, 1], [40, 1.0], [41, 1.779313], [42, 3.165906], [43, 4
 /*v333 미사일 21~39렙 화력↑(1스테이지 최고의 약 0.4~0.9배 수준), 전직 3배 이상 유지*/anchorMul(CURVE.mflat.D,[[20,1],[21,3],[23,10],[29,10],[30,7.7],[32,3.2],[35,2.6],[39,1.73],[40,1]]);
 /*v335 위성레이저·궤도·테슬라 10렙 이후 강화비 배율↑(레벨당 +0.5% 누적)*/for(const n of["ls","ob","ts"]){const C=CURVE[n].Cm;for(let l=10;l<C.length;l++)C[l]*=Math.pow(1.005,Math.min(l,99)-9);}
 /*v336 위성레이저·궤도 강화비↑: 같은 돈 초당공격력 효율을 테슬라 수준으로(화력 그대로)*/{const FL=[1, 1.0583, 1.0093, 1, 1, 1.0456, 1.1435, 1.0787, 1, 1.0067, 1, 1.0001, 1.0194, 1.0373, 1, 1.1619, 1.231, 1.2746, 1.2151, 1.1697, 1.1349, 1.0839, 1.0243, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.0662, 1.2886, 1.065, 1.1695, 1.1293, 1.0866, 1.0275, 1, 1, 1, 1, 1, 1, 1, 1.1118, 1.2028, 1.2604, 1.2524, 1.3373, 1.3857, 1.3641, 1.2375, 1, 1.1794, 1.1567, 1.1397, 1.1244, 1.1233, 1.1226, 1.1631, 1.1883, 1.2158, 1, 1.1244, 1.1179, 1.116, 1.1154, 1.1124, 1.1202, 1.1656, 1.1921, 1.2175, 1, 1.1246, 1.1181, 1.1163, 1.1157, 1.1127, 1.1205, 1.1652, 1.1866, 1.2045, 1, 1.0831, 1.0656, 1.0531, 1.0421, 1.0407, 1.0339, 1.0735, 1.1427, 1.2427, 1.0052, 1.0311, 1.0298, 1.0274, 1.0242],FO=[1, 1.0333, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.0338, 1.3037, 1.5572, 1.7557, 1.8564, 2.0343, 1.928, 1.9924, 1.5132, 1.4473, 1.417, 1.4764, 1.4528, 1.462, 1.5466, 1.653, 1.7845, 2.1784, 2.3762, 2.5937, 2.7082, 2.6057, 2.6433, 2.3216, 2.1722, 1.9981, 1.7174, 2.1684, 2.1615, 2.2654, 2.3362, 2.3322, 2.4327, 2.3499, 2.3917, 2.4317, 1.9465, 2.3774, 2.3641, 2.466, 2.5211, 2.5093, 2.5138, 2.3761, 2.3764, 2.3765, 1.9497, 2.3803, 2.367, 2.4688, 2.5144, 2.4965, 2.4808, 2.277, 2.2524, 2.2287, 1.8042, 2.2668, 2.2625, 2.3764, 2.5528, 2.6159, 2.9314, 3.0502, 3.1276, 3.1873, 2.58, 2.6576, 2.6446, 2.6337, 2.6233];for(let l=1;l<FL.length;l++){CURVE.ls.Cm[l]*=FL[l];CURVE.ob.Cm[l]*=FO[l];}for(let l=FL.length;l<CURVE.ls.Cm.length;l++){CURVE.ls.Cm[l]*=FL[FL.length-1];CURVE.ob.Cm[l]*=FO[FO.length-1];}}
+/*v337 테슬라 화력 ×0.9, 위성레이저 화력 ×0.95 (전 레벨)*/for(let l=1;l<CURVE.ts.D.length;l++){CURVE.ts.D[l]*=.9;CURVE.ls.D[l]*=.95;}
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls",orbit:"ob",tesla:"ts",drone:"dr"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -2164,7 +2165,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v336 · 11/02 21:10";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v337 · 11/02 21:12";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2861,5 +2862,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611022105 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611022109 */</script>
 </body></html>
