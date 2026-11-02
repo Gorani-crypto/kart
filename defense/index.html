@@ -1610,6 +1610,7 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
   if(buildCell){X.strokeStyle="#ffe08a";X.lineWidth=.05;X.setLineDash([.12,.08]);X.strokeRect(buildCell[0]+.05,buildCell[1]+.05,.9,.9);X.setLineDash([]);}
   if(buildType&&hover){const ok=canPlace(hover[0],hover[1]);X.fillStyle=ok?"rgba(147,194,92,.35)":"rgba(217,87,60,.35)";X.fillRect(hover[0],hover[1],1,1);}
   for(const t of S.towers)drawTower(t,T);
+  for(const t of S.towers)if(t.type==="flame"&&st(t).tier>=3)fireOrbs(t,t.x+.5,t.y+.5,T);
   if(sel){X.strokeStyle="#ffe08a";X.lineWidth=.05;X.strokeRect(sel.x+.04,sel.y+.04,.92,.92);}
   for(const c of scorch){const a=Math.min(1,c.life/2);X.globalAlpha=a*.35;X.fillStyle="#1d1a14";X.beginPath();X.ellipse(c.x,c.y,c.R,c.R*.8,c.rot,0,7);X.fill();if(c.glow){X.globalAlpha=Math.max(0,c.life-2.5)/1.5*.7;X.fillStyle="#ff6a3a";X.beginPath();X.ellipse(c.x,c.y,c.R*.5,c.R*.4,c.rot,0,7);X.fill();X.globalAlpha=a*.35;}X.globalAlpha=a*.35;X.fillStyle="#3a2c1a";for(let i=0;i<5;i++){const q=c.rot+i*1.26;X.beginPath();X.ellipse(c.x+Math.cos(q)*c.R*.9,c.y+Math.sin(q)*c.R*.9,c.R*.35,c.R*.12,q,0,7);X.fill();}}X.globalAlpha=1;
   for(const e of enemies)if(e.x!==undefined&&!e.air&&!e.fly)drawEnemy(e,T);
@@ -1779,11 +1780,7 @@ function drawReal(t,s,tier,col,T){const fl=t.flash>0,rc=fl?.04:0,hi=tier>=6;
     for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;X.fillStyle="#8a2a1c";X.beginPath();X.arc(Math.cos(a)*.16,Math.sin(a)*.16,.045,0,7);X.fill();X.fillStyle="rgba(255,255,255,.18)";X.beginPath();X.arc(Math.cos(a)*.16-.012,Math.sin(a)*.16-.012,.015,0,7);X.fill();}X.restore();
     X.strokeStyle="rgba(0,0,0,.55)";X.lineWidth=.014;X.beginPath();X.arc(0,0,.28,0,7);X.stroke();
     const hg=.5+.5*Math.sin(T*5);X.fillStyle="#3a3d38";X.beginPath();X.arc(0,0,.1,0,7);X.fill();X.fillStyle=`rgba(255,${120+hg*80|0},30,${.55+hg*.35})`;X.beginPath();X.arc(0,0,.05,0,7);X.fill();
-    X.fillStyle="#2b2f22";X.fillRect(.04,-.05,.16,.1);rBarrel(.12,.5,.05,false);/* v321 화염 용: 불꽃 용이 바퀴 둘레를 휘감아 돎 */{const sp2=T*(fl?3.2:1.6),N=34;X.save();X.globalCompositeOperation="lighter";for(let q=N-1;q>=0;q--){const a=sp2-q*.14,rr=.41+.045*Math.sin(a*3+T*4),px=Math.cos(a)*rr,py=Math.sin(a)*rr,f=1-q/N,sz=.03+.08*f*f+(q===0?.03:0);const g=X.createRadialGradient(px,py,0,px,py,sz);g.addColorStop(0,`rgba(255,${200+55*f|0},${120*f|0},${.85*f+.1})`);g.addColorStop(.5,`rgba(255,${90+60*f|0},20,${.5*f})`);g.addColorStop(1,"rgba(180,30,0,0)");X.fillStyle=g;X.beginPath();X.arc(px,py,sz,0,7);X.fill();}
-      const ha=sp2,hx=Math.cos(ha)*.4,hy=Math.sin(ha)*.4,tx=-Math.sin(ha),ty=Math.cos(ha);X.fillStyle="rgba(255,240,180,.9)";for(const sd of[-1,1]){X.beginPath();X.arc(hx+tx*.03+Math.cos(ha)*sd*.02,hy+ty*.03+Math.sin(ha)*sd*.02,.009,0,7);X.fill();}
-      for(let e=0;e<5;e++){const a=ha-(e*.5+((T*2+e*.37)%1)*.5),rr=.4+((T*3+e*.53)%1)*.12;X.fillStyle=`rgba(255,${150+e*15},40,${.6-((T*3+e*.53)%1)*.6})`;X.beginPath();X.arc(Math.cos(a)*rr,Math.sin(a)*rr,.012,0,7);X.fill();}
-      X.restore();}
-    pil();if(fl)cone(.5,.46,.24);return;}
+    X.fillStyle="#2b2f22";X.fillRect(.04,-.05,.16,.1);rBarrel(.12,.5,.05,false);pil();if(fl)cone(.5,.46,.24);return;}
   /* 4차+: 고열 플라즈마·백린·태양로 — 빛나는 연료 탱크 + 냉각핀 분사기 */
   X.fillStyle="#3a3d38";X.fillRect(-.36,-.24,.32,.48);for(let i=0;i<3;i++){const yy=-.15+i*.15;rGlow(col,8);X.fillStyle=col;X.globalAlpha=.75+.25*Math.sin(T*3+i);X.beginPath();X.ellipse(-.2,yy,.11,.055,0,0,7);X.fill();X.globalAlpha=1;X.shadowBlur=0;X.strokeStyle="#15170f";X.lineWidth=.012;X.stroke();}
   X.fillStyle="#2b2f22";X.fillRect(-.04,-.08,.2,.16);rBarrel(.1,.52,.06,false);X.fillStyle="#4b4f48";for(let i=0;i<5;i++)X.fillRect(.18+i*.06,-.06,.02,.12);pil();if(fl)cone(.52,.5,.28,tier>=6?col:"rgba(255,120,40,.9)");return;}
@@ -1793,11 +1790,17 @@ function drawReal(t,s,tier,col,T){const fl=t.flash>0,rc=fl?.04:0,hi=tier>=6;
   const n=tier>=4?3:2;for(let i=0;i<n;i++)for(const sd of[-1,1]){const yy=sd*(.05+i*.045);X.fillStyle="#15170f";X.fillRect(.0-rc,yy-.018,.36,.036);}
   if(tier>=3){rGlow(col,8);X.fillStyle=col;X.globalAlpha=.6+.3*Math.sin(T*4);X.fillRect(-.06,-.02,.2,.04);X.globalAlpha=1;X.shadowBlur=0;}
   rCrew(-.12,.27,"#2e3324");X.fillStyle="#9aa38a";X.beginPath();X.arc(-.1,.27,.018,0,7);X.fill();if(fl){X.fillStyle=`rgba(190,220,140,.55)`;X.beginPath();X.arc(.42,0,.16,0,7);X.fill();}return;}}
+function fireOrbs(t,x,y,T){/* v323 화염방사기 3차+: 둘레를 천천히 공전하는 불덩이 구체(꼬리 불꽃) */const tier=st(t).tier,n=tier>=5?5:tier>=4?4:3,fl=t.flash>0,sp=T*(fl?2.2:1.1),R=.47;X.save();X.translate(x,y);X.globalCompositeOperation="lighter";
+  for(let i=0;i<n;i++){const a0=sp+i*Math.PI*2/n;for(let q=9;q>=0;q--){const a=a0-q*.07,rr=R+.02*Math.sin(T*2+i*2),px=Math.cos(a)*rr,py=Math.sin(a)*rr,f=1-q/10,sz=q===0?.075:.02+.04*f;const g=X.createRadialGradient(px,py,0,px,py,sz);
+      if(q===0){g.addColorStop(0,"rgba(255,250,220,1)");g.addColorStop(.35,"rgba(255,190,70,.95)");g.addColorStop(.7,"rgba(255,90,20,.55)");g.addColorStop(1,"rgba(200,30,0,0)");}
+      else{g.addColorStop(0,`rgba(255,${150+80*f|0},50,${.45*f})`);g.addColorStop(1,"rgba(200,40,0,0)");}X.fillStyle=g;X.beginPath();X.arc(px,py,sz,0,7);X.fill();}}
+  X.restore();}
 function drawTower(t,T){const s=st(t),tier=s.tier,col=TCOL[tier],x=t.x+.5,y=t.y+.5;
   if(tier>=6){const pul=.5+.5*Math.sin(T*3+t.x);const g=X.createRadialGradient(x,y,.1,x,y,.78);g.addColorStop(0,col+"77");g.addColorStop(1,col+"00");X.globalAlpha=.6+.4*pul;X.fillStyle=g;X.beginPath();X.arc(x,y,.8,0,7);X.fill();X.globalAlpha=1;}
   const b=.38+tier*.006;
   if(t.evoT>0){const k=t.evoT/2;X.fillStyle=col;X.globalAlpha=k*.5;X.beginPath();X.arc(x,y,.55+Math.sin(T*12)*.06,0,7);X.fill();X.globalAlpha=1;}
-  if(tier>=3){// 3차: 회전하는 점선 고리와 도는 불티 · 4차: 반대로 도는 고리 하나 더 · 5차+: 빛나는 구슬 셋이 공전
+  if(tier>=3&&t.type==="flame"){} /* v323 화염방사기 3차+: 점선 고리·불티 대신 fireOrbs(타워 위에 그림) */
+  else if(tier>=3){// 3차: 회전하는 점선 고리와 도는 불티 · 4차: 반대로 도는 고리 하나 더 · 5차+: 빛나는 구슬 셋이 공전
     X.save();X.translate(x,y);X.strokeStyle=col;X.lineWidth=.025;X.setLineDash([.1,.08]);X.globalAlpha=.75;X.rotate(T*.8);X.beginPath();X.arc(0,0,.5,0,7);X.stroke();
     if(tier>=4){X.rotate(-T*1.9);X.setLineDash([.04,.06]);X.lineWidth=.03;X.beginPath();X.arc(0,0,.42,0,7);X.stroke();}
     X.setLineDash([]);X.globalAlpha=1;X.restore();
@@ -2144,7 +2147,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v322 · 11/02 16:41";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v323 · 11/02 16:46";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2841,5 +2844,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021640 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021642 */</script>
 </body></html>
