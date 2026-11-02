@@ -1261,7 +1261,7 @@ function bgmEnv(ctx){/* 렌더링용 오디오 체인(압축기·잔향·잡음)
   BGM.noise=ctx.createBuffer(1,Math.floor(ctx.sampleRate*.5),ctx.sampleRate);const nd=BGM.noise.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;}
 const BGMR={buf:{},order:[],pend:{},cur:null,curK:null,want:null};
 /* 렌더링은 한 번에 하나씩(폰 부담↓), 결과는 IndexedDB에 저장해 다음부터 즉시 재생 */
-const BGM_VER="m2";let bgmChain=Promise.resolve(),bgmDB=null;
+const BGM_VER="m3";let bgmChain=Promise.resolve(),bgmDB=null;
 function bgmIDB(){if(bgmDB)return bgmDB;bgmDB=new Promise(res=>{try{const r=indexedDB.open("lastline-bgm",1);r.onupgradeneeded=()=>r.result.createObjectStore("t");r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);}catch(e){res(null);}});return bgmDB;}
 function bgmGet(k){return bgmIDB().then(db=>db&&new Promise(res=>{try{const q=db.transaction("t").objectStore("t").get(BGM_VER+k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}catch(e){res(null);}}));}
 function bgmPut(k,v){bgmIDB().then(db=>{if(!db)return;try{db.transaction("t","readwrite").objectStore("t").put(v,BGM_VER+k);}catch(e){}});}
@@ -1425,6 +1425,47 @@ Object.assign(BTRK,{
    for(let i=0;i<4;i++){bSub(S[0]-12,t+i*B,B*.9,.08);bKick(t+i*B,.2);}for(const m of S)bPad(m+24,t,B*4,.01);
    for(let i=0;i<8;i++)bSq(S[(i*3)%4]+36,t+i*B/2,B*.9,.02,900+500*Math.sin((bar*8+i)/5));bNoiseHit(t+B*3,.06,"bandpass",3000,20,.6,.5);}}
 });
+/* v288: 일반 단계 곡 16마디(A · A′ · B 전개 · A 복귀) + 보스·최종 곡에 9~16마디 대선율·마무리 필인 */
+Object.assign(BTRK,{
+ s1:{bpm:104,bar(t,bar,B){const T=B/3,P=[50,53,55,57,60,62,65,67,69,72],b16=bar%16,sec=b16>>2,ci=b16%4,root=sec===2?[45,48,50,53][ci]:[50,48,50,45][ci];
+   for(let i=0;i<12;i++){if([0,3,5,6,9].includes(i)||(sec>=2&&i===11))bTom(t+i*T,i%6===0?.22:.12,i%6===0?110:220,.18);bNoiseHit(t+i*T,.02,"highpass",6500,.6,.035,.05);}
+   if(b16===15)for(let i=0;i<6;i++)bTom(t+B*2+i*T,.14+i*.03,240-i*20,.15);
+   bSub(root-12,t,B*4,.06);bPad(root,t,B*4,.012);if(sec>=2)bPad(root+7,t,B*4,.01);
+   const pat=sec===3?[0,4,2,5,4,7,5,4,2,4,0,2]:[0,2,4,2,5,4,2,4,7,5,4,2];for(let i=0;i<12;i++)bPluck(P[(pat[i]+ci+(sec===2?2:0))%P.length]+12,t+i*T,.04,.22,"triangle",3500,.2);
+   const M1=[[[74,1.5],[72,.5],[69,2]],[[67,1],[69,1],[72,2]],[[74,1],[72,1],[69,1],[67,1]],[[69,4]]],M2=[[[77,1.5],[76,.5],[74,2]],[[72,1],[74,1],[77,2]],[[79,1],[77,1],[74,1],[72,1]],[[74,4]]];
+   if(sec===1||sec===3)bMel(M1[ci],t,B,(m,s,d)=>bPluck(m+12,s,.05,d*B+.3,"sine",4000,.4));
+   if(sec===2){bMel(M2[ci],t,B,(m,s,d)=>bPluck(m+12,s,.05,d*B+.3,"sine",4000,.4));bBrass(root+12,t,B*1.8,.03);}
+   if(sec===3&&ci%2===1)bBrass(62,t+B*2,B*1.8,.035);}},
+ s2:{bpm:92,bar(t,bar,B){const b16=bar%16,sec=b16>>2,ci=b16%4,CH=sec===2?[[46,53,58,62],[41,48,53,57],[43,50,55,58],[45,52,57,61]]:[[43,50,55,58],[48,55,60,63],[46,53,58,62],[38,45,50,54]],ch=CH[ci];
+   bKick(t,.4);bKick(t+B*2,.35);for(let i=0;i<4;i++)bSnare(t+i*B,.07);bSnare(t+B*3.5,.05);bSnare(t+B*3.75,.06);if(sec===1&&ci===3||b16===15)for(let i=0;i<8;i++)bSnare(t+B*2+i*B/4,.04+i*.012);
+   for(const m of ch)bSq(m,t,B*4,.009,800);bSub(ch[0]-12,t,B*4,.07);if(b16===12)bCrash(t,.08);
+   const A=[[[67,2],[70,1],[74,1]],[[72,2],[70,1],[67,1]],[[70,1.5],[69,.5],[67,1],[65,1]],[[66,3],[62,1]]],Bm=[[[70,2],[74,1],[77,1]],[[77,2],[76,1],[72,1]],[[74,1.5],[72,.5],[70,1],[67,1]],[[69,3],[66,1]]];
+   const M=sec===2?Bm[ci]:A[ci];if(sec!==0||ci<2)bMel(M,t,B,(m,s,d)=>{bBrass(m,s,d*.9,.05);if(sec>=1)bBrass(m-12,s,d*.9,.032);});}},
+ s4:{bpm:108,bar(t,bar,B){const b16=bar%16,sec=b16>>2,ci=b16%4,CH=sec===2?[[43,50,55,59],[48,55,60,64],[45,52,57,60],[47,54,59,63]]:[[40,47,52,55],[36,43,48,52],[38,45,50,54],[35,42,47,51]],ch=CH[ci],r=ch[0];
+   for(let i=0;i<8;i++)bStr([r+12,r+19][i%2],t+i*B/2,B/2*.7,.025);for(const m of ch)bPad(m+12,t,B*4,.012);bSub(r-12,t,B*4,.07);
+   bTimp(t,.35,r);bTimp(t+B*2,.25,r);bSnare(t+B,.06);bSnare(t+B*3,.06);if(b16===15||b16===7)for(let i=0;i<8;i++)bTimp(t+B*2+i*B/4,.08+i*.03,r);if(b16===12)bCrash(t,.08);
+   const A=[[[64,2],[67,1],[71,1]],[[72,2],[71,1],[67,1]],[[69,1],[71,1],[72,1],[74,1]],[[71,4]]],Bm=[[[67,2],[71,1],[74,1]],[[76,2],[74,1],[72,1]],[[72,1],[74,1],[76,1],[78,1]],[[79,3],[78,1]]],CM=[[[76,4]],[[72,4]],[[74,4]],[[75,4]]];
+   if(sec===0)bMel(A[ci],t,B,(m,s,d)=>bBrass(m,s,d*.92,.04));if(sec===1){bMel(A[ci],t,B,(m,s,d)=>bBrass(m,s,d*.92,.045));bMel(CM[ci],t,B,(m,s,d)=>bStr(m+12,s,d*.95,.018));}
+   if(sec===2)bMel(Bm[ci],t,B,(m,s,d)=>{bBrass(m,s,d*.92,.05);bBrass(m-12,s,d*.92,.03);});if(sec===3)bMel(A[ci],t,B,(m,s,d)=>{bBrass(m,s,d*.92,.05);bBrass(m+12,s,d*.92,.025);});}},
+ s5:{bpm:116,bar(t,bar,B){const b16=bar%16,sec=b16>>2,ci=b16%4,CH=sec===2?[[50,57,62,66],[52,59,64,68],[54,61,66,69],[52,59,64,68]]:[[45,52,57,61],[50,57,62,66],[52,59,64,68],[45,52,57,61]],ch=CH[ci];
+   bKick(t,.4);bKick(t+B*2,.35);for(let i=0;i<16;i++)if([0,2,3,4,6,8,10,11,12,14].includes(i))bSnare(t+i*B/4,i%4===0?.08:.04);if(b16===15)for(let i=0;i<8;i++)bSnare(t+B*2+i*B/4,.05+i*.014);if(b16===0||b16===8)bCrash(t,.07);
+   for(const m of ch)bPad(m,t,B*4,.012);bSub(ch[0]-12,t,B*4,.07);
+   const A=[[[69,1],[73,1],[76,2]],[[74,1.5],[73,.5],[69,2]],[[71,1],[73,1],[76,1],[78,1]],[[76,3],[73,1]]],Bm=[[[74,1],[78,1],[81,2]],[[80,1.5],[78,.5],[76,2]],[[78,1],[81,1],[80,1],[78,1]],[[76,4]]];
+   if(sec===0||sec===1)bMel(A[ci],t,B,(m,s,d)=>{bBrass(m,s,d*.9,.05);if(sec===1)bBrass(m-4,s,d*.9,.03);});if(sec===2)bMel(Bm[ci],t,B,(m,s,d)=>bBrass(m,s,d*.9,.055));
+   if(sec===3)bMel(A[ci],t,B,(m,s,d)=>{bBrass(m,s,d*.9,.055);bBrass(m-12,s,d*.9,.035);});}},
+ s6:{bpm:90,bar(t,bar,B){const b16=bar%16,sec=b16>>2,ci=b16%4,S=(sec===2?[[39,46,51,54],[37,44,49,52],[41,48,53,56],[40,47,52,55]]:[[36,43,48,51],[34,41,46,50],[37,44,49,52],[35,42,47,50]])[ci];
+   for(let i=0;i<4;i++){bSub(S[0]-12,t+i*B,B*.9,.08);bKick(t+i*B,.2);}for(const m of S)bPad(m+24,t,B*4,.01);
+   if(sec>=1)for(let i=0;i<8;i++)bSq(S[(i*3)%4]+36,t+i*B/2,B*.9,.02,900+500*Math.sin((bar*8+i)/5));
+   if(sec===2){const L=[[63,2],[62,2]];bMel([[S[3]+24,2],[S[2]+24,2]],t,B,(m,s,d)=>bBrass(m,s,d*.9,.035));}
+   bNoiseHit(t+B*3,.06,"bandpass",3000,20,.6,.5);if(sec===3)bNoiseHit(t+B*1.5,.05,"bandpass",5200,25,.3,.4);if(b16===15)bCrash(t+B*3,.06);}}
+});
+{const CM={boss:[[[79,2],[77,1],[75,1]],[[75,2],[72,2]],[[77,1],[75,1],[72,2]],[[74,4]]],f1:[[[81,2],[79,1],[77,1]],[[76,2],[74,2]],[[77,1],[79,1],[81,2]],[[74,4]]],
+  f2:[[[79,2],[82,2]],[[84,2],[82,1],[79,1]],[[81,2],[77,2]],[[78,4]]],f3:[[[74,1],[75,1],[78,2]],[[79,2],[78,1],[75,1]],[[74,1],[72,1],[70,2]],[[74,4]]],
+  f4:[[[83,2],[81,1],[79,1]],[[76,2],[79,2]],[[81,1],[79,1],[76,2]],[[78,4]]],f5:[[[81,1],[84,1],[88,2]],[[89,2],[88,1],[84,1]],[[86,1],[84,1],[81,2]],[[80,4]]],f6:[[[84,2],[85,2]],[[88,2],[82,2]],[[84,1],[90,1],[85,2]],[[79,4]]]};
+ for(const k in CM){const base=BTRK[k].bar;BTRK[k].bar=(t,bar,B)=>{base(t,bar,B);const b16=bar%16,sec=b16>>2,ci=b16%4;
+   if(sec===2)bMel(CM[k][ci],t,B,(m,s,d)=>bStr(m,s,d*.95,.03)); /* 9~12마디: 높은 현악 대선율 */
+   if(sec===3){for(let i=0;i<8;i++)bHat(t+i*B/2+B/4,.03);if(b16===12)bCrash(t,.08);} /* 13~16마디: 리듬 채움 */
+   if(b16===15)for(let i=0;i<8;i++)bTom(t+B*2+i*B/4,.12+i*.03,200-i*15,.18);}}}
 function bgmTrack(){if(typeof cutOn!=="undefined"&&cutOn)return"story";if(typeof titleOn!=="undefined"&&titleOn)return"march";if(typeof S==="undefined"||!S||!COUNTRY)return"march";const s=S.wave;
   if(COUNTRY.inf)return s%10===0?"boss":"s6";if(COUNTRY.alien)return s===10?"f6":s>=6?"boss":"s6";
   if(s===100)return"f"+Math.min(5,S.country);const b=BOSS[s];return b&&b[2]===1?"boss":"s"+Math.min(5,S.country);}
@@ -2041,7 +2082,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v287 · 11/02 14:25";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v288 · 11/02 14:35";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2738,5 +2779,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021420 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021428 */</script>
 </body></html>
