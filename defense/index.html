@@ -660,6 +660,7 @@ function bossHP(s,b){if(cur()===1)return b[3]*(s===100?(b===ESCORT[100]?4:b===BO
   if(c===4&&b===BOSS[s]&&b[2]===1)h*=2; /* v314 4스테이지 주력 보스(중대장·대대장·사단장) 체력 2배 */
   if(c===4&&s===100&&(b===BOSS[100]||b===ESCORT[100]))h*=2; /* v315 4스테이지 국방부장관·합참의장 체력 2배 */
   if(c===4&&b===BOSS[s]&&(s===90||s===70))h*=s===90?2:1.6; /* v316 4스테이지 군단장 2배·여단장 1.6배 */
+  if(c===3&&b===BOSS[s]&&(s===90||s===70))h*=s===90?3:2; /* v319 3스테이지 군단장 3배·여단장 2배 */
   if(c===5&&s<100&&b===BOSS[s]&&(b[2]===0||s===50||s===80))h*=2*U5(s);
   if(c===5){const FX=b===PRES?6000e12:s===100&&b===BOSS[100]?4000e12:s===100&&b===ESCORT[100]?1000e12:b===BOSS[s]?{50:620e12,80:1600e12,90:800e12}[s]:0;if(FX)h=FX;} /* 5스테이지 보스 체력 지정값(사용자): 대대장 620조·사단장 1600조·군단장 800조·합참의장 1000조·국방부장관 4000조·대통령 6000조 (v313 2배) */
   if(c===5&&s>=70)h*=1.5*(s===100?6.25:s===90?1.5:1); /* 100단계 보스는 99단계 분대 상승(48→150조)만큼 ×3.125, 군단장 ×1.5 더 */ /* 5스테이지 70~100단계 보스 ×1.5 */ /* 5스테이지 대대장·사단장·중간 보스 ×2 */
@@ -2138,7 +2139,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v318 · 11/02 16:25";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v319 · 11/02 16:26";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2835,5 +2836,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021624 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021625 */</script>
 </body></html>
