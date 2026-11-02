@@ -459,7 +459,7 @@ const TT={
 };
 const ORDER=Object.keys(TT);
 // 1차 전직 특성 (무기마다 하나)
-const EVOX={laser:{2:"기둥 +1개(2개) · 기둥이 1.5초 머물며 지속 피해",3:"기둥 +1개(3개) · 지속 3초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사(기둥 4개 분량)"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사)",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 20% 확률 즉사"},mortar:{2:"포탄 2발 연속 발사",3:"포탄 4발 연속 발사",4:"포탄 6발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"조사할수록 피해 증가 · 최대 10배"},sniper:{2:"보스 피해 ×7 · 사거리 +1칸",3:"보스 피해 ×10 · 사거리 +1칸",4:"보스 피해 ×12 · 일반 적 1% 확률 즉사",5:"보스 피해 ×12 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"최대 체력 10% 화상(보스 0.5%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
+const EVOX={laser:{2:"기둥 +1개(2개) · 기둥 지속 5초",3:"기둥 +1개(3개) · 기둥 지속 10초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사 4줄기가 적들 사이를 무작위로 옮겨 다님"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사)",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 20% 확률 즉사"},mortar:{2:"포탄 2발 연속 발사",3:"포탄 4발 연속 발사",4:"포탄 6발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"조사할수록 피해 증가 · 최대 10배"},sniper:{2:"보스 피해 ×7 · 사거리 +1칸",3:"보스 피해 ×10 · 사거리 +1칸",4:"보스 피해 ×12 · 일반 적 1% 확률 즉사",5:"보스 피해 ×12 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"최대 체력 10% 화상(보스 0.5%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
 const EVO1={tesla:"연쇄 +1 · 감전 마비 0.4초",laser:"레이저 기둥 범위 +50% · 사거리 +1칸",nuke:"충전 시간 -1분 (10분 → 9분) · 전직마다 1분씩 더 줄어 최소 1분",orbit:"레이저 +2줄기",drone:"드론 +1대 · 연사 +30% · 사거리 +1칸",emp:"마비 시간 +50% · 범위 +1칸",tank:"폭발 범위 +50% · 공격 속도 +25%",rifle:"공격 속도 +40%",mortar:"사거리 +1칸 · 폭발 범위 +35% · 불씨 지속 피해",rail:"빔 지속 2배 · 사거리 +1칸",sniper:"사거리 +1.5칸 · 보스 피해 ×5",flame:"맞은 적 20% 감속",gas:"감속 +1초 · 피해 ×3 (2차: 가스 맞은 적 받는 피해 ×1.2 / 3차: 2발씩 / 4차: ×1.5 / 5차: 사방 살포·×2 / 이후 전직마다 +0.4)",missile:"동시 발사 +2발"};
 let nukeReq=false,nukeCin=0;
 function drawCinBars(){const k=Math.min(1,(6.6-nukeCin)/.4,nukeCin/.5),h=C.height*.09*k;X.setTransform(1,0,0,1,0,0);X.fillStyle="#000";X.fillRect(0,0,C.width,h);X.fillRect(0,C.height-h,C.width,h);
@@ -488,7 +488,7 @@ const AOEK={mortar:1,flame:1,gas:1,missile:1,tank:1,emp:1,tesla:1,laser:1,nuke:1
 function st(t){if(t._sl===t.l&&t._sk===t.type&&t._st)return t._st;const r=st0(t);if(t.id!==undefined){t._sl=t.l;t._sk=t.type;t._st=r;}return r;}
 function st0(t){const T=TT[t.type],L=t.l,tier=tierOf(L),k=t.type,e1=tier>=1;
   return{tier,multi:(T.multi||0)+Math.floor(tier/3)+(e1&&k==="missile"?2:0),slow:k==="gas"?Math.min(.85,.3+.3*(L-1)/49+tier*.05):0,slowDur:2+tier,
-    dmg:(T.dmg||0)*BAL.atk*lvMult(L,k)*(e1&&k==="gas"?3:1)*1*(k==="flame"&&tier>=4?2:1)*(k==="tank"&&tier>=4?.4931:1)*(AOE1[k]?BAL.aoe1:AOE2[k]?BAL.aoe2:1),rate:k==="emp"?1/empCd(L):k==="nuke"?1/(60*Math.max(1,10-tier)):(T.rate||0)*(1+.06*tier)*(k==="tank"&&tier>=4?1.3:1)*(e1&&k==="nuke"?1/.7:e1&&k==="rifle"?1.4*(tier>=2?1.15:1)*(tier>=3?1.15:1)*(tier>=4?1.3:1):e1&&k==="tank"?1.25:e1&&k==="drone"?1.3:1),nDrone:2+(e1?1:0)+Math.floor(tier/3),stun:1.2*(e1&&k==="emp"?1.5:1),
+    dmg:(T.dmg||0)*BAL.atk*lvMult(L,k)*(e1&&k==="gas"?3:1)*1*(k==="flame"&&tier>=4?2:1)*(k==="tank"&&tier>=4?.4931:1)*(AOE1[k]?BAL.aoe1:AOE2[k]?BAL.aoe2:1),rate:k==="emp"?1/empCd(L):k==="nuke"?1/(60*Math.max(1,10-tier)):(T.rate||0)*(1+.06*tier)*(k==="tank"&&tier>=4?1.3:1)*(k==="laser"?1.5:1)*(e1&&k==="nuke"?1/.7:e1&&k==="rifle"?1.4*(tier>=2?1.15:1)*(tier>=3?1.15:1)*(tier>=4?1.3:1):e1&&k==="tank"?1.25:e1&&k==="drone"?1.3:1),nDrone:2+(e1?1:0)+Math.floor(tier/3),stun:1.2*(e1&&k==="emp"?1.5:1),
     range:(T.range||0)+.12*tier+(e1&&k==="sniper"?1.5:0)+(k==="sniper"?(tier>=2?1:0)+(tier>=3?1:0):0)+(e1&&k==="emp"?1:0)+(e1&&k==="drone"?1:0)+(e1&&k==="laser"?1:0)+(k==="laser"&&tier>=5?1:0)+(e1&&k==="rail"?1:0)+(k==="rail"?(tier>=2?1:0)+(tier>=3?1:0):0)+(e1&&k==="mortar"?1:0)+(k==="orbit"&&tier>=4?1.5:0),splash:(T.splash||0)*(1+.06*tier)*(e1&&k==="mortar"?1.35:e1&&k==="tank"?1.5:e1&&k==="laser"?1.5:1),beamW:k==="rail"?(e1?.6:.3):0,beamDur:k==="rail"?(tier>=3?3:tier>=2?1.2:e1?.6:.3):0,
     bossX:k==="sniper"?(tier>=4?12:tier>=3?10:tier>=2?7:e1?5:3):1,burn:e1&&k==="mortar",chill:e1&&k==="flame",
     chain:3+(e1?1:0)+Math.floor(tier/3),nBeam:4+(e1?2:0)+Math.floor(tier/3),zapStun:e1&&k==="tesla"?.4:0};}
@@ -759,7 +759,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
       if(fx.length<440){fx.push({k:"ring",x,y:y-.3,life:.3,m:.3,col:red?"#ffb0a0":"#bfe9ff",R:.5});for(const[px,py]of pts.slice(1))for(let q=0;q<(red?6:4);q++){const an=Math.random()*7,v=1.5+Math.random()*2;fx.push({k:"pt",x:px,y:py,vx:Math.cos(an)*v,vy:Math.sin(an)*v,life:.25,m:.25,col:q%3===0?"#ffffff":red?(q%2?"#ff6a1a":"#ff2a4a"):"#8fd3ff"});}if(red)for(const[px,py]of pts.slice(1))fx.push({k:"fl",x:px,y:py,life:.35,m:.35,col:"#ff4a2a",R:.18});}
       shakeT=Math.max(shakeT,.03);}
     else if(ty==="laser"){// 위성 조준: 0.6초 뒤 하늘에서 레이저 기둥
-      {const np=s.tier>=4?4:s.tier>=3?3:s.tier>=2?2:1,dur=s.tier>=3?3:s.tier>=2?1.5:0; /* v295: 2차 기둥 2개·1.5초, 3차 3개·3초, 4차 4개 */
+      {const np=s.tier>=4?4:s.tier>=3?3:s.tier>=2?2:1,dur=s.tier>=3?10:s.tier>=2?5:3; /* v296: 기둥 지속 기본 3초 · 2차 5초 · 3차 10초 / 기둥 2차 2개·3차 3개·4차 4개 */
        const L=[best];if(np>1){const C=[];for(const e of nearList(x,y,s.range,NB1)){if(e.dead||e===best||e.air)continue;const ex=e.x-x,ey=e.y-y;if(ex*ex+ey*ey<=R2)C.push(e);}C.sort((a,b)=>tgScore(tgm,b)-tgScore(tgm,a));for(const e of C){if(L.length>=np)break;L.push(e);}}
        for(let i=0;i<np;i++){const tg=L[i%L.length],j=i>=L.length?(Math.random()-.5)*.8:0;shells.push({kd:"sat",x0:tg.x+j,y0:tg.y-14,tx:tg.x+j,ty:tg.y+j,tg:i<L.length?tg:null,t:-i*.08,T:.6,dmg:s.dmg,sp:s.splash,tier:s.tier,src:t,dur});}}}
     else if(ty==="nuke"){nukeReq=false;// 핵미사일: 사일로에서 솟구쳐 1.8초 뒤 지도 전체 타격
@@ -789,7 +789,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
       if(best.boss)fx.push({k:"txt",x:best.x,y:best.y-.4,txt:fmt(s.dmg),col:"#fff",life:.8,m:.8,sz:.3});
       const ex=x+ux*len,ey=y+uy*len;fx.push({k:"beam",x1:x,y1:y,x2:ex,y2:ey,life:D,m:D,col:TCOL[Math.max(4,s.tier)],w:3+W*10});
       if(s.tier>=1)fx.push({k:"zap",x:ex,y:ey,life:.25,m:.25,col:"#8fd3ff",seed:Math.random()*99});}}
-  for(let i=pillars.length-1;i>=0;i--){const P=pillars[i],RR=P.R*P.R;for(const e of nearList(P.x,P.y,P.R,NB1)){if(e.dead||e.air)continue;const dx=e.x-P.x,dy=e.y-P.y;if(dx*dx+dy*dy<=RR)hit(e,P.dps*dt,P.src,true);}P.T-=dt;if(P.T<=0)pillars.splice(i,1);} /* v295: 위성 레이저 기둥 지속 피해 */
+  for(let i=pillars.length-1;i>=0;i--){const P=pillars[i];P.T-=dt;P.acc+=dt;if(P.acc>=.1||P.T<=0){const a=P.acc+Math.min(0,P.T),RR=P.R*P.R;P.acc=0;for(const e of nearList(P.x,P.y,P.R,NB1)){if(e.dead||e.air)continue;const dx=e.x-P.x,dy=e.y-P.y;if(dx*dx+dy*dy<=RR)hit(e,P.dps*a,P.src,true);}}if(P.T<=0)pillars.splice(i,1);} /* 0.1초마다 묶어서 계산(가벼움) */ /* v295: 위성 레이저 기둥 지속 피해 */
   for(const sh of shells){sh.t+=dt;if(sh.t<0)continue;
     if(sh.kd==="sat"&&!sh.done&&sh.tg&&!sh.tg.dead&&sh.t<sh.T*.7){sh.tx=sh.tg.x;sh.ty=sh.tg.y;sh.x0=sh.tx;}
     if(sh.kd==="mis"&&!sh.done){if(sh.tg&&!sh.tg.dead){sh.tx=sh.tg.x;sh.ty=sh.tg.y;}const P=misPos(sh,Math.min(1,sh.t/sh.T));
@@ -798,10 +798,10 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
     if(sh.tier>=1&&sh.kd!=="mis"&&sh.kd!=="tank"&&!sh.done&&fx.length<420&&Math.random()<.7){const k=sh.t/sh.T,gx=sh.x0+(sh.tx-sh.x0)*k,gy=sh.y0+(sh.ty-sh.y0)*k-(sh.kd==="mis"?0:Math.sin(k*Math.PI)*(sh.kd==="mortar"?1.9:1.1));
       fx.push(sh.kd==="mis"?{k:"smk",x:gx,y:gy,life:.5,m:.5,R:.12}:sh.kd==="gas"?{k:"smk",x:gx,y:gy,life:.4,m:.4,R:.1,col:"185,217,122"}:{k:"fl",x:gx,y:gy,life:.25,m:.25,col:"#ff9a3a",R:.07});}
     if(sh.t>=sh.T&&!sh.done){sh.done=true;const R2=sh.sp*sh.sp;
-    if(sh.kd==="sat"&&sh.dur>0)pillars.push({x:sh.tx,y:sh.ty,R:sh.sp,dps:sh.dmg/sh.dur,T:sh.dur,src:sh.src});else
+    if(sh.kd==="sat"&&sh.dur>0)pillars.push({x:sh.tx,y:sh.ty,R:sh.sp,dps:sh.dmg/sh.dur,T:sh.dur,T0:sh.dur,acc:0,src:sh.src,col:sh.tier>=4?TCOL[sh.tier]:"#ff5a6e"});else
     for(const e of enemies){if(e.dead||(e.air&&sh.kd!=="mis"))continue;const ddx=e.x-sh.tx,ddy=e.y-sh.ty;if(ddx*ddx+ddy*ddy<=R2){hit(e,sh.kd==="nuke"&&e.boss?Math.min(sh.dmg,e.max*.5):sh.dmg,sh.src,true);if(sh.kd==="gas")gasOn(e,sh.dur,sh.slow,sh.tier);if(sh.burn){e.burnT=1.5;e.burnD=sh.dmg*.25;e.burnS=sh.src;}}}
     if(sh.kd==="sat"){shakeT=Math.max(shakeT,.08);scorch.push({x:sh.tx,y:sh.ty,R:sh.sp*.55,life:4,m:4,rot:Math.random()*3,glow:1});if(scorch.length>40)scorch.shift();
-      fx.push({k:"skybeam",x:sh.tx,y:sh.ty,R:sh.sp,life:.45+(sh.dur||0),m:.45+(sh.dur||0),col:sh.tier>=4?TCOL[sh.tier]:"#ff5a6e"},{k:"ring",x:sh.tx,y:sh.ty,life:.4,m:.4,col:"#ffd0d8",R:sh.sp*1.3});
+      fx.push({k:"skybeam",x:sh.tx,y:sh.ty,R:sh.sp,life:.45,m:.45,col:sh.tier>=4?TCOL[sh.tier]:"#ff5a6e"},{k:"ring",x:sh.tx,y:sh.ty,life:.4,m:.4,col:"#ffd0d8",R:sh.sp*1.3});
       if(fx.length<440)for(let i=0;i<8;i++){const a=Math.random()*7,v=1+Math.random()*1.5;fx.push({k:"pt",x:sh.tx,y:sh.ty,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.4,m:.4,col:"#ffb0bd"});}}
     if(sh.kd==="nuke"){shakeT=Math.max(shakeT,sh.cin?1.3:.9);fx.push({k:"flash",life:sh.cin?1.3:.9,m:sh.cin?1.3:.9},{k:"mush",x:sh.tx,y:sh.ty,life:sh.cin?3.9:3.2,m:sh.cin?3.9:3.2,big:(sh.cin?2.4:1)+sh.tier*.06});
       for(const R of(sh.cin?[3,6,10,15]:[3,6,10]))fx.push({k:"ring",x:sh.tx,y:sh.ty,life:.8+R*.06,m:.8+R*.06,col:"#fff1c4",R});
@@ -999,14 +999,17 @@ const tgOf=t=>t.tg||(t.type==="sniper"?"strong":"first");
 function tgScore(m,e){return m==="last"?-e.d:m==="strong"?e.hp+(e.boss?1e300:0):m==="weak"?-e.hp:e.d;}
 function orbNext(e){let best=null,bd=2.25;for(const o of nearList(e.x,e.y,1.5,NB2)){if(o.dead||o===e)continue;const dx=o.x-e.x,dy=o.y-e.y,d=dx*dx+dy*dy;if(d<bd){bd=d;best=o;}}return best;}
 function orbCrush(e,t){if(e.boss||e.dead||Math.random()>=.2)return;hit(e,e.hp*10+1,t,true);if(fx.length<440)fx.push({k:"ring",x:e.x,y:e.y,life:.35,m:.35,col:"#ffffff",R:.5},{k:"txt",x:e.x,y:e.y-.4,txt:"분쇄!",col:"#bff6ff",life:.8,m:.8,sz:.26});}
-function contBeam(t,s,x,y,R2,dt){const dps=s.dmg*s.rate*(t.type==="laser"?4:1);t.cd=0; /* v295: 위성 레이저 5차 지속 조사는 기둥 4개 분량 */
-  const tgm=tgOf(t);if(t.type==="laser"){let best=null,bs=-Infinity;for(const e of nearList(x,y,s.range,NB1)){if(e.dead)continue;const ex=e.x-x,ey=e.y-y;if(ex*ex+ey*ey>R2)continue;const sc=tgScore(tgm,e);if(sc>bs){bs=sc;best=e;}}
-    if(!best){t.beams=null;t.bx=undefined;return;}
-    if(t.bx===undefined){t.bx=best.x;t.by=best.y;}const vx=best.x-t.bx,vy=best.y-t.by,dl=Math.hypot(vx,vy),mv=Math.min(dl,9*dt);if(dl>0){t.bx+=vx/dl*mv;t.by+=vy/dl*mv;}
-    const R=s.splash,RR=R*R;for(const e of nearList(t.bx,t.by,R,NB1)){if(e.dead)continue;const ex=e.x-t.bx,ey=e.y-t.by;if(ex*ex+ey*ey<=RR)hit(e,dps*dt,t,true);}
-    t.beams=[{x2:t.bx,y2:t.by,R}];t.ang=Math.atan2(t.by-y,t.bx-x);t.aim=best;
-    t.scT=(t.scT||0)-dt;if(t.scT<=0){t.scT=.12;scorch.push({x:t.bx+(Math.random()-.5)*R*.6,y:t.by+(Math.random()-.5)*R*.6,R:R*.35,life:3,m:3,rot:Math.random()*3,glow:1});if(scorch.length>40)scorch.shift();}
-    if(fx.length<420&&Math.random()<.6){const a=Math.random()*7,v=1.5+Math.random()*2.5;fx.push({k:"pt",x:t.bx,y:t.by,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1,life:.35,m:.35,col:Math.random()<.5?"#fff":TCOL[s.tier]});}
+function contBeam(t,s,x,y,R2,dt){const dps=s.dmg*s.rate;t.cd=0;
+  const tgm=tgOf(t);if(t.type==="laser"){/* v296 5차: 지속 조사 4줄기가 사거리 안 적들 사이를 무작위로 옮겨 다니며 지짐 */
+    const C=[];for(const e of nearList(x,y,s.range,NB1)){if(e.dead||e.air)continue;const ex=e.x-x,ey=e.y-y;if(ex*ex+ey*ey<=R2)C.push(e);}
+    if(!C.length){t.beams=null;t.lb=null;return;}if(!t.lb)t.lb=[];const R=s.splash,RR=R*R,d1=s.dmg*s.rate;t.beams=[];
+    for(let i=0;i<4;i++){let b=t.lb[i];if(!b){b=t.lb[i]={e:null,bx:x,by:y,ret:0};}b.ret-=dt;
+      if(!b.e||b.e.dead||b.ret<=0||(b.e.x-x)**2+(b.e.y-y)**2>R2){b.e=C[(Math.random()*C.length)|0];b.ret=1.2+Math.random()*1.3;}
+      const vx=b.e.x-b.bx,vy=b.e.y-b.by,dl=Math.hypot(vx,vy),mv=Math.min(dl,9*dt);if(dl>0){b.bx+=vx/dl*mv;b.by+=vy/dl*mv;}
+      for(const e of nearList(b.bx,b.by,R,NB1)){if(e.dead||e.air)continue;const ex=e.x-b.bx,ey=e.y-b.by;if(ex*ex+ey*ey<=RR)hit(e,d1*dt,t,true);}
+      t.beams.push({x2:b.bx,y2:b.by,R});if(fx.length<420&&Math.random()<.25){const a=Math.random()*7,v=1.5+Math.random()*2.5;fx.push({k:"pt",x:b.bx,y:b.by,vx:Math.cos(a)*v,vy:Math.sin(a)*v-1,life:.35,m:.35,col:Math.random()<.5?"#fff":TCOL[s.tier]});}}
+    t.ang=Math.atan2(t.lb[0].by-y,t.lb[0].bx-x);t.aim=t.lb[0].e;
+    t.scT=(t.scT||0)-dt;if(t.scT<=0){t.scT=.15;const b=t.lb[(Math.random()*4)|0];scorch.push({x:b.bx,y:b.by,R:R*.35,life:3,m:3,rot:Math.random()*3,glow:1});if(scorch.length>40)scorch.shift();}
     return;}
   const L=[];for(const e of nearList(x,y,s.range,NB1)){if(e.dead)continue;const ex=e.x-x,ey=e.y-y;if(ex*ex+ey*ey<=R2)L.push(e);}
   if(!L.length){t.beams=null;return;}L.sort((a,b)=>tgScore(tgm,b)-tgScore(tgm,a));const hov=Math.sin(performance.now()/500)*.06,B=[];
@@ -1025,13 +1028,13 @@ function drawBeams(T){let any=false;for(const t of S.towers)if(t.beams&&t.beams.
     if(t.beams[0].rail){const b=t.beams[0],h=b.heat||1,c2=h>5?"#ff6af0":h>2?"#b08cff":col,w=b.W*.3*(.9+.1*fl)*(1+Math.min(1,(h-1)/9)*.6);
       for(const[lw,al,cc]of[[w*2.2,.18,c2],[w*1.1,.55,c2],[w*.35,1,"#ffffff"]]){X.globalAlpha=al;X.strokeStyle=cc;X.lineWidth=lw;X.beginPath();X.moveTo(b.x1,b.y1);X.lineTo(b.x2,b.y2);X.stroke();}
       const rg=X.createRadialGradient(b.x1,b.y1,0,b.x1,b.y1,w*2);rg.addColorStop(0,"rgba(255,255,255,.9)");rg.addColorStop(1,"rgba(0,0,0,0)");X.globalAlpha=.8;X.fillStyle=rg;X.beginPath();X.arc(b.x1,b.y1,w*2,0,7);X.fill();continue;}
-    if(t.type==="laser"){const b=t.beams[0],w=Math.min(.42,b.R*.3)*fl;
+    if(t.type==="laser"){for(const b of t.beams){const w=Math.min(.42,b.R*.3)*fl;
       const g=X.createLinearGradient(b.x2-w*2,0,b.x2+w*2,0);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(.5,col);g.addColorStop(1,"rgba(0,0,0,0)");
       X.globalAlpha=.22;X.fillStyle=g;X.fillRect(b.x2-w*2,-1,w*4,b.y2+1);X.globalAlpha=.6;X.fillStyle=col;X.fillRect(b.x2-w*.45,-1,w*.9,b.y2+1);
       X.globalAlpha=1;X.fillStyle="#fffdf5";X.fillRect(b.x2-w*.16,-1,w*.32,b.y2+1);
       for(let k=0;k<3;k++){const yy=((T*9+k*.33+t.id*.1)%1)*b.y2;X.globalAlpha=.5;X.fillStyle="#fff";X.fillRect(b.x2-w*.6,yy,w*1.2,.06);}
       const rg=X.createRadialGradient(b.x2,b.y2,0,b.x2,b.y2,b.R);rg.addColorStop(0,"rgba(255,255,255,.85)");rg.addColorStop(.3,col);rg.addColorStop(1,"rgba(0,0,0,0)");X.globalAlpha=.55;X.fillStyle=rg;X.beginPath();X.arc(b.x2,b.y2,b.R,0,7);X.fill();
-      X.globalAlpha=.7;X.strokeStyle=col;X.lineWidth=.04;for(let k=0;k<2;k++){const ph=(T*2+k*.5)%1;X.beginPath();X.arc(b.x2,b.y2,b.R*(.4+ph*1.1),0,7);X.globalAlpha=.7*(1-ph);X.stroke();}}
+      X.globalAlpha=.7;X.strokeStyle=col;X.lineWidth=.04;for(let k=0;k<2;k++){const ph=(T*2+k*.5)%1;X.beginPath();X.arc(b.x2,b.y2,b.R*(.4+ph*1.1),0,7);X.globalAlpha=.7*(1-ph);X.stroke();}}}
     else{for(const b of t.beams){const wob=Math.sin(T*60+b.x2*7)*.012;if(b.thin){X.globalAlpha=.35;X.strokeStyle=col;X.lineWidth=.12*fl;X.beginPath();X.moveTo(b.x1,b.y1);X.lineTo(b.x2,b.y2);X.stroke();X.globalAlpha=.95;X.strokeStyle="#e9fdff";X.lineWidth=.03;X.beginPath();X.moveTo(b.x1,b.y1);X.lineTo(b.x2+wob,b.y2);X.stroke();continue;}
         X.globalAlpha=.22;X.strokeStyle=col;X.lineWidth=.26*fl;X.beginPath();X.moveTo(b.x1,b.y1);X.lineTo(b.x2+wob,b.y2);X.stroke();
         X.globalAlpha=.6;X.lineWidth=.1*fl;X.beginPath();X.moveTo(b.x1,b.y1);X.lineTo(b.x2+wob,b.y2);X.stroke();
@@ -1584,6 +1587,8 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
   drawDebuffs(T);drawBeams(T);
   drawTowerDrones(T);
 
+  for(const P of pillars){const a=Math.min(1,P.T/.4,(P.T0-P.T)/.15+.3),w=P.R*.42*(.92+.08*Math.sin(P.T*40+P.x));const g2=X.createLinearGradient(P.x-w,0,P.x+w,0);g2.addColorStop(0,"rgba(255,90,110,0)");g2.addColorStop(.5,P.col);g2.addColorStop(1,"rgba(255,90,110,0)");
+    X.globalAlpha=.75*a;X.fillStyle=g2;X.fillRect(P.x-w,P.y-14,w*2,14);X.globalAlpha=.9*a;X.fillStyle="#fff";X.fillRect(P.x-w*.15,P.y-14,w*.3,14);X.globalAlpha=.5*a;X.fillStyle=P.col;X.beginPath();X.ellipse(P.x,P.y,P.R*.9,P.R*.45,0,0,7);X.fill();X.globalAlpha=1;}
   for(const sh of shells){if(sh.t<0)continue;const k=sh.t/sh.T,gx=sh.x0+(sh.tx-sh.x0)*k,gy=sh.y0+(sh.ty-sh.y0)*k;
     if(sh.kd==="sat"){const a=Math.min(1,k/.9),R=sh.sp*(1.6-a*.9);X.strokeStyle="rgba(255,70,90,"+(.5+.5*a)+")";X.lineWidth=.035;X.beginPath();X.arc(sh.tx,sh.ty,R,0,7);X.stroke();
       X.beginPath();for(const q of[0,1,2,3]){const an=q*Math.PI/2+k*3;X.moveTo(sh.tx+Math.cos(an)*R*.6,sh.ty+Math.sin(an)*R*.6);X.lineTo(sh.tx+Math.cos(an)*R*1.25,sh.ty+Math.sin(an)*R*1.25);}X.stroke();
@@ -2096,7 +2101,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v295 · 11/02 15:15";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v296 · 11/02 15:22";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2793,5 +2798,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021509 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021512 */</script>
 </body></html>
