@@ -594,6 +594,10 @@ anchorMul(CURVE.dr.D,[[28, 1], [29, 1.0], [30, 0.619013], [31, 0.53285], [32, 0.
 /* v309: 후반(41~50렙) 조정 — 화염방사기 50렙 화력 ×12.9(효율 약 0.06), 테슬라 50렙 ×0.6, 위성 레이저·궤도 50렙 ×0.8 (40렙 이하·같은 돈 목표 구간은 그대로) / 미사일 41렙부터 강화비 렙당 +15% */
 anchorMul(CURVE.b4f.D,[[40,1],[50,1188e12/92.3e12]]);anchorMul(CURVE.ts.D,[[40,1],[50,.6]]);anchorMul(CURVE.ls.D,[[40,1],[50,.8]]);anchorMul(CURVE.ob.D,[[40,1],[50,.8]]);
 {const C=CURVE.mflat.Cm;for(let l=40;l<C.length;l++)C[l]*=Math.pow(1.15,Math.min(l,49)-39);}
+/* v310 후반(41~50렙): 소총 화력 ×5.35(50렙 약 20조)·강화비 렙당 +20%, 화염방사기 화력 ×0.5·강화비 점점 줄여 49렙 ×0.6, 미사일 화력 50렙 ×2·강화비 렙당 +10% 더 */
+anchorMul(CURVE.rf.D,[[40,1],[49,20e12/3.74e12]]);{const C=CURVE.rf.Cm;for(let l=40;l<C.length;l++)C[l]*=Math.pow(1.2,Math.min(l,49)-39);}
+anchorMul(CURVE.b4f.D,[[40,1],[50,.5]]);{const C=CURVE.b4f.Cm;for(let l=40;l<C.length;l++)C[l]*=Math.pow(.6,(Math.min(l,49)-39)/10);}
+anchorMul(CURVE.mflat.D,[[40,1],[50,2]]);{const C=CURVE.mflat.Cm;for(let l=40;l<C.length;l++)C[l]*=Math.pow(1.1,Math.min(l,49)-39);}
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls",orbit:"ob",tesla:"ts",drone:"dr"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -2818,5 +2822,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021557 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021600 */</script>
 </body></html>
