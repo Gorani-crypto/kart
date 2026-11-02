@@ -1051,8 +1051,8 @@ function drawBossIntroCine(){const b=bossIntro,W=C.width,H=C.height,g=X,T=b.t,c=
 
 /* 레일건 3차 전직부터: 빔을 계속 쏨(초당 피해 동일). 4차 피해 ×1.5(능력치), 5차: 계속 쏠수록 피해가 올라 최대 10배(약 15초) */
 function railBeam(t,s,x,y,R2,dt){const tgm=tgOf(t);let best=null,bs=-Infinity;for(const e of nearList(x,y,s.range,NB1)){if(e.dead)continue;const ex=e.x-x,ey=e.y-y;if(ex*ex+ey*ey>R2)continue;const sc=tgScore(tgm,e);if(sc>bs){bs=sc;best=e;}}
-  if(!best){t.beams=null;t.rampT=Math.max(0,(t.rampT||0)-dt*3);return;}
-  if(s.tier>=5)t.rampT=Math.min(15,(t.rampT||0)+dt);const mult=s.tier>=5?1+9*Math.min(1,(t.rampT||0)/15):1; /* v294: 5차부터 조사할수록 피해 증가(최대 10배) */
+  if(!best){t.beams=null;t.rampT=0;t.rampId=null;return;}
+  if(s.tier>=5){if(t.rampId!==best.id){t.rampId=best.id;t.rampT=0;}t.rampT=Math.min(600,(t.rampT||0)+dt);}const mult=s.tier>=5?1+9*Math.min(1,(t.rampT||0)/600):1; /* v294: 5차부터 조사할수록 피해 증가(최대 10배) · v365: 같은 적을 계속 쏠 때만, 10분에 걸쳐 최대 10배(표적 바뀌면 처음부터) */
   let sec=null;if(false){let b2=-Infinity;for(const e of nearList(x,y,s.range,NB1)){if(e.dead||e===best)continue;const ex=e.x-x,ey=e.y-y;if(ex*ex+ey*ey>R2)continue;const sc=tgScore(tgm,e);if(sc>b2){b2=sc;sec=e;}}} /* 5차: 빔 두 갈래 */
   const len=s.range+1,W=s.beamW,dps=s.dmg*s.rate*mult;t.beams=[];
   for(const tg of sec?[best,sec]:[best]){const dx=tg.x-x,dy=tg.y-y,L0=Math.hypot(dx,dy)||1,ux=dx/L0,uy=dy/L0;
@@ -2192,7 +2192,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v364 · 11/03 08:19";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v365 · 11/03 08:25";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2889,5 +2889,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030816 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030823 */</script>
 </body></html>
