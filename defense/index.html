@@ -630,6 +630,7 @@ anchorMul(CURVE.dr.D,[[39, 1], [40, 1.0], [41, 1.779313], [42, 3.165906], [43, 4
 /*v353 1경에서 궤도>위성 되게: 위성레이저 34→35 강화비 ×1.6*/CURVE.ls.Cm[34]*=1.6;
 /*v354 위성레이저·궤도 20~30렙 강화비를 화염방사기와 같은 효율로(화력 그대로), 30렙 이후 강화비도 같은 비율로*/{const cum=(k,L)=>{let c=TT[k].cost;for(let l=1;l<L;l++)c+=Math.ceil(TT[k].up*CURVE[k==="laser"?"ls":"ob"].Cm[l]);return c;};for(const[n,k,F]of[["ls","laser",{"20": 1.0586, "21": 2.0029, "22": 2.2504, "23": 3.9065, "24": 1.002, "25": 0.3665, "26": 0.5707, "27": 0.3836, "28": 0.3773, "29": 1.6262}],["ob","orbit",{"20": 2.3053, "21": 1.4438, "22": 0.6671, "23": 0.4208, "24": 0.7101, "25": 1.2779, "26": 2.0132, "27": 2.2097, "28": 2.8077, "29": 3.9083}]]){const C=CURVE[n].Cm;const o30=cum(k,30);for(const l in F)C[+l]*=F[l];const r=cum(k,30)/o30;for(let l=30;l<C.length;l++)C[l]*=r;}}
 /*v355 위성레이저·궤도 20~29렙 강화비가 앞 단계보다 싸지는 곳은 앞 단계 값으로(낮추지 않고 올리기만)*/for(const n of["ls","ob"]){const C=CURVE[n].Cm;for(let l=20;l<=29;l++)if(C[l]<C[l-1])C[l]=C[l-1]*1.05;}
+/*v356 사용자 지정 강화비(EASY 기준): 위성 28→29 70조·29→30 400조(24~27렙 등비로 이어짐), 궤도 28→29 300조·29→30 1800조(25~27렙 등비)*/{const set=(n,k,l,v)=>{CURVE[n].Cm[l]=v/TT[k].up;};const ramp=(n,k,a,b,va,vb)=>{for(let l=a;l<=b;l++)set(n,k,l,va*Math.pow(vb/va,(l-a)/(b-a)));};const cur=(n,k,l)=>TT[k].up*CURVE[n].Cm[l];ramp("ls","laser",23,28,cur("ls","laser",23),70e12);set("ls","laser",29,400e12);ramp("ob","orbit",24,28,cur("ob","orbit",24),300e12);set("ob","orbit",29,1800e12);}
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls",orbit:"ob",tesla:"ts",drone:"dr"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -2186,7 +2187,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v355 · 11/03 07:45";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v356 · 11/03 07:48";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2883,5 +2884,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030742 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030745 */</script>
 </body></html>
