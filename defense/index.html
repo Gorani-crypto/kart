@@ -600,7 +600,7 @@ anchorMul(CURVE.b4f.D,[[40,1],[50,.5]]);{const C=CURVE.b4f.Cm;for(let l=40;l<C.l
 anchorMul(CURVE.mflat.D,[[40,1],[50,2]]);{const C=CURVE.mflat.Cm;for(let l=40;l<C.length;l++)C[l]*=Math.pow(1.1,Math.min(l,49)-39);}
 anchorMul(CURVE.dr.D,[[39, 1], [40, 1.0], [41, 1.779313], [42, 3.165906], [43, 4.356757], [44, 5.995468], [45, 8.250576], [46, 11.353873], [47, 15.624541], [48, 24.908182], [49, 39.707832], [50, 49.634495]]);{const C=CURVE.dr.Cm;for(let l=40;l<C.length;l++)C[l]*=Math.pow(1.679735,Math.min(l,49)-39);} /* v311 드론 관제소: 50렙 화력 = 전차 진지 50렙의 3배, 50렙까지 누적비용 = 전차의 2배 (41렙부터) */
 /*v312 후반 전차·레이저·궤도 화력↑*/anchorMul(CURVE.tk.D,[[32,1],[39,1.748],[42,3.056],[46,1.899]]);anchorMul(CURVE.ls.D,[[19,1],[34,3.056],[39,1.902]]);anchorMul(CURVE.ob.D,[[17,1],[29,1.748],[32,3.056],[37,1.899]]);/*v312 테슬라도 레이저~전차 사이 유지*/anchorMul(CURVE.ts.D,[[26,1],[29,1.413],[32,1.99],[37,3.05],[40,1.90]]);
-/*v325 고타워 전직 직전 강화비(x9→x0) 인상: 전직 화력 배율만큼 그 한 단계만 비싸게(이후 레벨 비용 그대로)*/for(const n of["ls","ob","ts"])CURVE[n].Cm=CURVE[n].Cm.slice();for(const[n,A]of[["dr",[[9,2.6],[19,2.395]]],["s2",[[9,1.301],[19,2.386]]],["ts",[[9,2.287],[19,1.053]]],["ls",[[9,2.287],[19,1.134]]],["ob",[[9,2.287],[19,1.103]]],["nk",[[9,1.598],[19,2.893],[29,3.111],[39,3.176],[49,3.267]]]])for(const[l,f]of A)CURVE[n].Cm[l]*=f;
+/*v325 고타워 전직 직전 강화비(x9→x0) 인상(핵 제외): 전직 화력 배율만큼 그 한 단계만 비싸게(이후 레벨 비용 그대로)*/for(const n of["ls","ob","ts"])CURVE[n].Cm=CURVE[n].Cm.slice();for(const[n,A]of[["dr",[[9,2.6],[19,2.395]]],["s2",[[9,1.301],[19,2.386]]],["ts",[[9,2.287],[19,1.053]]],["ls",[[9,2.287],[19,1.134]]],["ob",[[9,2.287],[19,1.103]]]])for(const[l,f]of A)CURVE[n].Cm[l]*=f;
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls",orbit:"ob",tesla:"ts",drone:"dr"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -2150,7 +2150,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v325 · 11/02 16:52";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v326 · 11/02 16:55";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2847,5 +2847,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021645 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021647 */</script>
 </body></html>
