@@ -1768,8 +1768,16 @@ function drawReal(t,s,tier,col,T){const fl=t.flash>0,rc=fl?.04:0,hi=tier>=6;
   const cone=(x0,len,w,c)=>{const g=X.createLinearGradient(x0,0,x0+len,0);g.addColorStop(0,"rgba(255,245,200,.95)");g.addColorStop(.3,c||"rgba(255,140,30,.9)");g.addColorStop(1,"rgba(200,40,10,0)");X.fillStyle=g;X.beginPath();X.moveTo(x0,-.03);X.quadraticCurveTo(x0+len*.5,-w*.7+Math.sin(T*30)*.02,x0+len,-w);X.lineTo(x0+len,w);X.quadraticCurveTo(x0+len*.5,w*.7,x0,.03);X.closePath();X.fill();};
   if(tier===2){rSand(.38,14);for(let i=0;i<3;i++){const yy=-.14+i*.14;X.fillStyle="#8a2a1c";X.fillRect(-.34,yy-.05,.2,.1);X.fillStyle="rgba(255,255,255,.18)";X.fillRect(-.34,yy-.05,.2,.025);X.fillStyle="#ecbc3f";X.fillRect(-.3,yy-.05,.02,.1);}
     X.strokeStyle="#15170f";X.lineWidth=.02;X.beginPath();X.moveTo(-.14,0);X.quadraticCurveTo(-.02,.1,.06,0);X.stroke();X.fillStyle="#2b2f22";X.fillRect(.0,-.05,.18,.1);rBarrel(.12,.5,.04,false);rCrew(-.05,.24,"#5a3a2a");pil();if(fl)cone(.5,.42,.2);return;}
-  if(tier===3){rTracks(.38,.2);rHull(.36,.17,"#5a4a32","#463a26");for(const sd of[-1,1]){X.fillStyle="#8a2a1c";X.beginPath();X.ellipse(-.24,sd*.08,.09,.055,0,0,7);X.fill();}
-    X.fillStyle="#4a3e2a";X.beginPath();X.arc(.02,0,.12,0,7);X.fill();X.strokeStyle="rgba(0,0,0,.5)";X.lineWidth=.014;X.stroke();rBarrel(.08,.5,.05,false);pil();if(fl)cone(.5,.46,.24);return;}
+  if(tier===3){/* v317 3차: 회전 원형 바퀴 플랫폼 — 돌아가는 바퀴 테 + 바큇살 + 연료통 허브 */const sp=T*(fl?6:2.2);
+    X.fillStyle="rgba(0,0,0,.28)";X.beginPath();X.arc(.02,.03,.36,0,7);X.fill();
+    X.fillStyle="#24251f";X.beginPath();X.arc(0,0,.35,0,7);X.fill();
+    X.save();X.rotate(sp);X.fillStyle="#3a3b33";for(let k=0;k<16;k++){X.rotate(Math.PI/8);X.fillRect(.3,-.025,.055,.05);}X.restore();
+    X.fillStyle="#6a5638";X.beginPath();X.arc(0,0,.28,0,7);X.fill();X.fillStyle="#4a3c28";X.beginPath();X.arc(0,0,.235,0,7);X.fill();
+    X.save();X.rotate(sp);X.strokeStyle="#8a7650";X.lineWidth=.035;for(let k=0;k<6;k++){X.beginPath();X.moveTo(0,0);X.lineTo(Math.cos(k*Math.PI/3)*.23,Math.sin(k*Math.PI/3)*.23);X.stroke();}
+    for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;X.fillStyle="#8a2a1c";X.beginPath();X.arc(Math.cos(a)*.16,Math.sin(a)*.16,.045,0,7);X.fill();X.fillStyle="rgba(255,255,255,.18)";X.beginPath();X.arc(Math.cos(a)*.16-.012,Math.sin(a)*.16-.012,.015,0,7);X.fill();}X.restore();
+    X.strokeStyle="rgba(0,0,0,.55)";X.lineWidth=.014;X.beginPath();X.arc(0,0,.28,0,7);X.stroke();
+    const hg=.5+.5*Math.sin(T*5);X.fillStyle="#3a3d38";X.beginPath();X.arc(0,0,.1,0,7);X.fill();X.fillStyle=`rgba(255,${120+hg*80|0},30,${.55+hg*.35})`;X.beginPath();X.arc(0,0,.05,0,7);X.fill();
+    X.fillStyle="#2b2f22";X.fillRect(.04,-.05,.16,.1);rBarrel(.12,.5,.05,false);pil();if(fl)cone(.5,.46,.24);return;}
   /* 4차+: 고열 플라즈마·백린·태양로 — 빛나는 연료 탱크 + 냉각핀 분사기 */
   X.fillStyle="#3a3d38";X.fillRect(-.36,-.24,.32,.48);for(let i=0;i<3;i++){const yy=-.15+i*.15;rGlow(col,8);X.fillStyle=col;X.globalAlpha=.75+.25*Math.sin(T*3+i);X.beginPath();X.ellipse(-.2,yy,.11,.055,0,0,7);X.fill();X.globalAlpha=1;X.shadowBlur=0;X.strokeStyle="#15170f";X.lineWidth=.012;X.stroke();}
   X.fillStyle="#2b2f22";X.fillRect(-.04,-.08,.2,.16);rBarrel(.1,.52,.06,false);X.fillStyle="#4b4f48";for(let i=0;i<5;i++)X.fillRect(.18+i*.06,-.06,.02,.12);pil();if(fl)cone(.52,.5,.28,tier>=6?col:"rgba(255,120,40,.9)");return;}
@@ -2130,7 +2138,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v316 · 11/02 16:19";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v317 · 11/02 16:22";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2827,5 +2835,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021618 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021620 */</script>
 </body></html>
