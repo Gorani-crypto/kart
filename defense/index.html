@@ -434,7 +434,7 @@ const TT={
     names:["60mm 박격포","81mm 박격포","4.2인치 박격포","견인 곡사포","자주 곡사포","다연장 로켓","열압력탄 포대","집속탄 포대","궤도 포격 유도기","천벌 포대","종말 포격"]},
   rail:{label:"레일건",role:"관통 빔. 직선 위의 적을 모두 꿰뚫는다",cost:500,up:340,dmg:75,rate:.5,range:3.3,unlock:8,
     names:["대전차 소총","무반동총","대전차 미사일","전차포","코일건","레일건","가우스 캐논","입자 가속포","반물질 랜스","특이점 랜스","종말 레일"]},
-  sniper:{label:"저격총",role:"보스 전용. 사거리가 매우 길고 보스를 먼저 노려 3배 피해를 준다",cost:700,up:334,dmg:282.0315,rate:.4,range:5.5,unlock:15,
+  sniper:{label:"저격총",role:"보스 전용. 사거리가 매우 길고 보스를 먼저 노려 2배 피해를 준다",cost:700,up:334,dmg:282.0315,rate:.4,range:5.5,unlock:15,
     names:["저격 초소","지정사수","대물 저격총","정밀 저격반","열상 저격 진지","레일 저격총","스텔스 저격소","전자기 저격포","양자 조준 저격","유도 탄두 저격","절대 명중"]},
   flame:{label:"화염방사기",role:"사거리는 짧지만 주변 적을 한꺼번에 태운다",cost:1200,up:728,dmg:4.7385,rate:7,range:1.7,splash:.6,unlock:25,
     names:["화염방사기","강화 화염방사기","네이팜 방사기","화염 전차","고열 플라즈마 분사기","백린 분사포","태양로 분사기","항성 화염로","핵융합 화염포","지옥불 진지","겁화"]},
@@ -459,8 +459,8 @@ const TT={
 };
 const ORDER=Object.keys(TT);
 // 1차 전직 특성 (무기마다 하나)
-const EVOX={laser:{2:"기둥 +1개(2개) · 기둥 지속 5초",3:"기둥 +1개(3개) · 기둥 지속 10초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사 4줄기가 적들 사이를 무작위로 옮겨 다님"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사)",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 20% 확률 즉사"},mortar:{2:"사거리 +1칸 · 폭발 범위 +35%",3:"포탄 2발 연속 발사",4:"포탄 4발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"조사할수록 피해 증가 · 최대 10배"},sniper:{2:"보스 피해 ×7 · 사거리 +1칸",3:"보스 피해 ×10 · 사거리 +1칸",4:"보스 피해 ×12 · 일반 적 1% 확률 즉사",5:"보스 피해 ×12 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"최대 체력 10% 화상(보스 0.5%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
-const EVO1={tesla:"연쇄 +1 · 감전 마비 0.4초",laser:"레이저 기둥 범위 +50% · 사거리 +1칸",nuke:"충전 시간 -1분 (10분 → 9분) · 전직마다 1분씩 더 줄어 최소 1분",orbit:"레이저 +2줄기",drone:"드론 +1대 · 연사 +30% · 사거리 +1칸",emp:"마비 시간 +50% · 범위 +1칸",tank:"폭발 범위 +50% · 공격 속도 +25%",rifle:"공격 속도 +40%",mortar:"사거리 +1칸 · 폭발 범위 +35%",rail:"빔 지속 2배 · 사거리 +1칸",sniper:"사거리 +1.5칸 · 보스 피해 ×5",flame:"맞은 적 20% 감속",gas:"감속 +1초 · 피해 ×3 (2차: 가스 맞은 적 받는 피해 ×1.2 / 3차: 2발씩 / 4차: ×1.5 / 5차: 사방 살포·×2 / 이후 전직마다 +0.4)",missile:"동시 발사 +2발"};
+const EVOX={laser:{2:"기둥 +1개(2개) · 기둥 지속 5초",3:"기둥 +1개(3개) · 기둥 지속 10초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사 4줄기가 적들 사이를 무작위로 옮겨 다님"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사)",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 20% 확률 즉사"},mortar:{2:"사거리 +1칸 · 폭발 범위 +35%",3:"포탄 2발 연속 발사",4:"포탄 4발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"조사할수록 피해 증가 · 최대 10배"},sniper:{2:"보스 피해 ×4 · 사거리 +1칸",3:"보스 피해 ×6 · 사거리 +1칸",4:"보스 피해 ×8 · 일반 적 1% 확률 즉사",5:"보스 피해 ×10 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"최대 체력 10% 화상(보스 0.5%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
+const EVO1={tesla:"연쇄 +1 · 감전 마비 0.4초",laser:"레이저 기둥 범위 +50% · 사거리 +1칸",nuke:"충전 시간 -1분 (10분 → 9분) · 전직마다 1분씩 더 줄어 최소 1분",orbit:"레이저 +2줄기",drone:"드론 +1대 · 연사 +30% · 사거리 +1칸",emp:"마비 시간 +50% · 범위 +1칸",tank:"폭발 범위 +50% · 공격 속도 +25%",rifle:"공격 속도 +40%",mortar:"사거리 +1칸 · 폭발 범위 +35%",rail:"빔 지속 2배 · 사거리 +1칸",sniper:"사거리 +1.5칸 · 보스 피해 ×3",flame:"맞은 적 20% 감속",gas:"감속 +1초 · 피해 ×3 (2차: 가스 맞은 적 받는 피해 ×1.2 / 3차: 2발씩 / 4차: ×1.5 / 5차: 사방 살포·×2 / 이후 전직마다 +0.4)",missile:"동시 발사 +2발"};
 let nukeReq=false,nukeCin=0;
 function drawCinBars(){const k=Math.min(1,(6.6-nukeCin)/.4,nukeCin/.5),h=C.height*.09*k;X.setTransform(1,0,0,1,0,0);X.fillStyle="#000";X.fillRect(0,0,C.width,h);X.fillRect(0,C.height-h,C.width,h);
   if(nukeCin>4){X.globalAlpha=.18*k;X.fillRect(0,h,C.width,C.height-2*h);X.globalAlpha=1;}X.fillStyle=`rgba(255,211,107,${k})`;X.font=`700 ${Math.round(h*.42)}px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.fillText("☢ 핵 타격 진행 중",C.width/2,h*.66);X.textAlign="left";}
@@ -490,7 +490,7 @@ function st0(t){const T=TT[t.type],L=t.l,tier=tierOf(L),k=t.type,e1=tier>=1;
   return{tier,multi:(T.multi||0)+Math.floor(tier/3)+(e1&&k==="missile"?2:0),slow:k==="gas"?Math.min(.85,.3+.3*(L-1)/49+tier*.05):0,slowDur:2+tier,
     dmg:(T.dmg||0)*BAL.atk*lvMult(L,k)*(e1&&k==="gas"?3:1)*1*(k==="flame"&&tier>=4?2:1)*(k==="tank"&&tier>=4?.4931:1)*(AOE1[k]?BAL.aoe1:AOE2[k]?BAL.aoe2:1),rate:k==="emp"?1/empCd(L):k==="nuke"?1/(60*Math.max(1,10-tier)):(T.rate||0)*(1+.06*tier)*(k==="tank"&&tier>=4?1.3:1)*(k==="laser"?1/1.5:1)*(e1&&k==="nuke"?1/.7:e1&&k==="rifle"?1.4*(tier>=2?1.15:1)*(tier>=3?1.15:1)*(tier>=4?1.3:1):e1&&k==="tank"?1.25:e1&&k==="drone"?1.3:1),nDrone:2+(e1?1:0)+Math.floor(tier/3),stun:1.2*(e1&&k==="emp"?1.5:1),
     range:(T.range||0)+.12*tier+(e1&&k==="sniper"?1.5:0)+(k==="sniper"?(tier>=2?1:0)+(tier>=3?1:0):0)+(e1&&k==="emp"?1:0)+(e1&&k==="drone"?1:0)+(e1&&k==="laser"?1:0)+(k==="laser"&&tier>=5?1:0)+(e1&&k==="rail"?1:0)+(k==="rail"?(tier>=2?1:0)+(tier>=3?1:0):0)+(e1&&k==="mortar"?1:0)+(k==="mortar"&&tier>=2?1:0)+(k==="orbit"&&tier>=4?1.5:0),splash:(T.splash||0)*(1+.06*tier)*(e1&&k==="mortar"?1.35:e1&&k==="tank"?1.5:e1&&k==="laser"?1.5:1)*(k==="mortar"&&tier>=2?1.35:1),beamW:k==="rail"?(e1?.6:.3):0,beamDur:k==="rail"?(tier>=3?3:tier>=2?1.2:e1?.6:.3):0,
-    bossX:k==="sniper"?(tier>=4?12:tier>=3?10:tier>=2?7:e1?5:3):1,burn:false/*v362 박격포 불씨 삭제*/,chill:e1&&k==="flame",
+    bossX:k==="sniper"?(tier>=5?10:tier>=4?8:tier>=3?6:tier>=2?4:e1?3:2):1/*v366*/,burn:false/*v362 박격포 불씨 삭제*/,chill:e1&&k==="flame",
     chain:3+(e1?1:0)+Math.floor(tier/3),nBeam:4+(e1?2:0)+Math.floor(tier/3),zapStun:e1&&k==="tesla"?.4:0};}
 // 레벨별 배율표 (현재 최대 30레벨)
 // 피해: 일반 레벨 1~9 ×1.45 · 11~19 ×1.3 · 21~29 ×1.2, 전직 레벨 10 ×2 · 20 ×3 · 30 ×4
@@ -636,6 +636,7 @@ anchorMul(CURVE.dr.D,[[39, 1], [40, 1.0], [41, 1.779313], [42, 3.165906], [43, 4
 /*v357 궤도 30렙 이후 강화비가 같은 전직 구간 안에서 앞 단계보다 싸지지 않게(올리기만)*/{const C=CURVE.ob.Cm;for(let l=31;l<=49;l++)if(l!==40&&C[l]<C[l-1])C[l]=C[l-1]*1.05;}
 /*v362 박격포 전직 개편: 2차 연속발사 없앰·3차 2발·4차 4발·5차 10발 (v363: 발당 피해 보정 없음). 29→30 강화비 ×1.3, 이후도 같은 비율(레일건과 비용표 분리)*/{CURVE.b4m.Cm=CURVE.b4m.Cm.slice();const C=CURVE.b4m.Cm;for(let l=29;l<C.length;l++)C[l]*=1.3;}
 /*v364 레일건 30렙부터 박격포 초당공격력의 0.8배*/{const D=CURVE.b4r.D;for(let l=30;l<D.length;l++)D[l]*=l<40?0.57142857:l<50?0.76190476:1.14285714;}
+/*v366 저격총 강화비 전 구간 ×3(누적 대폭↑)*/{const C=CURVE.b4.Cm;for(let l=1;l<C.length;l++)C[l]*=3;}
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls",orbit:"ob",tesla:"ts",drone:"dr"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -2192,7 +2193,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v365 · 11/03 08:25";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v366 · 11/03 08:30";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2889,5 +2890,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030823 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030828 */</script>
 </body></html>
