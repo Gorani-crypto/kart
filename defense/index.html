@@ -1261,7 +1261,7 @@ function bgmEnv(ctx){/* 렌더링용 오디오 체인(압축기·잔향·잡음)
   BGM.noise=ctx.createBuffer(1,Math.floor(ctx.sampleRate*.5),ctx.sampleRate);const nd=BGM.noise.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;}
 const BGMR={buf:{},order:[],pend:{},cur:null,curK:null,want:null};
 /* 렌더링은 한 번에 하나씩(폰 부담↓), 결과는 IndexedDB에 저장해 다음부터 즉시 재생 */
-const BGM_VER="m1";let bgmChain=Promise.resolve(),bgmDB=null;
+const BGM_VER="m2";let bgmChain=Promise.resolve(),bgmDB=null;
 function bgmIDB(){if(bgmDB)return bgmDB;bgmDB=new Promise(res=>{try{const r=indexedDB.open("lastline-bgm",1);r.onupgradeneeded=()=>r.result.createObjectStore("t");r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);}catch(e){res(null);}});return bgmDB;}
 function bgmGet(k){return bgmIDB().then(db=>db&&new Promise(res=>{try{const q=db.transaction("t").objectStore("t").get(BGM_VER+k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}catch(e){res(null);}}));}
 function bgmPut(k,v){bgmIDB().then(db=>{if(!db)return;try{db.transaction("t","readwrite").objectStore("t").put(v,BGM_VER+k);}catch(e){}});}
@@ -1400,11 +1400,16 @@ Object.assign(BTRK,{
    for(const m of ch)bSq(m,t,B*4,.009,800);bSub(ch[0]-12,t,B*4,.07);
    const M=[[[67,2],[70,1],[74,1]],[[72,2],[70,1],[67,1]],[[70,1.5],[69,.5],[67,1],[65,1]],[[66,3],[62,1]]][ci];if(b8<4||b8>=6)bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.9,.05));}},
  /* 3 중동 일반 단계: 우드 즉흥풍 + 다르부카 + 낮은 지속음 */
- s3:{bpm:96,bar(t,bar,B){const ci=bar%4,E=B/2,dt=["D","T","","T","D","","T",""];
-   for(let i=0;i<8;i++){if(dt[i]==="D")bTom(t+i*E,.3,90,.35);else if(dt[i]==="T")bNoiseHit(t+i*E,.06,"bandpass",3200,2,.06,.12);}
-   bPad(50,t,B*4,.014);bPad(57,t,B*4,.01);bSub(38,t,B*4,.06);
-   const M=[[[62,1],[63,.5],[66,.5],[67,2]],[[69,1],[67,.5],[66,.5],[63,2]],[[62,.5],[63,.5],[66,.5],[67,.5],[69,1],[70,1]],[[69,.5],[67,.5],[66,1],[62,2]]][ci];
-   bMel(M,t,B,(m,s,d)=>bPluck(m+12,s,.07,Math.min(.7,d*B+.15),"sawtooth",4200,.3));}},
+ s3:{bpm:96,bar(t,bar,B){/* v287: 16마디 — A(1~4) · A′ 장식(5~8) · B 전개(9~12, 낮은 현·G 지속음) · A 복귀와 마무리(13~16) */const b16=bar%16,sec=b16>>2,ci=b16%4,E=B/2,dt=["D","T","","T","D","","T",""];
+   for(let i=0;i<8;i++){if(dt[i]==="D")bTom(t+i*E,sec===2?.36:.3,90,.35);else if(dt[i]==="T")bNoiseHit(t+i*E,sec===2?.08:.06,"bandpass",3200,2,.06,.12);}
+   if(sec>=1&&ci===3)for(let i=0;i<4;i++)bNoiseHit(t+B*3+i*B/4,.05+i*.01,"bandpass",3600,2,.05,.1);if(b16===15)for(let i=0;i<8;i++)bTom(t+B*2+i*B/4,.12+i*.03,140-i*6,.15);
+   const root=sec===2?[43,43,46,45][ci]:38;bPad(root+12,t,B*4,.014);bPad(root+19,t,B*4,.01);bSub(root,t,B*4,.06);
+   const A=[[[62,1],[63,.5],[66,.5],[67,2]],[[69,1],[67,.5],[66,.5],[63,2]],[[62,.5],[63,.5],[66,.5],[67,.5],[69,1],[70,1]],[[69,.5],[67,.5],[66,1],[62,2]]],
+     A2=[[[62,.5],[63,.25],[62,.25],[66,.5],[67,1.5],[69,.5],[67,.5]],[[70,1],[69,.5],[67,.5],[66,.5],[63,.5],[62,1]],[[66,.5],[67,.5],[69,.5],[70,.5],[72,.5],[70,.5],[69,1]],[[67,.5],[66,.5],[63,.5],[66,.5],[62,2]]],
+     Bm=[[[67,1.5],[69,.5],[70,1],[72,1]],[[74,2],[72,.5],[70,.5],[69,1]],[[70,1],[72,1],[74,.5],[75,.5],[74,1]],[[72,.5],[70,.5],[69,1],[67,2]]],
+     C=[[[62,1],[63,.5],[66,.5],[67,2]],[[69,1],[70,.5],[69,.5],[67,2]],[[66,.5],[67,.5],[69,.5],[67,.5],[66,1],[63,1]],[[62,4]]];
+   const M=[A,A2,Bm,C][sec][ci];bMel(M,t,B,(m,s,d)=>{bPluck(m+12,s,.07,Math.min(.7,d*B+.15),"sawtooth",4200,.3);if(sec===1&&d>=1)bPluck(m+24,s+B*.5,.03,.2,"sawtooth",5000,.2);});
+   if(sec===2){bStr(root+24,t,B*2,.022);bStr(root+31,t+B*2,B*2,.02);}if(sec===3&&ci===3)bStr(62+12,t,B*4,.025);}},
  /* 4 독일 일반 단계: 행진하는 현악 + 호른 선율(E단조) */
  s4:{bpm:108,bar(t,bar,B){const CH=[[40,47,52,55],[36,43,48,52],[38,45,50,54],[35,42,47,51]],ci=bar%4,b8=bar%8,ch=CH[ci],r=ch[0];
    for(let i=0;i<8;i++)bStr([r+12,r+19][i%2],t+i*B/2,B/2*.7,.025);for(const m of ch)bPad(m+12,t,B*4,.012);bSub(r-12,t,B*4,.07);
@@ -2036,7 +2041,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v286 · 11/02 10:23";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v287 · 11/02 14:25";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2733,5 +2738,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611020945 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611021420 */</script>
 </body></html>
