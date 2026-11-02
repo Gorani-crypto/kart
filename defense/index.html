@@ -679,7 +679,7 @@ function startWave(){if(phase!=="idle")return;
   if(mc)for(const B of bArr){const i=queue.indexOf(B),R=Math.max(1,(waveTotal-1-i)*gap0); /* 보스 속도는 간격을 좁히기 전 기준(사용자: 보스는 빨라지면 안 됨) */B.spd=Math.min(B.spd,mc[1]*PLEN/R);}if(bArr.pres&&bArr[0])bArr.pres.spd=bArr[0].spd*.9;if(bArr.s1)bArr[1].spd=Math.min(bArr[1].spd,bArr[0].spd*.9);
   if(s===100&&(cur()===3||cur()===4)){const mins=cur()===3?8:11.5;for(const B of bArr){B.spd=PLEN/(mins*60)*(B.title===BT("합참의장")?1.08:1);}} /* 최종 보스가 경로 끝까지: 중동 8분, 독일 11.5분 (합참의장은 조금 더 빠름) */if(s===100&&cur()===5){for(const B of bArr)if(B.title===BT(BOSS[100][1]))B.spd=PLEN/(30*60);if(bArr.pres)bArr.pres.spd=PLEN/(40*60);} /* 5스테이지: 국방부장관 30분 · 대통령 40분에 경로 끝까지(1배속, 일반 병사 속도와 무관) */phase="wave";spawnT=0;
   banner(boss?`${s}단계 · ${BKIND[boss[2]]} ${BT(boss[1])}${BT(boss[1])===RK[boss[0]][0]?"":"("+RK[boss[0]][0]+")"} 출현`:`${s}단계`);if(boss&&boss[2])shakeT=.6;dirtyUI=true;}
-function mkNormal(s,r,k=1){const sc=1,h1=hpOf(s,r)*(cur()===3&&s>80&&s<100?Math.pow(1.05,s-80):cur()===4?Math.pow(1.01,s-1):1)/* v322 4스테이지 일반 몹 체력 단계당 +1% 누적(100단계 ×2.7), 보상 그대로 *//* v318 3스테이지 81~99 일반 몹 체력 증가폭↑(단계당 +5% 누적, 보상 그대로) */,h=h1*k,dr=COUNTRY.drill,sf=cur()>=2&&s>50?1+.5*(s-50)/50:1;/* 2스테이지부터 51~100단계 일반 분대 이동속도 점진 증가(100단계 +25%) */return{r,n0:k,hp1:h1,max:h,hp:h,spd:spdOf(s)*sf*(dr?1:.94+Math.random()*.12),rew:rewOf(s,r)*sc*BAL.inc*(cur()===5&&s<=60?(s<=50?.85:.85+.01*(s-50)):1)/*v358 5스테이지 1~50단계 보상 ×0.85, v359 51~60단계 ×0.86→0.95*/,dmg:1,size:.25+r*.007,boss:false,d:0,id:nextId++,step:dr?0:Math.random()*6};}
+function mkNormal(s,r,k=1){const sc=1,h1=hpOf(s,r)*(cur()===3&&s>80&&s<100?Math.pow(1.05,s-80):cur()===4?Math.pow(1.01,s-1):1)/* v322 4스테이지 일반 몹 체력 단계당 +1% 누적(100단계 ×2.7), 보상 그대로 *//* v318 3스테이지 81~99 일반 몹 체력 증가폭↑(단계당 +5% 누적, 보상 그대로) */,h=h1*k,dr=COUNTRY.drill,sf=cur()>=2&&s>50?1+.5*(s-50)/50:1;/* 2스테이지부터 51~100단계 일반 분대 이동속도 점진 증가(100단계 +25%) */return{r,n0:k,hp1:h1,max:h,hp:h,spd:spdOf(s)*sf*(dr?1:.94+Math.random()*.12),rew:rewOf(s,r)*sc*BAL.inc*(cur()===5&&s<=60?(s<=30?.75:s<=50?.75+.005*(s-30):.85+.01*(s-50)):1)/*v358 5스테이지 1~50단계 보상 ×0.85, v359 51~60단계 ×0.86→0.95, v360 1~30단계 ×0.75(31~50 ×0.755→0.85 서서히)*/,dmg:1,size:.25+r*.007,boss:false,d:0,id:nextId++,step:dr?0:Math.random()*6};}
 function mkDrone(){return{r:-1,air:true,n0:1,hp1:DRONE_HP,max:DRONE_HP,hp:DRONE_HP,spd:DRONE_SPD*(.94+Math.random()*.12),rew:DRONE_REW,dmg:1,size:.3,boss:false,d:0,id:nextId++,step:Math.random()*6};}
 // 2스테이지 보스: 1스테이지 보스의 '최강 일반병 대비 배수'를 그대로 유지
 /* 3스테이지부터: 보스도 초반 완화(rampOf)를 똑같이 받고, 중간 보스는 0.6배(사용자: 10단계 중간보스 너무 셈) */
@@ -702,7 +702,7 @@ function bossHP(s,b){if(cur()===1)return b[3]*(s===100?(b===ESCORT[100]?4:b===BO
   if(c===4&&s>=50&&s<100)h*=2; /* 4스테이지 50~90단계 중간·주력 보스: 분대 ×1.5와 합쳐 기존의 3배 */
   return Math.round(h);}
 const BMUL50={50:12,60:6,70:7,80:17,90:10};
-function mkBoss(s,b,top){const h=bossHP(s,b);return{r:b[0],title:BT(b[1]),n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*b[4]*(cur()>=3&&s<50?.6:1),rew:BREW[s]&&b===BOSS[s]?Math.round(BREW[s]*(cur()===1?1:BAL.r2*rwMul())*BAL.inc*lateRw(s)*(cur()===5&&s<=60?(s<=50?.85:.85+.01*(s-50)):1)):0,kind:b[2],dmg:b[0]===18||b[2]>=1?MAXLIFE:15,size:b[0]===18?.64:b[2]?.58:.48,boss:true,d:0,id:nextId++,step:0};}
+function mkBoss(s,b,top){const h=bossHP(s,b);return{r:b[0],title:BT(b[1]),n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*b[4]*(cur()>=3&&s<50?.6:1),rew:BREW[s]&&b===BOSS[s]?Math.round(BREW[s]*(cur()===1?1:BAL.r2*rwMul())*BAL.inc*lateRw(s)*(cur()===5&&s<=60?(s<=30?.75:s<=50?.75+.005*(s-30):.85+.01*(s-50)):1)):0,kind:b[2],dmg:b[0]===18||b[2]>=1?MAXLIFE:15,size:b[0]===18?.64:b[2]?.58:.48,boss:true,d:0,id:nextId++,step:0};}
 function waveClear(){const s=S.wave;let bonus=0,dep=0;
   for(const t of S.towers)if(t.type==="depot"){const p=depotPay(t,s);dep+=p;const c=cc(t);fx.push({k:"txt",x:c[0],y:c[1]-.3,txt:"+"+fmt(p),col:"#ffd36b",life:1.6,m:1.6,sz:.36});}
   earn(bonus+dep);phase="idle";autoT=2;HOOK.clear&&HOOK.clear(s);
@@ -2190,7 +2190,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v359 · 11/03 08:03";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v360 · 11/03 08:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2887,5 +2887,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030801 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030802 */</script>
 </body></html>
