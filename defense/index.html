@@ -470,7 +470,7 @@ const TT={
 };
 const ORDER=Object.keys(TT);
 // 1차 전직 특성 (무기마다 하나)
-const EVOX={tesla:{2:"연쇄 10분대",3:"연쇄 14분대",4:"연쇄 20분대",5:"번개 줄기 3개(서로 다른 적에서 시작)"},laser:{2:"기둥 +1개(2개) · 기둥 지속 5초",3:"기둥 +1개(3개) · 기둥 지속 10초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사 4줄기가 적들 사이를 무작위로 옮겨 다님"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사) · 적이 적으면 남는 줄기를 모아 집중",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 20% 확률 즉사"},mortar:{2:"사거리 +1칸 · 폭발 범위 +35%",3:"포탄 2발 연속 발사",4:"포탄 4발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"사거리 +2칸 · 같은 적을 계속 조사하면 피해 증가(10분에 최대 10배)"},sniper:{2:"보스 피해 ×4 · 사거리 +1칸",3:"보스 피해 ×6 · 사거리 +1칸",4:"보스 피해 ×8 · 일반 적 1% 확률 즉사",5:"보스 피해 ×12 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"최대 체력 10% 화상(보스 0.5%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
+const EVOX={tesla:{2:"연쇄 10분대",3:"연쇄 14분대",4:"연쇄 20분대",5:"번개 줄기 3개(서로 다른 적에서 시작)"},laser:{2:"기둥 +1개(2개) · 기둥 지속 5초",3:"기둥 +1개(3개) · 기둥 지속 10초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사 4줄기가 적들 사이를 무작위로 옮겨 다님"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사) · 적이 적으면 남는 줄기를 모아 집중",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 20% 확률 즉사"},mortar:{2:"사거리 +1칸 · 폭발 범위 +35%",3:"포탄 2발 연속 발사",4:"포탄 4발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"사거리 +2칸 · 같은 적을 계속 조사하면 피해 증가(10분에 최대 10배)"},sniper:{2:"보스 피해 ×4 · 사거리 +1칸",3:"보스 피해 ×6 · 사거리 +1칸",4:"보스 피해 ×8 · 일반 적 1% 확률 즉사",5:"보스 피해 ×12 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"현재 체력 비례 화상: 5초간 초당 현재 체력 2%(보스 0.1%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
 const EVO1={tesla:"연쇄 7분대 · 감전 마비 0.4초",laser:"레이저 기둥 범위 +50% · 사거리 +1칸",nuke:"충전 시간 -1분 (10분 → 9분) · 전직마다 1분씩 더 줄어 최소 1분",orbit:"레이저 +2줄기",drone:"드론 +1대 · 연사 +30% · 사거리 +1칸",emp:"마비 시간 +50% · 범위 +1칸",tank:"폭발 범위 +50% · 공격 속도 +25%",rifle:"공격 속도 +40%",mortar:"사거리 +1칸 · 폭발 범위 +35%",rail:"빔 지속 2배 · 사거리 +1칸",sniper:"사거리 +1.5칸 · 보스 피해 ×3",flame:"맞은 적 20% 감속",gas:"감속 +1초 · 피해 ×3 (2차: 가스 맞은 적 받는 피해 ×1.2 / 3차: 2발씩 / 4차: ×1.5 / 5차: 사방 살포·×2 / 이후 전직마다 +0.4)",missile:"동시 발사 +2발"};
 let nukeReq=false,nukeCin=0;
 function drawCinBars(){const k=Math.min(1,(6.6-nukeCin)/.4,nukeCin/.5),h=C.height*.09*k;X.setTransform(1,0,0,1,0,0);X.fillStyle="#000";X.fillRect(0,0,C.width,h);X.fillRect(0,C.height-h,C.width,h);
@@ -797,7 +797,7 @@ function nearList(x,y,R,out){out.length=0;const W=EGW,H=EGRID.length/W;let x0=Ma
 function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
   if(!frz&&phase==="idle"&&S.auto){autoT-=dt;if(autoT<=0){if(document.hidden&&S.wave>=lastOf())S.wave=lastOf()-1;startWave();}} /* v391 방치 중일 때만 자동 진행으로 최종장 시작 안 함 */
   if(!frz&&phase==="wave"){spawnT-=dt;if(endless&&queue.length<2){const E=endless;queue.push(mkWaveSq(E.s,E.m,E.base,E.bf,E.vp,E.hm));}while(spawnT<=0&&queue.length){const e=queue.shift();enemies.push(e);spawnT+=spawnGap;if(e.pres&&!window.__SIM__){bossIntro={t:0,T:3.8,c:S.country,pres:true,resume:true};banner("");break;}}}
-  if(!frz)for(const e of enemies){if(e.burnT>0){e.burnT-=dt;hit(e,e.burnD*dt,e.burnS,true);e.hitT=0;}let sp=e.spd;if(e.slowT>0){e.slowT-=dt;sp*=1-e.slowA*(e.boss?.4:1);}if(e.gasT>0)e.gasT-=dt;if(e.pbT>0){e.pbT-=dt;hit(e,e.max*(e.boss?.001:.02)*dt/(e.gasT>0?e.gasV||1:1),e.pbS,true);}if(e.stunT>0){e.stunT-=dt;sp=0;}e.d+=sp*dt;e.step+=dt*e.spd*7;if(e.hitT)e.hitT-=dt;
+  if(!frz)for(const e of enemies){if(e.burnT>0){e.burnT-=dt;hit(e,e.burnD*dt,e.burnS,true);e.hitT=0;}let sp=e.spd;if(e.slowT>0){e.slowT-=dt;sp*=1-e.slowA*(e.boss?.4:1);}if(e.gasT>0)e.gasT-=dt;if(e.pbT>0){e.pbT-=dt;hit(e,e.hp*(e.boss?.001:.02)*dt/(e.gasT>0?e.gasV||1:1),e.pbS,true);/*v410 현재 체력 기준(보스 초당 0.1%)*/}if(e.stunT>0){e.stunT-=dt;sp=0;}e.d+=sp*dt;e.step+=dt*e.spd*7;if(e.hitT)e.hitT-=dt;
     if(e.air||e.fly){const k=e.fly?e.d/PLEN:e.d/AIR_LEN;e.x=AIR_A[0]+(AIR_B[0]-AIR_A[0])*k;e.y=AIR_A[1]+(AIR_B[1]-AIR_A[1])*k;e.dx=AIR_B[0]-AIR_A[0];e.dy=AIR_B[1]-AIR_A[1];}else{const p=posAt(e.d);e.x=p[0];e.y=p[1];e.dx=p[2];e.dy=p[3];}
     if(e.d>=(e.air&&!e.fly?AIR_LEN:PLEN)&&!e.dead){e.dead=true;S.lives-=e.boss?e.dmg:e.lk||Math.max(1,Math.round(alive(e)/10));fx.push({k:"ring",x:18.5,y:10.5,life:.5,m:.5,col:"#d9573c",R:1.2});dirtyUI=true;}}
   if(!frz)buildEG();
@@ -822,7 +822,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
     else if(ty==="sniper"){hit(best,s.dmg*(best.boss?s.bossX:1),t);if(!best.dead&&!best.boss&&s.tier>=4&&Math.random()<(s.tier>=5?.05:.01)){hit(best,best.hp*1e3+1,t);fx.push({k:"txt",x:best.x,y:best.y-.45,txt:"즉사",col:"#ff6a5a",life:1,m:1,sz:.32});}fx.push({k:"tr",x1:x,y1:y,x2:best.x,y2:best.y,life:.18,m:.18,col:"#fff6d8",w:1.6+s.tier*.3},{k:"ring",x:best.x,y:best.y,life:.25,m:.25,col:"#fff6d8",R:.35});}
     else if(ty==="flame"){const R3=s.splash*s.splash,fire=e=>{hit(e,s.dmg,t,true);if(s.chill&&!(e.slowT>0&&e.slowA>.2)){e.slowT=.6;e.slowA=.2;}
         if(s.tier>=2&&!e.dead){e.burnT=5;e.burnD=Math.max(e.burnD&&e.burnT>0?e.burnD:0,s.dmg/5);e.burnS=t;} /* 2차: 내 공격력만큼 5초 화상 */
-        if(s.tier>=5&&!e.dead&&!(e.pbT>0)){e.pbT=5;e.pbS=t;}}; /* 5차: 5초 동안 최대 체력 10%(보스 0.5%) 화상 */
+        if(s.tier>=5&&!e.dead&&!(e.pbT>0)){e.pbT=5;e.pbS=t;}}; /* 5차: 5초 동안 초당 현재 체력 2%(보스 0.1%) 화상 — v410 */
       if(s.tier>=3){t.frot=(t.frot||0)+2.4/s.rate;const RR=R2;for(const e of enemies){if(e.dead||e.air)continue;const ex=e.x-x,ey=e.y-y;if(ex*ex+ey*ey>RR)continue;const a=Math.atan2(ey,ex);let ok=false;for(let q=0;q<4;q++){let d=a-(t.frot+q*Math.PI/2);d=Math.atan2(Math.sin(d),Math.cos(d));if(Math.abs(d)<.5){ok=true;break;}}if(ok)fire(e);}
         t.armT=.45;/* v332: 4방향 불꽃 원 입자 대신 fireArms가 휘어진 불줄기(용 꼬리처럼)를 그림 */
         t.ang=t.frot;}
@@ -2312,7 +2312,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v409 · 11/04 00:40";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v410 · 11/04 00:25";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3056,5 +3056,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040018 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040020 */</script>
 </body></html>
