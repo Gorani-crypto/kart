@@ -8,7 +8,7 @@
 <title>최후방어선</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Nanum+Myeongjo:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Nanum+Myeongjo:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 /* Layout: 작전 지도(캔버스) + 우측 작전 콘솔. 좁은 화면에서는 지도 아래로 콘솔이 쌓인다. 단일 다크 전술 테마. */
 :root{
@@ -166,7 +166,7 @@ html.rot body{position:fixed;top:0;left:var(--sw);width:var(--sh);height:var(--s
 
 #tVer{position:absolute;right:10px;bottom:6px;font:500 10px var(--f-mono);color:#6d5f48;letter-spacing:.05em;pointer-events:none}.verTag{font:500 10px var(--f-mono);color:var(--muted);opacity:.7;margin-left:8px}
 #rcol,#drawerBg,#hud{display:none}
-#voidOv{position:fixed;inset:0;z-index:600;background:#000;display:grid;place-items:center;opacity:0;transition:opacity 1.2s;cursor:pointer;padding:24px}#voidOv.on{opacity:1}#voidOv p{margin:0;font-family:var(--f-disp);font-size:clamp(22px,4.2vw,46px);color:#e6e1f2;text-align:center;letter-spacing:.06em;opacity:0;transition:opacity .9s;text-shadow:0 0 18px rgba(170,150,230,.25)}#voidOv p.on{opacity:1}#voidOv p.big{font-size:clamp(40px,9vw,110px);letter-spacing:.3em}#voidOv small{position:absolute;bottom:18px;right:22px;color:#55506a;font-size:12px}/*v412 공허 등장 연출*/
+#voidOv{position:fixed;inset:0;z-index:600;background:#000;display:grid;place-items:center;opacity:0;transition:opacity 1.2s;cursor:pointer;padding:24px}#voidOv.on{opacity:1}#voidOv p{margin:0;font-family:"Nanum Myeongjo",serif;font-weight:400;font-size:clamp(20px,3.6vw,40px);color:#e9e5f3;text-align:center;letter-spacing:.14em;line-height:1.5;opacity:0;transition:opacity .9s;text-shadow:0 0 18px rgba(170,150,230,.25)}#voidOv p.on{opacity:1}#voidOv p.big{font-weight:800;font-size:clamp(46px,10vw,124px);letter-spacing:.45em;text-indent:.45em;text-shadow:0 0 30px rgba(170,150,230,.35)}#voidOv small{position:absolute;bottom:18px;right:22px;color:#55506a;font-size:12px}/*v412 공허 등장 연출*/
 #locTag{position:absolute;z-index:4;top:6px;left:6px;padding:3px 9px;background:rgba(10,12,8,.66);border:1px solid rgba(227,168,43,.35);border-radius:5px;color:#f1e3b0;font-size:12px;pointer-events:none;white-space:nowrap;max-width:70%;overflow:hidden;text-overflow:ellipsis}#locTag[hidden]{display:none}#locTag b{color:var(--accent);font-weight:600;margin-right:4px}/*v401 무한모드 현재 위치*/
 body.cmp .top{display:none}
 body.cmp #hud{display:flex;position:absolute;z-index:4;top:4px;right:4px;gap:10px;align-items:baseline;padding:3px 8px;background:rgba(10,12,8,.62);border:1px solid rgba(255,255,255,.08);border-radius:5px;pointer-events:none;font-size:11px;white-space:nowrap}
@@ -311,7 +311,7 @@ function voidIntro(done){const o=document.createElement("div");o.id="voidOv";o.i
   const fin=()=>{if(!VI)return;clearTimeout(tm);VI=null;o.style.transition="opacity .8s";o.classList.remove("on");setTimeout(()=>o.remove(),900);done();};
   const next=()=>{i++;if(i>=VOID_LINES.length){tm=setTimeout(fin,600);return;}const last=i===VOID_LINES.length-1;P.textContent=VOID_LINES[i];P.classList.toggle("big",last);P.classList.add("on");tm=setTimeout(()=>{P.classList.remove("on");tm=setTimeout(next,1000);},last?3200:2300);};
   o.onclick=fin;requestAnimationFrame(()=>{o.classList.add("on");tm=setTimeout(next,1500);});}
-function mkVoid(){const h=5e47;return{r:18,alien:"void",title:"공허",n0:1,hp1:h,max:h,hp:h,spd:spdOf(800)*.16,rew:0,kind:1,dmg:MAXLIFE,size:.95,boss:true,d:0,id:nextId++,step:0};} /*v409 최종 보스 공허: 체력 5000재*/
+function mkVoid(){const h=1e48;return{r:18,alien:"void",title:"공허",n0:1,hp1:h,max:h,hp:h,spd:spdOf(800)*.16,rew:0,kind:1,dmg:MAXLIFE,size:.95,boss:true,d:0,id:nextId++,step:0};} /*v413 최종 보스 공허: 체력 1극*/
 function mkInfBoss(s){const R=infReg(s),h=infHp(s)*40*1.3;/*v399 무한 보스 체력 1.3배*/return{r:18,alien:R.shape,title:`${R.short}의 ${R.boss}`,n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(R.shape==="ship"?.22:R.shape==="walker"?.28:.34),rew:Math.round(infRew(s)*.3*1.3),kind:1,dmg:MAXLIFE,size:R.shape==="ship"?.8:.62,boss:true,d:0,id:nextId++,step:0};}
 // 계급: 이름, 계급장 종류, 개수
 const RK=[["이병","bar",1],["일병","bar",2],["상병","bar",3],["병장","bar",4],["하사","chev",1],["중사","chev",2],["상사","chev",3],["원사","chev",4],
@@ -2319,7 +2319,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v412 · 11/04 00:32";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v413 · 11/04 00:36";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2376,7 +2376,7 @@ function renderStage(){const s=S.wave,m=mix(s),boss=BOSS[s];
   $("stageBox").innerHTML=`<div class="lbl">${modeTag(S.mode)} · ${COUNTRY.inf?"무한 모드":S.country+"스테이지 · "+COUNTRY.name}${S.conqBy[S.country]?" · 점령 완료":""}</div>${cNav}${S.conqBy[S.country]?`<button class="btn" data-replay="${S.country}">🎬 점령 장면 다시 보기</button>`:""}
     <div class="stagebar"><button class="btn" data-d="-1" ${s<=1?"disabled":""} aria-label="이전 단계">◀</button><b>${s} / ${lastOf()} 단계</b><button class="btn" data-d="1" ${s>=S.best?"disabled":""} aria-label="다음 단계">▶</button></div>
     ${s<S.best?`<button class="btn pri skipb" data-to="${s+1}" title="이미 깬 단계를 하나 건너뜁니다">⏭ 한 단계 넘기기 · ${s+1}단계로</button>`:""}
-    ${live}${COUNTRY.inf?(()=>{const R=infReg(s),bw=s%10===0;if(s>=800)return`<div class="lbl">최종 단계 · 공허</div><div class="comp"><span class="chip boss">최종 보스 · 공허</span></div><div class="next">체력 <b>${fmt(5e47)}</b></div>`;return`<div class="lbl">이번 단계 · ${R.area} · ${R.loc}</div><div class="comp">${bw?`<span class="chip boss">보스 · ${R.boss}</span>`:""}<span class="chip">외계 생물 ${INF_N}기</span></div><div class="next">1기 체력 <b>${fmt(infHp(s))}</b>${bw?` · 보스 체력 <b>${fmt(infHp(s)*52)}</b>`:` · 다음 보스 <b>${Math.ceil(s/10)*10}단계</b>`}</div>`;})():COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
+    ${live}${COUNTRY.inf?(()=>{const R=infReg(s),bw=s%10===0;if(s>=800)return`<div class="lbl">최종 단계 · 공허</div><div class="comp"><span class="chip boss">최종 보스 · 공허</span></div><div class="next">체력 <b>${fmt(1e48)}</b></div>`;return`<div class="lbl">이번 단계 · ${R.area} · ${R.loc}</div><div class="comp">${bw?`<span class="chip boss">보스 · ${R.boss}</span>`:""}<span class="chip">외계 생물 ${INF_N}기</span></div><div class="next">1기 체력 <b>${fmt(infHp(s))}</b>${bw?` · 보스 체력 <b>${fmt(infHp(s)*52)}</b>`:` · 다음 보스 <b>${Math.ceil(s/10)*10}단계</b>`}</div>`;})():COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
     ${!COUNTRY.alien&&!COUNTRY.inf&&!boss&&nb?`<div class="next">다음 ${BKIND[BOSS[nb][2]]} <b>${nb}단계 ${BT(BOSS[nb][1])}</b></div>`:""}`;}
 let popKey="";
 function popAt(p,cx,cy){const F=C.clientWidth,ox=C.offsetLeft,oy=C.offsetTop,cs=F/COLS,pw=p.offsetWidth,ph=p.offsetHeight;
@@ -2467,7 +2467,7 @@ function teLoop(now){if(!TE)return;const dt=Math.min(.1,(now-TE.last)/1000);TE.l
     $("cutBtns").innerHTML=`<button class="btn" id="cutStay">계속 머무르기</button><button class="btn pri" id="cutGo">메인 메뉴로</button>`;$("cutStay").onclick=close;$("cutGo").onclick=()=>{close();showTitle();};}
   requestAnimationFrame(teLoop);}
 function drawTE(g,W,H,t){const cl=(v)=>Math.max(0,Math.min(1,v)),sm=v=>{v=cl(v);return v*v*(3-2*v);},fade=(a,b,f=1)=>cl((t-a)/f)*cl((b-t)/f);
-  const txt=(str,y,a,sz=40,col="#f1e3b0",font='"Do Hyeon","IBM Plex Sans KR",sans-serif')=>{if(a<=0)return;g.save();g.globalAlpha=a;g.font=`${sz}px ${font}`;g.textAlign="center";g.textBaseline="middle";g.shadowColor="rgba(0,0,0,.9)";g.shadowBlur=12;g.fillStyle=col;g.fillText(str,W/2,y);g.restore();};
+  const txt=(str,y,a,sz=40,col="#f1e3b0",font='"Nanum Myeongjo",serif')=>{if(a<=0)return;g.save();g.globalAlpha=a;g.font=`${sz}px ${font}`;g.textAlign="center";g.textBaseline="middle";g.shadowColor="rgba(0,0,0,.9)";g.shadowBlur=12;g.fillStyle=col;g.fillText(str,W/2,y);g.restore();};
   const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);};
   g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation="source-over";g.fillStyle="#000";g.fillRect(0,0,W,H);
   const cx=W/2,cy=H*.46;
@@ -2501,7 +2501,7 @@ function drawTE(g,W,H,t){const cl=(v)=>Math.max(0,Math.min(1,v)),sm=v=>{v=cl(v);
     txt("모든 전선이 끝난 곳에,",H*.12,fade(.8,8.4),40,"#fff4dc");txt("아직 한 줄의 방어선이 서 있었다.",H*.2,fade(2.2,8.4),40,"#fff4dc");}
   else{ // 6: 진짜 끝
     const u=t-34,a=sm(u/2);g.save();g.globalCompositeOperation="lighter";for(let i=0;i<160;i++){g.globalAlpha=.5*rnd(i+3)*(.6+.4*Math.sin(t*1.3+i));g.fillStyle="#fff6e0";g.fillRect(rnd(i)*W,rnd(i+1)*H,1.6,1.6);}g.restore();
-    txt("최후방어선",H*.36,a,120,"#e3a82b");txt("— THE TRUE END —",H*.5,sm((u-1)/2),34,"#f1e3b0",'"IBM Plex Mono",monospace');
+    txt("최후방어선",H*.36,a,120,"#e3a82b",'"Do Hyeon",sans-serif');txt("— THE TRUE END —",H*.5,sm((u-1)/2),34,"#f1e3b0",'"IBM Plex Mono",monospace');
     txt("공허의 끝, 태초의 빛까지 지켜낸 당신에게.",H*.6,sm((u-2)/2),30,"#f1e3b0");
     txt(`${modeTag(S.mode)} · 무한 침공 800단계 돌파`,H*.68,sm((u-3)/2),24,"#b9ad88",'"IBM Plex Mono",monospace');}
   const bar=Math.max(0,Math.min(1,t<2?1-t/2:t>TE_T-1?0:0));if(bar>0){g.fillStyle=`rgba(0,0,0,${bar})`;g.fillRect(0,0,W,H);}}
@@ -3063,5 +3063,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040026 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040029 */</script>
 </body></html>
