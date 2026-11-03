@@ -287,8 +287,8 @@ const costMul=()=>typeof S!=="undefined"&&S&&S.mode==="hard"?1.5:1;
 const modeTag=m=>(m||"easy")==="hard"?"HARD":"EASY";
 function metaGet(){let m={};try{m=JSON.parse(localStorage.getItem("lld_meta")||"{}")||{};}catch(e){}if(typeof S!=="undefined"&&S&&S.meta)Object.assign(m,S.meta);if(typeof S!=="undefined"&&S&&S.endSeen)m[S.mode||"easy"]=true;return m;}
 function metaSet(k){const m=metaGet();m[k]=true;try{localStorage.setItem("lld_meta",JSON.stringify(m));}catch(e){}if(typeof S!=="undefined"&&S)S.meta=m;}
-/* 무한 모드: 단계마다 외계 생물 100기, 체력이 일정 비율(×1.09)로 계속 상승 · 10단계마다 보스 */
-const INF_N=100,INF_G=1.09,INF_RG=1.085;
+/* 무한 모드: 단계마다 외계 생물 500기, 체력이 일정 비율(×1.09)로 계속 상승 · 10단계마다 보스 */
+const INF_N=500,/*v398 물량 5배, 총 보상 1.3배(1기당 보상 = 기존×1.3/5)*/INF_G=1.09,INF_RG=1.085;
 const infHp=s=>6e16*Math.pow(INF_G,s-1),infRew=s=>1.2e16*Math.pow(INF_RG,s-1);
 const INF_REG=[[1,"지구",["대기권","성층권","저궤도","정지궤도","달 궤도"],"외계 강하 지휘체","walker"],[21,"태양계",["달","화성","소행성대","목성","토성","천왕성","해왕성","명왕성","카이퍼 벨트","오르트 구름"],"행성 포식자","saucer"],
   [51,"우리은하",["오리온 팔","페르세우스 팔","궁수자리 팔","은하 원반","은하 중심 · 궁수자리 A*"],"항성 파괴자","walker"],[81,"다른 은하계",["대마젤란 은하","소마젤란 은하","안드로메다 은하","삼각형자리 은하","소용돌이 은하 M51","솜브레로 은하","바람개비 은하 M101","M87 거대 타원은하","센타우루스자리 A","시가 은하 M82","호그의 천체","올챙이 은하","더듬이 은하","NGC 1300 막대나선은하","해바라기 은하","검은 눈 은하","수레바퀴 은하","IC 1101 초거대 타원은하","처녀자리 은하단","라니아케아 초은하단"],"은하 군주","ship"],[161,"멀티버스",null,"차원의 지배자","ship"]];
@@ -302,8 +302,8 @@ function mvInfo(s){const k=s-161,mv=Math.floor(k/20)+1,q=k%20,sy=Math.floor(q/5)
 function infReg(s){let i=0;while(i+1<INF_REG.length&&s>=INF_REG[i+1][0])i++;const R=INF_REG[i],a=R[0],b=i+1<INF_REG.length?INF_REG[i+1][0]:0;
   if(!R[2]){const m=mvInfo(s);const loc=`${m.sys} 항성계 · ${m.st?m.kd+" "+m.body:"주성 "+m.sys}`;return{area:`제${m.mv}멀티버스`,loc,short:m.st?m.body:m.sys+" 항성",boss:R[3],shape:R[4],mv:m,ri:i};}
   const li=Math.min(R[2].length-1,Math.floor((s-a)*R[2].length/(b-a))),loc=R[2][li];return{area:R[1],loc,short:loc,boss:R[3],shape:R[4],ri:i,li};}
-function mkInfSq(s,bw){const h=infHp(s);return{r:17,alien:"grunt",n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*1.1,rew:infRew(s)/INF_N*(bw?.7:1),lk:2,dmg:1,size:.34,boss:false,d:0,id:nextId++,step:0};}
-function mkInfBoss(s){const R=infReg(s),h=infHp(s)*40;return{r:18,alien:R.shape,title:`${R.short}의 ${R.boss}`,n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(R.shape==="ship"?.22:R.shape==="walker"?.28:.34),rew:Math.round(infRew(s)*.3),kind:1,dmg:MAXLIFE,size:R.shape==="ship"?.8:.62,boss:true,d:0,id:nextId++,step:0};}
+function mkInfSq(s,bw){const h=infHp(s);return{r:17,alien:"grunt",n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*1.1,rew:infRew(s)/INF_N*1.3*(bw?.7:1),lk:2,dmg:1,size:.34,boss:false,d:0,id:nextId++,step:0};}
+function mkInfBoss(s){const R=infReg(s),h=infHp(s)*40;return{r:18,alien:R.shape,title:`${R.short}의 ${R.boss}`,n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(R.shape==="ship"?.22:R.shape==="walker"?.28:.34),rew:Math.round(infRew(s)*.3*1.3),kind:1,dmg:MAXLIFE,size:R.shape==="ship"?.8:.62,boss:true,d:0,id:nextId++,step:0};}
 // 계급: 이름, 계급장 종류, 개수
 const RK=[["이병","bar",1],["일병","bar",2],["상병","bar",3],["병장","bar",4],["하사","chev",1],["중사","chev",2],["상사","chev",3],["원사","chev",4],
   ["소위","dia",1],["중위","dia",2],["대위","dia",3],["소령","leaf",1],["중령","leaf",2],["대령","leaf",3],["준장","star",1],["소장","star",2],["중장","star",3],["대장","star",4],["국방부장관","min",0]];
@@ -674,7 +674,7 @@ function fmt(n){n=Math.floor(n);if(n<1e4)return n.toLocaleString("ko-KR");
 function pick(m){let x=Math.random();for(const r in m){x-=m[r];if(x<=0)return+r;}return+Object.keys(m).pop();}
 function startWave(){if(phase!=="idle")return;
   if(!window.__SIM__&&!bossIntroOk&&!bossIntro&&!COUNTRY.inf&&(COUNTRY.alien?S.wave===10:S.wave===100)){bossIntro={t:0,T:COUNTRY.alien?5:S.country>=3?3.8:2.6,c:S.country};banner("");return;}bossIntroOk=false;
-  if(COUNTRY.inf){const s=S.wave,R=infReg(s),bw=s%10===0;queue=[];for(let i=0;i<INF_N;i++)queue.push(mkInfSq(s,bw));if(bw)queue.splice(70,0,mkInfBoss(s));spawnGap=.35;
+  if(COUNTRY.inf){const s=S.wave,R=infReg(s),bw=s%10===0;queue=[];for(let i=0;i<INF_N;i++)queue.push(mkInfSq(s,bw));if(bw)queue.splice(350,0,mkInfBoss(s));spawnGap=.07;
     waveTotal=queue.length;phase="wave";spawnT=0;shakeT=.6;banner(`무한 ${s}단계 · ${R.area} · ${R.loc}${bw?" · "+R.boss+" 출현":""}`);dirtyUI=true;return;}
   if(COUNTRY.alien){const s=S.wave;queue=[];
     if(s<=5){ALC[s-1].names.forEach((_,i)=>queue.push(mkCommander(s,i)));spawnGap=180;} /* 1~5단계: 3분마다 총사령관 1명 */
@@ -736,7 +736,7 @@ function goCountry(c){if(c<1||c>COUNTRIES.length||c===S.country)return;if(c>1&&!
   enemies=[];queue=[];shells=[];pillars=[];phase="idle";S.lives=MAXLIFE;autoT=3;sel=null;buildCell=null;bossIntro=null;bossIntroOk=false;endless=null;
   if(typeof document!=="undefined"&&$("cv")&&$("cv").getContext){try{buildBG();paintHeaderFlag();makeThumbs();}catch(e){}}
   banner(COUNTRY.inf?`♾ 무한 모드 · ${modeTag(S.mode)}`:`${c}스테이지 · ${COUNTRY.name}`);
-  if(c===7&&!S.unl7){S.unl7=true;unlockNotice(`무한 모드 · ${modeTag(S.mode)}`,[["끝없는 외계 생물","단계마다 100기씩, 체력이 계속 일정 비율로 강해집니다. 10단계마다 보스가 함께 옵니다."],["전선 확장","지구 → 태양계 → 우리은하 → 다른 은하계 → 멀티버스. 얼마나 멀리 갈 수 있는지 도전하세요."]]);}
+  if(c===7&&!S.unl7){S.unl7=true;unlockNotice(`무한 모드 · ${modeTag(S.mode)}`,[["끝없는 외계 생물","단계마다 500기씩, 체력이 계속 일정 비율로 강해집니다. 10단계마다 보스가 함께 옵니다."],["전선 확장","지구 → 태양계 → 우리은하 → 다른 은하계 → 멀티버스. 얼마나 멀리 갈 수 있는지 도전하세요."]]);}
   if(c===6&&!S.unl6){S.unl6=true;unlockNotice("외계 침공",[["6스테이지 · 10단계","1~6단계: 외계인에게 세뇌돼 더 강해진 각 대륙의 장성들. 7~10단계: 외계군 본대. 10단계 외계 황제를 막으면 인류의 승리. 매우 어렵습니다."],["최고 레벨 100","미국을 점령해 모든 무기를 100레벨(10차 전직)까지 키울 수 있습니다."]]);}
   if(c===3&&!S.unl3){S.unl3=true;unlockNotice("3스테이지 해금",[["테슬라 코일","1.5억 원 · 50단계. 번개가 분대 사이를 연쇄로 튀며 분대 전원을 감전."],["위성 레이저","10억 원 · 80단계. 하늘에서 레이저 기둥을 내리꽂는 광역 타격."],["핵 사일로 · 궤도 방어 플랫폼","3스테이지를 점령하면 열립니다."]]);}
   if(c===4&&!S.unl4){S.unl4=true;unlockNotice("4스테이지 해금",[["핵 사일로","25억 원. 10분 충전 뒤 지도 위 모든 적을 한꺼번에 타격."],["궤도 방어 플랫폼","30억 원. 여러 줄기 펄스 레이저로 동시에 여러 분대를 지짐."]]);}
@@ -2288,7 +2288,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v397 · 11/03 14:50";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v398 · 11/03 17:22";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2985,5 +2985,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031430 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031719 */</script>
 </body></html>
