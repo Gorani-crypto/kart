@@ -459,7 +459,7 @@ const TT={
 };
 const ORDER=Object.keys(TT);
 // 1차 전직 특성 (무기마다 하나)
-const EVOX={laser:{2:"기둥 +1개(2개) · 기둥 지속 5초",3:"기둥 +1개(3개) · 기둥 지속 10초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사 4줄기가 적들 사이를 무작위로 옮겨 다님"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사)",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 20% 확률 즉사"},mortar:{2:"사거리 +1칸 · 폭발 범위 +35%",3:"포탄 2발 연속 발사",4:"포탄 4발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"조사할수록 피해 증가 · 최대 10배"},sniper:{2:"보스 피해 ×4 · 사거리 +1칸",3:"보스 피해 ×6 · 사거리 +1칸",4:"보스 피해 ×8 · 일반 적 1% 확률 즉사",5:"보스 피해 ×12 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"최대 체력 10% 화상(보스 0.5%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
+const EVOX={tesla:{2:"연쇄 10분대",3:"연쇄 14분대",4:"연쇄 20분대",5:"번개 줄기 3개(서로 다른 적에서 시작)"},laser:{2:"기둥 +1개(2개) · 기둥 지속 5초",3:"기둥 +1개(3개) · 기둥 지속 10초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사 4줄기가 적들 사이를 무작위로 옮겨 다님"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사)",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 20% 확률 즉사"},mortar:{2:"사거리 +1칸 · 폭발 범위 +35%",3:"포탄 2발 연속 발사",4:"포탄 4발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"조사할수록 피해 증가 · 최대 10배"},sniper:{2:"보스 피해 ×4 · 사거리 +1칸",3:"보스 피해 ×6 · 사거리 +1칸",4:"보스 피해 ×8 · 일반 적 1% 확률 즉사",5:"보스 피해 ×12 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"최대 체력 10% 화상(보스 0.5%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
 const EVO1={tesla:"연쇄 7분대 · 감전 마비 0.4초",laser:"레이저 기둥 범위 +50% · 사거리 +1칸",nuke:"충전 시간 -1분 (10분 → 9분) · 전직마다 1분씩 더 줄어 최소 1분",orbit:"레이저 +2줄기",drone:"드론 +1대 · 연사 +30% · 사거리 +1칸",emp:"마비 시간 +50% · 범위 +1칸",tank:"폭발 범위 +50% · 공격 속도 +25%",rifle:"공격 속도 +40%",mortar:"사거리 +1칸 · 폭발 범위 +35%",rail:"빔 지속 2배 · 사거리 +1칸",sniper:"사거리 +1.5칸 · 보스 피해 ×3",flame:"맞은 적 20% 감속",gas:"감속 +1초 · 피해 ×3 (2차: 가스 맞은 적 받는 피해 ×1.2 / 3차: 2발씩 / 4차: ×1.5 / 5차: 사방 살포·×2 / 이후 전직마다 +0.4)",missile:"동시 발사 +2발"};
 let nukeReq=false,nukeCin=0;
 function drawCinBars(){const k=Math.min(1,(6.6-nukeCin)/.4,nukeCin/.5),h=C.height*.09*k;X.setTransform(1,0,0,1,0,0);X.fillStyle="#000";X.fillRect(0,0,C.width,h);X.fillRect(0,C.height-h,C.width,h);
@@ -482,7 +482,7 @@ const MAXLIFE=50, BOSSX=2;
 const empCd=L=>L<=20?8-4*(L-1)/19:L<=50?4-2*(L-20)/30:Math.max(.6,2-1.4*(L-50)/50);
 const tierOf=l=>Math.min(10,Math.floor(l/10));
 // 초당 공격력(한 번에 여러 대상을 치면 대상 수만큼 합산, 범위 무기는 맞은 분대마다)
-function dpsOf(t){const s=st(t),k=t.type;let n=1;if(k==="rifle"&&s.tier>=5)n=2.2;if(k==="mortar"&&s.tier>=3)n=s.tier>=5?10:s.tier>=4?4:2;if(k==="tank"&&s.tier>=4)n=3*(s.tier>=5?1.6:1);if(k==="missile")n=s.multi;else if(k==="drone")n=s.nDrone;else if(k==="orbit")n=s.nBeam*(s.tier>=2?1.5:1)*(s.tier>=4?1.3:1);else if(k==="laser")n=s.tier>=4?4:s.tier>=3?3:s.tier>=2?2:1;/*v383 테슬라 초당공격력은 연쇄 빼고 한 줄기(첫 분대)로만 표시*/
+function dpsOf(t){const s=st(t),k=t.type;let n=1;if(k==="rifle"&&s.tier>=5)n=2.2;if(k==="mortar"&&s.tier>=3)n=s.tier>=5?10:s.tier>=4?4:2;if(k==="tank"&&s.tier>=4)n=3*(s.tier>=5?1.6:1);if(k==="missile")n=s.multi;else if(k==="drone")n=s.nDrone;else if(k==="orbit")n=s.nBeam*(s.tier>=2?1.5:1)*(s.tier>=4?1.3:1);else if(k==="laser")n=s.tier>=4?4:s.tier>=3?3:s.tier>=2?2:1;else if(k==="tesla"){n=0;for(let i=0;i<s.chain;i++)n+=Math.pow(.85,i);}/* 초당공격력은 한 줄기(연쇄 포함) 기준 — v385 5차 첫 줄기 3개는 표시에 안 넣음 */
   return s.dmg*s.rate*n*(k==="sniper"?1:1);}
 const AOEK={mortar:1,flame:1,gas:1,missile:1,tank:1,emp:1,tesla:1,laser:1,nuke:1};
 function st(t){if(t._sl===t.l&&t._sk===t.type&&t._st)return t._st;const r=st0(t);if(t.id!==undefined){t._sl=t.l;t._sk=t.type;t._st=r;}return r;}
@@ -491,7 +491,7 @@ function st0(t){const T=TT[t.type],L=t.l,tier=tierOf(L),k=t.type,e1=tier>=1;
     dmg:(T.dmg||0)*BAL.atk*lvMult(L,k)*(e1&&k==="gas"?3:1)*1*(k==="flame"&&tier>=4?2:1)*(k==="tank"&&tier>=4?.4931:1)*(AOE1[k]?BAL.aoe1:AOE2[k]?BAL.aoe2:1),rate:k==="emp"?1/empCd(L):k==="nuke"?1/(60*Math.max(1,10-tier)):(T.rate||0)*(1+.06*tier)*(k==="tank"&&tier>=4?1.3:1)*(k==="laser"?1/1.5:1)*(e1&&k==="nuke"?1/.7:e1&&k==="rifle"?1.4*(tier>=2?1.15:1)*(tier>=3?1.15:1)*(tier>=4?1.3:1):e1&&k==="tank"?1.25:e1&&k==="drone"?1.3:1),nDrone:2+(e1?1:0)+Math.floor(tier/3),stun:1.2*(e1&&k==="emp"?1.5:1),
     range:(T.range||0)+.12*tier+(e1&&k==="sniper"?1.5:0)+(k==="sniper"?(tier>=2?1:0)+(tier>=3?1:0):0)+(e1&&k==="emp"?1:0)+(e1&&k==="drone"?1:0)+(e1&&k==="laser"?1:0)+(k==="laser"&&tier>=5?1:0)+(e1&&k==="rail"?1:0)+(k==="rail"?(tier>=2?1:0)+(tier>=3?1:0):0)+(e1&&k==="mortar"?1:0)+(k==="mortar"&&tier>=2?1:0)+(k==="orbit"&&tier>=4?1.5:0),splash:(T.splash||0)*(1+.06*tier)*(e1&&k==="mortar"?1.35:e1&&k==="tank"?1.5:e1&&k==="laser"?1.5:1)*(k==="mortar"&&tier>=2?1.35:1),beamW:k==="rail"?(e1?.6:.3):0,beamDur:k==="rail"?(tier>=3?3:tier>=2?1.2:e1?.6:.3):0,
     bossX:k==="sniper"?(tier>=5?12:tier>=4?8:tier>=3?6:tier>=2?4:e1?3:2):1/*v366*/,burn:false/*v362 박격포 불씨 삭제*/,chill:e1&&k==="flame",
-    chain:tier<4?[5,7,10,14][tier]:tier>=5?23:20/*v382 연쇄 기본5·1차7·2차10·3차14·4차20 · v384 5차(50렙)에서만 +3 → 23*/,nBeam:4+(e1?2:0)+Math.floor(tier/3),zapStun:e1&&k==="tesla"?.4:0};}
+    chain:tier<4?[5,7,10,14][tier]:20/*v382 연쇄 기본5·1차7·2차10·3차14·4차 이후 20*/,nBeam:4+(e1?2:0)+Math.floor(tier/3),zapStun:e1&&k==="tesla"?.4:0};}
 // 레벨별 배율표 (현재 최대 30레벨)
 // 피해: 일반 레벨 1~9 ×1.45 · 11~19 ×1.3 · 21~29 ×1.2, 전직 레벨 10 ×2 · 20 ×3 · 30 ×4
 // 강화비(L→L+1 비용이 직전 대비 몇 배): 1~8 ×1.65, 9→10 소총 기준 1만, 11~19 1.74→1.5로 둔화, 19→20 ×2, 21~29 1.48→1.3으로 둔화, 29→30 ×3
@@ -824,12 +824,13 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
         fx.push({k:"ring",x,y,life:.35,m:.35,col:"rgba(205,185,140,.8)",R:.35});}
       shakeT=Math.max(shakeT,.05);}
     else if(ty==="tesla"){// 연쇄 번개: 맞은 분대 전원 감전, 가까운 다음 분대로 튐
-      const pts=[[x,y-.45]],hitS=new Set();let cur0=best,d0=s.dmg;
+      const hitS=new Set(),starts=[best];if(s.tier>=5){/* v385 5차: 첫 줄기 3개(서로 다른 표적에서 시작) */const tgm2=tgOf(t);const C2=enemies.filter(e=>!e.dead&&e!==best&&!e.air&&(e.x-x)**2+(e.y-y)**2<=R2).sort((a,b)=>tgScore(tgm2,b)-tgScore(tgm2,a));for(const e of C2){if(starts.length>=3)break;starts.push(e);}}
+      const red=s.tier>=1;for(const st0 of starts){if(st0.dead&&st0!==best)continue;const pts=[[x,y-.45]];let cur0=st0,d0=s.dmg;
       for(let i=0;i<s.chain&&cur0;i++){hit(cur0,d0,t,true);if(s.zapStun)cur0.stunT=Math.max(cur0.stunT||0,s.zapStun*(cur0.boss?.3:1));cur0.eSeq=++FXS;hitS.add(cur0);pts.push([cur0.x,cur0.y]);
         if(fx.length<450)fx.push({k:"zap",x:cur0.x,y:cur0.y,life:.25,m:.25,col:"#bfe9ff",seed:Math.random()*99});
         let nx=null,nd=2.6;for(const e of enemies){if(e.dead||hitS.has(e))continue;const q=Math.hypot(e.x-cur0.x,e.y-cur0.y);if(q<nd){nd=q;nx=e;}}cur0=nx;d0*=.85;}
-      const red=s.tier>=1;fx.push({k:"bolt",pts,life:.32,m:.32,w:1+Math.min(s.tier,10)*.08+(red?.25:0),col:red?"#ff3b2f":"#8fd3ff",red,seed:Math.random()*99});t.flash=.15;
-      if(fx.length<440){fx.push({k:"ring",x,y:y-.3,life:.3,m:.3,col:red?"#ffb0a0":"#bfe9ff",R:.5});for(const[px,py]of pts.slice(1))for(let q=0;q<(red?6:4);q++){const an=Math.random()*7,v=1.5+Math.random()*2;fx.push({k:"pt",x:px,y:py,vx:Math.cos(an)*v,vy:Math.sin(an)*v,life:.25,m:.25,col:q%3===0?"#ffffff":red?(q%2?"#ff6a1a":"#ff2a4a"):"#8fd3ff"});}if(red)for(const[px,py]of pts.slice(1))fx.push({k:"fl",x:px,y:py,life:.35,m:.35,col:"#ff4a2a",R:.18});}
+      fx.push({k:"bolt",pts,life:.32,m:.32,w:1+Math.min(s.tier,10)*.08+(red?.25:0),col:red?"#ff3b2f":"#8fd3ff",red,seed:Math.random()*99});t.flash=.15;
+      if(fx.length<440){fx.push({k:"ring",x,y:y-.3,life:.3,m:.3,col:red?"#ffb0a0":"#bfe9ff",R:.5});for(const[px,py]of pts.slice(1))for(let q=0;q<(red?6:4);q++){const an=Math.random()*7,v=1.5+Math.random()*2;fx.push({k:"pt",x:px,y:py,vx:Math.cos(an)*v,vy:Math.sin(an)*v,life:.25,m:.25,col:q%3===0?"#ffffff":red?(q%2?"#ff6a1a":"#ff2a4a"):"#8fd3ff"});}if(red)for(const[px,py]of pts.slice(1))fx.push({k:"fl",x:px,y:py,life:.35,m:.35,col:"#ff4a2a",R:.18});}}
       shakeT=Math.max(shakeT,.03);}
     else if(ty==="laser"){// 위성 조준: 0.6초 뒤 하늘에서 레이저 기둥
       {const np=s.tier>=4?4:s.tier>=3?3:s.tier>=2?2:1,dur=s.tier>=3?10:s.tier>=2?5:3; /* v296: 기둥 지속 기본 3초 · 2차 5초 · 3차 10초 / 기둥 2차 2개·3차 3개·4차 4개 */
@@ -2198,7 +2199,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v384 · 11/03 09:15";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v385 · 11/03 09:20";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2895,5 +2896,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030912 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030914 */</script>
 </body></html>
