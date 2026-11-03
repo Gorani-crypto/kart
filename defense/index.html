@@ -166,6 +166,7 @@ html.rot body{position:fixed;top:0;left:var(--sw);width:var(--sh);height:var(--s
 
 #tVer{position:absolute;right:10px;bottom:6px;font:500 10px var(--f-mono);color:#6d5f48;letter-spacing:.05em;pointer-events:none}.verTag{font:500 10px var(--f-mono);color:var(--muted);opacity:.7;margin-left:8px}
 #rcol,#drawerBg,#hud{display:none}
+#locTag{position:absolute;z-index:4;top:6px;left:6px;padding:3px 9px;background:rgba(10,12,8,.66);border:1px solid rgba(227,168,43,.35);border-radius:5px;color:#f1e3b0;font-size:12px;pointer-events:none;white-space:nowrap;max-width:70%;overflow:hidden;text-overflow:ellipsis}#locTag[hidden]{display:none}#locTag b{color:var(--accent);font-weight:600;margin-right:4px}/*v401 무한모드 현재 위치*/
 body.cmp .top{display:none}
 body.cmp #hud{display:flex;position:absolute;z-index:4;top:4px;right:4px;gap:10px;align-items:baseline;padding:3px 8px;background:rgba(10,12,8,.62);border:1px solid rgba(255,255,255,.08);border-radius:5px;pointer-events:none;font-size:11px;white-space:nowrap}
 body.cmp #hud .stat{flex-direction:row;gap:3px;align-items:baseline}body.cmp #hud .stat b{font-size:12px}body.cmp #hud .stat span{font-size:9.5px;letter-spacing:0}
@@ -216,7 +217,7 @@ body.cmp.drawer #drawerBg{display:block;position:fixed;inset:0;z-index:44;backgr
     </div>
   </header>
   <main class="main">
-    <section class="field" id="field"><canvas id="cv" aria-label="작전 지도"></canvas><div id="banner"></div><div id="pauseVeil" hidden>일시정지</div><div id="pop" hidden></div><div class="bar" id="bar" aria-label="무기 목록 — 지도로 끌어서 배치"></div><div id="hud"></div><div id="rcol" hidden><button id="menuBtn" aria-label="메뉴 열기">☰</button></div></section><div id="drawerBg"></div><img id="ghost" hidden alt="">
+    <section class="field" id="field"><canvas id="cv" aria-label="작전 지도"></canvas><div id="banner"></div><div id="locTag" hidden></div><div id="pauseVeil" hidden>일시정지</div><div id="pop" hidden></div><div class="bar" id="bar" aria-label="무기 목록 — 지도로 끌어서 배치"></div><div id="hud"></div><div id="rcol" hidden><button id="menuBtn" aria-label="메뉴 열기">☰</button></div></section><div id="drawerBg"></div><img id="ghost" hidden alt="">
     <aside class="side">
       <div class="box">
         <div class="ctrl">
@@ -2289,7 +2290,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v400 · 11/03 18:15";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v401 · 11/03 22:18";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2370,7 +2371,7 @@ function renderPop(){const p=$("pop");
     <div class="row"><button class="btn warn" data-a="sell">해체 +${fmt(t.inv*.7)}</button></div>`;}
   p.hidden=false;popAt(p,t.x,t.y);}
 let barKey="";
-function renderUI(){renderPop();$("countryLine").textContent=`${modeTag(S.mode)} · ${COUNTRY.inf?"무한 모드 · "+S.wave+"단계":S.country+"스테이지 · "+COUNTRY.name}`;
+function renderUI(){renderPop();{const lt=$("locTag");if(COUNTRY.inf){const R=infReg(S.wave),h=`<b>📍 ${R.area}</b>${R.loc}`;if(lt.innerHTML!==h)lt.innerHTML=h;lt.hidden=false;const cv=$("cv");lt.style.left=(cv.offsetLeft+6)+"px";lt.style.top=(cv.offsetTop+6)+"px";}else lt.hidden=true;}$("countryLine").textContent=`${modeTag(S.mode)} · ${COUNTRY.inf?"무한 모드 · "+S.wave+"단계":S.country+"스테이지 · "+COUNTRY.name}`;
   $("sGold").textContent=fmt(S.gold);$("sWave").textContent=S.wave;$("sBest").textContent=S.best;$("sLife").textContent=Math.max(0,S.lives)+" / "+MAXLIFE;
   $("sLifeBox").classList.toggle("low",S.lives<=15);$("pauseVeil").hidden=!paused;
   $("pause").setAttribute("aria-pressed",paused);$("pause").textContent=paused?"재개":"일시정지";
@@ -2986,5 +2987,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031808 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611032214 */</script>
 </body></html>
