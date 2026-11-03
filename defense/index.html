@@ -718,7 +718,7 @@ function waveClear(){const s=S.wave;let bonus=0,dep=0;
   if(s>=lastOf()){S.best=lastOf();S.wave=COUNTRY.alien?10:91;
     if(!S.conqBy[S.country]){S.conqBy[S.country]=true;S.conquered=true;conquest();}
     else if(S.country<COUNTRIES.length){const c=S.country+1;goCountry(c);banner(`${s}단계 클리어 · ${c}스테이지로 진군`);return;}}
-  else{S.wave++;if(S.wave>S.best)S.best=S.wave;if(S.auto&&!(COUNTRY&&COUNTRY.inf)&&S.wave>=lastOf()){S.wave=lastOf()-1;} /* v388 자동 진행은 최종장 직전(99단계)까지만 — 깨면 그 단계 반복 */}
+  else{S.wave++;if(S.wave>S.best)S.best=S.wave;if(S.auto&&document.hidden&&!(COUNTRY&&COUNTRY.inf)&&S.wave>=lastOf()){S.wave=lastOf()-1;} /* v391 화면을 안 보고 방치 중(앱 백그라운드·화면 꺼짐)일 때만 자동 진행이 최종장 직전에서 반복 */}
   banner(`${s}단계 클리어`);save();dirtyUI=true;}
 function retreat(){const s=S.wave;endless=null;bossIntro=null;bossIntroOk=false;enemies=[];queue=[];shells=[];pillars=[];phase="idle";S.wave=Math.max(1,s-3);S.lives=MAXLIFE;autoT=3;HOOK.fail&&HOOK.fail(s);
   banner(`방어선 붕괴 · ${S.wave}단계로 후퇴`);save();dirtyUI=true;}
@@ -777,7 +777,7 @@ function buildEG(){const W=COLS+6,H=ROWS+6;if(!EGRID||EGW!==W){EGW=W;EGRID=[];fo
 function nearList(x,y,R,out){out.length=0;const W=EGW,H=EGRID.length/W;let x0=Math.floor(x-R)+3,x1=Math.floor(x+R)+3,y0=Math.floor(y-R)+3,y1=Math.floor(y+R)+3;x0=x0<0?0:x0;y0=y0<0?0:y0;x1=x1>=W?W-1:x1;y1=y1>=H?H-1:y1;
   for(let cy=y0;cy<=y1;cy++)for(let cx=x0;cx<=x1;cx++){const c=EGRID[cy*W+cx];for(let i=0;i<c.length;i++)out.push(c[i]);}return out;}
 function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
-  if(!frz&&phase==="idle"&&S.auto){autoT-=dt;if(autoT<=0){if(!(COUNTRY&&COUNTRY.inf)&&S.wave>=lastOf())S.wave=lastOf()-1;startWave();}} /* v388 자동 진행으로는 최종장 시작 안 함 */
+  if(!frz&&phase==="idle"&&S.auto){autoT-=dt;if(autoT<=0){if(document.hidden&&!(COUNTRY&&COUNTRY.inf)&&S.wave>=lastOf())S.wave=lastOf()-1;startWave();}} /* v391 방치 중일 때만 자동 진행으로 최종장 시작 안 함 */
   if(!frz&&phase==="wave"){spawnT-=dt;if(endless&&queue.length<2){const E=endless;queue.push(mkWaveSq(E.s,E.m,E.base,E.bf,E.vp,E.hm));}while(spawnT<=0&&queue.length){const e=queue.shift();enemies.push(e);spawnT+=spawnGap;if(e.pres&&!window.__SIM__){bossIntro={t:0,T:3.8,c:S.country,pres:true,resume:true};banner("");break;}}}
   if(!frz)for(const e of enemies){if(e.burnT>0){e.burnT-=dt;hit(e,e.burnD*dt,e.burnS,true);e.hitT=0;}let sp=e.spd;if(e.slowT>0){e.slowT-=dt;sp*=1-e.slowA*(e.boss?.4:1);}if(e.gasT>0)e.gasT-=dt;if(e.pbT>0){e.pbT-=dt;hit(e,e.max*(e.boss?.001:.02)*dt/(e.gasT>0?e.gasV||1:1),e.pbS,true);}if(e.stunT>0){e.stunT-=dt;sp=0;}e.d+=sp*dt;e.step+=dt*e.spd*7;if(e.hitT)e.hitT-=dt;
     if(e.air||e.fly){const k=e.fly?e.d/PLEN:e.d/AIR_LEN;e.x=AIR_A[0]+(AIR_B[0]-AIR_A[0])*k;e.y=AIR_A[1]+(AIR_B[1]-AIR_A[1])*k;e.dx=AIR_B[0]-AIR_A[0];e.dy=AIR_B[1]-AIR_A[1];}else{const p=posAt(e.d);e.x=p[0];e.y=p[1];e.dx=p[2];e.dy=p[3];}
@@ -2199,7 +2199,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v390 · 11/03 13:35";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v391 · 11/03 13:48";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2896,5 +2896,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031334 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031346 */</script>
 </body></html>
