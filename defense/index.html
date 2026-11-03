@@ -145,6 +145,7 @@ html.rot #title .tc{inset:0;gap:6px;padding:8px}html.rot #title .tk{font-size:10
 #cut .cutbox{width:min(960px,100%,calc((100dvh - 84px)*1.6));display:flex;flex-direction:column;gap:8px}html.rot #cut .cutbox{width:min(960px,100%,calc((var(--sw) - 84px)*1.6))}@media (max-height:560px){#cut{padding:6px 12px}}
 #cutCv{width:100%;height:auto;aspect-ratio:16/10;max-width:100%;border-radius:4px;cursor:pointer;background:#f3ead2}
 #cut .cutbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#cut .cutbox{position:relative}#cut.endq .cutbar{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);width:max-content;max-width:94%;justify-content:center;background:rgba(10,11,6,.82);border:1px solid #6b5a2a;border-radius:10px;padding:10px 14px}#cut.endq .dots{display:none}/*v394 엔딩 질문 화면 위*/
 #cut .dots{display:flex;gap:6px}
 #cut .dots i{width:28px;height:5px;border-radius:2px;background:#3a3f2c}
 #cut .dots i.on{background:var(--accent)}
@@ -2204,7 +2205,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v393 · 11/03 13:56";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v394 · 11/03 14:20";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2343,7 +2344,7 @@ const AFRICA=[[-17,21],[-16,15],[-17,12],[-13,8],[-8,4.5],[-3,5],[2,6],[6,4.5],[
 let cutT=0,cutOn=false,cutLast=0,cutData=null;
 // 엔딩 크레딧: 10초 동안 영화처럼 글이 올라가고 '끝'(사용자 지정)
 const CRED_T=20,CREDITS=["최후방어선","","","— 제작 —","벌꿀오소리","","","감사합니다"];
-function startCredits(){cutData={credits:true,c:7};cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=CRED_T-.01;};$("cutCv").onclick=null;requestAnimationFrame(cutLoop);}
+function startCredits(){$("cut").classList.remove("endq");cutData={credits:true,c:7};cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=CRED_T-.01;};$("cutCv").onclick=null;requestAnimationFrame(cutLoop);}
 function drawCredits(p,T){const cv=$("cutCv"),g=cv.getContext("2d"),W=cv.width,H=cv.height;g.save();
   const sky=g.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#0b1430");sky.addColorStop(.55,"#3a5a7a");sky.addColorStop(1,"#f2b880");g.fillStyle=sky;g.fillRect(0,0,W,H);
   for(let j=0;j<90;j++){g.fillStyle=`rgba(255,255,255,${.3+.5*((j*37)%10)/10})`;g.fillRect((j*173)%W,(j*97)%(H*.55),2,2);}
@@ -2360,7 +2361,7 @@ function drawCredits(p,T){const cv=$("cutCv"),g=cv.getContext("2d"),W=cv.width,H
     g.fillStyle=j===0?"#ffd84a":t.startsWith("—")?"#ffd84a":"#f4f1e6";g.font=j===0?`700 ${Math.round(H*.1)}px "Do Hyeon",sans-serif`:`500 ${Math.round(H*.045)}px "IBM Plex Sans KR",sans-serif`;g.fillText(t,W/2,y);});
   g.globalAlpha=1;if(p>.85){const k=(p-.85)/.15;g.fillStyle=`rgba(0,0,0,${k})`;g.fillRect(0,0,W,H);g.globalAlpha=k;g.fillStyle="#f4f1e6";g.font=`700 ${Math.round(H*.12)}px "Do Hyeon",sans-serif`;g.fillText("끝",W/2,H/2);g.globalAlpha=1;}
   g.textAlign="left";g.restore();}
-function startIntro(){cutData={intro:true,c:0};cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=8.99;};$("cutCv").onclick=cutNav;if(BGM.on)bgmStart();requestAnimationFrame(cutLoop);}
+function startIntro(){$("cut").classList.remove("endq");cutData={intro:true,c:0};cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=8.99;};$("cutCv").onclick=cutNav;if(BGM.on)bgmStart();requestAnimationFrame(cutLoop);}
 /* ═════════ 최종 엔딩: 영화식 6장면 (자막 · 암전 전환 · 느린 카메라) ═════════ */
 const FIN_D=[6.5,6.5,7,7,6.5,10],FIN_T=FIN_D.reduce((a,b)=>a+b,0);
 const FIN_SUB=[["포성이 멎었다.","…이것이, 지구인의 힘인가."],["하늘을 뒤덮었던 그림자가, 물러간다."],["우리는, 살아남았다."],["그리고 끝내 돌아오지 못한 이들이 있었다."],["세계는 다시, 같은 아침을 맞는다."],[""]];
@@ -2535,7 +2536,7 @@ function cutNav(e){if(!cutOn||!cutData||cutData.credits)return;const r=$("cutCv"
   if(left){if(cutT>=T-.02){clearInterval(cutTimer);clearTimeout(cutTimer);cutTimer=null;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=T-.01;};}cutT=k>0&&cutT-st[k]<.6?st[k-1]+.01:st[k]+.01;if(cutT>=T-.02)cutT=st[Math.max(0,k-1)]+.01;}
   else cutT=k<st.length-1?st[k+1]+.01:T-.01;} /* v273: 컷신·스토리 화면 왼쪽 = 이전 장면, 오른쪽 = 다음 장면 */
 function startCutscene(cc,replay){const c=cc||S.country;cutData={replay:!!replay,from:COUNTRIES[c-1],to:COUNTRIES[c]||null,c,kills:S.kills,earned:S.earned,top:Math.max(1,...S.towers.map(t=>t.l))};
-  cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=isCine(cutData)?cineTot(cineList(cutData))-.01:cutNP(cutData)*3-.01;};
+  $("cut").classList.remove("endq");cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=isCine(cutData)?cineTot(cineList(cutData))-.01:cutNP(cutData)*3-.01;};
   $("cutCv").onclick=cutNav;if(BGM.on)bgmStart();try{document.fonts&&document.fonts.load('700 40px "Nanum Myeongjo"');}catch(e){}requestAnimationFrame(cutLoop);}
 let cutTimer=null;
 /* 엔딩을 본 뒤 메인 메뉴의 '스토리 다시 보기': 오프닝 → 나라별 점령 장면 → 최종 엔딩 → 크레딧을 이어서 재생 */
@@ -2554,8 +2555,8 @@ function storyPlay(i,atEnd){if(i<0)i=0;if(i>=STORY_SEQ.length){storyExit();retur
     if(left){if(k>0)cutT=st[k-1]+.01;else if(storyI>0)storyPlay(storyI-1,true);else cutT=0;}
     else{if(k<st.length-1)cutT=st[k+1]+.01;else if(storyI<STORY_SEQ.length-1)storyPlay(storyI+1,false);else storyExit();}};}
 function cutEnd(){const d=cutData;if(d.from&&d.from.alien&&!d.credits&&!storyQ){if(!S.endSeen)S.endSeen=true;metaSet(S.mode||"easy");try{save();}catch(e){}}
-  if(storyQ&&!d.credits){storyNext();return;}if(d.from&&d.from.alien&&!d.credits){startCredits();return;}if(d.credits&&!storyQ&&S.country===6&&S.conqBy[6]){clearTimeout(cutTimer);const toMain=()=>{cutOn=false;$("cut").hidden=true;try{save(true);}catch(e){}showTitle();},toInf=()=>{cutOn=false;$("cut").hidden=true;goCountry(7);try{save(true);}catch(e){}};
-    $("cutBtns").innerHTML=`<span style="align-self:center;margin-right:8px;color:#f1e3b0">${modeTag(S.mode)} 클리어 · 무한 모드로 계속하시겠습니까?</span><button class="btn" id="cutMain">메인 메뉴로</button><button class="btn pri" id="cutGo">♾ 무한 모드로 계속</button>`;$("cutMain").onclick=toMain;$("cutGo").onclick=toInf;return;}
+  if(storyQ&&!d.credits){storyNext();return;}if(d.from&&d.from.alien&&!d.credits){startCredits();return;}if(d.credits&&!storyQ&&S.country===6&&S.conqBy[6]){clearTimeout(cutTimer);const toMain=()=>{cutOn=false;$("cut").hidden=true;$("cut").classList.remove("endq");try{save(true);}catch(e){}showTitle();},toInf=()=>{cutOn=false;$("cut").hidden=true;$("cut").classList.remove("endq");goCountry(7);try{save(true);}catch(e){}};
+    $("cut").classList.add("endq");$("cutBtns").innerHTML=`<span style="align-self:center;margin-right:8px;color:#f1e3b0">${modeTag(S.mode)} 클리어 · 무한 모드로 계속하시겠습니까?</span><button class="btn" id="cutMain">메인 메뉴로</button><button class="btn pri" id="cutGo">♾ 무한 모드로 계속</button>`;$("cutMain").onclick=toMain;$("cutGo").onclick=toInf;return;}
   if(d.credits){const toMain=()=>{clearTimeout(cutTimer);storyQ=null;cutOn=false;$("cut").hidden=true;try{save();}catch(e){}showTitle();};$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">메인 메뉴로</button>`;$("cutGo").onclick=toMain;clearTimeout(cutTimer);cutTimer=setTimeout(toMain,2500);return;} /* "끝" 뒤 2.5초 후 메인 메뉴로 */if(d.replay){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">닫기</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;};return;}if(d.intro){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">방어 시작</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;S.intro=true;save();};return;}const goLbl=d.to?`계속하기 · ${d.c+1}스테이지로 진군`:"계속하기";
   $("cutBtns").innerHTML=d.to?`<button class="btn" id="cutStay">더 머물기</button><button class="btn pri" id="cutGo"></button>`:`<button class="btn pri" id="cutGo"></button>`;
   const close=()=>{clearInterval(cutTimer);cutTimer=null;cutOn=false;$("cut").hidden=true;};
@@ -2901,5 +2902,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031352 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031419 */</script>
 </body></html>
