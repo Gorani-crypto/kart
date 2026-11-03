@@ -166,6 +166,7 @@ html.rot body{position:fixed;top:0;left:var(--sw);width:var(--sh);height:var(--s
 
 #tVer{position:absolute;right:10px;bottom:6px;font:500 10px var(--f-mono);color:#6d5f48;letter-spacing:.05em;pointer-events:none}.verTag{font:500 10px var(--f-mono);color:var(--muted);opacity:.7;margin-left:8px}
 #rcol,#drawerBg,#hud{display:none}
+#voidOv{position:fixed;inset:0;z-index:600;background:#000;display:grid;place-items:center;opacity:0;transition:opacity 1.2s;cursor:pointer;padding:24px}#voidOv.on{opacity:1}#voidOv p{margin:0;font-family:var(--f-disp);font-size:clamp(22px,4.2vw,46px);color:#e6e1f2;text-align:center;letter-spacing:.06em;opacity:0;transition:opacity .9s;text-shadow:0 0 18px rgba(170,150,230,.25)}#voidOv p.on{opacity:1}#voidOv p.big{font-size:clamp(40px,9vw,110px);letter-spacing:.3em}#voidOv small{position:absolute;bottom:18px;right:22px;color:#55506a;font-size:12px}/*v412 공허 등장 연출*/
 #locTag{position:absolute;z-index:4;top:6px;left:6px;padding:3px 9px;background:rgba(10,12,8,.66);border:1px solid rgba(227,168,43,.35);border-radius:5px;color:#f1e3b0;font-size:12px;pointer-events:none;white-space:nowrap;max-width:70%;overflow:hidden;text-overflow:ellipsis}#locTag[hidden]{display:none}#locTag b{color:var(--accent);font-weight:600;margin-right:4px}/*v401 무한모드 현재 위치*/
 body.cmp .top{display:none}
 body.cmp #hud{display:flex;position:absolute;z-index:4;top:4px;right:4px;gap:10px;align-items:baseline;padding:3px 8px;background:rgba(10,12,8,.62);border:1px solid rgba(255,255,255,.08);border-radius:5px;pointer-events:none;font-size:11px;white-space:nowrap}
@@ -300,10 +301,16 @@ function mvName(seed,n){let x=(seed*9301+49297)%233280,o="";for(let k=0;k<n;k++)
 function mvInfo(s){const k=s-161,mv=Math.floor(k/20)+1,q=k%20,sy=Math.floor(q/5),st=q%5,seed=mv*131+sy*17+7,sys=mvName(seed,3);
   const kinds=["행성","행성","위성","행성","위성","가스 행성","얼음 위성","고리 행성"],kd=st?kinds[(seed+st*3)%kinds.length]:"항성",body=st?mvName(seed*7+st*13,2+(st%2))+(kd.includes("위성")?"":"-"+"bcde"[st-1]):sys;
   return{mv,sy,st,sys,kd,body,seed};}
-function infReg(s){if(s>=800)return{area:"공허",loc:"공허 그 자체",short:"공허",boss:"공허",shape:"void",ri:5,mv:null};let i=0;while(i+1<INF_REG.length&&s>=INF_REG[i+1][0])i++;const R=INF_REG[i],a=R[0],b=i+1<INF_REG.length?INF_REG[i+1][0]:0;
+function infReg(s){if(s>=800)return{area:"공허",loc:"",short:"공허",boss:"공허",shape:"void",ri:5,mv:null};let i=0;while(i+1<INF_REG.length&&s>=INF_REG[i+1][0])i++;const R=INF_REG[i],a=R[0],b=i+1<INF_REG.length?INF_REG[i+1][0]:0;
   if(!R[2]){const m=mvInfo(s);const loc=`${m.sys} 항성계 · ${m.st?m.kd+" "+m.body:"주성 "+m.sys}`;return{area:`제${m.mv}멀티버스`,loc,short:m.st?m.body:m.sys+" 항성",boss:R[3],shape:R[4],mv:m,ri:i};}
   const li=Math.min(R[2].length-1,Math.floor((s-a)*R[2].length/(b-a))),loc=R[2][li];return{area:R[1],loc,short:loc,boss:R[3],shape:R[4],ri:i,li};}
 function mkInfSq(s,bw){const h=infHp(s);return{r:17,alien:"grunt",n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*1.1,rew:infRew(s)/INF_N*1.3*(bw?.7:1),lk:2,dmg:1,size:.34,boss:false,d:0,id:nextId++,step:0};}
+/* v412 공허 등장: 화면 전체 암전, 한 문장씩 페이드 인·아웃 */
+let VI=null,VI_OK=false;const VOID_LINES=["빛이 있기 전에, 어둠이 있었다.","시작보다 먼저 있었고, 끝보다 늦게 남는 것.","이름도 없고, 형체도 없고, 소리도 없다.","아무것도 없음.","모든 것은 그곳에서 왔고,","모든 것은 그곳으로 돌아간다.","시작이자 끝. 태초의 어둠.","공허"];
+function voidIntro(done){const o=document.createElement("div");o.id="voidOv";o.innerHTML=`<p></p><small>화면을 누르면 건너뜀</small>`;document.body.appendChild(o);const P=o.querySelector("p");let i=-1,tm=null;VI={o};
+  const fin=()=>{if(!VI)return;clearTimeout(tm);VI=null;o.style.transition="opacity .8s";o.classList.remove("on");setTimeout(()=>o.remove(),900);done();};
+  const next=()=>{i++;if(i>=VOID_LINES.length){tm=setTimeout(fin,600);return;}const last=i===VOID_LINES.length-1;P.textContent=VOID_LINES[i];P.classList.toggle("big",last);P.classList.add("on");tm=setTimeout(()=>{P.classList.remove("on");tm=setTimeout(next,1000);},last?3200:2300);};
+  o.onclick=fin;requestAnimationFrame(()=>{o.classList.add("on");tm=setTimeout(next,1500);});}
 function mkVoid(){const h=5e47;return{r:18,alien:"void",title:"공허",n0:1,hp1:h,max:h,hp:h,spd:spdOf(800)*.16,rew:0,kind:1,dmg:MAXLIFE,size:.95,boss:true,d:0,id:nextId++,step:0};} /*v409 최종 보스 공허: 체력 5000재*/
 function mkInfBoss(s){const R=infReg(s),h=infHp(s)*40*1.3;/*v399 무한 보스 체력 1.3배*/return{r:18,alien:R.shape,title:`${R.short}의 ${R.boss}`,n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(R.shape==="ship"?.22:R.shape==="walker"?.28:.34),rew:Math.round(infRew(s)*.3*1.3),kind:1,dmg:MAXLIFE,size:R.shape==="ship"?.8:.62,boss:true,d:0,id:nextId++,step:0};}
 // 계급: 이름, 계급장 종류, 개수
@@ -681,7 +688,7 @@ function fmt(n){if(!isFinite(n))return n>0?"∞":"0";if(n>=1e15)n*=1+1e-12;n=Mat
 function pick(m){let x=Math.random();for(const r in m){x-=m[r];if(x<=0)return+r;}return+Object.keys(m).pop();}
 function startWave(){if(phase!=="idle")return;
   if(!window.__SIM__&&!bossIntroOk&&!bossIntro&&!COUNTRY.inf&&(COUNTRY.alien?S.wave===10:S.wave===100)){bossIntro={t:0,T:COUNTRY.alien?5:S.country>=3?3.8:2.6,c:S.country};banner("");return;}bossIntroOk=false;
-  if(COUNTRY.inf&&S.wave>=800){queue=[mkVoid()];spawnGap=1;waveTotal=1;phase="wave";spawnT=0;shakeT=1.2;banner("800단계 · 공허");dirtyUI=true;return;}
+  if(COUNTRY.inf&&S.wave>=800){if(!VI_OK){if(!VI)voidIntro(()=>{VI_OK=true;startWave();});return;}VI_OK=false;queue=[mkVoid()];spawnGap=1;waveTotal=1;phase="wave";spawnT=0;shakeT=1.2;banner("800단계 · 공허");dirtyUI=true;return;}
   if(COUNTRY.inf){const s=S.wave,R=infReg(s),bw=s%10===0;queue=[];for(let i=0;i<INF_N;i++)queue.push(mkInfSq(s,bw));if(bw)queue.splice(350,0,mkInfBoss(s));spawnGap=.07;
     waveTotal=queue.length;phase="wave";spawnT=0;shakeT=.6;banner(`무한 ${s}단계 · ${R.area} · ${R.loc}${bw?" · "+R.boss+" 출현":""}`);dirtyUI=true;return;}
   if(COUNTRY.alien){const s=S.wave;queue=[];
@@ -2312,7 +2319,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v411 · 11/04 00:28";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v412 · 11/04 00:32";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2369,7 +2376,7 @@ function renderStage(){const s=S.wave,m=mix(s),boss=BOSS[s];
   $("stageBox").innerHTML=`<div class="lbl">${modeTag(S.mode)} · ${COUNTRY.inf?"무한 모드":S.country+"스테이지 · "+COUNTRY.name}${S.conqBy[S.country]?" · 점령 완료":""}</div>${cNav}${S.conqBy[S.country]?`<button class="btn" data-replay="${S.country}">🎬 점령 장면 다시 보기</button>`:""}
     <div class="stagebar"><button class="btn" data-d="-1" ${s<=1?"disabled":""} aria-label="이전 단계">◀</button><b>${s} / ${lastOf()} 단계</b><button class="btn" data-d="1" ${s>=S.best?"disabled":""} aria-label="다음 단계">▶</button></div>
     ${s<S.best?`<button class="btn pri skipb" data-to="${s+1}" title="이미 깬 단계를 하나 건너뜁니다">⏭ 한 단계 넘기기 · ${s+1}단계로</button>`:""}
-    ${live}${COUNTRY.inf?(()=>{const R=infReg(s),bw=s%10===0;if(s>=800)return`<div class="lbl">최종 단계 · 공허</div><div class="comp"><span class="chip boss">최종 보스 · 공허 그 자체</span></div><div class="next">체력 <b>${fmt(5e47)}</b></div>`;return`<div class="lbl">이번 단계 · ${R.area} · ${R.loc}</div><div class="comp">${bw?`<span class="chip boss">보스 · ${R.boss}</span>`:""}<span class="chip">외계 생물 ${INF_N}기</span></div><div class="next">1기 체력 <b>${fmt(infHp(s))}</b>${bw?` · 보스 체력 <b>${fmt(infHp(s)*52)}</b>`:` · 다음 보스 <b>${Math.ceil(s/10)*10}단계</b>`}</div>`;})():COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
+    ${live}${COUNTRY.inf?(()=>{const R=infReg(s),bw=s%10===0;if(s>=800)return`<div class="lbl">최종 단계 · 공허</div><div class="comp"><span class="chip boss">최종 보스 · 공허</span></div><div class="next">체력 <b>${fmt(5e47)}</b></div>`;return`<div class="lbl">이번 단계 · ${R.area} · ${R.loc}</div><div class="comp">${bw?`<span class="chip boss">보스 · ${R.boss}</span>`:""}<span class="chip">외계 생물 ${INF_N}기</span></div><div class="next">1기 체력 <b>${fmt(infHp(s))}</b>${bw?` · 보스 체력 <b>${fmt(infHp(s)*52)}</b>`:` · 다음 보스 <b>${Math.ceil(s/10)*10}단계</b>`}</div>`;})():COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
     ${!COUNTRY.alien&&!COUNTRY.inf&&!boss&&nb?`<div class="next">다음 ${BKIND[BOSS[nb][2]]} <b>${nb}단계 ${BT(BOSS[nb][1])}</b></div>`:""}`;}
 let popKey="";
 function popAt(p,cx,cy){const F=C.clientWidth,ox=C.offsetLeft,oy=C.offsetTop,cs=F/COLS,pw=p.offsetWidth,ph=p.offsetHeight;
@@ -3056,5 +3063,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040023 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040026 */</script>
 </body></html>
