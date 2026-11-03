@@ -656,7 +656,7 @@ anchorMul(CURVE.dr.D,[[39, 1], [40, 1.0], [41, 1.779313], [42, 3.165906], [43, 4
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls",orbit:"ob",tesla:"ts",drone:"dr"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 /*v405 최고 150렙: 모든 곡선을 151렙까지 연장(10렙 전 배율 반복)*/for(const k in CURVE){const c=CURVE[k];if(!c||!c.D)continue;const D=c.D,C=c.Cm;while(D.length<152){const i=D.length;D.push(D[i-1]*D[i-10]/D[i-11]);}while(C.length<151){const i=C.length;C.push(C[i-1]*C[i-10]/C[i-11]);}}
-{const c=CURVE.nk,D=c.D,C=c.Cm,dn=D[99]/D[98],dt=D[90]/D[89],cn=C[98]/C[97];for(let L=101;L<D.length;L++)D[L]=D[L-1]*(L%10===0?dt:dn);for(let L=100;L<C.length;L++)C[L]=C[L-1]*cn;} /*v405 핵사일로 100렙 이후: 기존 배율 그대로 이어감*/
+{const c=CURVE.nk,D=c.D,C=c.Cm,dn=D[99]/D[98],dt=D[90]/D[89],cn=C[98]/C[97];for(let L=101;L<D.length;L++)D[L]=D[L-1]*(L%10===0?dt:dn);for(let L=50;L<C.length;L++)C[L]=C[L-1]*1.56;}/*v406 핵사일로 50→51 강화부터 레벨당 강화비 ×1.56*/ /*v405 핵사일로 100렙 이후: 기존 배율 그대로 이어감*/
 /*v400 51렙 이후 모든 타워(핵사일로 제외) 같은 배율: 화력 레벨당 ×1.52, 60·70·80·90·100렙 도달 ×4.6 / 강화비 레벨당 ×1.6, 전직 직전 강화(59→60 등) ×4.6. 50→51 강화비 = 49→50 ×1.6*/{const seen=new Set();for(const k in TT){if(k==="nuke")continue;const c=curveOf(k);if(seen.has(c))continue;seen.add(c);const D=c.D,C=c.Cm;for(let L=51;L<D.length;L++)D[L]=D[L-1]*(L%10===0?4.6:1.52);for(let L=50;L<C.length;L++)C[L]=C[L-1]*(L%10===9?4.6:1.8);/*v403 레벨당 강화비 1.8*/}}
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,150)];
 const upCost=t=>Math.ceil(TT[t.type].up*curveOf(t.type).Cm[Math.min(t.l,149)]*costMul());
@@ -2292,7 +2292,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v405 · 11/03 23:45";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v406 · 11/03 23:48";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2989,5 +2989,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611032340 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611032343 */</script>
 </body></html>
