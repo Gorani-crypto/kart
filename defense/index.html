@@ -641,6 +641,7 @@ anchorMul(CURVE.dr.D,[[39, 1], [40, 1.0], [41, 1.779313], [42, 3.165906], [43, 4
 /*v373 최루탄 강화비 1렙 ×1 → 30렙 ×3 서서히, 이후 ×3 · EMP 교란기 ×1.5*/{const C=CURVE.base.Cm;for(let l=1;l<C.length;l++)C[l]*=Math.pow(3,Math.min(l-1,29)/29);const E=CURVE.s2.Cm;for(let l=1;l<E.length;l++)E[l]*=1.5;}
 /*v374 최루탄 30렙 이후 강화비 서서히↑(49→50에서 ×11.68) — 50렙 누적이 박격포의 절반*/{const C=CURVE.base.Cm;for(let l=30;l<C.length;l++)C[l]*=Math.pow(11.683739,Math.min(l-29,20)/20);}
 /*v379 테슬라 강화비 지정(EASY): 25→26 2.2조, 26→27 3.2조, 27→28 4.6조, 28→29 6.7조, 29→30 38조*/{const C=CURVE.ts.Cm,u=TT.tesla.up;C[25]=2.2e12/u;C[26]=3.2e12/u;C[27]=4.6e12/u;C[28]=6.7e12/u;C[29]=38e12/u;}
+/*v380 박격포 화력 전 레벨 ×1.5 (레일건 30렙 이후 "박격포의 0.8배" 유지 위해 레일건 30렙+도 ×1.5)*/{const D=CURVE.b4m.D;for(let l=1;l<D.length;l++)D[l]*=1.5;const R=CURVE.b4r.D;for(let l=30;l<R.length;l++)R[l]*=1.5;}
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls",orbit:"ob",tesla:"ts",drone:"dr"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -2197,7 +2198,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v379 · 11/03 09:01";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v380 · 11/03 09:03";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2894,5 +2895,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030859 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030900 */</script>
 </body></html>
