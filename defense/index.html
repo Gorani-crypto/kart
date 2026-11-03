@@ -282,7 +282,7 @@ const COUNTRIES=[
    uniform:"#5a3a7a",camo:"#3a2a5a",helmet:"#7a5aa0",beret:"#2a1a4a"}];
 let COUNTRY=COUNTRIES[0];
 const LAST=100;
-const lastOf=()=>COUNTRY&&COUNTRY.inf?1e9:COUNTRY&&COUNTRY.alien?10:LAST;
+const lastOf=()=>COUNTRY&&COUNTRY.inf?800:COUNTRY&&COUNTRY.alien?10:LAST;
 /* ═════════ 게임 모드: EASY / HARD(모든 비용 1.5배) · 최종장 클리어 뒤 무한 모드 ═════════ */
 const costMul=()=>typeof S!=="undefined"&&S&&S.mode==="hard"?1.5:1;
 const modeTag=m=>(m||"easy")==="hard"?"HARD":"EASY";
@@ -290,7 +290,7 @@ function metaGet(){let m={};try{m=JSON.parse(localStorage.getItem("lld_meta")||"
 function metaSet(k){const m=metaGet();m[k]=true;try{localStorage.setItem("lld_meta",JSON.stringify(m));}catch(e){}if(typeof S!=="undefined"&&S)S.meta=m;}
 /* 무한 모드: 단계마다 외계 생물 500기, 체력이 일정 비율(×1.09)로 계속 상승 · 10단계마다 보스 */
 const INF_N=500,/*v398 물량 5배, 총 보상 1.3배(1기당 보상 = 기존×1.3/5)*/INF_G=1.09,INF_RG=1.085;
-const infHp=s=>6e16*Math.pow(INF_G,s-1),infRew=s=>1.2e16*Math.pow(INF_RG,s-1);
+const infHp=s=>6e16*Math.pow(INF_G,s-1),infRew0=s=>1.2e16*Math.pow(INF_RG,s-1),INF_RC=Math.log(1e48/(1.3*infRew0(799)))/(199*199),infRew=s=>infRew0(s)*(s>600?Math.exp(INF_RC*Math.min(199,s-600)**2):1); /*v409 600단계부터 보상 증가가 점점 가팔라져 799단계 한 단계 보상 = 1극*/
 const INF_REG=[[1,"지구",["대기권","성층권","저궤도","정지궤도","달 궤도"],"외계 강하 지휘체","walker"],[21,"태양계",["달","화성","소행성대","목성","토성","천왕성","해왕성","명왕성","카이퍼 벨트","오르트 구름"],"행성 포식자","saucer"],
   [51,"우리은하",["오리온 팔","페르세우스 팔","궁수자리 팔","은하 원반","은하 중심 · 궁수자리 A*"],"항성 파괴자","walker"],[81,"다른 은하계",["대마젤란 은하","소마젤란 은하","안드로메다 은하","삼각형자리 은하","소용돌이 은하 M51","솜브레로 은하","바람개비 은하 M101","M87 거대 타원은하","센타우루스자리 A","시가 은하 M82","호그의 천체","올챙이 은하","더듬이 은하","NGC 1300 막대나선은하","해바라기 은하","검은 눈 은하","수레바퀴 은하","IC 1101 초거대 타원은하","처녀자리 은하단","라니아케아 초은하단"],"은하 군주","ship"],[161,"멀티버스",null,"차원의 지배자","ship"]];
 const GAL_T=["irr","irr","spiral","spiral","merge","lent","spiral","ell","dust","star","ring","tail","merge","bar","spiral","dust","ring","ell","cluster","cluster"];;
@@ -300,10 +300,11 @@ function mvName(seed,n){let x=(seed*9301+49297)%233280,o="";for(let k=0;k<n;k++)
 function mvInfo(s){const k=s-161,mv=Math.floor(k/20)+1,q=k%20,sy=Math.floor(q/5),st=q%5,seed=mv*131+sy*17+7,sys=mvName(seed,3);
   const kinds=["행성","행성","위성","행성","위성","가스 행성","얼음 위성","고리 행성"],kd=st?kinds[(seed+st*3)%kinds.length]:"항성",body=st?mvName(seed*7+st*13,2+(st%2))+(kd.includes("위성")?"":"-"+"bcde"[st-1]):sys;
   return{mv,sy,st,sys,kd,body,seed};}
-function infReg(s){let i=0;while(i+1<INF_REG.length&&s>=INF_REG[i+1][0])i++;const R=INF_REG[i],a=R[0],b=i+1<INF_REG.length?INF_REG[i+1][0]:0;
+function infReg(s){if(s>=800)return{area:"공허",loc:"공허 그 자체",short:"공허",boss:"공허",shape:"void",ri:5,mv:null};let i=0;while(i+1<INF_REG.length&&s>=INF_REG[i+1][0])i++;const R=INF_REG[i],a=R[0],b=i+1<INF_REG.length?INF_REG[i+1][0]:0;
   if(!R[2]){const m=mvInfo(s);const loc=`${m.sys} 항성계 · ${m.st?m.kd+" "+m.body:"주성 "+m.sys}`;return{area:`제${m.mv}멀티버스`,loc,short:m.st?m.body:m.sys+" 항성",boss:R[3],shape:R[4],mv:m,ri:i};}
   const li=Math.min(R[2].length-1,Math.floor((s-a)*R[2].length/(b-a))),loc=R[2][li];return{area:R[1],loc,short:loc,boss:R[3],shape:R[4],ri:i,li};}
 function mkInfSq(s,bw){const h=infHp(s);return{r:17,alien:"grunt",n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*1.1,rew:infRew(s)/INF_N*1.3*(bw?.7:1),lk:2,dmg:1,size:.34,boss:false,d:0,id:nextId++,step:0};}
+function mkVoid(){const h=5e47;return{r:18,alien:"void",title:"공허",n0:1,hp1:h,max:h,hp:h,spd:spdOf(800)*.16,rew:0,kind:1,dmg:MAXLIFE,size:.95,boss:true,d:0,id:nextId++,step:0};} /*v409 최종 보스 공허: 체력 5000재*/
 function mkInfBoss(s){const R=infReg(s),h=infHp(s)*40*1.3;/*v399 무한 보스 체력 1.3배*/return{r:18,alien:R.shape,title:`${R.short}의 ${R.boss}`,n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(R.shape==="ship"?.22:R.shape==="walker"?.28:.34),rew:Math.round(infRew(s)*.3*1.3),kind:1,dmg:MAXLIFE,size:R.shape==="ship"?.8:.62,boss:true,d:0,id:nextId++,step:0};}
 // 계급: 이름, 계급장 종류, 개수
 const RK=[["이병","bar",1],["일병","bar",2],["상병","bar",3],["병장","bar",4],["하사","chev",1],["중사","chev",2],["상사","chev",3],["원사","chev",4],
@@ -661,6 +662,8 @@ const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuk
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,150)];
 const upCost=t=>Math.ceil(TT[t.type].up*curveOf(t.type).Cm[Math.min(t.l,149)]*costMul());
 const placeCost=type=>Math.ceil(TT[type].cost*costMul()); // 개수와 무관한 고정 설치비
+/*v409 궤도 150렙 히든 전직 "태초": 초당 공격력 정확히 1재*/let TAECHO_ERR=null;try{const d=dpsOf({type:"orbit",l:150,tier:tierOf(150),x:0,y:0});CURVE.ob.D[150]*=1e44/d;}catch(e){TAECHO_ERR=e.message;}
+const isTaecho=t=>t&&t.type==="orbit"&&t.l>=150;
 function avgRew(s){const m=mix(s);let v=0;for(const r in m)v+=m[r]*rewOf(s,+r);return v;}
 const depotPay=(t,s)=>Math.floor(avgRew(s)*BAL.dpA*Math.pow(BAL.dpG,t.l-1));
 
@@ -670,7 +673,7 @@ function fresh(){return{v:2,country:1,bestBy:{},waveBy:{},conqBy:{},gold:150,wav
 let hasSave=false,pillars=[],scorch=[],spawnGap=.26,shakeT=0,buildCell=null,enemies=[],queue=[],shells=[],fx=[],phase="idle",spawnT=0,autoT=2.5,nextId=1,sel=null,buildType=null,hover=null,dirtyUI=true,paused=false,waveTotal=0;
 const HOOK={};
 
-function fmt(n){if(!isFinite(n))return n>0?"∞":"0";n=Math.floor(n);if(n<1e4)return n.toLocaleString("ko-KR");
+function fmt(n){if(!isFinite(n))return n>0?"∞":"0";if(n>=1e15)n*=1+1e-12;n=Math.floor(n);if(n<1e4)return n.toLocaleString("ko-KR");
   const u=[[1e68,"무량대수"],[1e64,"불가사의"],[1e60,"나유타"],[1e56,"아승기"],[1e52,"항하사"],[1e48,"극"],[1e44,"재"],[1e40,"정"],[1e36,"간"],[1e32,"구"],[1e28,"양"],[1e24,"자"],[1e20,"해"],[1e16,"경"],[1e12,"조"],[1e8,"억"],[1e4,"만"]];/*v404 큰 단위*/
   for(const[v,s]of u)if(n>=v){const x=n/v;return(x>=1e4?x.toExponential(2):x<100?x.toFixed(2):x.toFixed(0))+s;}return""+n;}
 
@@ -678,6 +681,7 @@ function fmt(n){if(!isFinite(n))return n>0?"∞":"0";n=Math.floor(n);if(n<1e4)re
 function pick(m){let x=Math.random();for(const r in m){x-=m[r];if(x<=0)return+r;}return+Object.keys(m).pop();}
 function startWave(){if(phase!=="idle")return;
   if(!window.__SIM__&&!bossIntroOk&&!bossIntro&&!COUNTRY.inf&&(COUNTRY.alien?S.wave===10:S.wave===100)){bossIntro={t:0,T:COUNTRY.alien?5:S.country>=3?3.8:2.6,c:S.country};banner("");return;}bossIntroOk=false;
+  if(COUNTRY.inf&&S.wave>=800){queue=[mkVoid()];spawnGap=1;waveTotal=1;phase="wave";spawnT=0;shakeT=1.2;banner("800단계 · 공허");dirtyUI=true;return;}
   if(COUNTRY.inf){const s=S.wave,R=infReg(s),bw=s%10===0;queue=[];for(let i=0;i<INF_N;i++)queue.push(mkInfSq(s,bw));if(bw)queue.splice(350,0,mkInfBoss(s));spawnGap=.07;
     waveTotal=queue.length;phase="wave";spawnT=0;shakeT=.6;banner(`무한 ${s}단계 · ${R.area} · ${R.loc}${bw?" · "+R.boss+" 출현":""}`);dirtyUI=true;return;}
   if(COUNTRY.alien){const s=S.wave;queue=[];
@@ -728,10 +732,11 @@ function mkBoss(s,b,top){const h=bossHP(s,b);return{r:b[0],title:BT(b[1]),n0:1,h
 function waveClear(){const s=S.wave;let bonus=0,dep=0;
   for(const t of S.towers)if(t.type==="depot"){const p=depotPay(t,s);dep+=p;const c=cc(t);fx.push({k:"txt",x:c[0],y:c[1]-.3,txt:"+"+fmt(p),col:"#ffd36b",life:1.6,m:1.6,sz:.36});}
   earn(bonus+dep);phase="idle";autoT=2;HOOK.clear&&HOOK.clear(s);
+  if(COUNTRY.inf&&s>=800){S.best=800;S.wave=800;S.auto=false;const first=!S.trueEnd;S.trueEnd=true;save();dirtyUI=true;if(first)startTrueEnd();else banner("공허 소멸");return;} /*v409 진짜 엔딩*/
   if(s>=lastOf()){S.best=lastOf();S.wave=COUNTRY.alien?10:91;
     if(!S.conqBy[S.country]){S.conqBy[S.country]=true;S.conquered=true;conquest();}
     else if(S.country<COUNTRIES.length){const c=S.country+1;goCountry(c);banner(`${s}단계 클리어 · ${c}스테이지로 진군`);return;}}
-  else{S.wave++;if(S.wave>S.best)S.best=S.wave;if(S.auto&&document.hidden&&!(COUNTRY&&COUNTRY.inf)&&S.wave>=lastOf()){S.wave=lastOf()-1;} /* v391 화면을 안 보고 방치 중(앱 백그라운드·화면 꺼짐)일 때만 자동 진행이 최종장 직전에서 반복 */}
+  else{S.wave++;if(S.wave>S.best)S.best=S.wave;if(S.auto&&document.hidden&&S.wave>=lastOf()){S.wave=lastOf()-1;} /* v391 화면을 안 보고 방치 중(앱 백그라운드·화면 꺼짐)일 때만 자동 진행이 최종장 직전에서 반복 */}
   banner(`${s}단계 클리어`);save();dirtyUI=true;}
 function retreat(){const s=S.wave;endless=null;bossIntro=null;bossIntroOk=false;enemies=[];queue=[];shells=[];pillars=[];phase="idle";S.wave=Math.max(1,s-3);S.lives=MAXLIFE;autoT=3;HOOK.fail&&HOOK.fail(s);
   banner(`방어선 붕괴 · ${S.wave}단계로 후퇴`);save();dirtyUI=true;}
@@ -740,7 +745,7 @@ function goCountry(c){if(c<1||c>COUNTRIES.length||c===S.country)return;if(c>1&&!
   enemies=[];queue=[];shells=[];pillars=[];phase="idle";S.lives=MAXLIFE;autoT=3;sel=null;buildCell=null;bossIntro=null;bossIntroOk=false;endless=null;
   if(typeof document!=="undefined"&&$("cv")&&$("cv").getContext){try{buildBG();paintHeaderFlag();makeThumbs();}catch(e){}}
   banner(COUNTRY.inf?`♾ 무한 모드 · ${modeTag(S.mode)}`:`${c}스테이지 · ${COUNTRY.name}`);
-  if(c===7&&!S.unl7){S.unl7=true;unlockNotice(`무한 모드 · ${modeTag(S.mode)}`,[["끝없는 외계 생물","단계마다 500기씩, 체력이 계속 일정 비율로 강해집니다. 10단계마다 보스가 함께 옵니다."],["전선 확장","지구 → 태양계 → 우리은하 → 다른 은하계 → 멀티버스. 얼마나 멀리 갈 수 있는지 도전하세요."]]);}
+  if(c===7&&!S.unl7){S.unl7=true;unlockNotice(`무한 모드 · ${modeTag(S.mode)}`,[["끝없는 외계 생물","단계마다 500기씩, 체력이 계속 일정 비율로 강해집니다. 10단계마다 보스가 함께 옵니다."],["전선 확장","지구 → 태양계 → 우리은하 → 다른 은하계 → 멀티버스, 그리고 800단계 — 그 끝에 무엇이 있는지 확인하세요."]]);}
   if(c===6&&!S.unl6){S.unl6=true;unlockNotice("외계 침공",[["6스테이지 · 10단계","1~6단계: 외계인에게 세뇌돼 더 강해진 각 대륙의 장성들. 7~10단계: 외계군 본대. 10단계 외계 황제를 막으면 인류의 승리. 매우 어렵습니다."],["최고 레벨 100","미국을 점령해 모든 무기를 100레벨(10차 전직)까지 키울 수 있습니다."]]);}
   if(c===3&&!S.unl3){S.unl3=true;unlockNotice("3스테이지 해금",[["테슬라 코일","1.5억 원 · 50단계. 번개가 분대 사이를 연쇄로 튀며 분대 전원을 감전."],["위성 레이저","10억 원 · 80단계. 하늘에서 레이저 기둥을 내리꽂는 광역 타격."],["핵 사일로 · 궤도 방어 플랫폼","3스테이지를 점령하면 열립니다."]]);}
   if(c===4&&!S.unl4){S.unl4=true;unlockNotice("4스테이지 해금",[["핵 사일로","25억 원. 10분 충전 뒤 지도 위 모든 적을 한꺼번에 타격."],["궤도 방어 플랫폼","30억 원. 여러 줄기 펄스 레이저로 동시에 여러 분대를 지짐."]]);}
@@ -790,7 +795,7 @@ function buildEG(){const W=COLS+6,H=ROWS+6;if(!EGRID||EGW!==W){EGW=W;EGRID=[];fo
 function nearList(x,y,R,out){out.length=0;const W=EGW,H=EGRID.length/W;let x0=Math.floor(x-R)+3,x1=Math.floor(x+R)+3,y0=Math.floor(y-R)+3,y1=Math.floor(y+R)+3;x0=x0<0?0:x0;y0=y0<0?0:y0;x1=x1>=W?W-1:x1;y1=y1>=H?H-1:y1;
   for(let cy=y0;cy<=y1;cy++)for(let cx=x0;cx<=x1;cx++){const c=EGRID[cy*W+cx];for(let i=0;i<c.length;i++)out.push(c[i]);}return out;}
 function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
-  if(!frz&&phase==="idle"&&S.auto){autoT-=dt;if(autoT<=0){if(document.hidden&&!(COUNTRY&&COUNTRY.inf)&&S.wave>=lastOf())S.wave=lastOf()-1;startWave();}} /* v391 방치 중일 때만 자동 진행으로 최종장 시작 안 함 */
+  if(!frz&&phase==="idle"&&S.auto){autoT-=dt;if(autoT<=0){if(document.hidden&&S.wave>=lastOf())S.wave=lastOf()-1;startWave();}} /* v391 방치 중일 때만 자동 진행으로 최종장 시작 안 함 */
   if(!frz&&phase==="wave"){spawnT-=dt;if(endless&&queue.length<2){const E=endless;queue.push(mkWaveSq(E.s,E.m,E.base,E.bf,E.vp,E.hm));}while(spawnT<=0&&queue.length){const e=queue.shift();enemies.push(e);spawnT+=spawnGap;if(e.pres&&!window.__SIM__){bossIntro={t:0,T:3.8,c:S.country,pres:true,resume:true};banner("");break;}}}
   if(!frz)for(const e of enemies){if(e.burnT>0){e.burnT-=dt;hit(e,e.burnD*dt,e.burnS,true);e.hitT=0;}let sp=e.spd;if(e.slowT>0){e.slowT-=dt;sp*=1-e.slowA*(e.boss?.4:1);}if(e.gasT>0)e.gasT-=dt;if(e.pbT>0){e.pbT-=dt;hit(e,e.max*(e.boss?.001:.02)*dt/(e.gasT>0?e.gasV||1:1),e.pbS,true);}if(e.stunT>0){e.stunT-=dt;sp=0;}e.d+=sp*dt;e.step+=dt*e.spd*7;if(e.hitT)e.hitT-=dt;
     if(e.air||e.fly){const k=e.fly?e.d/PLEN:e.d/AIR_LEN;e.x=AIR_A[0]+(AIR_B[0]-AIR_A[0])*k;e.y=AIR_A[1]+(AIR_B[1]-AIR_A[1])*k;e.dx=AIR_B[0]-AIR_A[0];e.dy=AIR_B[1]-AIR_A[1];}else{const p=posAt(e.d);e.x=p[0];e.y=p[1];e.dx=p[2];e.dy=p[3];}
@@ -1116,7 +1121,7 @@ function lgEll(x,y,rx,ry,col){if(rx<=0||ry<=0)return;LGused=true;LGx.fillStyle=c
 function lgEnd(al){if(!LGused)return;X.save();X.setTransform(1,0,0,1,0,0);X.globalCompositeOperation="source-over";X.globalAlpha=al;X.drawImage(LGc,0,0);X.restore();}
 function drawBeams(T){let any=false;for(const t of S.towers)if(t.beams&&t.beams.length){any=true;break;}if(!any)return;
   X.save();X.globalCompositeOperation="lighter";X.lineCap="round";
-  for(const t of S.towers){if(!t.beams||!t.beams.length)continue;const tr=tierOf(t.l),col=TCOL[tr]||"#ff5a6e",fl=.85+.15*Math.sin(T*47+t.id)+.08*Math.sin(T*131);
+  for(const t of S.towers){if(!t.beams||!t.beams.length)continue;const tr=tierOf(t.l),col=isTaecho(t)?"#fff1c0":TCOL[tr]||"#ff5a6e",fl=.85+.15*Math.sin(T*47+t.id)+.08*Math.sin(T*131);
     if(t.beams[0].rail){const b=t.beams[0],h=b.heat||1,c2=h>5?"#ff6af0":h>2?"#b08cff":col,w=b.W*.3*(.9+.1*fl)*(1+Math.min(1,(h-1)/9)*.6);
       for(const[lw,al,cc]of[[w*2.2,.18,c2],[w*1.1,.55,c2],[w*.35,1,"#ffffff"]]){X.globalAlpha=al;X.strokeStyle=cc;X.lineWidth=lw;X.beginPath();X.moveTo(b.x1,b.y1);X.lineTo(b.x2,b.y2);X.stroke();}
       const rg=X.createRadialGradient(b.x1,b.y1,0,b.x1,b.y1,w*2);rg.addColorStop(0,"rgba(255,255,255,.9)");rg.addColorStop(1,"rgba(0,0,0,0)");X.globalAlpha=.8;X.fillStyle=rg;X.beginPath();X.arc(b.x1,b.y1,w*2,0,7);X.fill();continue;}
@@ -1302,6 +1307,7 @@ function buildInf(g,s,r,W,H,ri,RI){
     else{for(let k=0;k<26;k++){const x=r()*W,y=r()*H,R=s*(.5+r()*1.2),q=r();q<.5?spiral(x,y,R,r()*3,pc(),2,.4+r()*.4):ell(x,y,R*.7,pc(),.6+r()*.3);}}
     for(let k=0;k<6;k++){const x=r()*W,y=r()*H;if(Math.hypot(x-cx,y-cy)<R0*1.3)continue;r()<.6?spiral(x,y,s*(.5+r()*.6),r()*3,pc(),2,.4+r()*.4):ell(x,y,s*.4,pc(),.6);}
     for(let i=0;i<30;i++){g.fillStyle=`rgba(${200+r()*55|0},${180+r()*60|0},255,.5)`;g.beginPath();g.ellipse(r()*W,r()*H,s*.12,s*.05,r()*3,0,7);g.fill();}}
+  else if(ri===5){g.fillStyle="#000";g.fillRect(0,0,W,H);} // v409 공허: 그냥 새까맣게
   else{ // 멀티버스: 멀티버스마다 색조, 지금 있는 항성·행성·위성이 크게 보임
     const M=RI.mv,hb=(M.mv*67+20)%360,hues=[hb,hb+40,hb+200,hb+120,hb+300,hb+80];
     g.fillStyle=`hsl(${hb},40%,5%)`;g.fillRect(0,0,W,H);
@@ -1321,7 +1327,7 @@ function buildInf(g,s,r,W,H,ri,RI){
       else for(let k=-3;k<=3;k++){g.fillStyle=`hsla(${hp+(k%2?30:-20)},60%,${k%2?60:30}%,.25)`;g.fillRect(bx-R,by+k*R*.25,R*2,R*.12);}
       g.restore();if(M.kd==="고리 행성"){g.save();g.translate(bx,by);g.rotate(-.3);g.strokeStyle=`hsla(${hp+40},60%,75%,.65)`;g.lineWidth=s*.2;g.beginPath();g.ellipse(0,0,R*2,R*.45,0,0,Math.PI);g.stroke();g.restore();}}}
   // 길: 지역마다 다른 재질과 빛줄기
-  const P=[["#3c4a5e","rgba(160,200,240,.18)","#8fe3ff"],["#3a3632","rgba(0,0,0,.35)","#ffb060"],["#1a1226","rgba(200,160,255,.15)","#c58cff"],["#141018","rgba(255,220,150,.12)","#ffd36a"],["#0e0a14","rgba(255,255,255,.12)","#ffffff"]][ri];
+  const P=[["#3c4a5e","rgba(160,200,240,.18)","#8fe3ff"],["#3a3632","rgba(0,0,0,.35)","#ffb060"],["#1a1226","rgba(200,160,255,.15)","#c58cff"],["#141018","rgba(255,220,150,.12)","#ffd36a"],["#0e0a14","rgba(255,255,255,.12)","#ffffff"],["#060606","rgba(255,255,255,.025)","#1a1a1a"]][ri];
   for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){if(!PATH.has(x+","+y))continue;g.fillStyle=P[0];g.globalAlpha=ri>=2?.62:ri?.8:1;g.fillRect(x*s,y*s,s+1,s+1);g.globalAlpha=1;for(let i=0;i<5;i++){g.fillStyle=r()<.5?"rgba(0,0,0,.3)":P[1];g.fillRect(x*s+r()*s,y*s+r()*s,s*.08,s*.04);}}
   if(ri===0){g.strokeStyle="rgba(200,220,240,.25)";g.lineWidth=1;for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)if(PATH.has(x+","+y))g.strokeRect(x*s+.5,y*s+.5,s-1,s-1);}
   g.lineWidth=s*.035;g.shadowBlur=s*.25;if(ri===4){const lg=g.createLinearGradient(0,0,W,0);for(let k=0;k<=6;k++)lg.addColorStop(k/6,`hsl(${k*60},100%,70%)`);g.strokeStyle=lg;g.shadowColor="#fff";}else{g.strokeStyle=P[2];g.shadowColor=P[2];}
@@ -2041,6 +2047,12 @@ function drawFuture(t,tier,col,T){const k=t.type,cd=t.cd||0;
     for(const sd of[-1,1]){X.save();X.translate(sd*open*.17,0);X.fillStyle="#5d6150";X.beginPath();X.arc(0,0,.27,sd<0?Math.PI/2:-Math.PI/2,sd<0?Math.PI*1.5:Math.PI/2);X.fill();X.restore();}
     X.fillStyle="#ecbc3f";X.beginPath();X.arc(0,0,.11,0,7);X.fill();X.fillStyle="#1d1d1d";for(let i=0;i<3;i++){X.beginPath();X.moveTo(0,0);X.arc(0,0,.1,i*2.094-.52,i*2.094+.52);X.fill();}X.beginPath();X.arc(0,0,.025,0,7);X.fillStyle="#ecbc3f";X.fill();
     X.strokeStyle=tier>=4?col:"#ff4a3a";X.lineWidth=.04;X.beginPath();X.arc(0,0,.34,-Math.PI/2,-Math.PI/2+charge*Math.PI*2);X.stroke();}
+  else if(k==="orbit"&&t.l>=150){ /* v409 태초: 형체 없는 빛 — 겹겹의 광륜과 회전하는 빛살 */
+    const h=Math.sin(T*1.6+t.x)*.05,pu=.5+.5*Math.sin(T*3+t.x);X.save();X.translate(0,-.28+h);X.globalCompositeOperation="lighter";
+    const g0=X.createRadialGradient(0,0,0,0,0,.75);g0.addColorStop(0,"rgba(255,250,225,.95)");g0.addColorStop(.25,"rgba(255,232,160,.55)");g0.addColorStop(1,"rgba(255,220,140,0)");X.fillStyle=g0;X.beginPath();X.arc(0,0,.75,0,7);X.fill();
+    for(let i=0;i<12;i++){const a=T*.35+i*Math.PI/6,L=.42+.18*Math.sin(T*2+i*1.7);X.globalAlpha=.35+.25*Math.sin(T*3+i);X.fillStyle="#fff6d6";X.beginPath();X.moveTo(Math.cos(a-.05)*.12,Math.sin(a-.05)*.12);X.lineTo(Math.cos(a)*L,Math.sin(a)*L);X.lineTo(Math.cos(a+.05)*.12,Math.sin(a+.05)*.12);X.closePath();X.fill();}
+    X.globalAlpha=.7;X.strokeStyle="#fff1c0";X.lineWidth=.018;for(let i=0;i<3;i++){X.save();X.rotate(T*(.4+i*.25)*(i%2?-1:1));X.scale(1,.38+i*.12);X.beginPath();X.arc(0,0,.3+i*.06,0,7);X.stroke();X.restore();}
+    X.globalAlpha=1;X.fillStyle="#ffffff";X.shadowColor="#fff1c0";X.shadowBlur=24*DPR;X.beginPath();X.arc(0,0,.1+.02*pu,0,7);X.fill();X.shadowBlur=0;X.restore();}
   else if(k==="orbit"){// 떠 있는 육각 플랫폼 + 태양전지판, 천천히 회전
     t.rot=(t.rot||0)+.01;const h=Math.sin(T*2+t.x)*.06;X.fillStyle="rgba(0,0,0,.25)";X.beginPath();X.ellipse(.03,.12,.3,.1,0,0,7);X.fill();
     X.save();X.translate(0,-.25+h);X.rotate(t.rot);X.fillStyle="#2c4a7a";X.strokeStyle="#9cc4ff";X.lineWidth=.012;
@@ -2165,6 +2177,13 @@ function drawAlien(e,T){const x=e.x,y=e.y,R=e.size,k=e.alien;
     for(let i=0;i<8;i++){const an=i*Math.PI/4;X.fillStyle=(i+Math.floor(T*6))%2?"#7dffa0":"#ff6ad5";X.beginPath();X.arc(Math.cos(an)*R*.78,Math.sin(an)*R*.78,.06,0,7);X.fill();}
     X.fillStyle="#6b7488";X.beginPath();X.arc(0,0,R*.55,0,7);X.fill();X.fillStyle=`rgba(150,230,255,${.55+pul*.3})`;X.beginPath();X.arc(0,0,R*.4,0,7);X.fill();X.fillStyle="#3a7a4a";X.beginPath();X.ellipse(0,0,R*.12,R*.16,0,0,7);X.fill();
     X.fillStyle="#000";X.beginPath();X.ellipse(-R*.05,-R*.05,R*.04,R*.06,.4,0,7);X.ellipse(R*.05,-R*.05,R*.04,R*.06,-.4,0,7);X.fill();}
+  else if(k==="void"){ /* v409 공허: 빛을 삼키는 구멍. 주변 별빛이 휘어 빨려 들어감 */
+    const hz=X.createRadialGradient(0,0,R*.7,0,0,R*2.6);hz.addColorStop(0,"rgba(70,40,110,.55)");hz.addColorStop(.35,"rgba(30,14,50,.35)");hz.addColorStop(1,"rgba(0,0,0,0)");X.fillStyle=hz;X.beginPath();X.arc(0,0,R*2.6,0,7);X.fill();
+    X.save();X.globalCompositeOperation="lighter";for(let i=0;i<46;i++){const ph=((T*.22+i*.6180339)%1),rr=R*(2.4-2*ph),an=i*2.39996+T*(1.2+ph*3);X.globalAlpha=.55*ph*(1-ph)*4*.5;X.fillStyle=i%3?"#cbb8ff":"#ffffff";X.beginPath();X.arc(Math.cos(an)*rr,Math.sin(an)*rr*.9,.018+.02*(1-ph),0,7);X.fill();}
+    X.globalAlpha=.5;X.strokeStyle="#a58cff";X.lineWidth=.02;for(let i=0;i<3;i++){X.beginPath();X.arc(0,0,R*(1.05+i*.18+.04*Math.sin(T*2+i)),T*(.6+i*.3)+i,T*(.6+i*.3)+i+2.2);X.stroke();}X.restore();
+    X.fillStyle="#000";X.beginPath();X.arc(0,0,R*.9,0,7);X.fill();
+    X.strokeStyle=hit?"rgba(255,255,255,.95)":`rgba(220,205,255,${.35+.25*pul})`;X.lineWidth=.035;X.shadowColor="#b9a0ff";X.shadowBlur=18*DPR;X.beginPath();X.arc(0,0,R*.9,0,7);X.stroke();X.shadowBlur=0;
+    X.fillStyle="#000";X.beginPath();X.arc(0,0,R*.86,0,7);X.fill();}
   else{X.fillStyle=hit?"#fff":"#3a3448";X.beginPath();X.moveTo(R*1.3,0);X.lineTo(R*.2,-R*.85);X.lineTo(-R*1.1,-R*.6);X.lineTo(-R*.8,0);X.lineTo(-R*1.1,R*.6);X.lineTo(R*.2,R*.85);X.closePath();X.fill();X.strokeStyle="#a58cff";X.lineWidth=.04;X.stroke();
     X.strokeStyle="rgba(165,140,255,.5)";X.lineWidth=.02;for(let i=-2;i<=2;i++){X.beginPath();X.moveTo(-R*.7,i*R*.18);X.lineTo(R*.8,i*R*.12);X.stroke();}
     X.fillStyle=`rgba(255,80,200,${.5+pul*.5})`;X.shadowColor="#ff50c8";X.shadowBlur=18*DPR;X.beginPath();X.arc(R*.25,0,R*.22,0,7);X.fill();X.shadowBlur=0;
@@ -2272,6 +2291,7 @@ function upgrade(t,n,quiet){let done=0;const before=tierOf(t.l);
   while(done<n&&t.l<maxL()){const c=upCost(t);if(S.gold<c)break;S.gold-=c;t.inv+=c;t.l++;done++;}
   if(!done){if(!quiet)banner("자금이 부족합니다");return 0;}
   const after=tierOf(t.l),x=t.x+.5,y=t.y+.5;
+  if(t.type==="orbit"&&t.l>=150&&t.l-done<150){t.evoT=3;shakeT=1;fx.push({k:"evo",x,y,life:2.4,m:2.4,col:"#fff4c8"},{k:"ring",x,y,life:2,m:2,col:"#fff4c8",R:5},{k:"ring",x,y,life:1.5,m:1.5,col:"#ffffff",R:3},{k:"txt",x,y:y-.6,txt:"히든 전직 · 태초",col:"#fff4c8",life:3,m:3,sz:.4});if(!quiet)banner("✦ 히든 전직 · 태초 — 처음의 빛");}
   if(after>before){t.evoT=2;shakeT=.5;fx.push({k:"evo",x,y,life:1.6,m:1.6,col:TCOL[after]},{k:"ring",x,y,life:1.2,m:1.2,col:TCOL[after],R:3.2},{k:"ring",x,y,life:1,m:1,col:TCOL[after],R:2.4},{k:"ring",x,y,life:.7,m:.7,col:"#fff",R:1.4},
       ...(after>=3?[]:[{k:"txt",x,y:y-.5,txt:`${after}차 전직 · ${TRANK[after]}`,col:TCOL[after],life:1.8,m:1.8,sz:.34}]));
     for(let i=0;i<30;i++)fx.push({k:"pt",x,y,vx:(Math.random()-.5)*5,vy:(Math.random()-.5)*5,life:.7,m:.7,col:TCOL[after]});
@@ -2292,7 +2312,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v408 · 11/03 23:52";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v409 · 11/04 00:40";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2347,9 +2367,9 @@ function renderStage(){const s=S.wave,m=mix(s),boss=BOSS[s];
   const nb=Object.keys(BOSS).map(Number).find(b=>b>=s);
   const cNav=(S.country>1||S.conqBy[S.country])?`<div class="row">${S.country>1?`<button class="btn" data-c="${S.country-1}">◀ ${S.country-1}스테이지</button>`:""}${S.conqBy[S.country]&&S.country<COUNTRIES.length?`<button class="btn" data-c="${S.country+1}">${S.country===6?"♾ 무한 모드 ▶":S.country+1+"스테이지로 진군 ▶"}</button>`:""}</div>`:"";
   $("stageBox").innerHTML=`<div class="lbl">${modeTag(S.mode)} · ${COUNTRY.inf?"무한 모드":S.country+"스테이지 · "+COUNTRY.name}${S.conqBy[S.country]?" · 점령 완료":""}</div>${cNav}${S.conqBy[S.country]?`<button class="btn" data-replay="${S.country}">🎬 점령 장면 다시 보기</button>`:""}
-    <div class="stagebar"><button class="btn" data-d="-1" ${s<=1?"disabled":""} aria-label="이전 단계">◀</button><b>${s} / ${COUNTRY.inf?"∞":lastOf()} 단계</b><button class="btn" data-d="1" ${s>=S.best?"disabled":""} aria-label="다음 단계">▶</button></div>
+    <div class="stagebar"><button class="btn" data-d="-1" ${s<=1?"disabled":""} aria-label="이전 단계">◀</button><b>${s} / ${lastOf()} 단계</b><button class="btn" data-d="1" ${s>=S.best?"disabled":""} aria-label="다음 단계">▶</button></div>
     ${s<S.best?`<button class="btn pri skipb" data-to="${s+1}" title="이미 깬 단계를 하나 건너뜁니다">⏭ 한 단계 넘기기 · ${s+1}단계로</button>`:""}
-    ${live}${COUNTRY.inf?(()=>{const R=infReg(s),bw=s%10===0;return`<div class="lbl">이번 단계 · ${R.area} · ${R.loc}</div><div class="comp">${bw?`<span class="chip boss">보스 · ${R.boss}</span>`:""}<span class="chip">외계 생물 ${INF_N}기</span></div><div class="next">1기 체력 <b>${fmt(infHp(s))}</b>${bw?` · 보스 체력 <b>${fmt(infHp(s)*40)}</b>`:` · 다음 보스 <b>${Math.ceil(s/10)*10}단계</b>`}</div>`;})():COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
+    ${live}${COUNTRY.inf?(()=>{const R=infReg(s),bw=s%10===0;if(s>=800)return`<div class="lbl">최종 단계 · 공허</div><div class="comp"><span class="chip boss">최종 보스 · 공허 그 자체</span></div><div class="next">체력 <b>${fmt(5e47)}</b></div>`;return`<div class="lbl">이번 단계 · ${R.area} · ${R.loc}</div><div class="comp">${bw?`<span class="chip boss">보스 · ${R.boss}</span>`:""}<span class="chip">외계 생물 ${INF_N}기</span></div><div class="next">1기 체력 <b>${fmt(infHp(s))}</b>${bw?` · 보스 체력 <b>${fmt(infHp(s)*52)}</b>`:` · 다음 보스 <b>${Math.ceil(s/10)*10}단계</b>`}</div>`;})():COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
     ${!COUNTRY.alien&&!COUNTRY.inf&&!boss&&nb?`<div class="next">다음 ${BKIND[BOSS[nb][2]]} <b>${nb}단계 ${BT(BOSS[nb][1])}</b></div>`:""}`;}
 let popKey="";
 function popAt(p,cx,cy){const F=C.clientWidth,ox=C.offsetLeft,oy=C.offsetTop,cs=F/COLS,pw=p.offsetWidth,ph=p.offsetHeight;
@@ -2366,7 +2386,7 @@ function renderPop(){const p=$("pop");
   p.classList.remove("bp");const t=sel,T=TT[t.type],s=st(t),c=upCost(t),max=t.l>=maxL(),into=t.l%10,poor=S.gold<c;
   const key=[t.id,t.l,poor,Math.floor(S.gold/Math.max(1,c))>=10,tgOf(t)].join("|");
   if(key!==popKey){popKey=key;
-    p.innerHTML=`<div class="ph"><b style="color:${TCOL[s.tier]}">${T.names[s.tier]}</b><span>LV ${t.l}</span><button class="x" data-a="close" aria-label="닫기">×</button></div>
+    p.innerHTML=`<div class="ph"><b style="color:${isTaecho(t)?"#fff4c8":TCOL[s.tier]}">${isTaecho(t)?"✦ 태초":T.names[s.tier]}</b><span>LV ${t.l}</span><button class="x" data-a="close" aria-label="닫기">×</button></div>
     <div class="pips">${Array.from({length:10},(_,i)=>`<i class="${max||i<into?"on":""}"></i>`).join("")}</div>
     <div class="row">${max?`<button class="btn" disabled>최대 레벨</button>`:`<button class="btn pri" data-a="u1" ${poor?"disabled":""}>강화 ${fmt(c)}</button><button class="btn" data-a="u10" ${poor?"disabled":""}>+10</button><button class="btn" data-a="umax" ${poor?"disabled":""}>최대</button>`}${t.type==="nuke"?`<button class="btn" data-a="nuke" id="popNuke" style="border-color:#c9a23a;color:#ffd36b">☢</button>`:""}</div>
     ${TT[t.type].dmg&&t.type!=="nuke"?`<div class="tgrow" role="group" aria-label="표적 우선순위">${TGM.map(([k,l])=>`<button class="btn" data-tg="${k}" aria-pressed="${tgOf(t)===k}">${l}</button>`).join("")}</div>`:""}
@@ -2407,14 +2427,14 @@ function renderUI(){renderPop();{const lt=$("locTag");if(COUNTRY.inf){const R=in
       if(t.type==="mortar")rows+=`<dt>폭발 반경</dt><dd>${s.splash.toFixed(2)}칸</dd><dd></dd>`;
       if(t.type==="rail")rows+=`<dt>빔 길이 · 굵기</dt><dd>${(s.range+1).toFixed(1)}칸 · ${(s.beamW*2).toFixed(1)}칸</dd><dd></dd>`;
       rows+=`<dt>처치</dt><dd>${fmt(t.kills||0)}</dd><dd></dd>`;}
-    box.innerHTML=`<div class="selhead"><div><div class="lbl">${T.label} · 칸 ${String.fromCharCode(65+t.x)}${t.y+1}</div><div class="nm" style="color:${TCOL[s.tier]}">${T.names[s.tier]}</div></div><span class="rank">${s.tier}차 · ${TRANK[s.tier]}</span></div>
+    box.innerHTML=`<div class="selhead"><div><div class="lbl">${T.label} · 칸 ${String.fromCharCode(65+t.x)}${t.y+1}</div><div class="nm" style="color:${isTaecho(t)?"#fff4c8":TCOL[s.tier]}">${isTaecho(t)?"✦ 태초":T.names[s.tier]}</div></div><span class="rank">${s.tier}차 · ${TRANK[s.tier]}</span></div>
       <div class="lbl">LV ${t.l} / ${maxL()}</div><div class="pips">${Array.from({length:10},(_,i)=>`<i class="${max||i<into?"on":""}"></i>`).join("")}</div>
       ${nextT&&!max?`<div class="next">${10-into}레벨 후 ${s.tier+1}차 전직 → <b>${nextT}</b></div>`:`<div class="next">최종 전직 완료</div>`}
       ${EVO1[t.type]?`<div class="next">1차 전직 특성 · <b style="color:${s.tier>=1?"var(--ok)":"var(--muted)"}">${EVO1[t.type]}</b>${s.tier>=1?"":" (10레벨에 획득)"}</div>`:""}${EVOX[t.type]?Object.entries(EVOX[t.type]).map(([k,v])=>`<div class="next">${k}차 전직 특성 · <b style="color:${s.tier>=+k?"var(--ok)":"var(--muted)"}">${v}</b>${s.tier>=+k?"":` (${k*10}레벨에 획득)`}</div>`).join(""):""}
       <dl class="kv">${rows}</dl>
       <p class="hint">강화와 해체는 지도 위 무기 옆에 뜨는 창에서 합니다.</p>`;}
   else if(buildType){const T=TT[buildType];box.innerHTML=`<h2>${T.label} 배치</h2><p class="hint">${T.role}${T.dmg?` · 1레벨 초당 공격력 <b style="color:var(--accent)">${fmt(dpsOf({type:buildType,l:1}))}</b>`:""}. 길과 적국 국기 칸을 제외한 지도의 아무 빈 칸이나 눌러 설치하세요. 설치비는 몇 개를 짓든 같습니다.</p><p class="hint">10레벨마다 전직하며 외형과 효과가 바뀝니다. 지금은 30레벨, 3차 전직까지 열려 있습니다.</p>`;}
-  else box.innerHTML=`<h2>작전 지침</h2><p class="hint">${COUNTRY.desc}${COUNTRY.inf?" 끝이 없습니다. 최고 기록에 도전하세요.":COUNTRY.alien?" 10단계를 모두 막으면 지구를 지켜냅니다.":` 이병부터 ${BT("국방부장관")}까지 100단계를 돌파하면 이 나라를 점령합니다.${S.country>1?" 계급은 같아도 1스테이지보다 훨씬 튼튼합니다.":""}`}</p><p class="hint">10단계마다 지휘관이 소속 부대를 이끌고 옵니다. 기지 내구도가 0이 되면 3단계 뒤로 후퇴합니다. 스페이스 바로 일시정지할 수 있습니다.</p>`;
+  else box.innerHTML=`<h2>작전 지침</h2><p class="hint">${COUNTRY.desc}${COUNTRY.inf?" 800단계, 모든 것의 끝에서 공허가 기다립니다.":COUNTRY.alien?" 10단계를 모두 막으면 지구를 지켜냅니다.":` 이병부터 ${BT("국방부장관")}까지 100단계를 돌파하면 이 나라를 점령합니다.${S.country>1?" 계급은 같아도 1스테이지보다 훨씬 튼튼합니다.":""}`}</p><p class="hint">10단계마다 지휘관이 소속 부대를 이끌고 옵니다. 기지 내구도가 0이 되면 3단계 뒤로 후퇴합니다. 스페이스 바로 일시정지할 수 있습니다.</p>`;
   dirtyUI=false;}
 function conquest(){if(typeof document==="undefined"||!$("cut")||!$("cut").getAttribute)return;startCutscene();}
 function conquestModal(){const c=S.country,nx=COUNTRIES[c];
@@ -2431,6 +2451,53 @@ const AFRICA=[[-17,21],[-16,15],[-17,12],[-13,8],[-8,4.5],[-3,5],[2,6],[6,4.5],[
 let cutT=0,cutOn=false,cutLast=0,cutData=null;
 // 엔딩 크레딧: 10초 동안 영화처럼 글이 올라가고 '끝'(사용자 지정)
 const CRED_T=20,CREDITS=["최후방어선","","","— 제작 —","벌꿀오소리","","","감사합니다"];
+/* v409 진짜 엔딩: 공허 소멸 → 태초의 빛 → 새 우주 → 지구의 새벽 → 최후방어선 */
+let TE=null;const TE_T=42;
+function startTrueEnd(){TE={t:0,last:performance.now(),fin:false};const c=$("cut");c.hidden=false;c.classList.add("endq");$("cutDots").innerHTML="";
+  $("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{if(TE)TE.t=Math.max(TE.t,34);};$("cutCv").onclick=null;if(BGM.on)try{bgmStart();}catch(e){}requestAnimationFrame(teLoop);}
+function teLoop(now){if(!TE)return;const dt=Math.min(.1,(now-TE.last)/1000);TE.last=now;TE.t+=dt;drawTE($("cutCv").getContext("2d"),1280,800,TE.t);
+  if(TE.t>=36&&!TE.fin){TE.fin=true;const close=()=>{TE=null;$("cut").hidden=true;$("cut").classList.remove("endq");try{save(true);}catch(e){}};
+    $("cutBtns").innerHTML=`<button class="btn" id="cutStay">계속 머무르기</button><button class="btn pri" id="cutGo">메인 메뉴로</button>`;$("cutStay").onclick=close;$("cutGo").onclick=()=>{close();showTitle();};}
+  requestAnimationFrame(teLoop);}
+function drawTE(g,W,H,t){const cl=(v)=>Math.max(0,Math.min(1,v)),sm=v=>{v=cl(v);return v*v*(3-2*v);},fade=(a,b,f=1)=>cl((t-a)/f)*cl((b-t)/f);
+  const txt=(str,y,a,sz=40,col="#f1e3b0",font='"Do Hyeon","IBM Plex Sans KR",sans-serif')=>{if(a<=0)return;g.save();g.globalAlpha=a;g.font=`${sz}px ${font}`;g.textAlign="center";g.textBaseline="middle";g.shadowColor="rgba(0,0,0,.9)";g.shadowBlur=12;g.fillStyle=col;g.fillText(str,W/2,y);g.restore();};
+  const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);};
+  g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation="source-over";g.fillStyle="#000";g.fillRect(0,0,W,H);
+  const cx=W/2,cy=H*.46;
+  if(t<11){ // 1·2: 공허가 무너지고 한 점이 된다
+    const k=sm(t/9),R=260*(1-k)+2;g.save();g.globalCompositeOperation="lighter";
+    for(let i=0;i<260;i++){const ph=(t*.25+rnd(i))%1,rr=(R*1.1+520*(1-ph))*(1-k*.6),an=rnd(i+9)*7+t*(.6+ph*2.5);g.globalAlpha=.6*ph*(1-k*.9);g.fillStyle=i%4?"#bba6ff":"#fff";g.fillRect(cx+Math.cos(an)*rr,cy+Math.sin(an)*rr*.8,2,2);}
+    g.restore();const hz=g.createRadialGradient(cx,cy,R*.8,cx,cy,R*2.4+20);hz.addColorStop(0,"rgba(80,46,130,.6)");hz.addColorStop(1,"rgba(0,0,0,0)");g.fillStyle=hz;g.beginPath();g.arc(cx,cy,R*2.4+20,0,7);g.fill();
+    g.fillStyle="#000";g.beginPath();g.arc(cx,cy,R,0,7);g.fill();g.strokeStyle=`rgba(220,205,255,${.5*(1-k)+.2})`;g.lineWidth=3;g.beginPath();g.arc(cx,cy,R,0,7);g.stroke();
+    if(t>8.6){const f=sm((t-8.6)/2.4),r=4+f*900;const lg=g.createRadialGradient(cx,cy,0,cx,cy,r);lg.addColorStop(0,"rgba(255,255,255,1)");lg.addColorStop(.3,`rgba(255,246,214,${.9*f+.1})`);lg.addColorStop(1,"rgba(255,230,160,0)");g.fillStyle=lg;g.fillRect(0,0,W,H);}
+    txt("공허가 마지막 숨을 삼킨다.",H*.86,fade(.6,7.6),38);txt("그리고 —",H*.86,fade(8,10.6,.6),44,"#fff6d6");}
+  else if(t<25){ // 3·4: 빛이 퍼져 새 우주가 된다 → 지구
+    const u=t-11,wf=cl(1-u/1.6);g.fillStyle=`rgb(${8+40*wf},${6+38*wf},${14+30*wf})`;g.fillRect(0,0,W,H);
+    const zoom=u<7?1:1+sm((u-7)/6)*5;g.save();g.translate(cx,cy);g.scale(zoom,zoom);g.globalCompositeOperation="lighter";
+    for(let i=0;i<420;i++){const an=rnd(i)*7,sp=.4+rnd(i+3)*1.6,d=Math.min(1,u/8)*sp*620*(.3+rnd(i+5));g.globalAlpha=.4+.6*rnd(i+7);g.fillStyle=i%7?"#fff6e0":i%2?"#a9c8ff":"#ffc9a8";const z=1.2+rnd(i+11)*2;g.fillRect(Math.cos(an)*d,Math.sin(an)*d*.75,z,z);}
+    for(let j=0;j<6;j++){const gx=(rnd(j+40)-.5)*1000,gy=(rnd(j+50)-.5)*620,gr=40+rnd(j+60)*60,ga=cl((u-1.5-j*.5)/2)*(1-sm((u-7)/2.5));if(ga<=0)continue;g.globalAlpha=ga*.8;for(let a=0;a<2;a++)for(let q=0;q<70;q++){const f=q/70,an=a*Math.PI+f*Math.PI*2.6+u*.3,dd=gr*f;g.fillStyle=`rgba(${200+j*9},${190+j*6},255,${.5*(1-f)})`;g.beginPath();g.arc(gx+Math.cos(an)*dd,gy+Math.sin(an)*dd*.5,2.4*(1-f)+.6,0,7);g.fill();}}
+    g.restore();const cg=g.createRadialGradient(cx,cy,0,cx,cy,300*wf+60);cg.addColorStop(0,`rgba(255,250,230,${.8*wf+.15})`);cg.addColorStop(1,"rgba(255,240,200,0)");g.fillStyle=cg;g.fillRect(0,0,W,H);
+    if(u>8){const e=sm((u-8)/5),er=40+e*220,ex=cx,ey=cy+40;g.globalAlpha=e;const eg=g.createRadialGradient(ex-er*.35,ey-er*.35,0,ex,ey,er);eg.addColorStop(0,"#9fd4ff");eg.addColorStop(.55,"#2f6fb8");eg.addColorStop(1,"#0a1a38");g.fillStyle=eg;g.beginPath();g.arc(ex,ey,er,0,7);g.fill();
+      g.save();g.beginPath();g.arc(ex,ey,er,0,7);g.clip();g.fillStyle="rgba(70,140,80,.75)";for(let i=0;i<7;i++){g.beginPath();g.ellipse(ex+(rnd(i+80)-.5)*er*1.4,ey+(rnd(i+90)-.5)*er*1.2,er*(.15+rnd(i+70)*.2),er*(.08+rnd(i+75)*.12),rnd(i)*3,0,7);g.fill();}
+      g.fillStyle="rgba(255,255,255,.35)";for(let i=0;i<9;i++){g.beginPath();g.ellipse(ex+(rnd(i+20)-.5)*er*1.6+u*6,ey+(rnd(i+30)-.5)*er*1.4,er*.25,er*.05,.2,0,7);g.fill();}
+      const sh=g.createLinearGradient(ex-er,0,ex+er,0);sh.addColorStop(0,"rgba(0,0,0,0)");sh.addColorStop(.55,"rgba(0,0,0,0)");sh.addColorStop(1,"rgba(0,0,0,.7)");g.fillStyle=sh;g.fillRect(ex-er,ey-er,er*2,er*2);g.restore();
+      g.strokeStyle="rgba(150,210,255,.6)";g.lineWidth=3;g.beginPath();g.arc(ex,ey,er,0,7);g.stroke();g.globalAlpha=1;}
+    txt("태초의 빛이 부서진 우주를 다시 잇는다.",H*.86,fade(1,7.4),36);txt("수많은 은하를 지나, 처음 그 자리로.",H*.86,fade(8,13.6),36);}
+  else if(t<34){ // 5: 지구의 새벽, 아직 서 있는 방어선
+    const u=t-25,sky=g.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#1b2a52");sky.addColorStop(.55,"#e58f5a");sky.addColorStop(.75,"#ffd9a0");sky.addColorStop(1,"#3a2a1a");g.fillStyle=sky;g.fillRect(0,0,W,H);
+    const sy=H*.74-sm(u/8)*70,sg=g.createRadialGradient(W*.5,sy,0,W*.5,sy,260);sg.addColorStop(0,"rgba(255,248,220,1)");sg.addColorStop(.15,"rgba(255,226,160,.9)");sg.addColorStop(1,"rgba(255,180,100,0)");g.fillStyle=sg;g.fillRect(0,0,W,H);
+    g.fillStyle="#120d0a";g.beginPath();g.moveTo(0,H);g.lineTo(0,H*.78);for(let x=0;x<=W;x+=40)g.lineTo(x,H*.78+Math.sin(x*.013)*10+Math.sin(x*.041)*5);g.lineTo(W,H);g.fill();
+    g.fillRect(W*.06,H*.7,W*.88,10);for(let i=0;i<22;i++){const x=W*.08+i*W*.04,y=H*.7,sal=cl(u*1.2-Math.abs(i-11)*.08);g.fillStyle="#120d0a";g.beginPath();g.arc(x,y-46,8,0,7);g.fill();g.fillRect(x-7,y-38,14,30);g.fillRect(x-7,y-8,5,10);g.fillRect(x+2,y-8,5,10);
+      g.strokeStyle="#120d0a";g.lineWidth=5;g.beginPath();g.moveTo(x+5,y-32);g.lineTo(x+12+6*sal,y-44-14*sal);g.stroke();}
+    const fx=W*.5,fy=H*.7;g.strokeStyle="#120d0a";g.lineWidth=5;g.beginPath();g.moveTo(fx,fy);g.lineTo(fx,fy-170);g.stroke();const wv=Math.sin(t*3)*6;g.fillStyle="#f4f1ea";g.beginPath();g.moveTo(fx,fy-170);g.quadraticCurveTo(fx+45,fy-165+wv,fx+90,fy-170);g.lineTo(fx+90,fy-112);g.quadraticCurveTo(fx+45,fy-107+wv,fx,fy-112);g.fill();
+    g.fillStyle="#c8312e";g.beginPath();g.arc(fx+45,fy-141+wv*.5,13,Math.PI,0);g.fill();g.fillStyle="#1f4aa0";g.beginPath();g.arc(fx+45,fy-141+wv*.5,13,0,Math.PI);g.fill();
+    txt("모든 전선이 끝난 곳에,",H*.12,fade(.8,8.4),40,"#fff4dc");txt("아직 한 줄의 방어선이 서 있었다.",H*.2,fade(2.2,8.4),40,"#fff4dc");}
+  else{ // 6: 진짜 끝
+    const u=t-34,a=sm(u/2);g.save();g.globalCompositeOperation="lighter";for(let i=0;i<160;i++){g.globalAlpha=.5*rnd(i+3)*(.6+.4*Math.sin(t*1.3+i));g.fillStyle="#fff6e0";g.fillRect(rnd(i)*W,rnd(i+1)*H,1.6,1.6);}g.restore();
+    txt("최후방어선",H*.36,a,120,"#e3a82b");txt("— THE TRUE END —",H*.5,sm((u-1)/2),34,"#f1e3b0",'"IBM Plex Mono",monospace');
+    txt("공허의 끝, 태초의 빛까지 지켜낸 당신에게.",H*.6,sm((u-2)/2),30,"#f1e3b0");
+    txt(`${modeTag(S.mode)} · 무한 침공 800단계 돌파`,H*.68,sm((u-3)/2),24,"#b9ad88",'"IBM Plex Mono",monospace');}
+  const bar=Math.max(0,Math.min(1,t<2?1-t/2:t>TE_T-1?0:0));if(bar>0){g.fillStyle=`rgba(0,0,0,${bar})`;g.fillRect(0,0,W,H);}}
 function startCredits(){$("cut").classList.remove("endq");cutData={credits:true,c:7};cutT=0;cutOn=true;cutLast=performance.now();$("cut").hidden=false;$("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{cutT=CRED_T-.01;};$("cutCv").onclick=null;requestAnimationFrame(cutLoop);}
 function drawCredits(p,T){const cv=$("cutCv"),g=cv.getContext("2d"),W=cv.width,H=cv.height;g.save();
   const sky=g.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#0b1430");sky.addColorStop(.55,"#3a5a7a");sky.addColorStop(1,"#f2b880");g.fillStyle=sky;g.fillRect(0,0,W,H);
@@ -2989,5 +3056,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611032344 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040018 */</script>
 </body></html>
