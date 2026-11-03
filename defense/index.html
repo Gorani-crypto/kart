@@ -331,7 +331,7 @@ const AL_REW=[3e15,4e15,5.5e15,7.5e15,1e16],alRewTot=s=>s>=6?AL_REW[s-6]:Math.po
 const alSq=s=>s<=5?ALC[s-1].hp:alGr(s);
 function mkAlien(s){const a=ALIENS[s-1],g=Math.pow(BAL.alG,s),h=Math.round(s===10?2e19:alGr(s)*30); /* 외계 보스: 전투체 30배, 10단계 외계인 총사령관 2000경 */
   return{r:18,alien:a[1]==="mc"?null:a[1],mc:a[1]==="mc",uni:a[1]==="mc"?UNI[(s+2)%UNI.length]:null,title:a[0],n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(a[1]==="ship"?.22:a[1]==="walker"?.28:a[1]==="saucer"?.34:.3),rew:Math.round(alRewTot(s)*.3),kind:s===10?2:1,dmg:MAXLIFE,size:a[1]==="ship"?.8:a[1]==="mc"?.64:.62,boss:true,d:0,id:nextId++,step:0};}
-function mkCommander(s,i){const L=ALC[s-1],h=L.hp;return{r:18,mc:true,uni:UNI[i%UNI.length],title:`세뇌된 ${L.names[i]} 총사령관`,n0:1,hp1:h,max:h,hp:h,spd:PLEN/((30-2.5*(s-1))*60),rew:Math.round(h/1000),kind:1,dmg:10,size:.6,boss:true,d:0,id:nextId++,step:0};} /* 경로 끝까지 1단계 30분 → 5단계 20분 (2.5분씩 빨라짐), 보상 = 체력의 1/1000 */
+function mkCommander(s,i){const L=ALC[s-1],h=L.hp;return{r:18,mc:true,uni:UNI[i%UNI.length],title:`세뇌된 ${L.names[i]} 총사령관`,n0:1,hp1:h,max:h,hp:h,spd:2*PLEN/((30-2.5*(s-1))*60)/*v388 6스테이지 1~5단계 보스 이동속도 ×2*/,rew:Math.round(h/1000),kind:1,dmg:10,size:.6,boss:true,d:0,id:nextId++,step:0};} /* 경로 끝까지 1단계 30분 → 5단계 20분 (2.5분씩 빨라짐), 보상 = 체력의 1/1000 */
 function mkAlienSquad(s){const h1=alGr(s);return{r:17,alien:"grunt",n0:1,hp1:h1,max:h1,hp:h1,spd:spdOf(s)*1.1,rew:alRewTot(s)*.7/alUnits(s),lk:2,dmg:1,size:.34,boss:false,d:0,id:nextId++,step:0};}
 const BKIND=["중간 보스","주력 보스","최종 보스"];
 /* 미국 100단계: 합참의장 대신 대통령이 국방부장관 뒤에 따로 등장. 대통령을 쓰러뜨릴 때까지 병력이 끝없이 몰려옴 */
@@ -476,7 +476,7 @@ function lockText(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())retu
 const ATTACK=ORDER.filter(k=>TT[k].dmg);
 // 최고 레벨: 5스테이지 미국 점령 전까지 50(5차 전직), 미국 점령 후 100(사용자 결정)
 const BT=(n,C)=>{C=C||COUNTRY;return(C&&C.titles&&C.titles[n])||n;};
-const maxL=()=>S&&S.conqBy&&S.conqBy[5]?100:50;
+const maxL=()=>50; /* v388 50렙 제한 해제는 당분간 막음(미국 클리어 후에도 50) */
 const MAXLIFE=50, BOSSX=2;
 /* EMP 재사용: 1레벨 8초 → 20레벨(2차 전직) 4초 → 50레벨(5차) 2초 → 100레벨(10차) 0.6초, 사이는 직선 */
 const empCd=L=>L<=20?8-4*(L-1)/19:L<=50?4-2*(L-20)/30:Math.max(.6,2-1.4*(L-50)/50);
@@ -642,6 +642,7 @@ anchorMul(CURVE.dr.D,[[39, 1], [40, 1.0], [41, 1.779313], [42, 3.165906], [43, 4
 /*v374 최루탄 30렙 이후 강화비 서서히↑(49→50에서 ×11.68) — 50렙 누적이 박격포의 절반*/{const C=CURVE.base.Cm;for(let l=30;l<C.length;l++)C[l]*=Math.pow(11.683739,Math.min(l-29,20)/20);}
 /*v379 테슬라 강화비 지정(EASY): 25→26 2.2조, 26→27 3.2조, 27→28 4.6조, 28→29 6.7조, 29→30 38조*/{const C=CURVE.ts.Cm,u=TT.tesla.up;C[25]=2.2e12/u;C[26]=3.2e12/u;C[27]=4.6e12/u;C[28]=6.7e12/u;C[29]=38e12/u;}
 /*v381 (v380 취소) 박격포 20렙 이후 화력 ×1.3 (레일건 30렙+도 ×1.3으로 "박격포의 0.8배" 유지)*/{const D=CURVE.b4m.D;for(let l=20;l<D.length;l++)D[l]*=1.3;const R=CURVE.b4r.D;for(let l=30;l<R.length;l++)R[l]*=1.3;}
+/*v388 레일건·박격포 40~50렙 구간 강화비 ×0.85*/for(const n of["b4m","b4r"]){const C=CURVE[n].Cm;for(let l=40;l<=49;l++)C[l]*=.85;}
 const B4={mortar:"b4m",rail:"b4r",sniper:"b4",flame:"b4f",rifle:"rf",laser:"ls",orbit:"ob",tesla:"ts",drone:"dr"};
 const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuke"?"nk":type==="tank"?"tk":T.stage>=3?"s3":T.stage===2?"s2":type==="missile"?"mflat":T.curve||"base"];};
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,100)];
@@ -717,7 +718,7 @@ function waveClear(){const s=S.wave;let bonus=0,dep=0;
   if(s>=lastOf()){S.best=lastOf();S.wave=COUNTRY.alien?10:91;
     if(!S.conqBy[S.country]){S.conqBy[S.country]=true;S.conquered=true;conquest();}
     else if(S.country<COUNTRIES.length){const c=S.country+1;goCountry(c);banner(`${s}단계 클리어 · ${c}스테이지로 진군`);return;}}
-  else{S.wave++;if(S.wave>S.best)S.best=S.wave;}
+  else{S.wave++;if(S.wave>S.best)S.best=S.wave;if(S.auto&&!(COUNTRY&&COUNTRY.inf)&&S.wave>=lastOf()){S.wave=lastOf()-1;} /* v388 자동 진행은 최종장 직전(99단계)까지만 — 깨면 그 단계 반복 */}
   banner(`${s}단계 클리어`);save();dirtyUI=true;}
 function retreat(){const s=S.wave;endless=null;bossIntro=null;bossIntroOk=false;enemies=[];queue=[];shells=[];pillars=[];phase="idle";S.wave=Math.max(1,s-3);S.lives=MAXLIFE;autoT=3;HOOK.fail&&HOOK.fail(s);
   banner(`방어선 붕괴 · ${S.wave}단계로 후퇴`);save();dirtyUI=true;}
@@ -776,7 +777,7 @@ function buildEG(){const W=COLS+6,H=ROWS+6;if(!EGRID||EGW!==W){EGW=W;EGRID=[];fo
 function nearList(x,y,R,out){out.length=0;const W=EGW,H=EGRID.length/W;let x0=Math.floor(x-R)+3,x1=Math.floor(x+R)+3,y0=Math.floor(y-R)+3,y1=Math.floor(y+R)+3;x0=x0<0?0:x0;y0=y0<0?0:y0;x1=x1>=W?W-1:x1;y1=y1>=H?H-1:y1;
   for(let cy=y0;cy<=y1;cy++)for(let cx=x0;cx<=x1;cx++){const c=EGRID[cy*W+cx];for(let i=0;i<c.length;i++)out.push(c[i]);}return out;}
 function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
-  if(!frz&&phase==="idle"&&S.auto){autoT-=dt;if(autoT<=0)startWave();}
+  if(!frz&&phase==="idle"&&S.auto){autoT-=dt;if(autoT<=0){if(!(COUNTRY&&COUNTRY.inf)&&S.wave>=lastOf())S.wave=lastOf()-1;startWave();}} /* v388 자동 진행으로는 최종장 시작 안 함 */
   if(!frz&&phase==="wave"){spawnT-=dt;if(endless&&queue.length<2){const E=endless;queue.push(mkWaveSq(E.s,E.m,E.base,E.bf,E.vp,E.hm));}while(spawnT<=0&&queue.length){const e=queue.shift();enemies.push(e);spawnT+=spawnGap;if(e.pres&&!window.__SIM__){bossIntro={t:0,T:3.8,c:S.country,pres:true,resume:true};banner("");break;}}}
   if(!frz)for(const e of enemies){if(e.burnT>0){e.burnT-=dt;hit(e,e.burnD*dt,e.burnS,true);e.hitT=0;}let sp=e.spd;if(e.slowT>0){e.slowT-=dt;sp*=1-e.slowA*(e.boss?.4:1);}if(e.gasT>0)e.gasT-=dt;if(e.pbT>0){e.pbT-=dt;hit(e,e.max*(e.boss?.001:.02)*dt/(e.gasT>0?e.gasV||1:1),e.pbS,true);}if(e.stunT>0){e.stunT-=dt;sp=0;}e.d+=sp*dt;e.step+=dt*e.spd*7;if(e.hitT)e.hitT-=dt;
     if(e.air||e.fly){const k=e.fly?e.d/PLEN:e.d/AIR_LEN;e.x=AIR_A[0]+(AIR_B[0]-AIR_A[0])*k;e.y=AIR_A[1]+(AIR_B[1]-AIR_A[1])*k;e.dx=AIR_B[0]-AIR_A[0];e.dy=AIR_B[1]-AIR_A[1];}else{const p=posAt(e.d);e.x=p[0];e.y=p[1];e.dx=p[2];e.dy=p[3];}
@@ -873,7 +874,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
       fx.push(sh.kd==="mis"?{k:"smk",x:gx,y:gy,life:.5,m:.5,R:.12}:sh.kd==="gas"?{k:"smk",x:gx,y:gy,life:.4,m:.4,R:.1,col:"185,217,122"}:{k:"fl",x:gx,y:gy,life:.25,m:.25,col:"#ff9a3a",R:.07});}
     if(sh.t>=sh.T&&!sh.done){sh.done=true;const R2=sh.sp*sh.sp;
     if(sh.kd==="sat"&&sh.dur>0)pillars.push({x:sh.tx,y:sh.ty,R:sh.sp,dps:sh.dmg/sh.dur,T:sh.dur,T0:sh.dur,acc:0,src:sh.src,col:sh.tier>=4?TCOL[sh.tier]:"#ff5a6e"});else
-    for(const e of enemies){if(e.dead||(e.air&&sh.kd!=="mis"))continue;const ddx=e.x-sh.tx,ddy=e.y-sh.ty;if(ddx*ddx+ddy*ddy<=R2){hit(e,sh.kd==="nuke"&&e.boss?Math.min(sh.dmg,e.max*.5):sh.dmg,sh.src,true);if(sh.kd==="gas")gasOn(e,sh.dur,sh.slow,sh.tier);if(sh.burn){e.burnT=1.5;e.burnD=sh.dmg*.25;e.burnS=sh.src;}}}
+    for(const e of enemies){if(e.dead||(e.air&&sh.kd!=="mis"))continue;const ddx=e.x-sh.tx,ddy=e.y-sh.ty;if(ddx*ddx+ddy*ddy<=R2){hit(e,sh.kd==="nuke"&&e.boss?Math.min(sh.dmg,e.max*.1)/*v388 핵: 보스엔 최대 체력의 10%까지*/:sh.dmg,sh.src,true);if(sh.kd==="gas")gasOn(e,sh.dur,sh.slow,sh.tier);if(sh.burn){e.burnT=1.5;e.burnD=sh.dmg*.25;e.burnS=sh.src;}}}
     if(sh.kd==="sat"){shakeT=Math.max(shakeT,.08);scorch.push({x:sh.tx,y:sh.ty,R:sh.sp*.55,life:4,m:4,rot:Math.random()*3,glow:1});if(scorch.length>40)scorch.shift();
       fx.push({k:"skybeam",x:sh.tx,y:sh.ty,R:sh.sp,life:.45,m:.45,col:sh.tier>=4?TCOL[sh.tier]:"#ff5a6e"},{k:"ring",x:sh.tx,y:sh.ty,life:.4,m:.4,col:"#ffd0d8",R:sh.sp*1.3});
       if(fx.length<440)for(let i=0;i<8;i++){const a=Math.random()*7,v=1+Math.random()*1.5;fx.push({k:"pt",x:sh.tx,y:sh.ty,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.4,m:.4,col:"#ffb0bd"});}}
@@ -1663,7 +1664,7 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
   drawTowerDrones(T);
 
   for(const P of pillars){const a=Math.min(1,P.T/.4,(P.T0-P.T)/.15+.3),w=P.R*.42*(.92+.08*Math.sin(P.T*40+P.x));const g2=X.createLinearGradient(P.x-w,0,P.x+w,0);g2.addColorStop(0,"rgba(255,90,110,0)");g2.addColorStop(.5,P.col);g2.addColorStop(1,"rgba(255,90,110,0)");
-    X.globalAlpha=.75*a;X.fillStyle=g2;X.fillRect(P.x-w,P.y-14,w*2,14);X.globalAlpha=.9*a;X.fillStyle="#fff";X.fillRect(P.x-w*.15,P.y-14,w*.3,14);X.globalAlpha=.5*a;X.fillStyle=P.col;X.beginPath();X.ellipse(P.x,P.y,P.R*.9,P.R*.45,0,0,7);X.fill();X.globalAlpha=1;}
+    X.globalAlpha=.75*a;X.fillStyle=g2;X.fillRect(P.x-w,P.y-14,w*2,14);X.globalAlpha=.9*a;X.fillStyle="#fff";X.fillRect(P.x-w*.15,P.y-14,w*.3,14);X.globalAlpha=.4*a/*v388 바닥 원 투명도 60%*/;X.fillStyle=P.col;X.beginPath();X.ellipse(P.x,P.y,P.R*.9,P.R*.45,0,0,7);X.fill();X.globalAlpha=1;}
   for(const sh of shells){if(sh.t<0)continue;const k=sh.t/sh.T,gx=sh.x0+(sh.tx-sh.x0)*k,gy=sh.y0+(sh.ty-sh.y0)*k;
     if(sh.kd==="sat"){const a=Math.min(1,k/.9),R=sh.sp*(1.6-a*.9);X.strokeStyle="rgba(255,70,90,"+(.5+.5*a)+")";X.lineWidth=.035;X.beginPath();X.arc(sh.tx,sh.ty,R,0,7);X.stroke();
       X.beginPath();for(const q of[0,1,2,3]){const an=q*Math.PI/2+k*3;X.moveTo(sh.tx+Math.cos(an)*R*.6,sh.ty+Math.sin(an)*R*.6);X.lineTo(sh.tx+Math.cos(an)*R*1.25,sh.ty+Math.sin(an)*R*1.25);}X.stroke();
@@ -1739,7 +1740,8 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
     else if(f.k==="ring"){X.strokeStyle=f.col;X.lineWidth=.08*a;X.beginPath();X.arc(f.x,f.y,f.R*(1-a)+.2,0,7);X.stroke();}
     else if(f.k==="pt"){X.fillStyle=f.col;X.fillRect(f.x-.03,f.y-.03,.06,.06);}
     else if(f.k==="txt"){X.font=`700 ${f.sz}px "IBM Plex Mono","IBM Plex Sans KR",monospace`;X.textAlign="center";X.lineWidth=.06;X.strokeStyle="rgba(0,0,0,.8)";X.strokeText(f.txt,f.x,f.y);X.fillStyle=f.col;X.fillText(f.txt,f.x,f.y);}}
-  X.globalAlpha=1;X.textAlign="left";}
+  X.globalAlpha=1;X.textAlign="left";
+  /* v388 보스 체력바·이름은 모든 공격 이펙트 위에 다시 그림 */for(const e of enemies){const B=e._bar;if(!e.boss||e.dead||!B)continue;if(B.hpb){X.fillStyle="rgba(0,0,0,.75)";X.fillRect(B.x-B.w/2,B.yy,B.w,B.h);X.fillStyle=B.col;X.fillRect(B.x-B.w/2,B.yy,B.w*Math.max(0,e.hp/e.max),B.h);}X.font=`700 ${B.fs}px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.lineWidth=.05;X.strokeStyle="rgba(0,0,0,.85)";X.strokeText(e.title,B.x,B.ty);X.fillStyle=B.tc;X.fillText(e.title,B.x,B.ty);X.textAlign="left";}}
 // 네모 받침(초소·진지형)을 쓰는 무기. 나머지는 무기 자체 모양만 보이게.
 const BOXED={rifle:1,drone:1,emp:1};
 /* 진지 받침 캐시 (모래주머니·강철 장갑 등 움직이지 않는 부분) */
@@ -1783,17 +1785,15 @@ function drawReal(t,s,tier,col,T){const fl=t.flash>0,rc=fl?.04:0,hi=tier>=6;
     for(const sd of[-1,1]){X.fillStyle="#5b3f22";X.fillRect(-.33,sd*.2-.05,.12,.1);X.strokeStyle="#3a2814";X.lineWidth=.01;X.strokeRect(-.33,sd*.2-.05,.12,.1);}
     X.strokeStyle="#22251b";X.lineWidth=.025;X.beginPath();X.moveTo(.16,0);X.lineTo(.08,-.17);X.moveTo(.16,0);X.lineTo(.08,.17);X.stroke();
     rBarrel(-.08-rc,.34-rc,.09,false);X.fillStyle="#0a0b07";X.beginPath();X.arc(.34-rc,0,.045,0,7);X.fill();rCrew(-.18,.24);rCrew(-.2,-.25);if(fl)rFlash(.38,.2);return;}
-  if(tier===3){X.strokeStyle="#2c2f24";X.lineWidth=.05;X.beginPath();X.moveTo(-.02,0);X.lineTo(-.44,-.17);X.moveTo(-.02,0);X.lineTo(-.44,.17);X.stroke();X.fillStyle="#3b3e33";X.fillRect(-.47,-.2,.06,.06);X.fillRect(-.47,.14,.06,.06);
-    rWheel(.0,-.21);rWheel(.0,.21);X.fillStyle="#56603a";X.fillRect(-.08,-.08,.2,.16);rBarrel(.0-rc*2,.62-rc*2,.065,true);
-    X.fillStyle="#4d5534";X.beginPath();X.moveTo(.12,-.2);X.lineTo(.17,-.17);X.lineTo(.17,.17);X.lineTo(.12,.2);X.closePath();X.fill();X.strokeStyle="rgba(0,0,0,.4)";X.lineWidth=.01;X.stroke();
-    rCrew(-.26,.28);rCrew(-.3,-.28);if(fl)rFlash(.66,.22);return;}
-  if(tier===4){rTracks(.38,.2);rHull(.36,.17,"#56603a","#434b2b");X.fillStyle="#4b5432";X.fillRect(-.3,-.15,.34,.3);X.strokeStyle="rgba(0,0,0,.5)";X.lineWidth=.014;X.strokeRect(-.3,-.15,.34,.3);
-    rBarrel(.04-rc*2,.7-rc*2,.07,true);X.fillStyle="#22251b";X.beginPath();X.ellipse(.36-rc*2,0,.03,.05,0,0,7);X.fill();X.fillStyle="#2d3320";X.beginPath();X.arc(-.2,-.07,.035,0,7);X.fill();if(fl)rFlash(.74,.24);return;}
-  /* 5차+: 다연장 로켓 — 바퀴 차체 + 운전석 + 로켓 발사관 묶음 */
-  rTracks(.4,.21);rHull(.39,.17,hi?"#4a4f47":"#56603a",hi?"#3b3f38":"#434b2b");X.fillStyle="#3a4128";X.fillRect(.2,-.15,.17,.3);X.fillStyle="#9fc4d6";X.fillRect(.31,-.12,.04,.24);
-  const R=tier>=8?4:3,C=4;X.save();X.translate(-.08,0);if(hi)rGlow(col,10);X.fillStyle="#2b2f22";X.fillRect(-.26,-.17,.4,.34);X.shadowBlur=0;X.strokeStyle=hi?col:"#15170f";X.lineWidth=.014;X.strokeRect(-.26,-.17,.4,.34);
-  for(let i=0;i<C;i++)for(let j=0;j<R;j++){const cx=-.21+i*.1,cy=-.12+j*(.24/(R-1));X.fillStyle="#0c0d09";X.beginPath();X.arc(cx,cy,.032,0,7);X.fill();if(!fl){X.fillStyle=hi?col:"#c8392b";X.beginPath();X.arc(cx,cy,.016,0,7);X.fill();}}X.restore();
-  if(fl){X.fillStyle="rgba(230,230,220,.6)";X.beginPath();X.arc(-.42,0,.2,0,7);X.fill();rFlash(.2,.18,hi?col:null);}return;}
+  /* v388 3차+: 탱크 대신 박격포 모양 유지 — 3차 포 2문, 4차 4문, 5차+ 10문 포대 */
+  const mt=(cx,cy,sc)=>{X.save();X.translate(cx,cy);X.scale(sc,sc);X.fillStyle="#3a3d30";X.beginPath();X.arc(-.04,0,.15,0,7);X.fill();X.strokeStyle="#22251b";X.lineWidth=.02;X.stroke();
+    X.strokeStyle="#22251b";X.lineWidth=.03;X.beginPath();X.moveTo(.15,0);X.lineTo(.07,-.16);X.moveTo(.15,0);X.lineTo(.07,.16);X.stroke();
+    rBarrel(-.08-rc,.3-rc,.09,false);X.fillStyle="#0a0b07";X.beginPath();X.arc(.3-rc,0,.045,0,7);X.fill();if(fl)rFlash(.34,.16,hi?col:null);X.restore();};
+  if(tier===3){rSand(.4,16);X.fillStyle="#5b3f22";X.fillRect(-.36,-.06,.12,.12);mt(.02,-.15,.82);mt(.02,.15,.82);rCrew(-.28,.28);rCrew(-.3,-.28);return;}
+  if(tier===4){X.fillStyle="#4a4f47";X.beginPath();X.arc(0,0,.4,0,7);X.fill();X.strokeStyle="#2b2e28";X.lineWidth=.03;X.stroke();X.fillStyle="#5b3f22";X.fillRect(-.06,-.06,.12,.12);
+    for(const[a,b]of[[-.16,-.16],[-.16,.16],[.16,-.16],[.16,.16]])mt(a,b,.62);return;}
+  {X.fillStyle=hi?"#3b3f38":"#4a4f47";X.beginPath();X.arc(0,0,.43,0,7);X.fill();if(hi)rGlow(col,10);X.strokeStyle=hi?col:"#2b2e28";X.lineWidth=.03;X.stroke();X.shadowBlur=0;
+    for(let i=0;i<7;i++){const an=i/7*Math.PI*2;mt(Math.cos(an)*.27,Math.sin(an)*.27,.42);}for(let i=0;i<3;i++){const an=i/3*Math.PI*2+.5;mt(Math.cos(an)*.09,Math.sin(an)*.09,.42);}return;}}
  if(t.type==="rail"){
   if(tier===2){/* 대전차 미사일: 삼각대 + 발사관 + 조준기 + 사수 */X.strokeStyle="#22251b";X.lineWidth=.022;X.beginPath();X.moveTo(0,0);X.lineTo(-.14,-.2);X.moveTo(0,0);X.lineTo(-.14,.2);X.moveTo(0,0);X.lineTo(.12,0);X.stroke();
     X.fillStyle="#6b7448";X.fillRect(-.2-rc,-.06,.6,.12);X.fillStyle="rgba(255,255,255,.15)";X.fillRect(-.2-rc,-.06,.6,.035);X.fillStyle="#3a4128";X.fillRect(.36-rc,-.07,.05,.14);X.fillRect(-.22-rc,-.07,.04,.14);
@@ -2077,7 +2077,7 @@ function drawAlien(e,T){const x=e.x,y=e.y,R=e.size,k=e.alien;
     X.fillStyle=`rgba(255,80,200,${.5+pul*.5})`;X.shadowColor="#ff50c8";X.shadowBlur=18*DPR;X.beginPath();X.arc(R*.25,0,R*.22,0,7);X.fill();X.shadowBlur=0;
     for(const sd of[-1,1]){X.fillStyle=`rgba(120,255,160,${.5+pul*.5})`;X.beginPath();X.arc(-R*.95,sd*R*.4,R*.12,0,7);X.fill();}}
   X.restore();
-  const w=1.6,h=.1,yy=y+R+.12;X.fillStyle="rgba(0,0,0,.6)";X.fillRect(x-w/2,yy,w,h);X.fillStyle="#c86aff";X.fillRect(x-w/2,yy,w*Math.max(0,e.hp/e.max),h);
+  const w=1.6,h=.1,yy=y+R+.12;X.fillStyle="rgba(0,0,0,.6)";X.fillRect(x-w/2,yy,w,h);X.fillStyle="#c86aff";X.fillRect(x-w/2,yy,w*Math.max(0,e.hp/e.max),h);e._bar={x,yy,w,h,col:"#c86aff",ty:y+R+.48,fs:.28,tc:"#e6d4ff",hpb:true};
   X.font=`700 .28px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.lineWidth=.05;X.strokeStyle="rgba(0,0,0,.85)";X.strokeText(e.title,x,y+R+.48);X.fillStyle="#e6d4ff";X.fillText(e.title,x,y+R+.48);X.textAlign="left";}
 
 /* 나라별 특색 유닛(외형만 다름 — 능력치는 같은 분대와 동일) */
@@ -2140,7 +2140,7 @@ function drawSoldier(e,T,lite,noIns){const CC=e.uni||COUNTRY;
   X.restore();if(e.mc&&!lite){X.strokeStyle=`rgba(200,90,255,${.35+.25*Math.sin(T*5+e.id)})`;X.lineWidth=.04;X.beginPath();X.arc(x,y,r*.9,0,7);X.stroke();}if(lite)return;
   const u=e.boss?.28:.2;if(!noIns)insignia(e.r,x,y-r-.1-u*1.9,u);
   if(e.hp<e.max){const w=e.boss?1.1:.46,h=e.boss?.09:.05,yy=y+r*.75;X.fillStyle="rgba(0,0,0,.6)";X.fillRect(x-w/2,yy,w,h);X.fillStyle=e.boss?"#d9573c":"#93c25c";X.fillRect(x-w/2,yy,w*Math.max(0,e.hp/e.max),h);}
-  if(e.boss){X.font=`700 .26px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.lineWidth=.05;X.strokeStyle="rgba(0,0,0,.8)";X.strokeText(e.title,x,y+r+.33);X.fillStyle="#ffe2a8";X.fillText(e.title,x,y+r+.33);X.textAlign="left";}}
+  if(e.boss){X.font=`700 .26px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.lineWidth=.05;X.strokeStyle="rgba(0,0,0,.8)";X.strokeText(e.title,x,y+r+.33);X.fillStyle="#ffe2a8";X.fillText(e.title,x,y+r+.33);X.textAlign="left";e._bar={x,yy:y+r*.75,w:1.1,h:.09,col:"#d9573c",ty:y+r+.33,fs:.26,tc:"#ffe2a8",hpb:e.hp<e.max};}}
 
 /* ═════════ 썸네일 ═════════ */
 const THUMB={};
@@ -2199,7 +2199,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v387 · 11/03 09:43";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v388 · 11/03 13:30";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2896,5 +2896,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030942 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031316 */</script>
 </body></html>
