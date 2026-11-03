@@ -1097,6 +1097,10 @@ function contBeam(t,s,x,y,R2,dt){const dps=s.dmg*s.rate;t.cd=0;
     if(orb&&s.tier>=2&&first&&!e.dead){const o=orbNext(e);if(o){hit(o,dps*dt*.5,t,true);B.push({x1:e.x,y1:e.y,x2:o.x,y2:o.y,thin:1});}} /* 2차 전이: 가장 가까운 다른 분대에 50% */
     if(fx.length<420&&Math.random()<.25)fx.push({k:"pt",x:e.x,y:e.y,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*3,life:.25,m:.25,col:"#e9fdff"});}
   t.beams=B;}
+/* v393 위성레이저 바닥 표시 전용 겹침 레이어: 여러 개 겹쳐도 진해지지 않게 한 장에 모아서 한 번만 반투명으로 합침 */
+let LGc=null,LGx=null,LGused=false;function lgBegin(){const c=X.canvas;if(!LGc){LGc=document.createElement("canvas");LGx=LGc.getContext("2d");}if(LGc.width!==c.width||LGc.height!==c.height){LGc.width=c.width;LGc.height=c.height;}LGx.setTransform(1,0,0,1,0,0);LGx.clearRect(0,0,LGc.width,LGc.height);LGx.setTransform(X.getTransform());LGused=false;}
+function lgEll(x,y,rx,ry,col){if(rx<=0||ry<=0)return;LGused=true;LGx.fillStyle=col;LGx.beginPath();LGx.ellipse(x,y,rx,ry,0,0,7);LGx.fill();}
+function lgEnd(al){if(!LGused)return;X.save();X.setTransform(1,0,0,1,0,0);X.globalCompositeOperation="source-over";X.globalAlpha=al;X.drawImage(LGc,0,0);X.restore();}
 function drawBeams(T){let any=false;for(const t of S.towers)if(t.beams&&t.beams.length){any=true;break;}if(!any)return;
   X.save();X.globalCompositeOperation="lighter";X.lineCap="round";
   for(const t of S.towers){if(!t.beams||!t.beams.length)continue;const tr=tierOf(t.l),col=TCOL[tr]||"#ff5a6e",fl=.85+.15*Math.sin(T*47+t.id)+.08*Math.sin(T*131);
@@ -1108,7 +1112,7 @@ function drawBeams(T){let any=false;for(const t of S.towers)if(t.beams&&t.beams.
       X.globalAlpha=.22;X.fillStyle=g;X.fillRect(b.x2-w*2,-1,w*4,b.y2+1);X.globalAlpha=.6;X.fillStyle=col;X.fillRect(b.x2-w*.45,-1,w*.9,b.y2+1);
       X.globalAlpha=1;X.fillStyle="#fffdf5";X.fillRect(b.x2-w*.16,-1,w*.32,b.y2+1);
       for(let k=0;k<3;k++){const yy=((T*9+k*.33+t.id*.1)%1)*b.y2;X.globalAlpha=.5;X.fillStyle="#fff";X.fillRect(b.x2-w*.6,yy,w*1.2,.06);}
-      const rg=X.createRadialGradient(b.x2,b.y2,0,b.x2,b.y2,b.R);rg.addColorStop(0,"rgba(255,255,255,.85)");rg.addColorStop(.3,col);rg.addColorStop(1,"rgba(0,0,0,0)");X.globalAlpha=.25/*v392*/;X.fillStyle=rg;X.beginPath();X.arc(b.x2,b.y2,b.R,0,7);X.fill();
+      const rg=X.createRadialGradient(b.x2,b.y2,0,b.x2,b.y2,b.R);rg.addColorStop(0,"rgba(255,255,255,.85)");rg.addColorStop(.3,col);rg.addColorStop(1,"rgba(0,0,0,0)");lgEll(b.x2,b.y2,b.R*.75,b.R*.75,col)/*v393*/;
       X.globalAlpha=.7;X.strokeStyle=col;X.lineWidth=.04;for(let k=0;k<2;k++){const ph=(T*2+k*.5)%1;X.beginPath();X.arc(b.x2,b.y2,b.R*(.4+ph*1.1),0,7);X.globalAlpha=.7*(1-ph);X.stroke();}}}
     else{for(const b of t.beams){const wob=Math.sin(T*60+b.x2*7)*.012;if(b.thin){X.globalAlpha=.35;X.strokeStyle=col;X.lineWidth=.12*fl;X.beginPath();X.moveTo(b.x1,b.y1);X.lineTo(b.x2,b.y2);X.stroke();X.globalAlpha=.95;X.strokeStyle="#e9fdff";X.lineWidth=.03;X.beginPath();X.moveTo(b.x1,b.y1);X.lineTo(b.x2+wob,b.y2);X.stroke();continue;}
         X.globalAlpha=.22;X.strokeStyle=col;X.lineWidth=.26*fl;X.beginPath();X.moveTo(b.x1,b.y1);X.lineTo(b.x2+wob,b.y2);X.stroke();
@@ -1657,14 +1661,15 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
   for(const t of S.towers)if(t.type==="flame"&&st(t).tier>=3){fireArms(t,t.x+.5,t.y+.5,T);fireOrbs(t,t.x+.5,t.y+.5,T);}
   if(sel){X.strokeStyle="#ffe08a";X.lineWidth=.05;X.strokeRect(sel.x+.04,sel.y+.04,.92,.92);}
   for(const c of scorch){const a=Math.min(1,c.life/2);X.globalAlpha=a*.35;X.fillStyle="#1d1a14";X.beginPath();X.ellipse(c.x,c.y,c.R,c.R*.8,c.rot,0,7);X.fill();if(c.glow){X.globalAlpha=Math.max(0,c.life-2.5)/1.5*.7;X.fillStyle="#ff6a3a";X.beginPath();X.ellipse(c.x,c.y,c.R*.5,c.R*.4,c.rot,0,7);X.fill();X.globalAlpha=a*.35;}X.globalAlpha=a*.35;X.fillStyle="#3a2c1a";for(let i=0;i<5;i++){const q=c.rot+i*1.26;X.beginPath();X.ellipse(c.x+Math.cos(q)*c.R*.9,c.y+Math.sin(q)*c.R*.9,c.R*.35,c.R*.12,q,0,7);X.fill();}}X.globalAlpha=1;
+  lgEnd(.28);/* v393 바닥 표시는 적보다 아래에(직전 프레임에 모은 것) */
   for(const e of enemies)if(e.x!==undefined&&!e.air&&!e.fly)drawEnemy(e,T);
   for(const e of enemies)if(e.x!==undefined&&e.air)drawDrone(e,T);
   for(const e of enemies)if(e.x!==undefined&&e.fly)drawVeh(e,T);
-  drawDebuffs(T);drawBeams(T);
+  drawDebuffs(T);lgBegin();drawBeams(T);
   drawTowerDrones(T);
 
   for(const P of pillars){const a=Math.min(1,P.T/.4,(P.T0-P.T)/.15+.3),w=P.R*.42*(.92+.08*Math.sin(P.T*40+P.x));const g2=X.createLinearGradient(P.x-w,0,P.x+w,0);g2.addColorStop(0,"rgba(255,90,110,0)");g2.addColorStop(.5,P.col);g2.addColorStop(1,"rgba(255,90,110,0)");
-    X.globalAlpha=.75*a;X.fillStyle=g2;X.fillRect(P.x-w,P.y-14,w*2,14);X.globalAlpha=.9*a;X.fillStyle="#fff";X.fillRect(P.x-w*.15,P.y-14,w*.3,14);X.globalAlpha=.2*a/*v392 바닥 타원 더 투명하게*/;X.fillStyle=P.col;X.beginPath();X.ellipse(P.x,P.y,P.R*.9,P.R*.45,0,0,7);X.fill();X.globalAlpha=1;}
+    X.globalAlpha=.75*a;X.fillStyle=g2;X.fillRect(P.x-w,P.y-14,w*2,14);X.globalAlpha=.9*a;X.fillStyle="#fff";X.fillRect(P.x-w*.15,P.y-14,w*.3,14);lgEll(P.x,P.y,P.R*.9*Math.min(1,a*1.5),P.R*.45*Math.min(1,a*1.5),P.col)/*v393*/;X.globalAlpha=1;}
   for(const sh of shells){if(sh.t<0)continue;const k=sh.t/sh.T,gx=sh.x0+(sh.tx-sh.x0)*k,gy=sh.y0+(sh.ty-sh.y0)*k;
     if(sh.kd==="sat"){const a=Math.min(1,k/.9),R=sh.sp*(1.6-a*.9);X.strokeStyle="rgba(255,70,90,"+(.5+.5*a)+")";X.lineWidth=.035;X.beginPath();X.arc(sh.tx,sh.ty,R,0,7);X.stroke();
       X.beginPath();for(const q of[0,1,2,3]){const an=q*Math.PI/2+k*3;X.moveTo(sh.tx+Math.cos(an)*R*.6,sh.ty+Math.sin(an)*R*.6);X.lineTo(sh.tx+Math.cos(an)*R*1.25,sh.ty+Math.sin(an)*R*1.25);}X.stroke();
@@ -1721,10 +1726,10 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
       for(let i=1;i<f.pts.length;i++){const[x,y]=f.pts[i];const g2=X.createRadialGradient(x,y,0,x,y,.55*W);g2.addColorStop(0,"rgba(255,255,255,"+(.9*a)+")");g2.addColorStop(.3,f.col);g2.addColorStop(1,f.red?"rgba(255,60,40,0)":"rgba(120,200,255,0)");X.globalAlpha=a;X.fillStyle=g2;X.beginPath();X.arc(x,y,.55*W,0,7);X.fill();}
       const[cx,cy]=f.pts[0];X.globalAlpha=a;X.fillStyle="#ffffff";X.shadowColor=f.col;X.shadowBlur=24*DPR;X.beginPath();X.arc(cx,cy,.16*W,0,7);X.fill();X.shadowBlur=0;}
     else if(f.k==="skybeam"){const w=f.R*(.35+.65*a);const g2=X.createLinearGradient(f.x-w,0,f.x+w,0);g2.addColorStop(0,"rgba(255,90,110,0)");g2.addColorStop(.5,f.col);g2.addColorStop(1,"rgba(255,90,110,0)");
-      X.globalAlpha=a;X.fillStyle=g2;X.fillRect(f.x-w,f.y-14,w*2,14);X.fillStyle="#fff";X.fillRect(f.x-w*.18,f.y-14,w*.36,14);X.globalAlpha=a*.35/*v392 바닥 타원 투명하게*/;X.beginPath();X.ellipse(f.x,f.y,w*1.1,w*.55,0,0,7);X.fillStyle=f.col;X.fill();X.fillStyle="#fff";X.beginPath();X.ellipse(f.x,f.y,w*.5,w*.25,0,0,7);X.fill();X.globalAlpha=a;}
+      X.globalAlpha=a;X.fillStyle=g2;X.fillRect(f.x-w,f.y-14,w*2,14);X.fillStyle="#fff";X.fillRect(f.x-w*.18,f.y-14,w*.36,14);lgEll(f.x,f.y,w*1.1,w*.55,f.col)/*v393*/;}
     else if(f.k==="pillar"){const w=f.w*(a>.8?(1-a)*5:a);const gr=X.createLinearGradient(f.x-w,0,f.x+w,0);gr.addColorStop(0,"rgba(255,255,255,0)");gr.addColorStop(.5,f.col);gr.addColorStop(1,"rgba(255,255,255,0)");
       X.globalAlpha=Math.min(1,a*1.4);X.fillStyle=gr;X.fillRect(f.x-w,f.y-20,w*2,20.3);X.fillStyle="#ffffff";X.globalAlpha=a;X.fillRect(f.x-w*.18,f.y-20,w*.36,20.3);
-      X.beginPath();X.ellipse(f.x,f.y,w*1.6,w*.6,0,0,7);X.fillStyle=f.col;X.globalAlpha=a*.28/*v392*/;X.fill();}
+      lgEll(f.x,f.y,w*1.6,w*.6,f.col)/*v393*/;}
     else if(f.k==="rays"){X.save();X.translate(f.x,f.y);X.rotate((1-a)*2.5);X.globalAlpha=a*.7;for(let i=0;i<f.n;i++){X.rotate(Math.PI*2/f.n);const g3=X.createLinearGradient(0,0,f.R,0);g3.addColorStop(0,"#ffffff");g3.addColorStop(.4,f.col);g3.addColorStop(1,"rgba(255,255,255,0)");X.fillStyle=g3;X.beginPath();X.moveTo(0,0);X.lineTo(f.R*(1.2-a*.4),-.12);X.lineTo(f.R*(1.2-a*.4),.12);X.closePath();X.fill();}X.restore();}
     else if(f.k==="tflash"){X.setTransform(1,0,0,1,0,0);X.globalAlpha=a*a*.35;X.fillStyle=f.col;X.fillRect(0,0,C.width,C.height);X.setTransform(CS*DPR,0,0,CS*DPR,0,0);}
     else if(f.k==="flash"){X.setTransform(1,0,0,1,0,0);X.globalAlpha=a*a*.85;X.fillStyle="#fffbe8";X.fillRect(0,0,C.width,C.height);X.setTransform(CS*DPR,0,0,CS*DPR,0,0);}
@@ -2199,7 +2204,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v392 · 11/03 13:52";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v393 · 11/03 13:56";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2896,5 +2901,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031348 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611031352 */</script>
 </body></html>
