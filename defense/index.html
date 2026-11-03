@@ -680,7 +680,7 @@ function startWave(){if(phase!=="idle")return;
   if(s===AIR_FROM&&!S.airSeen){S.airSeen=true;setTimeout(()=>banner("공중 드론 출현 · 지상 전용 무기는 못 맞힘"),1800);}
   const mc=boss&&cur()<=5?MAINCFG[s]:null;let bArr=[];
   if(boss){const top=hpOf(s,TOP[s]);const at=mc?Math.floor(n*mc[0]):Math.floor(n*.7);const B=mkBoss(s,boss,top);bArr.push(B);
-    queue.splice(at,0,B);if(usF){const P=mkBoss(s,PRES,top);P.pres=true;P.title="대통령";P.kind=2;P.rew=Math.round(B.rew*1.5);bArr.pres=P;queue.splice(Math.floor(n*.5),0,P);endless={s,m,base,bf,vp,hm};}
+    queue.splice(at,0,B);if(usF){const P=mkBoss(s,PRES,top);P.pres=true;P.title="대통령";P.kind=2;P.rew=Math.round(B.rew*1.5);bArr.pres=P;queue.splice(Math.floor(n*.62),0,P)/*v387 대통령 등장 50%→62% 지점(조금 늦게)*/;endless={s,m,base,bf,vp,hm};}
     else if(ESCORT[s]&&cur()<=2&&s===100){/* 1·2스테이지: 합참의장(북한 총참모장)이 먼저, 국방부장관(북한 최고사령관)은 조금 뒤 */const E=mkBoss(s,ESCORT[s],top);queue.splice(queue.indexOf(B),1);queue.splice(0,0,E);queue.splice(Math.floor(n*.08),0,B);bArr.length=0;bArr.push(E,B);bArr.s1=true;}
     else if(ESCORT[s]){const E=mkBoss(s,ESCORT[s],top);bArr.push(E);queue.splice(mc?at+1:Math.max(0,at-6),0,E);}}
   waveTotal=queue.length;const gap0=cur()>=2?Math.max(.2,Math.min(.75,300/waveTotal)):Math.max(.1,Math.min(.26,120/waveTotal));spawnGap=gap0*(cur()<2?1:s>=80?.72:s>=60?.8:s>=40?.88:1); /* 2스테이지부터: 40~59 ×0.88, 60~79 ×0.8, 80~100 ×0.72 (1스테이지는 그대로) */ /* 80~100단계는 출현 간격 28% 좁힘 */
@@ -2199,7 +2199,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v386 · 11/03 09:40";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v387 · 11/03 09:43";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2896,5 +2896,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030939 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611030942 */</script>
 </body></html>
