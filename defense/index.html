@@ -147,7 +147,7 @@ html.rot #title .tc{inset:0;gap:6px;padding:8px}html.rot #title .tk{font-size:10
 #cut .cutbox{width:min(960px,100%,calc((100dvh - 84px)*1.6));display:flex;flex-direction:column;gap:8px}html.rot #cut .cutbox{width:min(960px,100%,calc((var(--sw) - 84px)*1.6))}@media (max-height:560px){#cut{padding:6px 12px}}
 #cutCv{width:100%;height:auto;aspect-ratio:16/10;max-width:100%;border-radius:4px;cursor:pointer;background:#f3ead2}
 #cut .cutbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-#cut .cutbox{position:relative}#cut.endq .cutbar{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);width:max-content;max-width:94%;justify-content:center;background:rgba(10,11,6,.82);border:1px solid #6b5a2a;border-radius:10px;padding:10px 14px}#cut.endq .dots{display:none}/*v394 엔딩 질문 화면 위*/
+#cut .cutbox{position:relative}#cut.endq .cutbar{position:absolute;left:50%;bottom:6%;transform:translateX(-50%);width:max-content;max-width:94%;justify-content:center;background:rgba(10,11,6,.82);border:1px solid #6b5a2a;border-radius:10px;padding:10px 14px}#cut.endq .dots{display:none}#cut.teskip .cutbar{position:absolute;top:10px;right:10px;left:auto;bottom:auto;width:auto;background:none;border:0;padding:0}#cut.teskip .dots{display:none}#cut.teskip .btn{opacity:.55;padding:4px 10px;font-size:12px}/*v483 진짜 엔딩 건너뛰기는 오른쪽 위 작게*//*v394 엔딩 질문 화면 위*/
 #cut .dots{display:flex;gap:6px}
 #cut .dots i{width:28px;height:5px;border-radius:2px;background:#3a3f2c}
 #cut .dots i.on{background:var(--accent)}
@@ -316,7 +316,7 @@ function voidIntro(done){try{document.fonts&&(document.fonts.load('400 120px "Yu
   const fin=()=>{if(!VI)return;clearTimeout(tm);VI=null;o.style.transition="opacity .8s";o.classList.remove("on");setTimeout(()=>o.remove(),900);done();};
   const next=()=>{i++;if(i>=VOID_LINES.length){tm=setTimeout(fin,600);return;}const last=i===VOID_LINES.length-1,big=VOID_LINES[i]==="無";if(big&&!bgOff)bgOff={};P.textContent=VOID_LINES[i];P.classList.toggle("mu",big);P.classList.add("on");if(last){tm=setTimeout(fin,2600);return;}tm=setTimeout(()=>{P.classList.remove("on");tm=setTimeout(next,1000);},big?2800:2300);};/*v472 마지막 줄이 떠 있는 채로 바로 보스 등장*/
   o.onclick=fin;requestAnimationFrame(()=>{o.classList.add("on");tm=setTimeout(next,1500);});}
-let voidSpT=0,voidCin=0;const VOID_USP=()=>PLEN/360;/*v469·v471 잔영 이동속도 통일: 길 전체 6분*/const VOID_SP=1,VOID_N=1,/*v468 1초에 1기*/VOID_MH=1e47/*v477 잔영 체력 1000재*/,VOID_WALK=15,VOID_SPEW=1500,/*v468 잔영 분출 구간 25분*/VOID_HOLES=10,VOID_HOLE_T=30,VOID_P3_HOLE=8;
+let voidSpT=0,voidCin=0,voidDeathT=0;const VOID_USP=()=>PLEN/360;/*v469·v471 잔영 이동속도 통일: 길 전체 6분*/const VOID_SP=1,VOID_N=1,/*v468 1초에 1기*/VOID_MH=1e47/*v477 잔영 체력 1000재*/,VOID_WALK=15,VOID_SPEW=1500,/*v468 잔영 분출 구간 25분*/VOID_HOLES=10,VOID_HOLE_T=30,VOID_P3_HOLE=8;
 /* v447 공허 패턴: 처음 15초 혼자 걸어 나옴 → 첫 분출 연출 → 10분간 4초마다 잔영(1000재) → 30초마다 블랙홀(5000재, 공허의 8배 속도) 10개 → 다시 잔영… 반복 */
 function voidTick(v,dt){v.phT=(v.phT||0)+dt;if(v.ph)v.tt=(v.tt||0)+dt;
   if(v.ph===3){voidSpT-=dt;if(voidSpT<=0){voidSpT=VOID_P3_HOLE;enemies.push(mkBlackHole(v));fx.push({k:"ring",x:v.x,y:v.y,life:.8,m:.8,col:"#ff6a8a",R:1.8});}return;} /*v479 3페이즈: 잔영 없이 블랙홀만 자주*/
@@ -848,7 +848,7 @@ const alive=e=>e.hp<=0?0:Math.ceil(e.hp/e.hp1-1e-9);
 function hit(e,dmg,t,aoe){if(e.dead)return;const b=alive(e);e.hp-=dmg*(e.gasT>0?e.gasV||1:1); // 분대 하나 = 표적 하나(사용자 지정): 범위 공격도 분대 체력 합에서 한 번만 깎음
 e.hitT=.1;const a=alive(e),kd=b-a;
   if(kd>0&&!e.boss){earn(e.rew*kd*totemMul());S.kills+=kd;if(t)t.kills=(t.kills||0)+kd;}
-  if(e.hp<=0){if(e.alien==="void"&&(e.vst||1)<2){voidPhase(e);return;}e.dead=true;if(e.alien==="void"){for(const o of enemies)if(o.vm&&!o.dead){o.dead=true;o.hp=0;if(fx.length<440)fx.push({k:"ring",x:o.x,y:o.y,life:.6,m:.6,col:"#b9a0ff",R:.6});}}/*v446 공허가 쓰러지면 잔영도 함께 소멸*/if(e.pres){endless=null;queue=queue.filter(q=>q.boss);}if(e.boss){earn(e.rew*totemMul());S.kills++;if(t)t.kills=(t.kills||0)+1;}
+  if(e.hp<=0){if(e.alien==="void"&&(e.vst||1)<2){voidPhase(e);return;}e.dead=true;if(e.alien==="void"){voidDeathT=4.6;shakeT=Math.max(shakeT,3);fx.push({k:"vdeath",x:e.x,y:e.y,life:4.6,m:4.6});/*v483 공허 소멸 연출(약 4.6초 뒤 엔딩)*/for(const o of enemies)if(o.vm&&!o.dead){o.dead=true;o.hp=0;if(fx.length<440)fx.push({k:"ring",x:o.x,y:o.y,life:.6,m:.6,col:"#b9a0ff",R:.6});}}/*v446 공허가 쓰러지면 잔영도 함께 소멸*/if(e.pres){endless=null;queue=queue.filter(q=>q.boss);}if(e.boss){earn(e.rew*totemMul());S.kills++;if(t)t.kills=(t.kills||0)+1;}
   if(fx.length<450)for(let i=0;i<(e.boss?28:3);i++)fx.push({k:"pt",x:e.x,y:e.y,vx:(Math.random()-.5)*(e.boss?4:2),vy:(Math.random()-.5)*(e.boss?4:2),life:.5,m:.5,col:e.boss?"#ffcf5a":"#7d6a52"});
   if(e.boss)fx.push({k:"ring",x:e.x,y:e.y,life:.9,m:.9,col:"#ffcf5a",R:2.4},{k:"txt",x:e.x,y:e.y-.6,txt:`${e.title} 격파${e.rew?" +"+fmt(e.rew):""}`,col:"#ffcf5a",life:1.8,m:1.8,sz:.4});}}
 /* 최적화: 적 위치 격자 — 무기가 사거리 주변 칸의 적만 훑음 */
@@ -983,7 +983,8 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
   if(shakeT>0)shakeT-=dt;
   fx=fx.filter(f=>f.life>0);
   if(S.lives<=0)retreat();
-  else if(!frz&&phase==="wave"&&!queue.length&&!enemies.length)waveClear();
+  else if(!frz&&phase==="wave"&&!queue.length&&!enemies.length&&!(voidDeathT>0))waveClear();
+  if(voidDeathT>0)voidDeathT-=dt/Math.max(1,S.speed);
 }
 
 /* ═════════ 그리기 ═════════ */
@@ -1638,6 +1639,13 @@ const BTRK={
    if(b8>=4){const M=[[[72,2],[73,2]],[[76,2],[70,2]],[[72,1],[78,1],[73,2]],[[67,4]]][ci];bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.9,.05));}
    if(bar%8===0)bCrash(t,.1);}}
 };
+/* v483 진짜 엔딩 곡: 느린 C장조 I–V–vi–IV, 현악 패드 + 맑은 아르페지오 + 종소리 선율, 마지막에 팀파니로 벅차게 */
+Object.assign(BTRK,{end:{bpm:64,bar(t,bar,B){const ci=bar%4,b16=bar%16,CH=[[48,55,60,64],[43,50,55,59],[45,52,57,60],[41,48,53,57]][ci],sw=Math.min(1,b16/8);
+   for(const m of CH)bPad(m+12,t,B*4,.012+.006*sw);bSub(CH[0]-12,t,B*4,.09);
+   for(let i=0;i<8;i++)bPluck(CH[[0,1,2,3,2,1,2,3][i]]+24,t+i*B/2,.03,1.8,"triangle",2200,.55);
+   if(b16>=4){const M=[[[76,2],[74,1],[72,1]],[[74,3],[71,1]],[[72,2],[76,2]],[[77,3],[76,1]]][ci];bMel(M,t,B,(m,s2,d)=>{bPluck(m+12,s2,.045+.02*sw,2.6,"sine",4000,.85);bPluck(m,s2,.025,2,"triangle",3000,.6);});}
+   if(b16>=8)for(const m of CH)bStr(m+12,t,B*3.8,.008+.008*sw);
+   if(b16===15)for(let i=0;i<8;i++)bTimp(t+i*B/2,.06+i*.02,36);if(b16===0)bCrash(t,.05);}}});
 /* v465 공허전(800단계) 전용 3곡 — 공명(동굴·공허) → 각성(심장박동·고조) → 결전(웅장·긴박). D 프리지안(레–미♭) */
 Object.assign(BTRK,{
  v1:{bpm:50,bar(t,bar,B){const ci=bar%4,R=[38,39,36,37][ci];
@@ -1748,7 +1756,7 @@ Object.assign(BTRK,{
    if(sec===2)bMel(CM[k][ci],t,B,(m,s,d)=>bStr(m,s,d*.95,.03)); /* 9~12마디: 높은 현악 대선율 */
    if(sec===3){for(let i=0;i<8;i++)bHat(t+i*B/2+B/4,.03);if(b16===12)bCrash(t,.08);} /* 13~16마디: 리듬 채움 */
    if(b16===15)for(let i=0;i<8;i++)bTom(t+B*2+i*B/4,.12+i*.03,200-i*15,.18);}}}
-function bgmTrack(){if(typeof cutOn!=="undefined"&&cutOn)return"story";if(typeof titleOn!=="undefined"&&titleOn)return"march";if(typeof S==="undefined"||!S||!COUNTRY)return"march";const s=S.wave;
+function bgmTrack(){if(typeof TE!=="undefined"&&TE)return"end";if(typeof VI!=="undefined"&&VI)return"v1";if(typeof cutOn!=="undefined"&&cutOn)return"story";if(typeof titleOn!=="undefined"&&titleOn)return"march";if(typeof S==="undefined"||!S||!COUNTRY)return"march";const s=S.wave;
   if(COUNTRY.inf&&s>=800){if(VI)return"v1";const v=typeof enemies!=="undefined"&&enemies.find(e=>e.alien==="void"&&!e.dead);if(!v)return"v1";return (v.vst||1)<2?"v1":v.hp>v.max*.3?"v2":"v3";} /*v481 1페이즈 공명 · 2페이즈 각성 · 2페이즈 체력 30% 이하 결전*/
   if(COUNTRY.inf)return s%10===0?"boss":"s6";if(COUNTRY.alien)return s===10?"f6":s>=6?"boss":"s6";
   if(s===100)return"f"+Math.min(5,S.country);const b=BOSS[s];return b&&b[2]===1?"boss":"s"+Math.min(5,S.country);}
@@ -1920,6 +1928,13 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
     else if(f.k==="rays"){X.save();X.translate(f.x,f.y);X.rotate((1-a)*2.5);X.globalAlpha=a*.7;for(let i=0;i<f.n;i++){X.rotate(Math.PI*2/f.n);const g3=X.createLinearGradient(0,0,f.R,0);g3.addColorStop(0,"#ffffff");g3.addColorStop(.4,f.col);g3.addColorStop(1,"rgba(255,255,255,0)");X.fillStyle=g3;X.beginPath();X.moveTo(0,0);X.lineTo(f.R*(1.2-a*.4),-.12);X.lineTo(f.R*(1.2-a*.4),.12);X.closePath();X.fill();}X.restore();}
     else if(f.k==="tflash"){X.setTransform(1,0,0,1,0,0);X.globalAlpha=a*a*.35;X.fillStyle=f.col;X.fillRect(0,0,C.width,C.height);X.setTransform(CS*DPR,0,0,CS*DPR,0,0);}
     else if(f.k==="flash"){X.setTransform(1,0,0,1,0,0);X.globalAlpha=a*a*.85;X.fillStyle="#fffbe8";X.fillRect(0,0,C.width,C.height);X.setTransform(CS*DPR,0,0,CS*DPR,0,0);}
+    else if(f.k==="vdeath"){const t=f.m-f.life,s1=Math.min(1,t/1.6);X.save(); /* 1) 빛을 토하며 한 점으로 수축 2) 하얀 폭발이 화면을 덮고 사라짐 */
+      if(t<1.8){const R=1.1*(1-s1)+.05;X.globalCompositeOperation="lighter";for(let i=0;i<40;i++){const an=i*2.39996+t*6,d=R*2.2+(1-s1)*1.5;X.strokeStyle=i%2?"rgba(255,90,130,.7)":"rgba(255,255,255,.7)";X.lineWidth=.03;X.beginPath();X.moveTo(f.x+Math.cos(an)*d,f.y+Math.sin(an)*d);X.lineTo(f.x+Math.cos(an)*R,f.y+Math.sin(an)*R);X.stroke();}
+        X.globalCompositeOperation="source-over";X.fillStyle="#000";X.beginPath();X.arc(f.x,f.y,R,0,7);X.fill();X.strokeStyle=`rgba(255,${200-120*s1|0},${220-80*s1|0},.95)`;X.lineWidth=.05;X.beginPath();X.arc(f.x,f.y,R,0,7);X.stroke();}
+      else{const k2=(t-1.8)/(f.m-1.8);X.globalCompositeOperation="lighter";const rr=.3+k2*14,g2=X.createRadialGradient(f.x,f.y,0,f.x,f.y,rr);g2.addColorStop(0,`rgba(255,255,255,${.95*(1-k2)})`);g2.addColorStop(.4,`rgba(255,220,240,${.6*(1-k2)})`);g2.addColorStop(1,"rgba(255,255,255,0)");X.fillStyle=g2;X.beginPath();X.arc(f.x,f.y,rr,0,7);X.fill();
+        for(let j=0;j<4;j++){X.strokeStyle=`rgba(255,255,255,${(1-k2)*.6})`;X.lineWidth=.08;X.beginPath();X.arc(f.x,f.y,rr*(.4+j*.2),0,7);X.stroke();}
+        X.setTransform(1,0,0,1,0,0);X.globalCompositeOperation="source-over";X.fillStyle=`rgba(255,255,255,${Math.max(0,.85-k2*1.2)})`;X.fillRect(0,0,C.width,C.height);X.setTransform(CS*DPR,0,0,CS*DPR,0,0);}
+      X.restore();X.globalAlpha=1;}
     else if(f.k==="beamv"){const k=1-a,px=f.x+(f.tx-f.x)*k,py=f.y+(f.ty-f.y)*k;X.save();X.globalCompositeOperation="lighter";X.globalAlpha=a;X.strokeStyle="#ff5a7a";X.lineWidth=.05;X.beginPath();X.moveTo(px,py);X.lineTo(f.tx,f.ty);X.stroke();X.fillStyle="#ffd0da";X.beginPath();X.arc(px,py,.09,0,7);X.fill();X.restore();X.globalAlpha=1;} /*v481 흡혈 빛줄기*/
     else if(f.k==="hdome"){ /* v422 열핵 폭발: 땅을 덮는 불덩이 돔, 열선, 플라스마 고리 */
       const k=1-a,B=f.big,ex=1-Math.pow(1-Math.min(1,k*2),2),lt=f.lite?.6:1;X.save();X.globalCompositeOperation="lighter";
@@ -2432,7 +2447,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v482 · 11/04 23:08";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v483 · 11/04 23:45";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2574,10 +2589,10 @@ let cutT=0,cutOn=false,cutLast=0,cutData=null;
 const CRED_T=20,CREDITS=["최후방어선","","","— 제작 —","벌꿀오소리","","","감사합니다"];
 /* v409 진짜 엔딩: 공허 소멸 → 태초의 빛 → 새 우주 → 지구의 새벽 → 최후방어선 */
 let TE=null;const TE_T=42;
-function startTrueEnd(){TE={t:0,last:performance.now(),fin:false};const c=$("cut");c.hidden=false;c.classList.add("endq");$("cutDots").innerHTML="";
+function startTrueEnd(replay){TE={t:0,last:performance.now(),fin:false,replay:!!replay};const c=$("cut");c.hidden=false;c.classList.remove("endq");c.classList.add("teskip");$("cutDots").innerHTML="";
   $("cutBtns").innerHTML=`<button class="btn" id="cutSkip">건너뛰기</button>`;$("cutSkip").onclick=()=>{if(TE)TE.t=Math.max(TE.t,34);};$("cutCv").onclick=null;if(BGM.on)try{bgmStart();}catch(e){}requestAnimationFrame(teLoop);}
 function teLoop(now){if(!TE)return;const dt=Math.min(.1,(now-TE.last)/1000);TE.last=now;TE.t+=dt;drawTE($("cutCv").getContext("2d"),1280,800,TE.t);
-  if(TE.t>=36&&!TE.fin){TE.fin=true;const close=()=>{TE=null;$("cut").hidden=true;$("cut").classList.remove("endq");try{save(true);}catch(e){}};
+  if(TE.t>=36&&!TE.fin){TE.fin=true;$("cut").classList.remove("teskip");$("cut").classList.add("endq");const close=()=>{TE=null;$("cut").hidden=true;$("cut").classList.remove("endq");try{save(true);}catch(e){}};if(TE.replay){storyQ=null;$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">메인 메뉴로</button>`;$("cutGo").onclick=()=>{close();showTitle();};requestAnimationFrame(teLoop);return;}
     $("cutBtns").innerHTML=`<button class="btn" id="cutStay">계속 머무르기</button><button class="btn pri" id="cutGo">메인 메뉴로</button>`;$("cutStay").onclick=close;$("cutGo").onclick=()=>{close();showTitle();};}
   requestAnimationFrame(teLoop);}
 function drawTE(g,W,H,t){const cl=(v)=>Math.max(0,Math.min(1,v)),sm=v=>{v=cl(v);return v*v*(3-2*v);},fade=(a,b,f=1)=>cl((t-a)/f)*cl((b-t)/f);
@@ -2832,6 +2847,7 @@ function storyPlay(i,atEnd){if(i<0)i=0;if(i>=STORY_SEQ.length){storyExit();retur
 function cutEnd(){const d=cutData;if(d.from&&d.from.alien&&!d.credits&&!storyQ){if(!S.endSeen)S.endSeen=true;metaSet(S.mode||"easy");try{save();}catch(e){}}
   if(storyQ&&!d.credits){storyNext();return;}if(d.from&&d.from.alien&&!d.credits){startCredits();return;}if(d.credits&&!storyQ&&S.country===6&&S.conqBy[6]){clearTimeout(cutTimer);const toMain=()=>{cutOn=false;$("cut").hidden=true;$("cut").classList.remove("endq");try{save(true);}catch(e){}showTitle();},toInf=()=>{cutOn=false;$("cut").hidden=true;$("cut").classList.remove("endq");goCountry(7);try{save(true);}catch(e){}};
     $("cut").classList.add("endq");$("cutBtns").innerHTML=`<span style="align-self:center;margin-right:8px;color:#f1e3b0">${modeTag(S.mode)} 클리어 · 무한 모드로 계속하시겠습니까?</span><button class="btn" id="cutMain">메인 메뉴로</button><button class="btn pri" id="cutGo">♾ 무한 모드로 계속</button>`;$("cutMain").onclick=toMain;$("cutGo").onclick=toInf;return;}
+  if(d.credits&&storyQ&&S.trueEnd){clearTimeout(cutTimer);cutOn=false;$("cut").hidden=true;voidIntro(()=>startTrueEnd(true));return;} /*v483 스토리 다시보기: 크레딧 뒤 공허 등장 연출 → 진짜 엔딩*/
   if(d.credits){const toMain=()=>{clearTimeout(cutTimer);storyQ=null;cutOn=false;$("cut").hidden=true;try{save();}catch(e){}showTitle();};$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">메인 메뉴로</button>`;$("cutGo").onclick=toMain;clearTimeout(cutTimer);cutTimer=setTimeout(toMain,2500);return;} /* "끝" 뒤 2.5초 후 메인 메뉴로 */if(d.replay){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">닫기</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;};return;}if(d.intro){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">방어 시작</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;S.intro=true;save();};return;}const goLbl=d.to?`계속하기 · ${d.c+1}스테이지로 진군`:"계속하기";
   $("cutBtns").innerHTML=d.to?`<button class="btn" id="cutStay">더 머물기</button><button class="btn pri" id="cutGo"></button>`:`<button class="btn pri" id="cutGo"></button>`;
   const close=()=>{clearInterval(cutTimer);cutTimer=null;cutOn=false;$("cut").hidden=true;};
@@ -3177,5 +3193,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611042305 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611042327 */</script>
 </body></html>
