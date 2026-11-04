@@ -2371,7 +2371,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v454 · 11/04 17:22";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v455 · 11/04 17:28";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3067,6 +3067,7 @@ function cutMood(g,W,H,c,i,T){if(c>=6&&i!==1)return;if(isAlEnd(cutData))return;i
 const LS="lastline-save-v2";let db=null,uid=null,lastRemote=0;
 function ser(){return JSON.stringify({...S,t:Date.now(),towers:S.towers.map(t=>({type:t.type,x:t.x,y:t.y,l:t.l,inv:t.inv,kills:t.kills||0,...(t.tg?{tg:t.tg}:{}),...(t.type==="nuke"?{cd:Math.max(0,t.cd||0)}:{})}))});}
 function apply(o){if(!o||o.v!==2)return false;gAcc=0;gClock=performance.now();const n=fresh();Object.assign(n,o);n.country=n.country||1;n.gpm=Math.min(n.gpm||0,n.earned||0); /* 다른 기록의 분당 수입이 섞여 들어온 경우 바로잡기 */n.bestBy=n.bestBy||{};n.waveBy=n.waveBy||{};n.conqBy=n.conqBy||(o.conquered?{1:true}:{});COUNTRY=COUNTRIES[n.country-1]||COUNTRIES[0];if(![1,2,4,8,16,64].includes(n.speed))n.speed=1;for(const t of (o.towers||[]))if(!TT[t.type])n.gold=(n.gold||0)+(t.inv||0);n.towers=(o.towers||[]).filter(t=>TT[t.type]&&canPlaceRaw(t.x,t.y)).map(t=>({...t,id:nextId++,cd:t.cd||0,ang:-Math.PI/2}));n.lives=MAXLIFE;if(n.speed>4&&n.speed!==20)n.speed=4;{const ml=n.conqBy[6]?150:n.conqBy[5]?100:50;for(const t of n.towers)if(t.l>ml)t.l=ml;} /*v431 불러올 때 레벨 상한: 최종장 클리어 150 (예전엔 100으로 잘림)*/n.mode=n.mode==="hard"?"hard":"easy";S=n;S.meta=metaGet();try{localStorage.setItem("lld_meta",JSON.stringify(S.meta));}catch(e){}
+  if(!S.gift455){S.gift455=true;S.gold+=1e49;setTimeout(()=>{try{banner("🎁 테스트 지급 · 10극");}catch(e){}},1500);} /*v455 임시 테스트 지급 10극(저장마다 1회) — 나중에 삭제*/
   enemies=[];queue=[];shells=[];pillars=[];phase="idle";autoT=2;sel=null;dirtyUI=true;return true;}
 const canPlaceRaw=(x,y)=>!PATH.has(x+","+y)&&!BLOCK.has(x+","+y);
 function setSave(mode){$("saveSt").innerHTML=`<span class="dot ${mode?"ok":""}"></span>${mode==="acct"?"계정에 자동 저장":mode==="local"?"이 브라우저에 자동 저장":"저장 안 됨"}`;}
@@ -3116,5 +3117,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041649 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041656 */</script>
 </body></html>
