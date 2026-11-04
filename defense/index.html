@@ -312,16 +312,16 @@ function voidIntro(done){const o=document.createElement("div");o.id="voidOv";o.i
   const fin=()=>{if(!VI)return;clearTimeout(tm);VI=null;o.style.transition="opacity .8s";o.classList.remove("on");setTimeout(()=>o.remove(),900);done();};
   const next=()=>{i++;if(i>=VOID_LINES.length){tm=setTimeout(fin,600);return;}const last=i===VOID_LINES.length-1;P.textContent=VOID_LINES[i];P.classList.toggle("big",last);P.classList.add("on");tm=setTimeout(()=>{P.classList.remove("on");tm=setTimeout(next,1000);},last?3200:2300);};
   o.onclick=fin;requestAnimationFrame(()=>{o.classList.add("on");tm=setTimeout(next,1500);});}
-let voidSpT=0,voidCin=0;const VOID_SP=1,VOID_N=3,VOID_MH=5e46/*v451 잔영 체력 500재*/,VOID_WALK=15,VOID_SPEW=600,VOID_HOLES=10,VOID_HOLE_T=30;
+let voidSpT=0,voidCin=0;const VOID_SP=1/3,VOID_N=1,/*v466 한 기씩 끊김 없이(초당 3기 유지)*/VOID_MH=5e46/*v451 잔영 체력 500재*/,VOID_WALK=15,VOID_SPEW=600,VOID_HOLES=10,VOID_HOLE_T=30;
 /* v447 공허 패턴: 처음 15초 혼자 걸어 나옴 → 첫 분출 연출 → 10분간 4초마다 잔영(1000재) → 30초마다 블랙홀(5000재, 공허의 8배 속도) 10개 → 다시 잔영… 반복 */
-function voidTick(v,dt){v.phT=(v.phT||0)+dt;
+function voidTick(v,dt){v.phT=(v.phT||0)+dt;if(v.ph)v.tt=(v.tt||0)+dt;
   if(!v.ph){if(v.phT>=VOID_WALK){v.ph=1;v.phT=0;voidSpT=0;voidBurst(v);}return;}
-  if(v.ph===1){voidSpT-=dt;if(voidSpT<=0){voidSpT=VOID_SP;for(let i=0;i<VOID_N;i++){const u=mkVoidSpawn(v);u.d=Math.max(0,v.d-Math.random()*.6);enemies.push(u);}}/*v449 1초마다 3기*/if(v.phT>=VOID_SPEW){v.ph=2;v.phT=0;v.holes=0;voidSpT=0;banner("공허가 블랙홀을 내보낸다");}return;}
+  if(v.ph===1){voidSpT-=dt;if(voidSpT<=0){voidSpT=VOID_SP;for(let i=0;i<VOID_N;i++)enemies.push(mkVoidSpawn(v));}/*v449 1초마다 3기*/if(v.phT>=VOID_SPEW){v.ph=2;v.phT=0;v.holes=0;voidSpT=0;banner("공허가 블랙홀을 내보낸다");}return;}
   if(v.ph===2){voidSpT-=dt;if(voidSpT<=0&&v.holes<VOID_HOLES){voidSpT=VOID_HOLE_T;v.holes++;enemies.push(mkBlackHole(v));fx.push({k:"ring",x:v.x,y:v.y,life:1,m:1,col:"#7a5cff",R:2.4});shakeT=Math.max(shakeT,.4);}
     if(v.holes>=VOID_HOLES&&voidSpT<=0){v.ph=1;v.phT=0;voidSpT=0;banner("공허가 다시 모든 것을 내뿜는다");}}}
 function mkBlackHole(v){const H=5e47;return{n0:1,hp1:H,max:H,hp:H,rew:1e47/*v449 블랙홀 1000재*/,lk:2,dmg:10,boss:false,d:v.d,id:nextId++,step:0,vm:1,res:.3,r:17,alien:"bhole",title:"블랙홀",spd:v.spd*8,size:.55};}
 function voidBurst(v){shakeT=Math.max(shakeT,1.6);fx.push({k:"tflash",life:1.4,m:1.4,col:"#1a0830"});for(const R of[2,4,7,11,16])fx.push({k:"ring",x:v.x,y:v.y,life:1+R*.08,m:1+R*.08,col:R%2?"#b9a0ff":"#ffffff",R});
-  for(let i=0;i<20;i++){const u=mkVoidSpawn(v);u.d=Math.max(0,v.d-Math.random()*1.2);enemies.push(u);}voidCin=4.2;
+  enemies.push(mkVoidSpawn(v));voidCin=4.2;
   const o=document.createElement("div");o.id="voidOv";o.className="soft";o.innerHTML="<p></p>";document.body.appendChild(o);const P=o.querySelector("p");P.textContent="공허가 모든 것을 내뿜기 시작했다.";
   requestAnimationFrame(()=>{o.classList.add("on");setTimeout(()=>P.classList.add("on"),300);});setTimeout(()=>P.classList.remove("on"),3000);setTimeout(()=>{o.classList.remove("on");setTimeout(()=>o.remove(),1300);},3300);}
 function mkVoidSpawn(v){const H=VOID_MH,base={n0:1,hp1:H,max:H,hp:H,rew:1e45/*v448 잔영 10재*/,lk:2,dmg:2,boss:false,d:v.d,id:nextId++,step:0,vm:1,res:.3};
@@ -1501,7 +1501,7 @@ function bgmRender(k){if(BGMR.buf[k])return Promise.resolve(BGMR.buf[k]);if(BGMR
       const r=oc.startRendering();if(r&&r.then)r.then(done,rej);else oc.oncomplete=e=>done(e.renderedBuffer);}));
     bgmChain=job.catch(()=>{});return job;});
   BGMR.pend[k]=pr;pr.then(()=>{delete BGMR.pend[k];},()=>{delete BGMR.pend[k];});return pr;}
-function bgmPrefetch(){if(!BGM.timer||typeof S==="undefined"||!S)return;const c=Math.min(6,S.country||1),L=["story",c===6?"s6":"s"+Math.min(5,c),"boss",c===6?"f6":"f"+Math.min(5,c),"march"];for(const k of L)bgmRender(k).catch(()=>{});}
+function bgmPrefetch(){if(!BGM.timer||typeof S==="undefined"||!S)return;const c=Math.min(6,S.country||1),L=["story",c===6?"s6":"s"+Math.min(5,c),"boss",c===6?"f6":"f"+Math.min(5,c),"march"].concat(COUNTRY&&COUNTRY.inf&&S.best>=790?["v1","v2","v3"]:[]);for(const k of L)bgmRender(k).catch(()=>{});}
 function bgmPlay(k){if(BGMR.want===k)return;BGMR.want=k;bgmRender(k).then(buf=>{if(BGMR.want!==k||!BGM.ctx||!BGM.timer)return;const c=BGM.ctx,now=c.currentTime,src=c.createBufferSource(),g=c.createGain();src.buffer=buf;src.loop=true;
     g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(1,now+1.2);src.connect(g);g.connect(BGM.master);src.start(now);
     if(BGMR.cur){const o=BGMR.cur;o.g.gain.cancelScheduledValues(now);o.g.gain.setValueAtTime(o.g.gain.value,now);o.g.gain.linearRampToValueAtTime(0,now+1.2);try{o.src.stop(now+1.3);}catch(e){}}
@@ -1605,6 +1605,30 @@ const BTRK={
    if(b8>=4){const M=[[[72,2],[73,2]],[[76,2],[70,2]],[[72,1],[78,1],[73,2]],[[67,4]]][ci];bMel(M,t,B,(m,s,d)=>bBrass(m,s,d*.9,.05));}
    if(bar%8===0)bCrash(t,.1);}}
 };
+/* v465 공허전(800단계) 전용 3곡 — 공명(동굴·공허) → 각성(심장박동·고조) → 결전(웅장·긴박). D 프리지안(레–미♭) */
+Object.assign(BTRK,{
+ v1:{bpm:50,bar(t,bar,B){const ci=bar%4,R=[38,39,36,37][ci];
+   bSub(R-12,t,B*4,.13);bPad(R+12,t,B*4,.014);bPad(R+13,t+B*2,B*2,.009);bPad(R+19,t,B*4,.008);
+   bNoiseHit(t+B*.5,.07,"bandpass",180+ci*30,30,3.2,.9);bNoiseHit(t+B*2.75,.05,"bandpass",320+ci*45,40,2.6,.95);
+   for(let i=0;i<3;i++){const k=(bar*7+i*5)%11;bPluck([74,75,81,86,87,79,74,82,69,77,86][k],t+B*(.3+i*1.37+((bar+i)%3)*.21),.035,2.4,"sine",1600,.95);}
+   if(bar%4===3)bTom(t+B*3.2,.12,38,2.2);if(bar%8===7)bNoiseHit(t+B*3,.06,"lowpass",90,.7,3.5,.8);}},
+ v2:{bpm:76,bar(t,bar,B){const ci=bar%4,b16=bar%16,R=[38,39,36,41][ci],up=Math.min(1,b16/12);
+   bSub(R-12,t,B*4,.14);bPad(R+12,t,B*4,.016);bPad(R+15,t,B*4,.012);bPad(R+19,t,B*4,.01);
+   for(const i of[0,1.6,2,3.6])bTom(t+B*i,.18+.1*up,36,.6);
+   bNoiseHit(t+B*1,.06,"bandpass",240+ci*40,30,2.4,.9);
+   for(let i=0;i<8;i++)bPluck(R+24+[0,7,12,13,7,12,15,13][i],t+i*B/2,.02+.02*up,.9,"triangle",1400,.6);
+   if(b16>=8){const M=[[[62,2],[63,2]],[[65,3],[63,1]],[[62,2],[58,2]],[[57,4]]][ci];bMel(M,t,B,(m,s2,d)=>bBrass(m,s2,d*.95,.035+.03*up));}
+   if(b16>=12)for(let i=0;i<4;i++)bTimp(t+i*B,.12,38);if(bar%8===0)bCrash(t,.07);}},
+ v3:{bpm:132,bar(t,bar,B){const ci=bar%4,b8=bar%8,b16=bar%16,R=[38,39,36,37][ci],ch=[[50,53,57],[51,55,58],[48,51,55],[49,53,56]][ci];
+   for(let i=0;i<8;i++){bSub(R-12,t+i*B/2,B/2*.9,i%2?.07:.12);}
+   for(const i of[0,1,2,3])bKick(t+i*B,.42);for(const i of[1,3])bSnare(t+i*B,.2);for(let i=0;i<8;i++)bHat(t+i*B/2,.035);
+   for(let i=0;i<16;i++)bStr(ch[[0,1,2,1][i%4]]+12,t+i*B/4,B/4*.9,.022);
+   for(const m of ch)bPad(m,t,B*4,.012);
+   const M=b16<8?[[[62,2],[63,1],[65,1]],[[67,2],[65,2]],[[63,1],[62,1],[60,1],[63,1]],[[62,4]]][ci]:[[[74,1],[75,1],[77,2]],[[79,2],[77,1],[75,1]],[[72,2],[75,2]],[[74,3],[69,1]]][ci];
+   bMel(M,t,B,(m,s2,d)=>bBrass(m,s2,d*.92,.07));
+   if(b8===7)for(let i=0;i<8;i++)bTom(t+B*2+i*B/4,.2+i*.02,[50,48,45,43,41,40,38,36][i]);
+   bNoiseHit(t+B*2,.05,"bandpass",260+ci*40,30,1.8,.9);if(bar%4===0)bCrash(t,.12);for(const i of[0,2])bTimp(t+i*B,.2,38);}}
+});
 /* v273: 스토리 곡 + 나라별 일반 단계 곡 */
 Object.assign(BTRK,{
  /* 스토리·컷신: 느린 비가(D단조→F장조), 현악 패드 + 맑은 뜯는 소리 선율 + 낮은 북 */
@@ -1692,6 +1716,7 @@ Object.assign(BTRK,{
    if(sec===3){for(let i=0;i<8;i++)bHat(t+i*B/2+B/4,.03);if(b16===12)bCrash(t,.08);} /* 13~16마디: 리듬 채움 */
    if(b16===15)for(let i=0;i<8;i++)bTom(t+B*2+i*B/4,.12+i*.03,200-i*15,.18);}}}
 function bgmTrack(){if(typeof cutOn!=="undefined"&&cutOn)return"story";if(typeof titleOn!=="undefined"&&titleOn)return"march";if(typeof S==="undefined"||!S||!COUNTRY)return"march";const s=S.wave;
+  if(COUNTRY.inf&&s>=800){if(VI)return"v1";const v=typeof enemies!=="undefined"&&enemies.find(e=>e.alien==="void"&&!e.dead);if(!v||!v.ph)return"v1";return (v.tt||0)<300?"v2":"v3";} /*v465 공허전 음악: 공명→각성(첫 분출 후 5분)→결전*/
   if(COUNTRY.inf)return s%10===0?"boss":"s6";if(COUNTRY.alien)return s===10?"f6":s>=6?"boss":"s6";
   if(s===100)return"f"+Math.min(5,S.country);const b=BOSS[s];return b&&b[2]===1?"boss":"s"+Math.min(5,S.country);}
 function bgmTick(){bgmPlay(bgmTrack());}
@@ -2372,7 +2397,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v464 · 11/04 17:36";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v466 · 11/04 17:55";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3117,5 +3142,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041721 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041736 */</script>
 </body></html>
