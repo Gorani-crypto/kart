@@ -333,7 +333,7 @@ function voidPhase(v){v.vst=(v.vst||1)+1;const h=VOID_PH[v.vst-1];v.hp=v.max=v.h
   fx.push({k:"tflash",life:1.6,m:1.6,col:v.vst===3?"#3a0010":"#1a0830"});for(const R of[2,4,7,11,16,22])fx.push({k:"ring",x:v.x,y:v.y,life:1.2+R*.08,m:1.2+R*.08,col:v.vst===3?(R%2?"#ff6a8a":"#ffffff"):(R%2?"#b9a0ff":"#ffffff"),R});
   if(v.vst===3){v.ph=3;v.phT=0;voidSpT=1;}voidCin=4.2;voidMsg("공허가 요동친다.");dirtyUI=true;}
 /* v481 흡혈: 2페이즈 체력 30% 이하부터, 소환 30번마다 살아 있는 소환체를 전부 빨아들여 그 체력의 10%만큼 회복 */
-function voidDrain(v){let sum=0,n=0;for(const o of enemies)if(o.vm&&!o.dead){sum+=Math.max(0,o.hp);n++;o.dead=true;o.hp=0;if(fx.length<440)fx.push({k:"beamv",x:o.x,y:o.y,tx:v.x,ty:v.y,life:.7,m:.7});}if(!n)return;v.hp=Math.min(v.max,v.hp+sum*.1);shakeT=Math.max(shakeT,.8);fx.push({k:"ring",x:v.x,y:v.y,life:1,m:1,col:"#ff6a8a",R:2.6},{k:"txt",x:v.x,y:v.y-.9,txt:`흡수 +${fmt(sum*.1)}`,col:"#ff8aa0",life:2,m:2,sz:.36});voidMsg("공허가 모든 것을 흡수한다.");}
+function voidDrain(v){let sum=0,n=0;for(const o of enemies)if(o.vm&&!o.dead){sum+=Math.max(0,o.hp);n++;o.dead=true;o.hp=0;if(fx.length<440)fx.push({k:"beamv",x:o.x,y:o.y,tx:v.x,ty:v.y,life:.7,m:.7});}if(!n)return;v.hp=Math.min(v.max,v.hp+sum*.1);shakeT=Math.max(shakeT,.8);fx.push({k:"ring",x:v.x,y:v.y,life:1,m:1,col:"#ff6a8a",R:2.6},{k:"txt",x:v.x,y:v.y-.9,txt:`흡수 +${fmt(sum*.1)}`,col:"#ff8aa0",life:2,m:2,sz:.36});banner("공허가 모든 것을 흡수한다");}/*v482 흡혈 문구는 화면을 가리지 않는 배너로*/
 function voidBurst(v){shakeT=Math.max(shakeT,1.6);fx.push({k:"tflash",life:1.4,m:1.4,col:"#1a0830"});for(const R of[2,4,7,11,16])fx.push({k:"ring",x:v.x,y:v.y,life:1+R*.08,m:1+R*.08,col:R%2?"#b9a0ff":"#ffffff",R});
   enemies.push(mkVoidSpawn(v));voidCin=4.2;
   const o=document.createElement("div");o.id="voidOv";o.className="soft";o.innerHTML="<p></p>";document.body.appendChild(o);const P=o.querySelector("p");P.textContent="공허가 모든 것을 내뿜기 시작했다.";
@@ -2432,7 +2432,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v481 · 11/04 19:30";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v482 · 11/04 23:08";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3177,5 +3177,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041822 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611042305 */</script>
 </body></html>
