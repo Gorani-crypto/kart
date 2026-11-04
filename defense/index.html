@@ -312,7 +312,11 @@ function voidIntro(done){const o=document.createElement("div");o.id="voidOv";o.i
   const fin=()=>{if(!VI)return;clearTimeout(tm);VI=null;o.style.transition="opacity .8s";o.classList.remove("on");setTimeout(()=>o.remove(),900);done();};
   const next=()=>{i++;if(i>=VOID_LINES.length){tm=setTimeout(fin,600);return;}const last=i===VOID_LINES.length-1;P.textContent=VOID_LINES[i];P.classList.toggle("big",last);P.classList.add("on");tm=setTimeout(()=>{P.classList.remove("on");tm=setTimeout(next,1000);},last?3200:2300);};
   o.onclick=fin;requestAnimationFrame(()=>{o.classList.add("on");tm=setTimeout(next,1500);});}
-function mkVoid(){const h=1e50;return{res:.3,r:18,alien:"void",title:"공허",n0:1,hp1:h,max:h,hp:h,spd:spdOf(800)*.16,rew:0,kind:1,dmg:MAXLIFE,size:.95,boss:true,d:0,id:nextId++,step:0};} /*v418 최종 보스 공허: 체력 100극*/
+let voidSpT=0;const VOID_SP=4,VOID_MH=1e47;
+function mkVoidSpawn(v){const H=VOID_MH,base={n0:1,hp1:H,max:H,hp:H,rew:0,lk:2,dmg:2,boss:false,d:v.d,id:nextId++,step:0,vm:1,res:.3};
+  if(Math.random()<.35){const k=["grunt","walker","saucer","ship"][Math.floor(Math.random()*4)];return{...base,r:17,alien:k,title:"공허의 잔영",spd:spdOf(800)*(k==="grunt"?1:k==="ship"?.25:.4),size:k==="grunt"?.34:k==="ship"?.7:.55};}
+  const c=1+Math.floor(Math.random()*5),r=Math.floor(Math.random()*18);return{...base,r,uni:COUNTRIES[c-1],spd:spdOf(800)*(r>=8?.6:.9),size:r>=8?.5:.4};}
+function mkVoid(){voidSpT=2;const h=1e50;return{res:.3,r:18,alien:"void",title:"공허",n0:1,hp1:h,max:h,hp:h,spd:spdOf(800)*.16,rew:0,kind:1,dmg:MAXLIFE,size:.95,boss:true,d:0,id:nextId++,step:0};} /*v418 최종 보스 공허: 체력 100극*/
 function mkInfBoss(s){const R=infReg(s),h=infHp(s)*30;/*v436 무한 보스 체력 = 일반 1기의 30배(공허 제외)*/return{res:s>=750?.3:s>=650?.2:s>=550?.1:0,/*v445 보스 상태이상 내성 550 10%·650 20%·750 30%*/r:18,alien:R.shape,title:`${R.short}의 ${R.boss}`,n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(R.shape==="ship"?.22:R.shape==="walker"?.28:.34),rew:Math.round(infRew(s-1)*infK(s-1)*1.3*3)/*v433·v442 보스 보상 = 직전 단계 보상(물량 배수 포함)의 3배*/,kind:1,dmg:MAXLIFE,size:R.shape==="ship"?.8:.62,boss:true,d:0,id:nextId++,step:0};}
 // 계급: 이름, 계급장 종류, 개수
 const RK=[["이병","bar",1],["일병","bar",2],["상병","bar",3],["병장","bar",4],["하사","chev",1],["중사","chev",2],["상사","chev",3],["원사","chev",4],
@@ -796,7 +800,7 @@ const alive=e=>e.hp<=0?0:Math.ceil(e.hp/e.hp1-1e-9);
 function hit(e,dmg,t,aoe){if(e.dead)return;const b=alive(e);e.hp-=dmg*(e.gasT>0?e.gasV||1:1); // 분대 하나 = 표적 하나(사용자 지정): 범위 공격도 분대 체력 합에서 한 번만 깎음
 e.hitT=.1;const a=alive(e),kd=b-a;
   if(kd>0&&!e.boss){earn(e.rew*kd*totemMul());S.kills+=kd;if(t)t.kills=(t.kills||0)+kd;}
-  if(e.hp<=0){e.dead=true;if(e.pres){endless=null;queue=queue.filter(q=>q.boss);}if(e.boss){earn(e.rew*totemMul());S.kills++;if(t)t.kills=(t.kills||0)+1;}
+  if(e.hp<=0){e.dead=true;if(e.alien==="void"){for(const o of enemies)if(o.vm&&!o.dead){o.dead=true;o.hp=0;if(fx.length<440)fx.push({k:"ring",x:o.x,y:o.y,life:.6,m:.6,col:"#b9a0ff",R:.6});}}/*v446 공허가 쓰러지면 잔영도 함께 소멸*/if(e.pres){endless=null;queue=queue.filter(q=>q.boss);}if(e.boss){earn(e.rew*totemMul());S.kills++;if(t)t.kills=(t.kills||0)+1;}
   if(fx.length<450)for(let i=0;i<(e.boss?28:3);i++)fx.push({k:"pt",x:e.x,y:e.y,vx:(Math.random()-.5)*(e.boss?4:2),vy:(Math.random()-.5)*(e.boss?4:2),life:.5,m:.5,col:e.boss?"#ffcf5a":"#7d6a52"});
   if(e.boss)fx.push({k:"ring",x:e.x,y:e.y,life:.9,m:.9,col:"#ffcf5a",R:2.4},{k:"txt",x:e.x,y:e.y-.6,txt:`${e.title} 격파${e.rew?" +"+fmt(e.rew):""}`,col:"#ffcf5a",life:1.8,m:1.8,sz:.4});}}
 /* 최적화: 적 위치 격자 — 무기가 사거리 주변 칸의 적만 훑음 */
@@ -806,6 +810,7 @@ function buildEG(){const W=COLS+6,H=ROWS+6;if(!EGRID||EGW!==W){EGW=W;EGRID=[];fo
 function nearList(x,y,R,out){out.length=0;const W=EGW,H=EGRID.length/W;let x0=Math.floor(x-R)+3,x1=Math.floor(x+R)+3,y0=Math.floor(y-R)+3,y1=Math.floor(y+R)+3;x0=x0<0?0:x0;y0=y0<0?0:y0;x1=x1>=W?W-1:x1;y1=y1>=H?H-1:y1;
   for(let cy=y0;cy<=y1;cy++)for(let cx=x0;cx<=x1;cx++){const c=EGRID[cy*W+cx];for(let i=0;i<c.length;i++)out.push(c[i]);}return out;}
 function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
+  if(!frz&&phase==="wave"&&COUNTRY.inf&&S.wave>=800){const v=enemies.find(e=>e.alien==="void"&&!e.dead);if(v){voidSpT-=dt;if(voidSpT<=0){voidSpT=VOID_SP;enemies.push(mkVoidSpawn(v));}}} /*v446 공허가 모든 스테이지의 유닛을 계속 생산*/
   if(!frz&&phase==="idle"&&S.auto){autoT-=dt;if(autoT<=0){if(document.hidden&&S.wave>=lastOf())S.wave=lastOf()-1;startWave();}} /* v391 방치 중일 때만 자동 진행으로 최종장 시작 안 함 */
   if(!frz&&phase==="wave"){spawnT-=dt;if(endless&&queue.length<2){const E=endless;queue.push(mkWaveSq(E.s,E.m,E.base,E.bf,E.vp,E.hm));}while(spawnT<=0&&queue.length){const e=queue.shift();enemies.push(e);spawnT+=spawnGap;if(e.pres&&!window.__SIM__){bossIntro={t:0,T:3.8,c:S.country,pres:true,resume:true};banner("");break;}}}
   if(!frz)for(const e of enemies){const rk=1-(e.res||0),rt=dt/rk;/*v444 상태이상 내성: 효과 세기·지속시간 ×(1-내성)*/if(e.burnT>0){e.burnT-=rt;hit(e,e.burnD*dt*rk,e.burnS,true);e.hitT=0;}let sp=e.spd;if(e.slowT>0){e.slowT-=rt;sp*=1-e.slowA*(e.boss?.4:1)*rk;}if(e.gasT>0)e.gasT-=rt;if(e.pbT>0){e.pbT-=dt;hit(e,(e.pbH||e.hp)*(e.boss?.0002:.02)*dt*rk/(e.gasT>0?e.gasV||1:1),e.pbS,true);/*v411 붙는 순간 현재 체력 기준, 5초 합 10%(보스 0.1%)*/}if(e.stunT>0){e.stunT-=rt;sp=0;}e.d+=sp*dt;e.step+=dt*e.spd*7;if(e.hitT)e.hitT-=dt;
@@ -2351,7 +2356,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v445 · 11/04 16:08";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v446 · 11/04 16:35";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3096,5 +3101,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041601 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041625 */</script>
 </body></html>
