@@ -669,8 +669,10 @@ const curveOf=type=>{const T=TT[type];return CURVE[B4[type]?B4[type]:type==="nuk
 const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,150)];
 const upCost=t=>Math.ceil(TT[t.type].up*curveOf(t.type).Cm[Math.min(t.l,149)]*costMul());
 const placeCost=type=>Math.ceil(TT[type].cost*costMul()); // 개수와 무관한 고정 설치비
-/*v409 궤도 150렙 히든 전직 "태초": 초당 공격력 정확히 1재*/let TAECHO_ERR=null;try{const d=dpsOf({type:"orbit",l:150,tier:tierOf(150),x:0,y:0});CURVE.ob.D[150]*=1e44/d;}catch(e){TAECHO_ERR=e.message;}
-const isTaecho=t=>t&&t.type==="orbit"&&t.l>=150;
+/*v415 150렙 히든 전직: [이름, 150렙 초당 공격력, 149→150 강화비(EASY 기준)] — 150렙 화력과 149→150 강화비만 조정 (v409 태초 포함)*/
+const HID={orbit:["태초",1e44,0],laser:["섬멸",1e43,4e49],tesla:["천벌",4e42,2e49],drone:["천공",2e42,1.2e49],tank:["철혈",1e42,7e48],missile:["극점",8e41,5e48],flame:["홍련",7e41,4e48],sniper:["관통",2e41,1e49],emp:["혼돈",0,0],gas:["침식",0,0],mortar:["천궁",5e41,3e48],rail:["초월",3e41,1e49],rifle:["철우",1e41,1e48]};
+let TAECHO_ERR=null;try{const seen=new Set();for(const k in HID){const[nm,dp,co]=HID[k],c=curveOf(k);if((dp||co)&&seen.has(c))throw Error("shared curve "+k);seen.add(c);if(dp){const d=dpsOf({type:k,l:150,tier:tierOf(150),x:0,y:0});c.D[150]*=dp/d;}if(co){c.Cm[149]*=co/(TT[k].up*c.Cm[149]);}}}catch(e){TAECHO_ERR=e.message;}
+const isHid=t=>t&&t.l>=150&&!!HID[t.type],hidName=t=>HID[t.type][0];const isTaecho=t=>t&&t.type==="orbit"&&t.l>=150;
 function avgRew(s){const m=mix(s);let v=0;for(const r in m)v+=m[r]*rewOf(s,+r);return v;}
 const depotPay=(t,s)=>Math.floor(avgRew(s)*BAL.dpA*Math.pow(BAL.dpG,t.l-1));
 
@@ -1953,7 +1955,7 @@ function fireOrbs(t,x,y,T){/* v323 화염방사기 3차+: 둘레를 공전하는
     X.globalAlpha=1;X.save();X.translate(Math.cos(a0)*rr,Math.sin(a0)*rr);X.rotate(a0+Math.PI/2);X.scale(1.7,1);if(lava){X.globalCompositeOperation="source-over";X.drawImage(FORB.lhead,-.085,-.085,.17,.17);X.globalCompositeOperation="lighter";X.drawImage(FORB.core,-.035,-.035,.07,.07);X.globalCompositeOperation="source-over";X.globalAlpha=.6;X.drawImage(FORB.crust,-.045+.02*Math.sin(T*3+i),-.03,.05,.05);X.drawImage(FORB.crust,.0,.005+.015*Math.cos(T*2+i),.04,.04);X.globalAlpha=1;X.globalCompositeOperation="lighter";}else X.drawImage(FORB.head,-.07,-.07,.14,.14);X.restore();
     if(lava&&fx.length<430&&Math.random()<.05){const hx=x+Math.cos(a0)*rr,hy=y+Math.sin(a0)*rr;fx.push({k:"pt",x:hx,y:hy,vx:(Math.random()-.5)*.4,vy:.3+Math.random()*.4,life:.6,m:.6,col:Math.random()<.5?"#ff5a10":"#ffb030"});}}
   X.restore();}
-function drawTower(t,T){const s=st(t),tier=s.tier,col=TCOL[tier],x=t.x+.5,y=t.y+.5;
+function drawTower(t,T){const s=st(t),tier=s.tier,col=TCOL[tier],x=t.x+.5,y=t.y+.5;if(isHid(t)&&t.type!=="orbit"){X.save();X.globalCompositeOperation="lighter";const ag=X.createRadialGradient(x,y,0,x,y,.62);ag.addColorStop(0,"rgba(255,236,170,.32)");ag.addColorStop(1,"rgba(255,220,140,0)");X.fillStyle=ag;X.beginPath();X.arc(x,y,.62,0,7);X.fill();X.strokeStyle="rgba(255,240,190,.55)";X.lineWidth=.025;X.setLineDash([.12,.09]);X.lineDashOffset=-T*.3;X.beginPath();X.arc(x,y,.5,0,7);X.stroke();X.setLineDash([]);X.restore();}
   if(tier>=6){const pul=.5+.5*Math.sin(T*3+t.x);const g=X.createRadialGradient(x,y,.1,x,y,.78);g.addColorStop(0,col+"77");g.addColorStop(1,col+"00");X.globalAlpha=.6+.4*pul;X.fillStyle=g;X.beginPath();X.arc(x,y,.8,0,7);X.fill();X.globalAlpha=1;}
   const b=.38+tier*.006;
   if(t.evoT>0){const k=t.evoT/2;X.fillStyle=col;X.globalAlpha=k*.5;X.beginPath();X.arc(x,y,.55+Math.sin(T*12)*.06,0,7);X.fill();X.globalAlpha=1;}
@@ -2298,7 +2300,7 @@ function upgrade(t,n,quiet){let done=0;const before=tierOf(t.l);
   while(done<n&&t.l<maxL()){const c=upCost(t);if(S.gold<c)break;S.gold-=c;t.inv+=c;t.l++;done++;}
   if(!done){if(!quiet)banner("자금이 부족합니다");return 0;}
   const after=tierOf(t.l),x=t.x+.5,y=t.y+.5;
-  if(t.type==="orbit"&&t.l>=150&&t.l-done<150){t.evoT=3;shakeT=1;fx.push({k:"evo",x,y,life:2.4,m:2.4,col:"#fff4c8"},{k:"ring",x,y,life:2,m:2,col:"#fff4c8",R:5},{k:"ring",x,y,life:1.5,m:1.5,col:"#ffffff",R:3},{k:"txt",x,y:y-.6,txt:"히든 전직 · 태초",col:"#fff4c8",life:3,m:3,sz:.4});if(!quiet)banner("✦ 히든 전직 · 태초 — 처음의 빛");}
+  if(HID[t.type]&&t.l>=150&&t.l-done<150){const hn=hidName(t);t.evoT=3;shakeT=1;fx.push({k:"evo",x,y,life:2.4,m:2.4,col:"#fff4c8"},{k:"ring",x,y,life:2,m:2,col:"#fff4c8",R:5},{k:"ring",x,y,life:1.5,m:1.5,col:"#ffffff",R:3},{k:"txt",x,y:y-.6,txt:"히든 전직 · "+hn,col:"#fff4c8",life:3,m:3,sz:.4});if(!quiet)banner(t.type==="orbit"?"✦ 히든 전직 · 태초 — 처음의 빛":"✦ 히든 전직 · "+hn);}
   if(after>before){t.evoT=2;shakeT=.5;fx.push({k:"evo",x,y,life:1.6,m:1.6,col:TCOL[after]},{k:"ring",x,y,life:1.2,m:1.2,col:TCOL[after],R:3.2},{k:"ring",x,y,life:1,m:1,col:TCOL[after],R:2.4},{k:"ring",x,y,life:.7,m:.7,col:"#fff",R:1.4},
       ...(after>=3?[]:[{k:"txt",x,y:y-.5,txt:`${after}차 전직 · ${TRANK[after]}`,col:TCOL[after],life:1.8,m:1.8,sz:.34}]));
     for(let i=0;i<30;i++)fx.push({k:"pt",x,y,vx:(Math.random()-.5)*5,vy:(Math.random()-.5)*5,life:.7,m:.7,col:TCOL[after]});
@@ -2319,7 +2321,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v414 · 11/04 00:40";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v415 · 11/04 10:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2393,7 +2395,7 @@ function renderPop(){const p=$("pop");
   p.classList.remove("bp");const t=sel,T=TT[t.type],s=st(t),c=upCost(t),max=t.l>=maxL(),into=t.l%10,poor=S.gold<c;
   const key=[t.id,t.l,poor,Math.floor(S.gold/Math.max(1,c))>=10,tgOf(t)].join("|");
   if(key!==popKey){popKey=key;
-    p.innerHTML=`<div class="ph"><b style="color:${isTaecho(t)?"#fff4c8":TCOL[s.tier]}">${isTaecho(t)?"✦ 태초":T.names[s.tier]}</b><span>LV ${t.l}</span><button class="x" data-a="close" aria-label="닫기">×</button></div>
+    p.innerHTML=`<div class="ph"><b style="color:${isHid(t)?"#fff4c8":TCOL[s.tier]}">${isHid(t)?"✦ "+hidName(t):T.names[s.tier]}</b><span>LV ${t.l}</span><button class="x" data-a="close" aria-label="닫기">×</button></div>
     <div class="pips">${Array.from({length:10},(_,i)=>`<i class="${max||i<into?"on":""}"></i>`).join("")}</div>
     <div class="row">${max?`<button class="btn" disabled>최대 레벨</button>`:`<button class="btn pri" data-a="u1" ${poor?"disabled":""}>강화 ${fmt(c)}</button><button class="btn" data-a="u10" ${poor?"disabled":""}>+10</button><button class="btn" data-a="umax" ${poor?"disabled":""}>최대</button>`}${t.type==="nuke"?`<button class="btn" data-a="nuke" id="popNuke" style="border-color:#c9a23a;color:#ffd36b">☢</button>`:""}</div>
     ${TT[t.type].dmg&&t.type!=="nuke"?`<div class="tgrow" role="group" aria-label="표적 우선순위">${TGM.map(([k,l])=>`<button class="btn" data-tg="${k}" aria-pressed="${tgOf(t)===k}">${l}</button>`).join("")}</div>`:""}
@@ -2434,7 +2436,7 @@ function renderUI(){renderPop();{const lt=$("locTag");if(COUNTRY.inf){const R=in
       if(t.type==="mortar")rows+=`<dt>폭발 반경</dt><dd>${s.splash.toFixed(2)}칸</dd><dd></dd>`;
       if(t.type==="rail")rows+=`<dt>빔 길이 · 굵기</dt><dd>${(s.range+1).toFixed(1)}칸 · ${(s.beamW*2).toFixed(1)}칸</dd><dd></dd>`;
       rows+=`<dt>처치</dt><dd>${fmt(t.kills||0)}</dd><dd></dd>`;}
-    box.innerHTML=`<div class="selhead"><div><div class="lbl">${T.label} · 칸 ${String.fromCharCode(65+t.x)}${t.y+1}</div><div class="nm" style="color:${isTaecho(t)?"#fff4c8":TCOL[s.tier]}">${isTaecho(t)?"✦ 태초":T.names[s.tier]}</div></div><span class="rank">${s.tier}차 · ${TRANK[s.tier]}</span></div>
+    box.innerHTML=`<div class="selhead"><div><div class="lbl">${T.label} · 칸 ${String.fromCharCode(65+t.x)}${t.y+1}</div><div class="nm" style="color:${isHid(t)?"#fff4c8":TCOL[s.tier]}">${isHid(t)?"✦ "+hidName(t):T.names[s.tier]}</div></div><span class="rank">${s.tier}차 · ${TRANK[s.tier]}</span></div>
       <div class="lbl">LV ${t.l} / ${maxL()}</div><div class="pips">${Array.from({length:10},(_,i)=>`<i class="${max||i<into?"on":""}"></i>`).join("")}</div>
       ${nextT&&!max?`<div class="next">${10-into}레벨 후 ${s.tier+1}차 전직 → <b>${nextT}</b></div>`:`<div class="next">최종 전직 완료</div>`}
       ${EVO1[t.type]?`<div class="next">1차 전직 특성 · <b style="color:${s.tier>=1?"var(--ok)":"var(--muted)"}">${EVO1[t.type]}</b>${s.tier>=1?"":" (10레벨에 획득)"}</div>`:""}${EVOX[t.type]?Object.entries(EVOX[t.type]).map(([k,v])=>`<div class="next">${k}차 전직 특성 · <b style="color:${s.tier>=+k?"var(--ok)":"var(--muted)"}">${v}</b>${s.tier>=+k?"":` (${k*10}레벨에 획득)`}</div>`).join(""):""}
@@ -3063,5 +3065,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040032 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040958 */</script>
 </body></html>
