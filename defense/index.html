@@ -488,7 +488,7 @@ function nukeLaunch(){const t=nukeTower();if(!t||t.cd>0||nukeCin>0||!enemies.som
   fx.push({k:"ring",x,y,life:.6,m:.6,col:isHid(t)?"#bfe0ff":"#ffd36b",R:1.2});shakeT=Math.max(shakeT,.3);banner(isHid(t)?"✦ 초신성 발사":"☢ 핵미사일 발사");dirtyUI=true;}
 function nukeTower(){return S.towers.find(t=>t.type==="nuke");}
 function mmss(x){x=Math.ceil(x);return Math.floor(x/60)+":"+String(x%60).padStart(2,"0");}
-let nukeTxt="";function updNukeBtn(){{const tb=$("totemBtn");if(tb){const sh=!!S.totemUnl&&!S.totem;if(tb.hidden===sh)tb.hidden=!sh;}}const b=$("nukeBtn");if(!b)return;const t=nukeTower();if(!t){if(!b.hidden)b.hidden=true;return;}if(b.hidden)b.hidden=false;
+let nukeTxt="";function updNukeBtn(){const b=$("nukeBtn");if(!b)return;const t=nukeTower();if(!t){if(!b.hidden)b.hidden=true;return;}if(b.hidden)b.hidden=false;
   const rem=Math.max(0,t.cd||0),has=enemies.some(e=>!e.dead),txt=nukeCin>0?"☢ 발사 중…":rem>0?"☢ 충전 "+mmss(rem):has?"☢ 핵 발사":"☢ 준비 완료";if(txt!==nukeTxt){nukeTxt=txt;b.textContent=txt;}b.disabled=nukeCin>0||rem>0||!has;const pn=$("popNuke");if(pn){const pt=nukeCin>0?"☢ …":rem>0?"☢ "+mmss(rem):"☢ 발사";if(pn.textContent!==pt)pn.textContent=pt;pn.disabled=b.disabled;}}
 function lockText(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())return"1기만 설치";if(st>S.country)return st+"스테이지 해금";if(T.wip)return"준비 중";if(st===S.country&&S.best<(T.unlock||1))return T.unlock+"단계 해금";return null;}
 const ATTACK=ORDER.filter(k=>TT[k].dmg);
@@ -741,7 +741,7 @@ function mkBoss(s,b,top){const h=bossHP(s,b);return{r:b[0],title:BT(b[1]),n0:1,h
 function waveClear(){const s=S.wave;let bonus=0,dep=0;
   for(const t of S.towers)if(t.type==="depot"){const p=depotPay(t,s);dep+=p;const c=cc(t);fx.push({k:"txt",x:c[0],y:c[1]-.3,txt:"+"+fmt(p),col:"#ffd36b",life:1.6,m:1.6,sz:.36});}
   earn(bonus+dep);phase="idle";autoT=2;HOOK.clear&&HOOK.clear(s);
-  if(COUNTRY.inf&&s>=350&&!S.totemUnl){S.totemUnl=true;setTimeout(()=>unlockNotice("🍀 행운의 토템 획득",[["무한 350단계 돌파 보상","핵 사일로처럼 지도에 1기만 설치할 수 있는 토템입니다. 오른쪽 위 '🍀 행운의 토템' 버튼을 누른 뒤 빈 칸을 고르세요."],["효과","설치하면 모든 처치 보상 +30%"]]),600);} /*v428 행운의 토템*/
+  if(COUNTRY.inf&&s>=350&&!S.totemUnl){S.totemUnl=true;setTimeout(()=>unlockNotice("🍀 행운의 토템 획득",[["무한 350단계 돌파 보상","핵 사일로처럼 지도에 1기만 설치할 수 있는 토템입니다. 무기 목록 끝의 '행운의 토템'을 다른 무기처럼 지도로 끌어다 놓으세요."],["효과","설치하면 모든 처치 보상 +30%"]]),600);} /*v428 행운의 토템*/
   if(COUNTRY.inf&&s>=800){S.best=800;S.wave=800;S.auto=false;const first=!S.trueEnd;S.trueEnd=true;save();dirtyUI=true;if(first)startTrueEnd();else banner("공허 소멸");return;} /*v409 진짜 엔딩*/
   if(s>=lastOf()){S.best=lastOf();S.wave=COUNTRY.alien?10:91;
     if(!S.conqBy[S.country]){S.conqBy[S.country]=true;S.conquered=true;conquest();}
@@ -1973,7 +1973,8 @@ function fireOrbs(t,x,y,T){/* v323 화염방사기 3차+: 둘레를 공전하는
     X.globalAlpha=1;X.save();X.translate(Math.cos(a0)*rr,Math.sin(a0)*rr);X.rotate(a0+Math.PI/2);X.scale(1.7,1);if(lava){X.globalCompositeOperation="source-over";X.drawImage(FORB.lhead,-.085,-.085,.17,.17);X.globalCompositeOperation="lighter";X.drawImage(FORB.core,-.035,-.035,.07,.07);X.globalCompositeOperation="source-over";X.globalAlpha=.6;X.drawImage(FORB.crust,-.045+.02*Math.sin(T*3+i),-.03,.05,.05);X.drawImage(FORB.crust,.0,.005+.015*Math.cos(T*2+i),.04,.04);X.globalAlpha=1;X.globalCompositeOperation="lighter";}else X.drawImage(FORB.head,-.07,-.07,.14,.14);X.restore();
     if(lava&&fx.length<430&&Math.random()<.05){const hx=x+Math.cos(a0)*rr,hy=y+Math.sin(a0)*rr;fx.push({k:"pt",x:hx,y:hy,vx:(Math.random()-.5)*.4,vy:.3+Math.random()*.4,life:.6,m:.6,col:Math.random()<.5?"#ff5a10":"#ffb030"});}}
   X.restore();}
-let totemPick=false;function drawTotem(x,y,T){X.save();const gl=X.createRadialGradient(x,y,0,x,y,.6);gl.addColorStop(0,`rgba(150,255,140,${.28+.1*Math.sin(T*2)})`);gl.addColorStop(1,"rgba(120,255,120,0)");X.fillStyle=gl;X.beginPath();X.arc(x,y,.6,0,7);X.fill();
+let totemPick=false;function placeTotem(x,y){if(!S.totemUnl||S.totem)return;S.totem={x,y};totemPick=false;fx.push({k:"ring",x:x+.5,y:y+.5,life:1,m:1,col:"#9cff8a",R:1.6},{k:"txt",x:x+.5,y:y-.1,txt:"🍀 보상 +30%",col:"#b8f5a8",life:2,m:2,sz:.34});banner("🍀 행운의 토템 설치 · 보상 +30%");save();dirtyUI=true;}
+function drawTotem(x,y,T){X.save();const gl=X.createRadialGradient(x,y,0,x,y,.6);gl.addColorStop(0,`rgba(150,255,140,${.28+.1*Math.sin(T*2)})`);gl.addColorStop(1,"rgba(120,255,120,0)");X.fillStyle=gl;X.beginPath();X.arc(x,y,.6,0,7);X.fill();
   X.fillStyle="rgba(0,0,0,.3)";X.beginPath();X.ellipse(x+.04,y+.34,.26,.08,0,0,7);X.fill();X.fillStyle="#6b4a2a";X.fillRect(x-.13,y-.18,.26,.52);X.fillStyle="#8a6236";X.fillRect(x-.13,y-.18,.26,.06);X.fillRect(x-.13,y+.06,.26,.05);
   X.fillStyle="#3a2614";X.fillRect(x-.08,y-.08,.05,.05);X.fillRect(x+.03,y-.08,.05,.05);X.fillRect(x-.06,y+.15,.12,.03);
   const hy=y-.36+Math.sin(T*2.2)*.03;X.translate(x,hy);X.rotate(Math.sin(T*1.3)*.15);X.fillStyle="#5fd46a";X.shadowColor="#9cff8a";X.shadowBlur=10*DPR;for(let i=0;i<4;i++){X.save();X.rotate(i*Math.PI/2);X.beginPath();X.arc(.055,-.055,.07,0,7);X.arc(-.055,-.055,.07,0,7);X.moveTo(0,0);X.fill();X.restore();}X.shadowBlur=0;X.fillStyle="#2f8a3a";X.beginPath();X.arc(0,0,.03,0,7);X.fill();X.restore();
@@ -2289,7 +2290,8 @@ function drawSoldier(e,T,lite,noIns){const CC=e.uni||COUNTRY;
 /* ═════════ 썸네일 ═════════ */
 const THUMB={};
 function makeThumbs(){for(const k of ORDER){const c=document.createElement("canvas");c.width=c.height=96;const old=X;X=c.getContext("2d");X.scale(96,96);
-  try{drawTower({type:k,x:0,y:0,l:k==="depot"?1:4,ang:-.6},0);}catch(e){}X=old;THUMB[k]=c.toDataURL();}}
+  try{drawTower({type:k,x:0,y:0,l:k==="depot"?1:4,ang:-.6},0);}catch(e){}X=old;THUMB[k]=c.toDataURL();}
+  {const c=document.createElement("canvas");c.width=c.height=96;const old=X;X=c.getContext("2d");X.scale(96,96);try{drawTotem(.5,.62,0);}catch(e){}X=old;THUMB.totem=c.toDataURL();}}
 const LOCK_SVG=`<svg class="lock" viewBox="0 0 20 22" aria-hidden="true"><path d="M5 9V6a5 5 0 0 1 10 0v3" fill="none" stroke="#e7e3cf" stroke-width="2.4"/><rect x="2" y="9" width="16" height="12" rx="2" fill="#e3a82b"/><circle cx="10" cy="15" r="2" fill="#1a1405"/></svg>`;
 
 /* ═════════ 입력 ═════════ */
@@ -2300,7 +2302,7 @@ function place(type,x,y){if(lockText(type))return null;const cost=placeCost(type
   const nt={id:nextId++,type,x,y,l:1,inv:cost,cd:type==="nuke"?1/TT.nuke.rate:0,ang:-Math.PI/2,kills:0};S.towers.push(nt);dirtyUI=true;return nt;}
 C.addEventListener("pointermove",ev=>{hover=cellAt(ev);});
 C.addEventListener("pointerleave",()=>{hover=null;});
-C.addEventListener("click",ev=>{const c=cellAt(ev);if(!c)return;if(totemPick){if(canPlace(c[0],c[1])){S.totem={x:c[0],y:c[1]};totemPick=false;fx.push({k:"ring",x:c[0]+.5,y:c[1]+.5,life:1,m:1,col:"#9cff8a",R:1.6},{k:"txt",x:c[0]+.5,y:c[1]-.1,txt:"🍀 보상 +30%",col:"#b8f5a8",life:2,m:2,sz:.34});banner("🍀 행운의 토템 설치 · 보상 +30%");save();dirtyUI=true;}else banner("빈 칸에만 놓을 수 있습니다");return;}if(S.totem&&S.totem.x===c[0]&&S.totem.y===c[1]){$("modalBox").innerHTML=`<h2>🍀 행운의 토템</h2><p>모든 처치 보상 +30%. 회수하면 효과가 꺼지고, 언제든 다른 빈 칸에 다시 설치할 수 있습니다.</p><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" id="tmClose">닫기</button><button class="btn pri" id="tmBack">회수</button></div>`;$("modal").hidden=false;$("tmClose").onclick=()=>{$("modal").hidden=true;};$("tmBack").onclick=()=>{const o=S.totem;S.totem=null;$("modal").hidden=true;fx.push({k:"ring",x:o.x+.5,y:o.y+.5,life:.7,m:.7,col:"#9cff8a",R:1});banner("🍀 행운의 토템 회수");save();dirtyUI=true;};return;} /*v429 토템 회수*/const t=towerAt(c[0],c[1]);
+C.addEventListener("click",ev=>{const c=cellAt(ev);if(!c)return;if(totemPick){if(canPlace(c[0],c[1]))placeTotem(c[0],c[1]);else banner("빈 칸에만 놓을 수 있습니다");return;}if(S.totem&&S.totem.x===c[0]&&S.totem.y===c[1]){$("modalBox").innerHTML=`<h2>🍀 행운의 토템</h2><p>모든 처치 보상 +30%. 회수하면 효과가 꺼지고, 언제든 다른 빈 칸에 다시 설치할 수 있습니다.</p><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" id="tmClose">닫기</button><button class="btn pri" id="tmBack">회수</button></div>`;$("modal").hidden=false;$("tmClose").onclick=()=>{$("modal").hidden=true;};$("tmBack").onclick=()=>{const o=S.totem;S.totem=null;$("modal").hidden=true;fx.push({k:"ring",x:o.x+.5,y:o.y+.5,life:.7,m:.7,col:"#9cff8a",R:1});banner("🍀 행운의 토템 회수");save();dirtyUI=true;};return;} /*v429 토템 회수*/const t=towerAt(c[0],c[1]);
   if(t){sel=t;buildType=null;buildCell=null;dirtyUI=true;return;}
   if(buildType&&canPlace(c[0],c[1])){const nt=place(buildType,c[0],c[1]);if(!nt){banner("자금이 부족합니다");return;}
     fx.push({k:"ring",x:c[0]+.5,y:c[1]+.5,life:.5,m:.5,col:"#e3a82b",R:.8});sel=nt;save();
@@ -2344,7 +2346,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);$("totemBtn").addEventListener
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v429 · 11/04 13:24";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v430 · 11/04 13:40";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2373,9 +2375,10 @@ $("stageBox").addEventListener("click",e=>{const b=e.target.closest("button");if
 let drag=null;
 $("bar").addEventListener("pointerdown",e=>{const b=e.target.closest(".slot");if(!b||b.classList.contains("locked"))return;drag={k:b.dataset.t,x:e.clientX,y:e.clientY,on:false,id:e.pointerId};});
 window.addEventListener("pointermove",e=>{if(!drag||e.pointerId!==drag.id)return;
-  if(!drag.on&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>8){drag.on=true;buildType=drag.k;sel=null;buildCell=null;const g=$("ghost");g.src=THUMB[drag.k];g.hidden=false;dirtyUI=true;}
+  if(!drag.on&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>8){drag.on=true;if(drag.k==="totem"){totemPick=true;buildType=null;}else buildType=drag.k;sel=null;buildCell=null;const g=$("ghost");g.src=THUMB[drag.k];g.hidden=false;dirtyUI=true;}
   if(drag.on){const g=$("ghost"),rv=ROT();g.style.left=(rv?e.clientY:e.clientX)+"px";g.style.top=(rv?window.innerWidth-e.clientX:e.clientY)+"px";hover=cellAt(e);e.preventDefault();}},{passive:false});
 window.addEventListener("pointerup",e=>{if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;$("ghost").hidden=true;
+  if(d.k==="totem"){if(d.on){const c=cellAt(e);totemPick=false;if(c&&canPlace(c[0],c[1]))placeTotem(c[0],c[1]);else if(c)banner("빈 칸에만 놓을 수 있습니다");hover=null;dirtyUI=true;return;}totemPick=!totemPick;buildType=null;sel=null;buildCell=null;if(totemPick)banner("🍀 토템을 놓을 빈 칸을 누르세요");dirtyUI=true;return;}
   if(d.on){const c=cellAt(e);buildType=null;if(c&&canPlace(c[0],c[1])){const nt=place(d.k,c[0],c[1]);if(nt){fx.push({k:"ring",x:c[0]+.5,y:c[1]+.5,life:.5,m:.5,col:"#e3a82b",R:.8});sel=nt;save();}else banner("자금이 부족합니다");}
     else if(c)banner("길 위에는 놓을 수 없습니다");hover=null;dirtyUI=true;return;}
   buildType=buildType===d.k?null:d.k;sel=null;buildCell=null;dirtyUI=true;});
@@ -2435,9 +2438,9 @@ function renderUI(){renderPop();{const lt=$("locTag");if(COUNTRY.inf){const R=in
   for(const b of $("speed").children)b.setAttribute("aria-pressed",+b.dataset.sp===S.speed);
   $("auto").setAttribute("aria-pressed",S.auto);$("go").disabled=phase!=="idle";$("go").textContent=phase==="idle"?"출격":"교전 중";
   renderStage();
-  const bk=ORDER.map(k=>[k,lockText(k),S.gold>=(TT[k].cost?placeCost(k):0),buildType===k].join()).join("|")+Object.keys(THUMB).length;
+  const totSlot=!!S.totemUnl&&!S.totem,bk=ORDER.map(k=>[k,lockText(k),S.gold>=(TT[k].cost?placeCost(k):0),buildType===k].join()).join("|")+Object.keys(THUMB).length+"|tot"+totSlot+totemPick;
   if(bk!==barKey&&!drag){barKey=bk;$("bar").innerHTML=ORDER.map(k=>{const T=TT[k],lock=lockText(k);
-    return`<button class="slot${lock?" locked":""}${!lock&&S.gold<placeCost(k)?" poor":""}" data-t="${k}" aria-pressed="${buildType===k}" title="${T.label} — ${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span class="nm">${T.label}</span><span class="pr">${lock?lock.replace(" 해금",""):fmt(placeCost(k))}</span></button>`;}).join("");}
+    return`<button class="slot${lock?" locked":""}${!lock&&S.gold<placeCost(k)?" poor":""}" data-t="${k}" aria-pressed="${buildType===k}" title="${T.label} — ${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span class="nm">${T.label}</span><span class="pr">${lock?lock.replace(" 해금",""):fmt(placeCost(k))}</span></button>`;}).join("")+(totSlot?`<button class="slot" data-t="totem" aria-pressed="${totemPick}" title="행운의 토템 — 1기만 설치 · 모든 처치 보상 +30%" style="border-color:#5fbf6a"><img src="${THUMB.totem||""}" alt=""><span class="nm" style="color:#b8f5a8">행운의 토템</span><span class="pr">보상 +30%</span></button>`:"");}
   const box=$("sel");
   if(sel&&S.towers.includes(sel)){const t=sel,T=TT[t.type],s=st(t),n={...t,l:Math.min(maxL(),t.l+1)},ns=st(n),c=upCost(t),max=t.l>=maxL();
     const into=t.l%10,nextT=s.tier<10?T.names[s.tier+1]:null;let rows="";
@@ -3088,5 +3091,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041311 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041334 */</script>
 </body></html>
