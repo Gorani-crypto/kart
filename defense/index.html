@@ -2338,7 +2338,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v426 · 11/04 13:02";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v427 · 11/04 13:06";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3039,7 +3039,7 @@ function setSave(mode){$("saveSt").innerHTML=`<span class="dot ${mode?"ok":""}">
 function save(force){S.t=Date.now();const j=ser();let ok=false;try{localStorage.setItem(LS,j);ok=true;}catch(e){}
   if(db&&uid&&(force||Date.now()-lastRemote>12000)){lastRemote=Date.now();db.doc("data/users/"+uid+"/save").set({json:j,t:S.t}).then(()=>setSave("acct")).catch(()=>{});}
   if(!db)setSave(ok?"local":"");}
-function offline(prevT){const mins=Math.min(60,(Date.now()-prevT)/60000); /* 방치 수입 최대 1시간(모든 모드, v257) */if(mins<1||S.gpm<=0)return;const gain=Math.floor(S.gpm*mins*.5);if(gain<=0)return;
+function offline(prevT){const mins=Math.min(COUNTRY&&COUNTRY.inf?120:60,(Date.now()-prevT)/60000); /* 방치 수입 최대 1시간, 무한 모드는 2시간(v427) */if(mins<1||S.gpm<=0)return;const gain=Math.floor(S.gpm*mins*.5);if(gain<=0)return;
   earn(gain);$("modalBox").innerHTML=`<h2>작전 보고</h2><p>자리를 비운 ${mins>=60?Math.floor(mins/60)+"시간 "+Math.round(mins%60)+"분":Math.round(mins)+"분"} 동안 부대가 방어선을 지키며 <b style="color:var(--accent)">${fmt(gain)}</b>을 확보했습니다.</p><button class="btn pri" id="mOk">수령</button>`;
   $("modal").hidden=false;$("mOk").onclick=()=>{$("modal").hidden=true;};}
 function paintHeaderFlag(){const f=$("hFlag"),g=f.getContext("2d");drawFlag(g,0,0,84,56,0,false);}
@@ -3082,5 +3082,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041300 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041304 */</script>
 </body></html>
