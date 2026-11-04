@@ -481,11 +481,11 @@ const EVOX={tesla:{2:"연쇄 10분대",3:"연쇄 14분대",4:"연쇄 20분대",5
 const EVO1={tesla:"연쇄 7분대 · 감전 마비 0.4초",laser:"레이저 기둥 범위 +50% · 사거리 +1칸",nuke:"충전 시간 -1분 (15분 → 14분) · 전직마다 1분씩 더 줄어 최소 5분",orbit:"레이저 +2줄기",drone:"드론 +1대 · 연사 +30% · 사거리 +1칸",emp:"마비 시간 +50% · 범위 +1칸",tank:"폭발 범위 +50% · 공격 속도 +25%",rifle:"공격 속도 +40%",mortar:"사거리 +1칸 · 폭발 범위 +35%",rail:"빔 지속 2배 · 사거리 +1칸",sniper:"사거리 +1.5칸 · 보스 피해 ×3",flame:"맞은 적 20% 감속",gas:"감속 +1초 · 피해 ×3 (2차: 가스 맞은 적 받는 피해 ×1.2 / 3차: 2발씩 / 4차: ×1.5 / 5차: 사방 살포·×2 / 이후 전직마다 +0.4)",missile:"동시 발사 +2발"};
 let nukeReq=false,nukeCin=0;
 function drawCinBars(){const k=Math.min(1,(6.6-nukeCin)/.4,nukeCin/.5),h=C.height*.09*k;X.setTransform(1,0,0,1,0,0);X.fillStyle="#000";X.fillRect(0,0,C.width,h);X.fillRect(0,C.height-h,C.width,h);
-  if(nukeCin>4){X.globalAlpha=.18*k;X.fillRect(0,h,C.width,C.height-2*h);X.globalAlpha=1;}X.fillStyle=`rgba(255,211,107,${k})`;X.font=`700 ${Math.round(h*.42)}px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.fillText("☢ 핵 타격 진행 중",C.width/2,h*.66);X.textAlign="left";}
+  if(nukeCin>4){X.globalAlpha=.18*k;X.fillRect(0,h,C.width,C.height-2*h);X.globalAlpha=1;}X.fillStyle=`rgba(255,211,107,${k})`;X.font=`700 ${Math.round(h*.42)}px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.fillText((()=>{const t=nukeTower();return t&&isHid(t)?"✦ 초신성 폭발":"☢ 핵 타격 진행 중";})(),C.width/2,h*.66);X.textAlign="left";}
 function nukeLaunch(){const t=nukeTower();if(!t||t.cd>0||nukeCin>0||!enemies.some(e=>!e.dead))return;const s=st(t),x=t.x+.5,y=t.y+.5;t.cd=1/s.rate;nukeCin=6.6;
   shells.push({kd:"nuke",cin:true,x0:x,y0:y,tx:COLS/2,ty:ROWS/2+3,t:0,T:2.6,dmg:s.dmg,sp:99,tier:s.tier,src:t});
   for(let q=0;q<16;q++)fx.push({k:"smk",x:x+(Math.random()-.5)*.9,y:y+(Math.random()-.5)*.9,life:1.8,m:1.8,R:.25,col:"215,210,200"});
-  fx.push({k:"ring",x,y,life:.6,m:.6,col:"#ffd36b",R:1.2});shakeT=Math.max(shakeT,.3);banner("☢ 핵미사일 발사");dirtyUI=true;}
+  fx.push({k:"ring",x,y,life:.6,m:.6,col:isHid(t)?"#bfe0ff":"#ffd36b",R:1.2});shakeT=Math.max(shakeT,.3);banner(isHid(t)?"✦ 초신성 발사":"☢ 핵미사일 발사");dirtyUI=true;}
 function nukeTower(){return S.towers.find(t=>t.type==="nuke");}
 function mmss(x){x=Math.ceil(x);return Math.floor(x/60)+":"+String(x%60).padStart(2,"0");}
 let nukeTxt="";function updNukeBtn(){const b=$("nukeBtn");if(!b)return;const t=nukeTower();if(!t){if(!b.hidden)b.hidden=true;return;}if(b.hidden)b.hidden=false;
@@ -506,7 +506,7 @@ const AOEK={mortar:1,flame:1,gas:1,missile:1,tank:1,emp:1,tesla:1,laser:1,nuke:1
 function st(t){if(t._sl===t.l&&t._sk===t.type&&t._st)return t._st;const r=st0(t);if(t.id!==undefined){t._sl=t.l;t._sk=t.type;t._st=r;}return r;}
 function st0(t){const T=TT[t.type],L=t.l,tier=tierOf(L),k=t.type,e1=tier>=1;
   return{tier,multi:(T.multi||0)+Math.floor(tier/3)+(e1&&k==="missile"?2:0),slow:k==="gas"?(L<=50?.3+.2*(L-1)/49+tier*.02:.6+.05*(tier-5)):0/*v376 50렙 60% 감속 · v377 이후 전직(10렙)마다 +5%*/,slowDur:2+tier,
-    dmg:(T.dmg||0)*BAL.atk*lvMult(L,k)*(e1&&k==="gas"?3:1)*1*(k==="flame"&&tier>=4?2:1)*(k==="tank"&&tier>=4?.4931:1)*(AOE1[k]?BAL.aoe1:AOE2[k]?BAL.aoe2:1),rate:k==="emp"?1/empCd(L):k==="nuke"?1/(60*Math.max(5,15-tier))/*v417 15분 시작, 전직마다 -1분, 최소 5분*/:(T.rate||0)*(1+.06*tier)*(k==="tank"&&tier>=4?1.3:1)*(k==="laser"?1/1.5:1)*(e1&&k==="nuke"?1/.7:e1&&k==="rifle"?1.4*(tier>=2?1.15:1)*(tier>=3?1.15:1)*(tier>=4?1.3:1):e1&&k==="tank"?1.25:e1&&k==="drone"?1.3:1),nDrone:2+(e1?1:0)+Math.floor(tier/3),stun:1.2*(e1&&k==="emp"?1.5:1),
+    dmg:(T.dmg||0)*BAL.atk*lvMult(L,k)*(e1&&k==="gas"?3:1)*1*(k==="flame"&&tier>=4?2:1)*(k==="tank"&&tier>=4?.4931:1)*(AOE1[k]?BAL.aoe1:AOE2[k]?BAL.aoe2:1),rate:k==="emp"?1/empCd(L):k==="nuke"?1/(60*(L>=150?3:Math.max(5,15-tier)))/*v421 초신성 3분*//*v417 15분 시작, 전직마다 -1분, 최소 5분*/:(T.rate||0)*(1+.06*tier)*(k==="tank"&&tier>=4?1.3:1)*(k==="laser"?1/1.5:1)*(e1&&k==="nuke"?1/.7:e1&&k==="rifle"?1.4*(tier>=2?1.15:1)*(tier>=3?1.15:1)*(tier>=4?1.3:1):e1&&k==="tank"?1.25:e1&&k==="drone"?1.3:1),nDrone:2+(e1?1:0)+Math.floor(tier/3),stun:1.2*(e1&&k==="emp"?1.5:1),
     range:(T.range||0)+.12*tier+(e1&&k==="sniper"?1.5:0)+(k==="sniper"?(tier>=2?1:0)+(tier>=3?1:0):0)+(e1&&k==="emp"?1:0)+(e1&&k==="drone"?1:0)+(e1&&k==="laser"?1:0)+(k==="laser"&&tier>=5?1:0)+(e1&&k==="rail"?1:0)+(k==="rail"?(tier>=2?1:0)+(tier>=3?1:0)+(tier>=5?2:0)/*v389 5차 +2칸*/:0)+(e1&&k==="mortar"?1:0)+(k==="mortar"&&tier>=2?1:0)+(k==="orbit"&&tier>=4?1.5:0),splash:(T.splash||0)*(1+.06*tier)*(e1&&k==="mortar"?1.35:e1&&k==="tank"?1.5:e1&&k==="laser"?1.5:1)*(k==="mortar"&&tier>=2?1.35:1),beamW:k==="rail"?(e1?.6:.3):0,beamDur:k==="rail"?(tier>=3?3:tier>=2?1.2:e1?.6:.3):0,
     bossX:k==="sniper"?(tier>=5?12:tier>=4?8:tier>=3?6:tier>=2?4:e1?3:2):1/*v366*/,burn:false/*v362 박격포 불씨 삭제*/,chill:e1&&k==="flame",
     chain:tier<4?[5,7,10,14][tier]:20/*v382 연쇄 기본5·1차7·2차10·3차14·4차 이후 20*/,nBeam:4+(e1?2:0)+Math.floor(tier/3),zapStun:e1&&k==="tesla"?.4:0};}
@@ -905,7 +905,8 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
     if(sh.kd==="sat"){shakeT=Math.max(shakeT,.08);scorch.push({x:sh.tx,y:sh.ty,R:sh.sp*.55,life:4,m:4,rot:Math.random()*3,glow:1});if(scorch.length>40)scorch.shift();
       fx.push({k:"skybeam",x:sh.tx,y:sh.ty,R:sh.sp,life:.45,m:.45,col:sh.tier>=4?TCOL[sh.tier]:"#ff5a6e"},{k:"ring",x:sh.tx,y:sh.ty,life:.4,m:.4,col:"#ffd0d8",R:sh.sp*1.3});
       if(fx.length<440)for(let i=0;i<8;i++){const a=Math.random()*7,v=1+Math.random()*1.5;fx.push({k:"pt",x:sh.tx,y:sh.ty,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.4,m:.4,col:"#ffb0bd"});}}
-    if(sh.kd==="nuke"){shakeT=Math.max(shakeT,sh.cin?1.3:.9);fx.push({k:"flash",life:sh.cin?1.3:.9,m:sh.cin?1.3:.9},{k:"mush",x:sh.tx,y:sh.ty,life:sh.cin?3.9:3.2,m:sh.cin?3.9:3.2,big:(sh.cin?2.4:1)+sh.tier*.06});
+    if(sh.kd==="nuke"&&isHid(sh.src)){shakeT=Math.max(shakeT,sh.cin?1.8:1.2);fx.push({k:"tflash",life:1.8,m:1.8,col:"#e8f2ff"},{k:"nova",x:sh.tx,y:sh.ty,life:sh.cin?5:4,m:sh.cin?5:4,big:sh.cin?1.6:1});for(const R of[4,8,13,19])fx.push({k:"ring",x:sh.tx,y:sh.ty,life:1+R*.07,m:1+R*.07,col:R%2?"#bfe0ff":"#e7c9ff",R});}
+    else if(sh.kd==="nuke"){shakeT=Math.max(shakeT,sh.cin?1.3:.9);fx.push({k:"flash",life:sh.cin?1.3:.9,m:sh.cin?1.3:.9},{k:"mush",x:sh.tx,y:sh.ty,life:sh.cin?3.9:3.2,m:sh.cin?3.9:3.2,big:(sh.cin?2.4:1)+sh.tier*.06});
       for(const R of(sh.cin?[3,6,10,15]:[3,6,10]))fx.push({k:"ring",x:sh.tx,y:sh.ty,life:.8+R*.06,m:.8+R*.06,col:"#fff1c4",R});
       for(let i=0;i<8;i++)scorch.push({x:sh.tx+(Math.random()-.5)*3,y:sh.ty+(Math.random()-.5)*3,R:.4+Math.random()*.4,life:6,m:6,rot:Math.random()*3});banner("핵 타격 · 지도 전체 피해");}
     if(sh.kd==="tank"){const R=sh.sp;shakeT=Math.max(shakeT,.04);
@@ -1836,6 +1837,13 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
     else if(f.k==="rays"){X.save();X.translate(f.x,f.y);X.rotate((1-a)*2.5);X.globalAlpha=a*.7;for(let i=0;i<f.n;i++){X.rotate(Math.PI*2/f.n);const g3=X.createLinearGradient(0,0,f.R,0);g3.addColorStop(0,"#ffffff");g3.addColorStop(.4,f.col);g3.addColorStop(1,"rgba(255,255,255,0)");X.fillStyle=g3;X.beginPath();X.moveTo(0,0);X.lineTo(f.R*(1.2-a*.4),-.12);X.lineTo(f.R*(1.2-a*.4),.12);X.closePath();X.fill();}X.restore();}
     else if(f.k==="tflash"){X.setTransform(1,0,0,1,0,0);X.globalAlpha=a*a*.35;X.fillStyle=f.col;X.fillRect(0,0,C.width,C.height);X.setTransform(CS*DPR,0,0,CS*DPR,0,0);}
     else if(f.k==="flash"){X.setTransform(1,0,0,1,0,0);X.globalAlpha=a*a*.85;X.fillStyle="#fffbe8";X.fillRect(0,0,C.width,C.height);X.setTransform(CS*DPR,0,0,CS*DPR,0,0);}
+    else if(f.k==="nova"){ /* v421 초신성 폭발: 백청색 핵, 팽창하는 성운 껍질, 빛살, 충격파 */
+      const k=1-a,B=f.big,ex=1-Math.pow(1-Math.min(1,k*1.6),3);X.save();X.globalCompositeOperation="lighter";
+      const cr=(.6+ex*1.2)*B,core=X.createRadialGradient(f.x,f.y,0,f.x,f.y,cr*2.4);core.addColorStop(0,`rgba(255,255,255,${.95*a+.05})`);core.addColorStop(.18,`rgba(200,230,255,${.8*a})`);core.addColorStop(.5,`rgba(140,150,255,${.35*a})`);core.addColorStop(1,"rgba(80,60,200,0)");X.fillStyle=core;X.beginPath();X.arc(f.x,f.y,cr*2.4,0,7);X.fill();
+      for(let i=0;i<18;i++){const an=i/18*Math.PI*2+k*.6,L=(2+ex*7)*B*(.6+.4*Math.sin(i*2.7)),g3=X.createLinearGradient(f.x,f.y,f.x+Math.cos(an)*L,f.y+Math.sin(an)*L);g3.addColorStop(0,`rgba(255,255,255,${.7*a})`);g3.addColorStop(1,"rgba(160,200,255,0)");X.fillStyle=g3;X.beginPath();X.moveTo(f.x+Math.cos(an-.04)*cr*.5,f.y+Math.sin(an-.04)*cr*.5);X.lineTo(f.x+Math.cos(an)*L,f.y+Math.sin(an)*L);X.lineTo(f.x+Math.cos(an+.04)*cr*.5,f.y+Math.sin(an+.04)*cr*.5);X.closePath();X.fill();}
+      const sr=(1+ex*9)*B;for(let j=0;j<3;j++){const rr=sr*(1-j*.12);X.strokeStyle=["rgba(255,120,200,","rgba(120,190,255,","rgba(255,200,140,"][j]+(.45*a)+")";X.lineWidth=(.35-j*.08)*B*(1+k);X.beginPath();for(let q=0;q<=40;q++){const an=q/40*Math.PI*2,w=1+.08*Math.sin(an*5+j*2+k*4)+.05*Math.sin(an*11+j);q?X.lineTo(f.x+Math.cos(an)*rr*w,f.y+Math.sin(an)*rr*w*.8):X.moveTo(f.x+Math.cos(an)*rr*w,f.y+Math.sin(an)*rr*w*.8);}X.closePath();X.stroke();}
+      for(let i=0;i<40;i++){const an=i*2.39996,d=sr*(.4+.6*((i*.618)%1)),z=.06*B*a;X.fillStyle=i%3?"rgba(200,220,255,.8)":"rgba(255,180,230,.8)";X.globalAlpha=a;X.fillRect(f.x+Math.cos(an)*d,f.y+Math.sin(an)*d*.8,z,z);}
+      X.restore();X.globalAlpha=1;}
     else if(f.k==="mush"){const k=1-a,B=f.big,H=2.6*B*Math.min(1,k*3),R=1.1*B*(.4+.6*Math.min(1,k*2));X.globalAlpha=Math.min(1,a*1.6);
       const gs=X.createRadialGradient(f.x,f.y,0,f.x,f.y,R*2.2);gs.addColorStop(0,"rgba(255,180,80,.55)");gs.addColorStop(1,"rgba(255,120,40,0)");X.fillStyle=gs;X.beginPath();X.ellipse(f.x,f.y,R*2.2,R*1.2,0,0,7);X.fill();
       X.fillStyle="#8a5a3a";X.fillRect(f.x-R*.22,f.y-H,R*.44,H);X.fillStyle="#c27a3e";X.fillRect(f.x-R*.12,f.y-H,R*.24,H);
@@ -2321,7 +2329,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v420 · 11/04 12:28";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v421 · 11/04 12:36";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3065,5 +3073,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041225 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041227 */</script>
 </body></html>
