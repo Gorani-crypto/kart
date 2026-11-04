@@ -690,7 +690,7 @@ const upCost=t=>Math.ceil(TT[t.type].up*curveOf(t.type).Cm[Math.min(t.l,149)]*co
 const placeCost=type=>Math.ceil(TT[type].cost*costMul()); // 개수와 무관한 고정 설치비
 /*v415 150렙 히든 전직: [이름, 150렙 초당 공격력, 149→150 강화비(EASY 기준)] — 150렙 화력과 149→150 강화비만 조정 (v409 태초 포함)*/
 const HID={orbit:["태초",1e45,0],laser:["섬멸",1e44,6e49]/*v459 태초 10재 · v458 섬멸 1재·60극*/,tesla:["천벌",4e43,2e49],drone:["천공",2e43,1.2e49],tank:["철혈",1e43,7e48],missile:["극점",8e42,5e48],flame:["홍련",7e42,4e48],sniper:["관통",2e42,2e49],emp:["혼돈",0,0],gas:["침식",0,0],mortar:["천궁",5e42,3e48],rail:["초월",3e42,2e49],rifle:["철우",1e42,1e48]/*v461 히든 화력 ×10*/,nuke:["초신성",0,1e49]};
-let TAECHO_ERR=null;try{const seen=new Set();for(const k in HID){const[nm,dp,co]=HID[k],c=curveOf(k);if((dp||co)&&seen.has(c))throw Error("shared curve "+k);seen.add(c);if(dp){const d=dpsOf({type:k,l:150,tier:tierOf(150),x:0,y:0});c.D[150]*=dp/d;}if(co){c.Cm[149]*=co/(TT[k].up*c.Cm[149]);}}{const c=curveOf("nuke"),d=st0({type:"nuke",l:150,tier:tierOf(150)}).dmg;c.D[150]*=1e48/d;}/*v420·v461 초신성 한 발 1만재, 149→150 10극*/}catch(e){TAECHO_ERR=e.message;}
+let TAECHO_ERR=null;try{{const seen=new Set();for(const k in TT){if(k==="nuke")continue;const c=curveOf(k);if(seen.has(c))continue;seen.add(c);const D=c.D,o149=D[149],o150=D[150];for(let L=141;L<=149;L++)D[L]=D[L-1]*(1+2*(1.52-1));D[150]=o150*D[149]/o149;}}/*v464 핵 제외 141~149렙 레벨당 화력 증가폭 2배(×1.52→×2.04), 150렙은 히든 값 그대로(EMP·최루탄은 4.6배 점프 유지)*/const seen=new Set();for(const k in HID){const[nm,dp,co]=HID[k],c=curveOf(k);if((dp||co)&&seen.has(c))throw Error("shared curve "+k);seen.add(c);if(dp){const d=dpsOf({type:k,l:150,tier:tierOf(150),x:0,y:0});c.D[150]*=dp/d;}if(co){c.Cm[149]*=co/(TT[k].up*c.Cm[149]);}}{const c=curveOf("nuke"),d=st0({type:"nuke",l:150,tier:tierOf(150)}).dmg;c.D[150]*=1e47/d;}/*v420·v464 초신성 한 발 1000재, 149→150 10극*/}catch(e){TAECHO_ERR=e.message;}
 {const C=CURVE.ob.Cm,f=1e49/(TT.orbit.up*C[148]);for(let l=140;l<=148;l++)C[l]*=Math.pow(f,(l-139)/9);}{const C=CURVE.ls.Cm,f=3e48/(TT.laser.up*C[148]);for(let l=140;l<=148;l++)C[l]*=Math.pow(f,(l-139)/9);}/*v458 위성 148→149 = 3극*/ /*v457 궤도 140~148→ 강화비 서서히 인하, 148→149 = 10극*/
 const isHid=t=>t&&t.l>=150&&!!HID[t.type],hidName=t=>HID[t.type][0];const isTaecho=t=>t&&t.type==="orbit"&&t.l>=150;
 function avgRew(s){const m=mix(s);let v=0;for(const r in m)v+=m[r]*rewOf(s,+r);return v;}
@@ -2372,7 +2372,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v463 · 11/04 17:30";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v464 · 11/04 17:36";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3117,5 +3117,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041717 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041721 */</script>
 </body></html>
