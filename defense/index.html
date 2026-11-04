@@ -2300,7 +2300,7 @@ function place(type,x,y){if(lockText(type))return null;const cost=placeCost(type
   const nt={id:nextId++,type,x,y,l:1,inv:cost,cd:type==="nuke"?1/TT.nuke.rate:0,ang:-Math.PI/2,kills:0};S.towers.push(nt);dirtyUI=true;return nt;}
 C.addEventListener("pointermove",ev=>{hover=cellAt(ev);});
 C.addEventListener("pointerleave",()=>{hover=null;});
-C.addEventListener("click",ev=>{const c=cellAt(ev);if(!c)return;if(totemPick){if(canPlace(c[0],c[1])){S.totem={x:c[0],y:c[1]};totemPick=false;fx.push({k:"ring",x:c[0]+.5,y:c[1]+.5,life:1,m:1,col:"#9cff8a",R:1.6},{k:"txt",x:c[0]+.5,y:c[1]-.1,txt:"🍀 보상 +30%",col:"#b8f5a8",life:2,m:2,sz:.34});banner("🍀 행운의 토템 설치 · 보상 +30%");save();dirtyUI=true;}else banner("빈 칸에만 놓을 수 있습니다");return;}if(S.totem&&S.totem.x===c[0]&&S.totem.y===c[1]){banner("🍀 행운의 토템 · 모든 처치 보상 +30%");return;}const t=towerAt(c[0],c[1]);
+C.addEventListener("click",ev=>{const c=cellAt(ev);if(!c)return;if(totemPick){if(canPlace(c[0],c[1])){S.totem={x:c[0],y:c[1]};totemPick=false;fx.push({k:"ring",x:c[0]+.5,y:c[1]+.5,life:1,m:1,col:"#9cff8a",R:1.6},{k:"txt",x:c[0]+.5,y:c[1]-.1,txt:"🍀 보상 +30%",col:"#b8f5a8",life:2,m:2,sz:.34});banner("🍀 행운의 토템 설치 · 보상 +30%");save();dirtyUI=true;}else banner("빈 칸에만 놓을 수 있습니다");return;}if(S.totem&&S.totem.x===c[0]&&S.totem.y===c[1]){$("modalBox").innerHTML=`<h2>🍀 행운의 토템</h2><p>모든 처치 보상 +30%. 회수하면 효과가 꺼지고, 언제든 다른 빈 칸에 다시 설치할 수 있습니다.</p><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" id="tmClose">닫기</button><button class="btn pri" id="tmBack">회수</button></div>`;$("modal").hidden=false;$("tmClose").onclick=()=>{$("modal").hidden=true;};$("tmBack").onclick=()=>{const o=S.totem;S.totem=null;$("modal").hidden=true;fx.push({k:"ring",x:o.x+.5,y:o.y+.5,life:.7,m:.7,col:"#9cff8a",R:1});banner("🍀 행운의 토템 회수");save();dirtyUI=true;};return;} /*v429 토템 회수*/const t=towerAt(c[0],c[1]);
   if(t){sel=t;buildType=null;buildCell=null;dirtyUI=true;return;}
   if(buildType&&canPlace(c[0],c[1])){const nt=place(buildType,c[0],c[1]);if(!nt){banner("자금이 부족합니다");return;}
     fx.push({k:"ring",x:c[0]+.5,y:c[1]+.5,life:.5,m:.5,col:"#e3a82b",R:.8});sel=nt;save();
@@ -2344,7 +2344,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);$("totemBtn").addEventListener
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v428 · 11/04 13:20";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v429 · 11/04 13:24";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3088,5 +3088,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041309 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041311 */</script>
 </body></html>
