@@ -312,8 +312,8 @@ function voidIntro(done){const o=document.createElement("div");o.id="voidOv";o.i
   const fin=()=>{if(!VI)return;clearTimeout(tm);VI=null;o.style.transition="opacity .8s";o.classList.remove("on");setTimeout(()=>o.remove(),900);done();};
   const next=()=>{i++;if(i>=VOID_LINES.length){tm=setTimeout(fin,600);return;}const last=i===VOID_LINES.length-1;P.textContent=VOID_LINES[i];P.classList.toggle("big",last);P.classList.add("on");tm=setTimeout(()=>{P.classList.remove("on");tm=setTimeout(next,1000);},last?3200:2300);};
   o.onclick=fin;requestAnimationFrame(()=>{o.classList.add("on");tm=setTimeout(next,1500);});}
-function mkVoid(){const h=1e50;return{res:.1,r:18,alien:"void",title:"공허",n0:1,hp1:h,max:h,hp:h,spd:spdOf(800)*.16,rew:0,kind:1,dmg:MAXLIFE,size:.95,boss:true,d:0,id:nextId++,step:0};} /*v418 최종 보스 공허: 체력 100극*/
-function mkInfBoss(s){const R=infReg(s),h=infHp(s)*30;/*v436 무한 보스 체력 = 일반 1기의 30배(공허 제외)*/return{res:s>=550?.1:0,r:18,alien:R.shape,title:`${R.short}의 ${R.boss}`,n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(R.shape==="ship"?.22:R.shape==="walker"?.28:.34),rew:Math.round(infRew(s-1)*infK(s-1)*1.3*3)/*v433·v442 보스 보상 = 직전 단계 보상(물량 배수 포함)의 3배*/,kind:1,dmg:MAXLIFE,size:R.shape==="ship"?.8:.62,boss:true,d:0,id:nextId++,step:0};}
+function mkVoid(){const h=1e50;return{res:.3,r:18,alien:"void",title:"공허",n0:1,hp1:h,max:h,hp:h,spd:spdOf(800)*.16,rew:0,kind:1,dmg:MAXLIFE,size:.95,boss:true,d:0,id:nextId++,step:0};} /*v418 최종 보스 공허: 체력 100극*/
+function mkInfBoss(s){const R=infReg(s),h=infHp(s)*30;/*v436 무한 보스 체력 = 일반 1기의 30배(공허 제외)*/return{res:s>=750?.3:s>=650?.2:s>=550?.1:0,/*v445 보스 상태이상 내성 550 10%·650 20%·750 30%*/r:18,alien:R.shape,title:`${R.short}의 ${R.boss}`,n0:1,hp1:h,max:h,hp:h,spd:spdOf(s)*(R.shape==="ship"?.22:R.shape==="walker"?.28:.34),rew:Math.round(infRew(s-1)*infK(s-1)*1.3*3)/*v433·v442 보스 보상 = 직전 단계 보상(물량 배수 포함)의 3배*/,kind:1,dmg:MAXLIFE,size:R.shape==="ship"?.8:.62,boss:true,d:0,id:nextId++,step:0};}
 // 계급: 이름, 계급장 종류, 개수
 const RK=[["이병","bar",1],["일병","bar",2],["상병","bar",3],["병장","bar",4],["하사","chev",1],["중사","chev",2],["상사","chev",3],["원사","chev",4],
   ["소위","dia",1],["중위","dia",2],["대위","dia",3],["소령","leaf",1],["중령","leaf",2],["대령","leaf",3],["준장","star",1],["소장","star",2],["중장","star",3],["대장","star",4],["국방부장관","min",0]];
@@ -2351,7 +2351,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v444 · 11/04 16:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v445 · 11/04 16:08";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3096,5 +3096,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041600 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041601 */</script>
 </body></html>
