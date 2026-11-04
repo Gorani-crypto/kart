@@ -312,14 +312,14 @@ function voidIntro(done){const o=document.createElement("div");o.id="voidOv";o.i
   const fin=()=>{if(!VI)return;clearTimeout(tm);VI=null;o.style.transition="opacity .8s";o.classList.remove("on");setTimeout(()=>o.remove(),900);done();};
   const next=()=>{i++;if(i>=VOID_LINES.length){tm=setTimeout(fin,600);return;}const last=i===VOID_LINES.length-1;P.textContent=VOID_LINES[i];P.classList.toggle("big",last);P.classList.add("on");tm=setTimeout(()=>{P.classList.remove("on");tm=setTimeout(next,1000);},last?3200:2300);};
   o.onclick=fin;requestAnimationFrame(()=>{o.classList.add("on");tm=setTimeout(next,1500);});}
-let voidSpT=0,voidCin=0;const VOID_USP=()=>spdOf(800)*.7;/*v469 잔영 이동속도 통일*/const VOID_SP=1,VOID_N=1,/*v468 1초에 1기*/VOID_MH=5e46/*v451 잔영 체력 500재*/,VOID_WALK=15,VOID_SPEW=1500,/*v468 잔영 분출 구간 25분*/VOID_HOLES=10,VOID_HOLE_T=30;
+let voidSpT=0,voidCin=0;const VOID_USP=()=>PLEN/360;/*v469·v471 잔영 이동속도 통일: 길 전체 6분*/const VOID_SP=1,VOID_N=1,/*v468 1초에 1기*/VOID_MH=5e46/*v451 잔영 체력 500재*/,VOID_WALK=15,VOID_SPEW=1500,/*v468 잔영 분출 구간 25분*/VOID_HOLES=10,VOID_HOLE_T=30;
 /* v447 공허 패턴: 처음 15초 혼자 걸어 나옴 → 첫 분출 연출 → 10분간 4초마다 잔영(1000재) → 30초마다 블랙홀(5000재, 공허의 8배 속도) 10개 → 다시 잔영… 반복 */
 function voidTick(v,dt){v.phT=(v.phT||0)+dt;if(v.ph)v.tt=(v.tt||0)+dt;
   if(!v.ph){if(v.phT>=VOID_WALK){v.ph=1;v.phT=0;voidSpT=0;voidBurst(v);}return;}
   if(v.ph===1){voidSpT-=dt;if(voidSpT<=0){voidSpT=VOID_SP;for(let i=0;i<VOID_N;i++)enemies.push(mkVoidSpawn(v));}/*v449 1초마다 3기*/if(v.phT>=VOID_SPEW){v.ph=2;v.phT=0;v.holes=0;voidSpT=0;banner("공허가 블랙홀을 내보낸다");}return;}
   if(v.ph===2){voidSpT-=dt;if(voidSpT<=0&&v.holes<VOID_HOLES){voidSpT=VOID_HOLE_T;v.holes++;enemies.push(mkBlackHole(v));fx.push({k:"ring",x:v.x,y:v.y,life:1,m:1,col:"#7a5cff",R:2.4});shakeT=Math.max(shakeT,.4);}
     if(v.holes>=VOID_HOLES&&voidSpT<=0){v.ph=1;v.phT=0;voidSpT=0;banner("공허가 다시 모든 것을 내뿜는다");}}}
-function mkBlackHole(v){const H=5e47;return{n0:1,hp1:H,max:H,hp:H,rew:1e47/*v449 블랙홀 1000재*/,lk:2,dmg:10,boss:false,d:v.d,id:nextId++,step:0,vm:1,res:.3,r:17,alien:"bhole",title:"블랙홀",spd:spdOf(800)*.16*8,size:.55};}
+function mkBlackHole(v){const H=5e47;return{n0:1,hp1:H,max:H,hp:H,rew:1e47/*v449 블랙홀 1000재*/,lk:2,dmg:10,boss:false,d:v.d,id:nextId++,step:0,vm:1,res:.3,r:17,alien:"bhole",title:"블랙홀",spd:PLEN/180/*v471 블랙홀 길 전체 3분*/,size:.55};}
 function voidBurst(v){shakeT=Math.max(shakeT,1.6);fx.push({k:"tflash",life:1.4,m:1.4,col:"#1a0830"});for(const R of[2,4,7,11,16])fx.push({k:"ring",x:v.x,y:v.y,life:1+R*.08,m:1+R*.08,col:R%2?"#b9a0ff":"#ffffff",R});
   enemies.push(mkVoidSpawn(v));voidCin=4.2;
   const o=document.createElement("div");o.id="voidOv";o.className="soft";o.innerHTML="<p></p>";document.body.appendChild(o);const P=o.querySelector("p");P.textContent="공허가 모든 것을 내뿜기 시작했다.";
@@ -2397,7 +2397,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v470 · 11/04 18:08";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v471 · 11/04 18:10";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3142,5 +3142,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041738 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041739 */</script>
 </body></html>
