@@ -224,7 +224,7 @@ body.cmp.drawer #drawerBg{display:block;position:fixed;inset:0;z-index:44;backgr
         <div class="ctrl">
           <button class="btn" id="pause" aria-pressed="false">일시정지</button>
           <div class="seg" id="speed" role="group" aria-label="게임 속도">
-            <button data-sp="1" aria-pressed="true">1×</button><button data-sp="2" aria-pressed="false">2×</button><button data-sp="4" aria-pressed="false" hidden>4×</button><button data-sp="8" aria-pressed="false" hidden>8×</button><button data-sp="16" aria-pressed="false" hidden>16×</button>
+            <button data-sp="1" aria-pressed="true">1×</button><button data-sp="2" aria-pressed="false">2×</button><button data-sp="4" aria-pressed="false" hidden>4×</button><button data-sp="8" aria-pressed="false" hidden>8×</button><button data-sp="16" aria-pressed="false" hidden>16×</button><button data-sp="64" aria-pressed="false" title="임시(테스트용)" style="color:#ff9a7a">64×</button>
           </div>
           <button class="btn" id="auto" aria-pressed="true">자동 진행</button>
           <button class="btn" id="bgmBtn" aria-pressed="true">♪ BGM</button>
@@ -2346,7 +2346,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);$("totemBtn").addEventListener
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v431 · 11/04 14:36";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v432 · 11/04 14:40";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3041,7 +3041,7 @@ function cutMood(g,W,H,c,i,T){if(c>=6&&i!==1)return;if(isAlEnd(cutData))return;i
 /* ═════════ 저장 (계정 DB + 브라우저) ═════════ */
 const LS="lastline-save-v2";let db=null,uid=null,lastRemote=0;
 function ser(){return JSON.stringify({...S,t:Date.now(),towers:S.towers.map(t=>({type:t.type,x:t.x,y:t.y,l:t.l,inv:t.inv,kills:t.kills||0,...(t.tg?{tg:t.tg}:{}),...(t.type==="nuke"?{cd:Math.max(0,t.cd||0)}:{})}))});}
-function apply(o){if(!o||o.v!==2)return false;gAcc=0;gClock=performance.now();const n=fresh();Object.assign(n,o);n.country=n.country||1;n.gpm=Math.min(n.gpm||0,n.earned||0); /* 다른 기록의 분당 수입이 섞여 들어온 경우 바로잡기 */n.bestBy=n.bestBy||{};n.waveBy=n.waveBy||{};n.conqBy=n.conqBy||(o.conquered?{1:true}:{});COUNTRY=COUNTRIES[n.country-1]||COUNTRIES[0];if(![1,2,4,8,16].includes(n.speed))n.speed=1;for(const t of (o.towers||[]))if(!TT[t.type])n.gold=(n.gold||0)+(t.inv||0);n.towers=(o.towers||[]).filter(t=>TT[t.type]&&canPlaceRaw(t.x,t.y)).map(t=>({...t,id:nextId++,cd:t.cd||0,ang:-Math.PI/2}));n.lives=MAXLIFE;if(n.speed>4&&n.speed!==20)n.speed=4;{const ml=n.conqBy[6]?150:n.conqBy[5]?100:50;for(const t of n.towers)if(t.l>ml)t.l=ml;} /*v431 불러올 때 레벨 상한: 최종장 클리어 150 (예전엔 100으로 잘림)*/n.mode=n.mode==="hard"?"hard":"easy";S=n;S.meta=metaGet();try{localStorage.setItem("lld_meta",JSON.stringify(S.meta));}catch(e){}
+function apply(o){if(!o||o.v!==2)return false;gAcc=0;gClock=performance.now();const n=fresh();Object.assign(n,o);n.country=n.country||1;n.gpm=Math.min(n.gpm||0,n.earned||0); /* 다른 기록의 분당 수입이 섞여 들어온 경우 바로잡기 */n.bestBy=n.bestBy||{};n.waveBy=n.waveBy||{};n.conqBy=n.conqBy||(o.conquered?{1:true}:{});COUNTRY=COUNTRIES[n.country-1]||COUNTRIES[0];if(![1,2,4,8,16,64].includes(n.speed))n.speed=1;for(const t of (o.towers||[]))if(!TT[t.type])n.gold=(n.gold||0)+(t.inv||0);n.towers=(o.towers||[]).filter(t=>TT[t.type]&&canPlaceRaw(t.x,t.y)).map(t=>({...t,id:nextId++,cd:t.cd||0,ang:-Math.PI/2}));n.lives=MAXLIFE;if(n.speed>4&&n.speed!==20)n.speed=4;{const ml=n.conqBy[6]?150:n.conqBy[5]?100:50;for(const t of n.towers)if(t.l>ml)t.l=ml;} /*v431 불러올 때 레벨 상한: 최종장 클리어 150 (예전엔 100으로 잘림)*/n.mode=n.mode==="hard"?"hard":"easy";S=n;S.meta=metaGet();try{localStorage.setItem("lld_meta",JSON.stringify(S.meta));}catch(e){}
   enemies=[];queue=[];shells=[];pillars=[];phase="idle";autoT=2;sel=null;dirtyUI=true;return true;}
 const canPlaceRaw=(x,y)=>!PATH.has(x+","+y)&&!BLOCK.has(x+","+y);
 function setSave(mode){$("saveSt").innerHTML=`<span class="dot ${mode?"ok":""}"></span>${mode==="acct"?"계정에 자동 저장":mode==="local"?"이 브라우저에 자동 저장":"저장 안 됨"}`;}
@@ -3069,7 +3069,7 @@ async function connect(){try{let n=0;while(!(window.claude&&window.claude.use)&&
 let last=0,uiT=0,saveT=0;const modalOpen=()=>!$("modal").hidden;
 function loop(now){if(!last)last=now;let dt=Math.min(.1,(now-last)/1000);last=now;
   if(!cutOn&&!paused&&!titleOn){const nt=nukeTower();if(nt&&nt.cd>0)nt.cd=Math.max(0,nt.cd-dt);}
-  if(titleOn){}else if(bossIntro&&!cutOn){bossIntro.t+=dt;if(bossIntro.t>=bossIntro.T){const rs=bossIntro.resume;bossIntro=null;if(!rs){bossIntroOk=true;phase="idle";startWave();}}}else if(nukeCin>0&&!cutOn)update(dt);else if(!paused&&!modalOpen()&&!cutOn){/* 고정 간격 0.05초(게임 시간)로 나눠 계산, 한 프레임 최대 16번 — 배속이 높아도 프레임당 계산량이 크게 늘지 않음 */const tot=dt*S.speed,n=Math.min(S.speed>=16?14:10,Math.ceil(tot/.05));for(let i=0;i<n;i++)update(tot/n);}
+  if(titleOn){}else if(bossIntro&&!cutOn){bossIntro.t+=dt;if(bossIntro.t>=bossIntro.T){const rs=bossIntro.resume;bossIntro=null;if(!rs){bossIntroOk=true;phase="idle";startWave();}}}else if(nukeCin>0&&!cutOn)update(dt);else if(!paused&&!modalOpen()&&!cutOn){/* 고정 간격 0.05초(게임 시간)로 나눠 계산, 한 프레임 최대 16번 — 배속이 높아도 프레임당 계산량이 크게 늘지 않음 */const tot=dt*S.speed,n=Math.min(S.speed>=64?26:S.speed>=16?14:10,Math.ceil(tot/.05));for(let i=0;i<n;i++)update(tot/n);}
   if(now-gClock>60000){if(!paused)S.gpm=S.gpm?S.gpm*.7+gAcc*.3:gAcc;gAcc=0;gClock=now;}
   draw(now);if(nukeCin>0)drawCinBars();if(bossIntro){drawBossIntro();const bn=$("banner");if(bn.classList.contains("on"))bn.classList.remove("on");}updNukeBtn();uiT+=dt;saveT+=dt;if(dirtyUI&&uiT>.2||uiT>.5){uiT=0;renderUI();}if(saveT>8){saveT=0;save();}
   requestAnimationFrame(loop);}
@@ -3091,5 +3091,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041432 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041434 */</script>
 </body></html>
