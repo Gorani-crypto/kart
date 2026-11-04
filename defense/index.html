@@ -312,7 +312,7 @@ function voidIntro(done){const o=document.createElement("div");o.id="voidOv";o.i
   const fin=()=>{if(!VI)return;clearTimeout(tm);VI=null;o.style.transition="opacity .8s";o.classList.remove("on");setTimeout(()=>o.remove(),900);done();};
   const next=()=>{i++;if(i>=VOID_LINES.length){tm=setTimeout(fin,600);return;}const last=i===VOID_LINES.length-1;P.textContent=VOID_LINES[i];P.classList.toggle("big",last);P.classList.add("on");tm=setTimeout(()=>{P.classList.remove("on");tm=setTimeout(next,1000);},last?3200:2300);};
   o.onclick=fin;requestAnimationFrame(()=>{o.classList.add("on");tm=setTimeout(next,1500);});}
-let voidSpT=0,voidCin=0;const VOID_SP=1,VOID_N=3,VOID_MH=1e47,VOID_WALK=15,VOID_SPEW=600,VOID_HOLES=10,VOID_HOLE_T=30;
+let voidSpT=0,voidCin=0;const VOID_SP=1,VOID_N=3,VOID_MH=5e46/*v451 잔영 체력 500재*/,VOID_WALK=15,VOID_SPEW=600,VOID_HOLES=10,VOID_HOLE_T=30;
 /* v447 공허 패턴: 처음 15초 혼자 걸어 나옴 → 첫 분출 연출 → 10분간 4초마다 잔영(1000재) → 30초마다 블랙홀(5000재, 공허의 8배 속도) 10개 → 다시 잔영… 반복 */
 function voidTick(v,dt){v.phT=(v.phT||0)+dt;
   if(!v.ph){if(v.phT>=VOID_WALK){v.ph=1;v.phT=0;voidSpT=0;voidBurst(v);}return;}
@@ -2371,7 +2371,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v450 · 11/04 17:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v451 · 11/04 17:10";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3116,5 +3116,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041639 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041640 */</script>
 </body></html>
