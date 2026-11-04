@@ -470,7 +470,7 @@ const TT={
     names:["테슬라 코일","강화 코일","쌍둥이 코일","뇌운 발생기","폭풍 탑","플라즈마 코일","번개 신전","이온 폭풍","천둥 군주","천공 뇌신탑","신의 번개"]},
   laser:{label:"위성 레이저",role:"궤도 위성이 조준점을 찍고 하늘에서 레이저 기둥을 내리꽂는다",cost:1e9,up:793202245,dmg:5714285.71,curve:"flat",rate:.35,range:6,splash:.9,unlock:80,stage:3,
     names:["위성 레이저","정밀 조준 위성","쌍발 위성","궤도 포격 위성","태양광 집속기","광자 창","하늘의 눈","이카로스","헬리오스 포","천공의 심판","태양의 창"]},
-  nuke:{label:"핵 사일로",role:"10분(실제 시간, 배속 영향 없음) 충전 뒤 '핵 발사' 버튼을 누르면 핵미사일이 지도 위 모든 적을 한꺼번에 타격한다. 1기만 설치 가능. 보스에게는 최대 체력의 절반까지만",cost:2.5e9,up:1023020899,dmg:3333333334,curve:"flat",rate:1/600,range:99,splash:99,unlock:1,stage:4,
+  nuke:{label:"핵 사일로",role:"10분(실제 시간, 배속 영향 없음) 충전 뒤 '핵 발사' 버튼을 누르면 핵미사일이 지도 위 모든 적을 한꺼번에 타격한다. 1기만 설치 가능. 보스에게는 최대 체력의 5%까지만",cost:2.5e9,up:1023020899,dmg:3333333334,curve:"flat",rate:1/600,range:99,splash:99,unlock:1,stage:4,
     names:["핵 사일로","전술 핵","전략 핵","다탄두 사일로","수소탄","중성자탄","반물질 사일로","항성 붕괴탄","초신성 사일로","블랙홀 탄두","창세기"]},
   orbit:{label:"궤도 방어 플랫폼",role:"떠 있는 방어 플랫폼이 여러 줄기 펄스 레이저로 동시에 여러 분대를 지진다",cost:3e9,up:2028587161,dmg:1e6,curve:"flat",rate:2,range:4.5,unlock:1,stage:4,
     names:["궤도 방어 플랫폼","무장 위성","방어 정거장","레이저 함대","궤도 성채","별빛 방벽","은하 방어망","성간 요새","우주 사령부","천상 요새","창공의 왕좌"]}
@@ -670,7 +670,7 @@ const lvMult=(L,type="rifle")=>curveOf(type).D[Math.min(L,150)];
 const upCost=t=>Math.ceil(TT[t.type].up*curveOf(t.type).Cm[Math.min(t.l,149)]*costMul());
 const placeCost=type=>Math.ceil(TT[type].cost*costMul()); // 개수와 무관한 고정 설치비
 /*v415 150렙 히든 전직: [이름, 150렙 초당 공격력, 149→150 강화비(EASY 기준)] — 150렙 화력과 149→150 강화비만 조정 (v409 태초 포함)*/
-const HID={orbit:["태초",1e44,0],laser:["섬멸",1e43,4e49],tesla:["천벌",4e42,2e49],drone:["천공",2e42,1.2e49],tank:["철혈",1e42,7e48],missile:["극점",8e41,5e48],flame:["홍련",7e41,4e48],sniper:["관통",2e41,1e49],emp:["혼돈",0,0],gas:["침식",0,0],mortar:["천궁",5e41,3e48],rail:["초월",3e41,1e49],rifle:["철우",1e41,1e48]};
+const HID={orbit:["태초",1e44,0],laser:["섬멸",1e43,4e49],tesla:["천벌",4e42,2e49],drone:["천공",2e42,1.2e49],tank:["철혈",1e42,7e48],missile:["극점",8e41,5e48],flame:["홍련",7e41,4e48],sniper:["관통",2e41,1e49],emp:["혼돈",0,0],gas:["침식",0,0],mortar:["천궁",5e41,3e48],rail:["초월",3e41,1e49],rifle:["철우",1e41,1e48],nuke:["초신성",0,0]};
 let TAECHO_ERR=null;try{const seen=new Set();for(const k in HID){const[nm,dp,co]=HID[k],c=curveOf(k);if((dp||co)&&seen.has(c))throw Error("shared curve "+k);seen.add(c);if(dp){const d=dpsOf({type:k,l:150,tier:tierOf(150),x:0,y:0});c.D[150]*=dp/d;}if(co){c.Cm[149]*=co/(TT[k].up*c.Cm[149]);}}}catch(e){TAECHO_ERR=e.message;}
 const isHid=t=>t&&t.l>=150&&!!HID[t.type],hidName=t=>HID[t.type][0];const isTaecho=t=>t&&t.type==="orbit"&&t.l>=150;
 function avgRew(s){const m=mix(s);let v=0;for(const r in m)v+=m[r]*rewOf(s,+r);return v;}
@@ -901,7 +901,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
       fx.push(sh.kd==="mis"?{k:"smk",x:gx,y:gy,life:.5,m:.5,R:.12}:sh.kd==="gas"?{k:"smk",x:gx,y:gy,life:.4,m:.4,R:.1,col:"185,217,122"}:{k:"fl",x:gx,y:gy,life:.25,m:.25,col:"#ff9a3a",R:.07});}
     if(sh.t>=sh.T&&!sh.done){sh.done=true;const R2=sh.sp*sh.sp;
     if(sh.kd==="sat"&&sh.dur>0)pillars.push({x:sh.tx,y:sh.ty,R:sh.sp,dps:sh.dmg/sh.dur,T:sh.dur,T0:sh.dur,acc:0,src:sh.src,col:sh.tier>=4?TCOL[sh.tier]:"#ff5a6e"});else
-    for(const e of enemies){if(e.dead||(e.air&&sh.kd!=="mis"))continue;const ddx=e.x-sh.tx,ddy=e.y-sh.ty;if(ddx*ddx+ddy*ddy<=R2){hit(e,sh.kd==="nuke"&&e.boss?Math.min(sh.dmg,e.max*.1)/*v388 핵: 보스엔 최대 체력의 10%까지*/:sh.dmg,sh.src,true);if(sh.kd==="gas")gasOn(e,sh.dur,sh.slow,sh.tier);if(sh.burn){e.burnT=1.5;e.burnD=sh.dmg*.25;e.burnS=sh.src;}}}
+    for(const e of enemies){if(e.dead||(e.air&&sh.kd!=="mis"))continue;const ddx=e.x-sh.tx,ddy=e.y-sh.ty;if(ddx*ddx+ddy*ddy<=R2){hit(e,sh.kd==="nuke"&&e.boss?Math.min(sh.dmg,e.max*.05)/*v416 핵: 보스엔 최대 체력의 5%까지*/:sh.dmg,sh.src,true);if(sh.kd==="gas")gasOn(e,sh.dur,sh.slow,sh.tier);if(sh.burn){e.burnT=1.5;e.burnD=sh.dmg*.25;e.burnS=sh.src;}}}
     if(sh.kd==="sat"){shakeT=Math.max(shakeT,.08);scorch.push({x:sh.tx,y:sh.ty,R:sh.sp*.55,life:4,m:4,rot:Math.random()*3,glow:1});if(scorch.length>40)scorch.shift();
       fx.push({k:"skybeam",x:sh.tx,y:sh.ty,R:sh.sp,life:.45,m:.45,col:sh.tier>=4?TCOL[sh.tier]:"#ff5a6e"},{k:"ring",x:sh.tx,y:sh.ty,life:.4,m:.4,col:"#ffd0d8",R:sh.sp*1.3});
       if(fx.length<440)for(let i=0;i<8;i++){const a=Math.random()*7,v=1+Math.random()*1.5;fx.push({k:"pt",x:sh.tx,y:sh.ty,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.4,m:.4,col:"#ffb0bd"});}}
@@ -2321,7 +2321,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v415 · 11/04 10:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v416 · 11/04 10:15";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3065,5 +3065,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611040958 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041012 */</script>
 </body></html>
