@@ -229,7 +229,7 @@ body.cmp.drawer #drawerBg{display:block;position:fixed;inset:0;z-index:44;backgr
           <button class="btn" id="auto" aria-pressed="true">자동 진행</button>
           <button class="btn" id="bgmBtn" aria-pressed="true">♪ BGM</button>
           <button class="btn" id="saveSlotBtn">저장하기</button><button class="btn" id="loadSlotBtn">불러오기</button><button class="btn" id="homeBtn">메인으로</button>
-          <button class="btn" id="nukeBtn" hidden style="border-color:#c9a23a;color:#ffd36b">☢ 핵</button>
+          <button class="btn" id="nukeBtn" hidden style="border-color:#c9a23a;color:#ffd36b">☢ 핵</button><button class="btn" id="totemBtn" hidden style="border-color:#5fbf6a;color:#b8f5a8">🍀 행운의 토템</button>
           <button class="btn pri" id="go">출격</button>
         </div>
       </div>
@@ -488,7 +488,7 @@ function nukeLaunch(){const t=nukeTower();if(!t||t.cd>0||nukeCin>0||!enemies.som
   fx.push({k:"ring",x,y,life:.6,m:.6,col:isHid(t)?"#bfe0ff":"#ffd36b",R:1.2});shakeT=Math.max(shakeT,.3);banner(isHid(t)?"✦ 초신성 발사":"☢ 핵미사일 발사");dirtyUI=true;}
 function nukeTower(){return S.towers.find(t=>t.type==="nuke");}
 function mmss(x){x=Math.ceil(x);return Math.floor(x/60)+":"+String(x%60).padStart(2,"0");}
-let nukeTxt="";function updNukeBtn(){const b=$("nukeBtn");if(!b)return;const t=nukeTower();if(!t){if(!b.hidden)b.hidden=true;return;}if(b.hidden)b.hidden=false;
+let nukeTxt="";function updNukeBtn(){{const tb=$("totemBtn");if(tb){const sh=!!S.totemUnl&&!S.totem;if(tb.hidden===sh)tb.hidden=!sh;}}const b=$("nukeBtn");if(!b)return;const t=nukeTower();if(!t){if(!b.hidden)b.hidden=true;return;}if(b.hidden)b.hidden=false;
   const rem=Math.max(0,t.cd||0),has=enemies.some(e=>!e.dead),txt=nukeCin>0?"☢ 발사 중…":rem>0?"☢ 충전 "+mmss(rem):has?"☢ 핵 발사":"☢ 준비 완료";if(txt!==nukeTxt){nukeTxt=txt;b.textContent=txt;}b.disabled=nukeCin>0||rem>0||!has;const pn=$("popNuke");if(pn){const pt=nukeCin>0?"☢ …":rem>0?"☢ "+mmss(rem):"☢ 발사";if(pn.textContent!==pt)pn.textContent=pt;pn.disabled=b.disabled;}}
 function lockText(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())return"1기만 설치";if(st>S.country)return st+"스테이지 해금";if(T.wip)return"준비 중";if(st===S.country&&S.best<(T.unlock||1))return T.unlock+"단계 해금";return null;}
 const ATTACK=ORDER.filter(k=>TT[k].dmg);
@@ -741,6 +741,7 @@ function mkBoss(s,b,top){const h=bossHP(s,b);return{r:b[0],title:BT(b[1]),n0:1,h
 function waveClear(){const s=S.wave;let bonus=0,dep=0;
   for(const t of S.towers)if(t.type==="depot"){const p=depotPay(t,s);dep+=p;const c=cc(t);fx.push({k:"txt",x:c[0],y:c[1]-.3,txt:"+"+fmt(p),col:"#ffd36b",life:1.6,m:1.6,sz:.36});}
   earn(bonus+dep);phase="idle";autoT=2;HOOK.clear&&HOOK.clear(s);
+  if(COUNTRY.inf&&s>=350&&!S.totemUnl){S.totemUnl=true;setTimeout(()=>unlockNotice("🍀 행운의 토템 획득",[["무한 350단계 돌파 보상","핵 사일로처럼 지도에 1기만 설치할 수 있는 토템입니다. 오른쪽 위 '🍀 행운의 토템' 버튼을 누른 뒤 빈 칸을 고르세요."],["효과","설치하면 모든 처치 보상 +30%"]]),600);} /*v428 행운의 토템*/
   if(COUNTRY.inf&&s>=800){S.best=800;S.wave=800;S.auto=false;const first=!S.trueEnd;S.trueEnd=true;save();dirtyUI=true;if(first)startTrueEnd();else banner("공허 소멸");return;} /*v409 진짜 엔딩*/
   if(s>=lastOf()){S.best=lastOf();S.wave=COUNTRY.alien?10:91;
     if(!S.conqBy[S.country]){S.conqBy[S.country]=true;S.conquered=true;conquest();}
@@ -793,8 +794,8 @@ function drawTowerDrones(T){for(const t of S.towers){if(t.type!=="drone"||!t.dro
 const alive=e=>e.hp<=0?0:Math.ceil(e.hp/e.hp1-1e-9);
 function hit(e,dmg,t,aoe){if(e.dead)return;const b=alive(e);e.hp-=dmg*(e.gasT>0?e.gasV||1:1); // 분대 하나 = 표적 하나(사용자 지정): 범위 공격도 분대 체력 합에서 한 번만 깎음
 e.hitT=.1;const a=alive(e),kd=b-a;
-  if(kd>0&&!e.boss){earn(e.rew*kd);S.kills+=kd;if(t)t.kills=(t.kills||0)+kd;}
-  if(e.hp<=0){e.dead=true;if(e.pres){endless=null;queue=queue.filter(q=>q.boss);}if(e.boss){earn(e.rew);S.kills++;if(t)t.kills=(t.kills||0)+1;}
+  if(kd>0&&!e.boss){earn(e.rew*kd*(S.totem?1.3:1));S.kills+=kd;if(t)t.kills=(t.kills||0)+kd;}
+  if(e.hp<=0){e.dead=true;if(e.pres){endless=null;queue=queue.filter(q=>q.boss);}if(e.boss){earn(e.rew*(S.totem?1.3:1));S.kills++;if(t)t.kills=(t.kills||0)+1;}
   if(fx.length<450)for(let i=0;i<(e.boss?28:3);i++)fx.push({k:"pt",x:e.x,y:e.y,vx:(Math.random()-.5)*(e.boss?4:2),vy:(Math.random()-.5)*(e.boss?4:2),life:.5,m:.5,col:e.boss?"#ffcf5a":"#7d6a52"});
   if(e.boss)fx.push({k:"ring",x:e.x,y:e.y,life:.9,m:.9,col:"#ffcf5a",R:2.4},{k:"txt",x:e.x,y:e.y-.6,txt:`${e.title} 격파${e.rew?" +"+fmt(e.rew):""}`,col:"#ffcf5a",life:1.8,m:1.8,sz:.4});}}
 /* 최적화: 적 위치 격자 — 무기가 사거리 주변 칸의 적만 훑음 */
@@ -1763,7 +1764,7 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
   if(showR&&showR.type!=="depot"){const r=st(showR).range;X.fillStyle="rgba(255,236,170,.1)";X.strokeStyle="rgba(255,226,140,.7)";X.lineWidth=.03;X.beginPath();X.arc(showR.x+.5,showR.y+.5,r,0,7);X.fill();X.stroke();}
   if(buildCell){X.strokeStyle="#ffe08a";X.lineWidth=.05;X.setLineDash([.12,.08]);X.strokeRect(buildCell[0]+.05,buildCell[1]+.05,.9,.9);X.setLineDash([]);}
   if(buildType&&hover){const ok=canPlace(hover[0],hover[1]);X.fillStyle=ok?"rgba(147,194,92,.35)":"rgba(217,87,60,.35)";X.fillRect(hover[0],hover[1],1,1);}
-  for(const t of S.towers)drawTower(t,T);
+  for(const t of S.towers)drawTower(t,T);if(S.totem)drawTotem(S.totem.x+.5,S.totem.y+.5,T);
   for(const t of S.towers)if(t.type==="flame"&&st(t).tier>=3){fireArms(t,t.x+.5,t.y+.5,T);fireOrbs(t,t.x+.5,t.y+.5,T);}
   if(sel){X.strokeStyle="#ffe08a";X.lineWidth=.05;X.strokeRect(sel.x+.04,sel.y+.04,.92,.92);}
   for(const c of scorch){const a=Math.min(1,c.life/2);X.globalAlpha=a*.35;X.fillStyle="#1d1a14";X.beginPath();X.ellipse(c.x,c.y,c.R,c.R*.8,c.rot,0,7);X.fill();if(c.glow){X.globalAlpha=Math.max(0,c.life-2.5)/1.5*.7;X.fillStyle="#ff6a3a";X.beginPath();X.ellipse(c.x,c.y,c.R*.5,c.R*.4,c.rot,0,7);X.fill();X.globalAlpha=a*.35;}X.globalAlpha=a*.35;X.fillStyle="#3a2c1a";for(let i=0;i<5;i++){const q=c.rot+i*1.26;X.beginPath();X.ellipse(c.x+Math.cos(q)*c.R*.9,c.y+Math.sin(q)*c.R*.9,c.R*.35,c.R*.12,q,0,7);X.fill();}}X.globalAlpha=1;
@@ -1972,6 +1973,11 @@ function fireOrbs(t,x,y,T){/* v323 화염방사기 3차+: 둘레를 공전하는
     X.globalAlpha=1;X.save();X.translate(Math.cos(a0)*rr,Math.sin(a0)*rr);X.rotate(a0+Math.PI/2);X.scale(1.7,1);if(lava){X.globalCompositeOperation="source-over";X.drawImage(FORB.lhead,-.085,-.085,.17,.17);X.globalCompositeOperation="lighter";X.drawImage(FORB.core,-.035,-.035,.07,.07);X.globalCompositeOperation="source-over";X.globalAlpha=.6;X.drawImage(FORB.crust,-.045+.02*Math.sin(T*3+i),-.03,.05,.05);X.drawImage(FORB.crust,.0,.005+.015*Math.cos(T*2+i),.04,.04);X.globalAlpha=1;X.globalCompositeOperation="lighter";}else X.drawImage(FORB.head,-.07,-.07,.14,.14);X.restore();
     if(lava&&fx.length<430&&Math.random()<.05){const hx=x+Math.cos(a0)*rr,hy=y+Math.sin(a0)*rr;fx.push({k:"pt",x:hx,y:hy,vx:(Math.random()-.5)*.4,vy:.3+Math.random()*.4,life:.6,m:.6,col:Math.random()<.5?"#ff5a10":"#ffb030"});}}
   X.restore();}
+let totemPick=false;function drawTotem(x,y,T){X.save();const gl=X.createRadialGradient(x,y,0,x,y,.6);gl.addColorStop(0,`rgba(150,255,140,${.28+.1*Math.sin(T*2)})`);gl.addColorStop(1,"rgba(120,255,120,0)");X.fillStyle=gl;X.beginPath();X.arc(x,y,.6,0,7);X.fill();
+  X.fillStyle="rgba(0,0,0,.3)";X.beginPath();X.ellipse(x+.04,y+.34,.26,.08,0,0,7);X.fill();X.fillStyle="#6b4a2a";X.fillRect(x-.13,y-.18,.26,.52);X.fillStyle="#8a6236";X.fillRect(x-.13,y-.18,.26,.06);X.fillRect(x-.13,y+.06,.26,.05);
+  X.fillStyle="#3a2614";X.fillRect(x-.08,y-.08,.05,.05);X.fillRect(x+.03,y-.08,.05,.05);X.fillRect(x-.06,y+.15,.12,.03);
+  const hy=y-.36+Math.sin(T*2.2)*.03;X.translate(x,hy);X.rotate(Math.sin(T*1.3)*.15);X.fillStyle="#5fd46a";X.shadowColor="#9cff8a";X.shadowBlur=10*DPR;for(let i=0;i<4;i++){X.save();X.rotate(i*Math.PI/2);X.beginPath();X.arc(.055,-.055,.07,0,7);X.arc(-.055,-.055,.07,0,7);X.moveTo(0,0);X.fill();X.restore();}X.shadowBlur=0;X.fillStyle="#2f8a3a";X.beginPath();X.arc(0,0,.03,0,7);X.fill();X.restore();
+  if(totemPick){}}
 function drawTower(t,T){const s=st(t),tier=s.tier,col=TCOL[tier],x=t.x+.5,y=t.y+.5;if(isHid(t)&&t.type!=="orbit"){X.save();X.globalCompositeOperation="lighter";const ag=X.createRadialGradient(x,y,0,x,y,.62);ag.addColorStop(0,"rgba(255,236,170,.32)");ag.addColorStop(1,"rgba(255,220,140,0)");X.fillStyle=ag;X.beginPath();X.arc(x,y,.62,0,7);X.fill();X.strokeStyle="rgba(255,240,190,.55)";X.lineWidth=.025;X.setLineDash([.12,.09]);X.lineDashOffset=-T*.3;X.beginPath();X.arc(x,y,.5,0,7);X.stroke();X.setLineDash([]);X.restore();}
   if(tier>=6){const pul=.5+.5*Math.sin(T*3+t.x);const g=X.createRadialGradient(x,y,.1,x,y,.78);g.addColorStop(0,col+"77");g.addColorStop(1,col+"00");X.globalAlpha=.6+.4*pul;X.fillStyle=g;X.beginPath();X.arc(x,y,.8,0,7);X.fill();X.globalAlpha=1;}
   const b=.38+tier*.006;
@@ -2289,12 +2295,12 @@ const LOCK_SVG=`<svg class="lock" viewBox="0 0 20 22" aria-hidden="true"><path d
 /* ═════════ 입력 ═════════ */
 function cellAt(ev){const r=C.getBoundingClientRect(),rv=ROT(),fx=rv?(ev.clientY-r.top)/r.height:(ev.clientX-r.left)/r.width,fy=rv?(r.right-ev.clientX)/r.width:(ev.clientY-r.top)/r.height;const x=Math.floor(fx*COLS),y=Math.floor(fy*ROWS);return x>=0&&x<COLS&&y>=0&&y<ROWS?[x,y]:null;}
 const towerAt=(x,y)=>S.towers.find(t=>t.x===x&&t.y===y);
-const canPlace=(x,y)=>!PATH.has(x+","+y)&&!BLOCK.has(x+","+y)&&!towerAt(x,y);
+const canPlace=(x,y)=>!PATH.has(x+","+y)&&!BLOCK.has(x+","+y)&&!towerAt(x,y)&&!(S.totem&&S.totem.x===x&&S.totem.y===y);
 function place(type,x,y){if(lockText(type))return null;const cost=placeCost(type);if(S.gold<cost||!canPlace(x,y))return null;S.gold-=cost;
   const nt={id:nextId++,type,x,y,l:1,inv:cost,cd:type==="nuke"?1/TT.nuke.rate:0,ang:-Math.PI/2,kills:0};S.towers.push(nt);dirtyUI=true;return nt;}
 C.addEventListener("pointermove",ev=>{hover=cellAt(ev);});
 C.addEventListener("pointerleave",()=>{hover=null;});
-C.addEventListener("click",ev=>{const c=cellAt(ev);if(!c)return;const t=towerAt(c[0],c[1]);
+C.addEventListener("click",ev=>{const c=cellAt(ev);if(!c)return;if(totemPick){if(canPlace(c[0],c[1])){S.totem={x:c[0],y:c[1]};totemPick=false;fx.push({k:"ring",x:c[0]+.5,y:c[1]+.5,life:1,m:1,col:"#9cff8a",R:1.6},{k:"txt",x:c[0]+.5,y:c[1]-.1,txt:"🍀 보상 +30%",col:"#b8f5a8",life:2,m:2,sz:.34});banner("🍀 행운의 토템 설치 · 보상 +30%");save();dirtyUI=true;}else banner("빈 칸에만 놓을 수 있습니다");return;}if(S.totem&&S.totem.x===c[0]&&S.totem.y===c[1]){banner("🍀 행운의 토템 · 모든 처치 보상 +30%");return;}const t=towerAt(c[0],c[1]);
   if(t){sel=t;buildType=null;buildCell=null;dirtyUI=true;return;}
   if(buildType&&canPlace(c[0],c[1])){const nt=place(buildType,c[0],c[1]);if(!nt){banner("자금이 부족합니다");return;}
     fx.push({k:"ring",x:c[0]+.5,y:c[1]+.5,life:.5,m:.5,col:"#e3a82b",R:.8});sel=nt;save();
@@ -2334,11 +2340,11 @@ let bTimer=0;function banner(t){const b=$("banner");if(!t||bossIntro){b.classLis
 $("pause").addEventListener("click",togglePause);
 $("speed").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;S.speed=+b.dataset.sp;dirtyUI=true;});
 $("auto").addEventListener("click",()=>{S.auto=!S.auto;autoT=1;dirtyUI=true;});
-$("nukeBtn").addEventListener("click",nukeLaunch);
+$("nukeBtn").addEventListener("click",nukeLaunch);$("totemBtn").addEventListener("click",()=>{if(!S.totemUnl||S.totem)return;totemPick=!totemPick;buildType=null;banner(totemPick?"🍀 토템을 놓을 빈 칸을 누르세요":"");});
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);const BUILD="v427 · 11/04 13:06";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);const BUILD="v428 · 11/04 13:20";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2395,7 +2401,7 @@ function renderStage(){const s=S.wave,m=mix(s),boss=BOSS[s];
   $("stageBox").innerHTML=`<div class="lbl">${modeTag(S.mode)} · ${COUNTRY.inf?"무한 모드":S.country+"스테이지 · "+COUNTRY.name}${S.conqBy[S.country]?" · 점령 완료":""}</div>${cNav}${S.conqBy[S.country]?`<button class="btn" data-replay="${S.country}">🎬 점령 장면 다시 보기</button>`:""}
     <div class="stagebar"><button class="btn" data-d="-1" ${s<=1?"disabled":""} aria-label="이전 단계">◀</button><b>${s} / ${lastOf()} 단계</b><button class="btn" data-d="1" ${s>=S.best?"disabled":""} aria-label="다음 단계">▶</button></div>
     ${s<S.best?`<button class="btn pri skipb" data-to="${s+1}" title="이미 깬 단계를 하나 건너뜁니다">⏭ 한 단계 넘기기 · ${s+1}단계로</button>`:""}
-    ${live}${COUNTRY.inf?(()=>{const R=infReg(s),bw=s%10===0;if(s>=800)return`<div class="lbl">최종 단계 · 공허</div><div class="comp"><span class="chip boss">최종 보스 · 공허</span></div><div class="next">체력 <b>${fmt(1e50)}</b></div>`;return`<div class="lbl">이번 단계 · ${R.area} · ${R.loc}</div><div class="comp">${bw?`<span class="chip boss">보스 · ${R.boss}</span>`:""}<span class="chip">외계 생물 ${INF_N}기</span>${infBoost(s)>1?`<span class="chip boss">보상 증폭 ×${infBoost(s).toFixed(2)}</span>`:""}</div><div class="next">1기 체력 <b>${fmt(infHp(s))}</b>${bw?` · 보스 체력 <b>${fmt(infHp(s)*52)}</b>`:` · 다음 보스 <b>${Math.ceil(s/10)*10}단계</b>`}</div>`;})():COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
+    ${live}${COUNTRY.inf?(()=>{const R=infReg(s),bw=s%10===0;if(s>=800)return`<div class="lbl">최종 단계 · 공허</div><div class="comp"><span class="chip boss">최종 보스 · 공허</span></div><div class="next">체력 <b>${fmt(1e50)}</b></div>`;return`<div class="lbl">이번 단계 · ${R.area} · ${R.loc}</div><div class="comp">${bw?`<span class="chip boss">보스 · ${R.boss}</span>`:""}<span class="chip">외계 생물 ${INF_N}기</span>${infBoost(s)>1?`<span class="chip boss">보상 증폭 ×${infBoost(s).toFixed(2)}</span>`:""}${S.totem?`<span class="chip" style="color:#b8f5a8;border-color:#5fbf6a">🍀 토템 보상 +30%</span>`:""}</div><div class="next">1기 체력 <b>${fmt(infHp(s))}</b>${bw?` · 보스 체력 <b>${fmt(infHp(s)*52)}</b>`:` · 다음 보스 <b>${Math.ceil(s/10)*10}단계</b>`}</div>`;})():COUNTRY.alien?(s<=5?`<div class="lbl">이번 단계 · 세뇌된 ${ALC[s-1].cont} 총사령관단 · ${alUnits(s)}명</div><div class="comp"><span class="chip boss">총사령관 ${alUnits(s)}명<b>세뇌</b></span><span class="chip">3분마다 1명 · ${30-2.5*(s-1)}분 행군</span></div><div class="next">총사령관 1명 체력 <b>${fmt(alSq(s))}</b> · 1명 격파 보상 <b>${fmt(Math.round(alSq(s)/1000))}</b></div>`:`<div class="lbl">이번 단계 · 외계군 · 전투체 ${alUnits(s)}기</div><div class="comp"><span class="chip boss">${s===10?"최종 보스":"보스"} · ${ALIENS[s-1][0]}</span><span class="chip">외계 전투체 물량</span></div><div class="next">전투체 1기 체력 <b>${fmt(alGr(s))}</b> · 보스 체력 <b>${fmt(s===10?2e19:alGr(s)*30)}</b></div>`):`<div class="lbl">이번 단계 편성 · 병력 ${(totalOf(s)*DISP()).toLocaleString("ko-KR")}명</div><div class="comp">${bl}${chips}</div>`}
     ${!COUNTRY.alien&&!COUNTRY.inf&&!boss&&nb?`<div class="next">다음 ${BKIND[BOSS[nb][2]]} <b>${nb}단계 ${BT(BOSS[nb][1])}</b></div>`:""}`;}
 let popKey="";
 function popAt(p,cx,cy){const F=C.clientWidth,ox=C.offsetLeft,oy=C.offsetTop,cs=F/COLS,pw=p.offsetWidth,ph=p.offsetHeight;
@@ -3082,5 +3088,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041304 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611041309 */</script>
 </body></html>
