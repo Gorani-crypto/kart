@@ -982,7 +982,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
   for(const f of fx){f.life-=dt;if(f.k==="pt"){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vx*=1-3*dt;f.vy*=1-3*dt;}if(f.k==="txt"||f.k==="smk")f.y-=dt*.6;if(f.k==="fl"&&f.m>.5)f.y-=dt*.4;}
   for(const c of scorch)c.life-=dt;if(scorch.length&&scorch[0].life<=0)scorch=scorch.filter(c=>c.life>0);
   if(shakeT>0)shakeT-=dt;
-  fx=fx.filter(f=>f.life>0);
+  fx=fx.filter(f=>f.life>0);if(fx.length>FX_CAP){let drop=fx.length-FX_CAP;fx=fx.filter(f=>{if(drop>0&&(f.k==="pt"||f.k==="fl"||f.k==="spark"||f.k==="smk")){drop--;return false;}return true;});if(fx.length>FX_CAP*1.6)fx=fx.slice(fx.length-FX_CAP);}{let sm=0;for(let i=fx.length-1;i>=0;i--)if(fx[i].k==="smk"&&++sm>40)fx[i].life=0;}if(scorch.length>40)scorch=scorch.slice(scorch.length-40);/*v486 연기 40·그을음 40개 상한*//*v486 이펙트 개수 상한(파티클부터 버림)*/
   if(S.lives<=0)retreat();
   else if(!frz&&phase==="wave"&&!queue.length&&!enemies.length&&!(voidDeathT>0))waveClear();
   if(voidDeathT>0)voidDeathT-=dt/Math.max(1,S.speed);
@@ -990,7 +990,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
 
 /* ═════════ 그리기 ═════════ */
 const C=document.getElementById("cv");let X=C.getContext("2d");let CS=40,DPR=1,BG=null;
-function resize(){let w=C.parentElement.clientWidth;DPR=Math.min(1.5,window.devicePixelRatio||1);/*v484 해상도 상한 1.5(그리는 픽셀 약 44% 감소)*/if(document.body.classList.contains("cmp")){const rv=ROT(),VW=rv?window.innerHeight:window.innerWidth,VH=rv?window.innerWidth:window.innerHeight,th=0,ah=VH-10,aw=VW-64-52-28;const cs=Math.max(8,Math.min(aw/COLS,ah/ROWS));w=cs*COLS;C.style.width=w+"px";$("bar").style.height=cs*ROWS+"px";requestAnimationFrame(()=>{const f=$("field"),h=$("hud");h.style.right=(f.clientWidth-(C.offsetLeft+C.clientWidth)+5)+"px";h.style.top=(C.offsetTop+5)+"px";});}else{C.style.width="";$("bar").style.height="";}CS=w/COLS;
+function resize(){let w=C.parentElement.clientWidth;DPR=Math.min(DPRCAP,window.devicePixelRatio||1);/*v484·v486 해상도 상한(기본 1.5, 버벅이면 자동으로 1까지 낮춤)*/if(document.body.classList.contains("cmp")){const rv=ROT(),VW=rv?window.innerHeight:window.innerWidth,VH=rv?window.innerWidth:window.innerHeight,th=0,ah=VH-10,aw=VW-64-52-28;const cs=Math.max(8,Math.min(aw/COLS,ah/ROWS));w=cs*COLS;C.style.width=w+"px";$("bar").style.height=cs*ROWS+"px";requestAnimationFrame(()=>{const f=$("field"),h=$("hud");h.style.right=(f.clientWidth-(C.offsetLeft+C.clientWidth)+5)+"px";h.style.top=(C.offsetTop+5)+"px";});}else{C.style.width="";$("bar").style.height="";}CS=w/COLS;
   C.width=Math.round(w*DPR);C.height=Math.round(CS*ROWS*DPR);C.style.height=CS*ROWS+"px";buildBG();}
 
 
@@ -2074,13 +2074,13 @@ function fireOrbs(t,x,y,T){/* v323 화염방사기 3차+: 둘레를 공전하는
     if(lava&&fx.length<430&&Math.random()<.05){const hx=x+Math.cos(a0)*rr,hy=y+Math.sin(a0)*rr;fx.push({k:"pt",x:hx,y:hy,vx:(Math.random()-.5)*.4,vy:.3+Math.random()*.4,life:.6,m:.6,col:Math.random()<.5?"#ff5a10":"#ffb030"});}}
   X.restore();}
 /* v434 토템 3종(중첩): 행운 ×1.3(350단계 해금), 황금 ×2, 찬란 ×3(임시 무료 — 나중에 유료화) */
-const TOTEMS=[{k:"luck",nm:"행운의 토템",mul:1.3,col:"#b8f5a8",bd:"#5fbf6a",unl:()=>!!S.totemUnl},{k:"t2",nm:"황금 토템",mul:2,col:"#ffe08a",bd:"#d9a63a",unl:()=>true},{k:"t3",nm:"찬란한 토템",mul:3,col:"#e6c8ff",bd:"#a77be0",unl:()=>true}];
+const TOTEMS=[{k:"luck",nm:"행운의 토템",mul:1.3,col:"#b8f5a8",bd:"#5fbf6a",unl:()=>!!S.totemUnl},{k:"t2",nm:"황금 토템",mul:2,col:"#ffe08a",bd:"#d9a63a",unl:()=>true,dev:1},{k:"t3",nm:"찬란한 토템",mul:3,col:"#e6c8ff",bd:"#a77be0",unl:()=>true,dev:1}];/*v486 황금·찬란 토템은 개발자 전용(유료화 예정)*/
 const totDef=k=>TOTEMS.find(d=>d.k===k);function totPos(k){return k==="luck"?S.totem:(S.tots||{})[k]||null;}function totSet(k,v){if(k==="luck")S.totem=v;else{S.tots=S.tots||{};S.tots[k]=v;}}
-function totemMul(){let m=1;for(const D of TOTEMS)if(totPos(D.k))m*=D.mul;return m;}function totemAt(x,y){for(const D of TOTEMS){const q=totPos(D.k);if(q&&q.x===x&&q.y===y)return D.k;}return null;}
+function totemMul(){let m=1;for(const D of TOTEMS)if(totPos(D.k)&&!(D.dev&&!devOk()))m*=D.mul;return m;}function totemAt(x,y){for(const D of TOTEMS){const q=totPos(D.k);if(q&&q.x===x&&q.y===y)return D.k;}return null;}
 /* v484 64배속은 개발자 전용(비밀번호 1111) — 실제 게임엔 없음 */
 const devOk=()=>{try{return localStorage.getItem("lld_dev")==="1";}catch(e){return false;}};
-function devAsk(){$("modalBox").innerHTML=`<h2>🔒 개발자 전용</h2><p>64배속은 개발자 테스트용입니다. 비밀번호를 입력하세요.</p><input id="devPw" type="password" inputmode="numeric" maxlength="8" style="width:100%;padding:8px;font-size:18px;background:#14160f;color:#f1e3b0;border:1px solid #6b5a2a;border-radius:6px"><p id="devMsg" style="color:#ff8a7a;min-height:1.2em;margin:6px 0"></p><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" id="devX">닫기</button><button class="btn pri" id="devGo">해제</button></div>`;$("modal").hidden=false;const inp=$("devPw");setTimeout(()=>inp.focus(),50);
-  const go=()=>{if(inp.value==="1111"){try{localStorage.setItem("lld_dev","1");}catch(e){}$("modal").hidden=true;S.speed=64;banner("🔓 개발자 모드 · 64배속 해제");devLbl();dirtyUI=true;}else{$("devMsg").textContent="비밀번호가 틀렸습니다";inp.value="";}};$("devGo").onclick=go;inp.onkeydown=ev=>{if(ev.key==="Enter")go();};$("devX").onclick=()=>{$("modal").hidden=true;};}
+function devAsk(after){$("modalBox").innerHTML=`<h2>🔒 개발자 전용</h2><p>${after?"황금·찬란한 토템은 개발자 전용입니다(유료화 예정).":"64배속은 개발자 테스트용입니다."} 비밀번호를 입력하세요.</p><input id="devPw" type="password" inputmode="numeric" maxlength="8" style="width:100%;padding:8px;font-size:18px;background:#14160f;color:#f1e3b0;border:1px solid #6b5a2a;border-radius:6px"><p id="devMsg" style="color:#ff8a7a;min-height:1.2em;margin:6px 0"></p><div class="row" style="gap:8px;justify-content:flex-end"><button class="btn" id="devX">닫기</button><button class="btn pri" id="devGo">해제</button></div>`;$("modal").hidden=false;const inp=$("devPw");setTimeout(()=>inp.focus(),50);
+  const go=()=>{if(inp.value==="1111"){try{localStorage.setItem("lld_dev","1");}catch(e){}$("modal").hidden=true;if(after)after();else{S.speed=64;banner("🔓 개발자 모드 · 64배속 해제");}devLbl();dirtyUI=true;}else{$("devMsg").textContent="비밀번호가 틀렸습니다";inp.value="";}};$("devGo").onclick=go;inp.onkeydown=ev=>{if(ev.key==="Enter")go();};$("devX").onclick=()=>{$("modal").hidden=true;};}
 function devLbl(){const b=$("sp64");if(b)b.textContent=devOk()?"64×":"🔒64×";}
 /* v484 업적 — 조건은 저장 상태로 판정, 처음 달성 시 배너 */
 const ACH=[["c1","첫 승전","1스테이지 점령",()=>S.conqBy[1]],["c2","사막의 폭풍","2스테이지 점령",()=>S.conqBy[2]],["c3","동방 원정","3스테이지 점령",()=>S.conqBy[3]],["c4","철의 장막","4스테이지 점령",()=>S.conqBy[4]],["c5","초강대국","5스테이지 점령",()=>S.conqBy[5]],["c6","지구 방위","외계 침공(6스테이지) 격퇴",()=>S.conqBy[6]],
@@ -2336,7 +2336,7 @@ function drawAlien(e,T){const x=e.x,y=e.y,R=e.size,k=e.alien;
   if(k==="grunt"){const a=Math.atan2(e.dy,e.dx),al=alive(e),lite=enemies.length>180;X.save();X.translate(x,y);X.rotate(a);
     if(!lite){X.strokeStyle="#a99ac8";X.lineWidth=.045;for(let i=0;i<3;i++){const an=i*2.094+Math.sin(T*8+i*2+e.id)*.3;X.beginPath();X.moveTo(0,0);X.lineTo(Math.cos(an)*R,Math.sin(an)*R);X.stroke();}}
     X.fillStyle=e.hitT>0?"#fff":"#8fd27a";X.beginPath();X.ellipse(0,0,R*.5,R*.42,0,0,7);X.fill();X.strokeStyle="rgba(235,255,225,.85)";X.lineWidth=.035;X.stroke();if(!lite){X.fillStyle="#111";X.beginPath();X.ellipse(R*.22,-R*.14,R*.12,R*.07,.5,0,7);X.ellipse(R*.22,R*.14,R*.12,R*.07,-.5,0,7);X.fill();}X.restore(); /*v484 더 밝은 몸통·흰 테두리, 많을 땐 다리·눈 생략*/
-    if(e.hp<e.max){X.fillStyle="rgba(0,0,0,.6)";X.fillRect(x-.23,y+R*.7,.46,.05);X.fillStyle="#c86aff";X.fillRect(x-.23,y+R*.7,.46*Math.max(0,e.hp/e.max),.05);}
+    if(e.hp<e.max&&(enemies.length<=150||e.id%3===0)){X.fillStyle="rgba(0,0,0,.6)";X.fillRect(x-.23,y+R*.7,.46,.05);X.fillStyle="#c86aff";X.fillRect(x-.23,y+R*.7,.46*Math.max(0,e.hp/e.max),.05);}
     if(al>2&&(enemies.length<=25||e.id%9===0)){X.font=`700 .22px "IBM Plex Mono",monospace`;X.textAlign="center";X.lineWidth=.05;X.strokeStyle="rgba(0,0,0,.85)";X.strokeText("×"+al,x,y+R+.36);X.fillStyle="#d8ffd8";X.fillText("×"+al,x,y+R+.36);X.textAlign="left";}return;}
   X.save();X.translate(x,y);
   X.fillStyle="rgba(0,0,0,.3)";X.beginPath();X.ellipse(.08,.14,R*.95,R*.5,0,0,7);X.fill();
@@ -2390,7 +2390,7 @@ function drawVeh(e,T){const x=e.x,y=e.y,a=Math.atan2(e.dy,e.dx),hit=e.hitT>0,C=e
     X.fillStyle="#6e6a5a";X.fillRect(-.28,-.15,.34,.3);X.fillStyle="#222";X.fillRect(-.15,-.025,.3,.05);
     X.fillStyle=C.uniform;X.beginPath();X.arc(-.18,0,.08,0,7);X.fill();X.fillStyle="#efe9dc";X.beginPath();X.arc(-.18,0,.055,0,7);X.fill();}
   X.restore();vehBar(e,y+.3);vehLabel(e,y+.55);}
-function drawEnemy(e,T){if(COUNTRY&&COUNTRY.inf&&e.alien!=="void"&&e.alien!=="bhole"){X.fillStyle=e.boss?"rgba(255,230,200,.16)":"rgba(220,255,220,.15)";X.beginPath();X.arc(e.x,e.y,e.size*(e.boss?1.05:.82),0,7);X.fill();} /*v484 어두운 우주 배경에서 적이 잘 보이게 밝은 받침*/
+function drawEnemy(e,T){if(COUNTRY&&COUNTRY.inf&&e.alien!=="void"&&e.alien!=="bhole"&&enemies.length<=150){X.fillStyle=e.boss?"rgba(255,230,200,.16)":"rgba(220,255,220,.15)";X.beginPath();X.arc(e.x,e.y,e.size*(e.boss?1.05:.82),0,7);X.fill();} /*v484 어두운 우주 배경에서 적이 잘 보이게 밝은 받침*/
   if(e.alien)return drawAlien(e,T);if(e.veh)return drawVeh(e,T);const al=e.boss?1:alive(e),crowd=enemies.length;
   if(al>1&&crowd<300){const ox=e.x,oy=e.y,a=Math.atan2(e.dy,e.dx),c=Math.cos(a),sn=Math.sin(a),st0=e.step,dr=COUNTRY.drill,F=dr?FORM_D:FORM;
     for(let i=Math.min(al-1,2)-1;i>=0;i--){const[f,l]=F[i];e.x=ox+c*f-sn*l;e.y=oy+sn*f+c*l;e.step=dr?st0:st0+i*1.7;drawSoldier(e,T,true);}
@@ -2488,7 +2488,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);$("tAch").addEventListener("click",achOpen);const BUILD="v485 · 11/09 00:18";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);$("tAch").addEventListener("click",achOpen);const BUILD="v486 · 11/09 01:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2515,7 +2515,8 @@ $("slList").addEventListener("click",e=>{const b=e.target.closest(".sl[data-m]")
 $("go").addEventListener("click",()=>{if(paused)togglePause();startWave();});
 $("stageBox").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.c){goCountry(+b.dataset.c);return;}if(b.dataset.replay){startCutscene(+b.dataset.replay,true);return;}if(b.dataset.to){setStage(+b.dataset.to);banner(`${S.wave}단계로 이동`);return;}if(b.dataset.d)setStage(S.wave+(+b.dataset.d));});
 let drag=null;
-$("bar").addEventListener("pointerdown",e=>{const b=e.target.closest(".slot");if(!b||b.classList.contains("locked"))return;drag={k:b.dataset.t,x:e.clientX,y:e.clientY,on:false,id:e.pointerId};});
+$("bar").addEventListener("click",e=>{const b=e.target.closest(".devlk");if(b)devAsk(()=>{banner("🔓 개발자 모드 · 토템 잠금 해제");dirtyUI=true;});});
+$("bar").addEventListener("pointerdown",e=>{const b=e.target.closest(".slot");if(b&&b.classList.contains("devlk"))return;if(!b||b.classList.contains("locked"))return;drag={k:b.dataset.t,x:e.clientX,y:e.clientY,on:false,id:e.pointerId};});
 window.addEventListener("pointermove",e=>{if(!drag||e.pointerId!==drag.id)return;
   if(!drag.on&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>8){drag.on=true;if(drag.k.startsWith("tot_")){totemPick=drag.k.slice(4);buildType=null;}else buildType=drag.k;sel=null;buildCell=null;const g=$("ghost");g.src=THUMB[drag.k];g.hidden=false;dirtyUI=true;}
   if(drag.on){const g=$("ghost"),rv=ROT();g.style.left=(rv?e.clientY:e.clientX)+"px";g.style.top=(rv?window.innerWidth-e.clientX:e.clientY)+"px";hover=cellAt(e);e.preventDefault();}},{passive:false});
@@ -2580,9 +2581,9 @@ function renderUI(){renderPop();devLbl();{const lt=$("locTag");if(COUNTRY.inf){c
   for(const b of $("speed").children)b.setAttribute("aria-pressed",+b.dataset.sp===S.speed);
   $("auto").setAttribute("aria-pressed",S.auto);$("go").disabled=phase!=="idle";$("go").textContent=phase==="idle"?"출격":"교전 중";
   renderStage();
-  const totList=TOTEMS.filter(D=>D.unl()&&!totPos(D.k)),bk=ORDER.map(k=>[k,lockText(k),S.gold>=(TT[k].cost?placeCost(k):0),buildType===k].join()).join("|")+Object.keys(THUMB).length+"|tot"+totList.map(D=>D.k).join()+totemPick;
+  const totList=TOTEMS.filter(D=>D.unl()&&!totPos(D.k)),bk=ORDER.map(k=>[k,lockText(k),S.gold>=(TT[k].cost?placeCost(k):0),buildType===k].join()).join("|")+Object.keys(THUMB).length+"|tot"+totList.map(D=>D.k).join()+totemPick+devOk();
   if(bk!==barKey&&!drag){barKey=bk;$("bar").innerHTML=ORDER.map(k=>{const T=TT[k],lock=lockText(k);
-    return`<button class="slot${lock?" locked":""}${!lock&&S.gold<placeCost(k)?" poor":""}" data-t="${k}" aria-pressed="${buildType===k}" title="${T.label} — ${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span class="nm">${T.label}</span><span class="pr">${lock?lock.replace(" 해금",""):fmt(placeCost(k))}</span></button>`;}).join("")+totList.map(D=>`<button class="slot" data-t="tot_${D.k}" aria-pressed="${totemPick===D.k}" title="${D.nm} — 1기만 설치 · 모든 처치 보상 ×${D.mul} (중첩)" style="border-color:${D.bd}"><img src="${THUMB["tot_"+D.k]||""}" alt=""><span class="nm" style="color:${D.col}">${D.nm}</span><span class="pr">보상 ×${D.mul}</span></button>`).join("");}
+    return`<button class="slot${lock?" locked":""}${!lock&&S.gold<placeCost(k)?" poor":""}" data-t="${k}" aria-pressed="${buildType===k}" title="${T.label} — ${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span class="nm">${T.label}</span><span class="pr">${lock?lock.replace(" 해금",""):fmt(placeCost(k))}</span></button>`;}).join("")+totList.map(D=>{const lk=D.dev&&!devOk();return`<button class="slot${lk?" locked devlk":""}" data-t="tot_${D.k}" aria-pressed="${totemPick===D.k}" title="${D.nm} — 1기만 설치 · 모든 처치 보상 ×${D.mul} (중첩)${lk?" · 개발자 전용":""}" style="border-color:${D.bd}"><img src="${THUMB["tot_"+D.k]||""}" alt=""><span class="nm" style="color:${D.col}">${lk?"🔒 ":""}${D.nm}</span><span class="pr">${lk?"개발자 전용":"보상 ×"+D.mul}</span></button>`;}).join("");}
   const box=$("sel");
   if(sel&&S.towers.includes(sel)){const t=sel,T=TT[t.type],s=st(t),n={...t,l:Math.min(maxL(),t.l+1)},ns=st(n),c=upCost(t),max=t.l>=maxL();
     const into=t.l%10,nextT=s.tier<10?T.names[s.tier+1]:null;let rows="";
@@ -3212,8 +3213,13 @@ async function connect(){try{let n=0;while(!(window.claude&&window.claude.use)&&
 
 let last=0,uiT=0,saveT=0;const modalOpen=()=>!$("modal").hidden;
 /* v484 적이 많을 때 그림자 번짐(shadowBlur) 끄기 — 가장 비싼 그리기 효과 */
-let LOWFX=false;{const D=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,"shadowBlur");if(D&&D.set)Object.defineProperty(CanvasRenderingContext2D.prototype,"shadowBlur",{get(){return D.get.call(this);},set(v){D.set.call(this,LOWFX?0:v);},configurable:true});}
-function loop(now){if(!last)last=now;LOWFX=enemies.length>120||fx.length>260;let dt=Math.min(.1,(now-last)/1000);last=now;
+let LOWFX=false;const FX_CAP=200;
+/* v486 자동 화질: 프레임이 계속 느리면 해상도를 낮추고, 여유가 생기면 다시 올림 */
+let DPRCAP=1.5,frEma=16,frBadT=0,frGoodT=0,frCool=0;
+function frameQ(ms,dt){frEma=frEma*.92+ms*.08;frCool-=dt;if(frCool>0)return;
+  if(frEma>24){frBadT+=dt;frGoodT=0;if(frBadT>1.5&&DPRCAP>1){DPRCAP=Math.max(1,+(DPRCAP-.25).toFixed(2));frBadT=0;frCool=3;resize();}}
+  else if(frEma<14){frGoodT+=dt;frBadT=0;if(frGoodT>10&&DPRCAP<1.5&&(window.devicePixelRatio||1)>DPRCAP){DPRCAP=Math.min(1.5,DPRCAP+.25);frGoodT=0;frCool=3;resize();}}else{frBadT=0;frGoodT=0;}}{const D=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,"shadowBlur");if(D&&D.set)Object.defineProperty(CanvasRenderingContext2D.prototype,"shadowBlur",{get(){return D.get.call(this);},set(v){D.set.call(this,LOWFX?0:v);},configurable:true});}
+function loop(now){if(!last)last=now;if(!titleOn)frameQ(now-last,Math.min(.1,(now-last)/1000));LOWFX=enemies.length>120||fx.length>260;let dt=Math.min(.1,(now-last)/1000);last=now;
   if(!cutOn&&!paused&&!titleOn){const nt=nukeTower();if(nt&&nt.cd>0)nt.cd=Math.max(0,nt.cd-dt);}
   if(titleOn){}else if(bossIntro&&!cutOn){bossIntro.t+=dt;if(bossIntro.t>=bossIntro.T){const rs=bossIntro.resume;bossIntro=null;if(!rs){bossIntroOk=true;phase="idle";startWave();}}}else if(nukeCin>0&&!cutOn)update(dt);else if(!paused&&!modalOpen()&&!cutOn){/* 고정 간격 0.05초(게임 시간)로 나눠 계산, 한 프레임 최대 16번 — 배속이 높아도 프레임당 계산량이 크게 늘지 않음 */const tot=dt*S.speed,n=Math.min(enemies.length>200?8:S.speed>=64?26:S.speed>=16?14:10,Math.ceil(tot/.05));/*v484 적이 많을 땐 프레임당 계산 횟수 상한 8*/for(let i=0;i<n;i++)update(tot/n);}
   if(now-gClock>60000){if(!paused)S.gpm=S.gpm?S.gpm*.7+gAcc*.3:gAcc;gAcc=0;gClock=now;}
@@ -3237,5 +3243,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611090011 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611090027 */</script>
 </body></html>
