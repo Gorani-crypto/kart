@@ -286,11 +286,11 @@ const COUNTRIES=[
 let COUNTRY=COUNTRIES[0];
 const LAST=100;
 const lastOf=()=>COUNTRY&&COUNTRY.inf?800:COUNTRY&&COUNTRY.alien?10:LAST;
-/* ═════════ 게임 모드: EASY / HARD(비용 1.4배·체력 1.3배·보상 1.15배) · 최종장 클리어 뒤 무한 모드 ═════════ */
-const costMul=()=>typeof S!=="undefined"&&S&&S.mode==="hard"?1.4:1;
-/*v487 HARD: 비용 ×1.4 · 적 체력 ×1.3 · 보상 ×1.15 (체감 약 1.5배)*/
-const isHard=()=>typeof S!=="undefined"&&S&&S.mode==="hard",HHP=()=>isHard()?1.3:1,HRW=()=>isHard()?1.15:1;
-function hardE(e){if(e&&!e._hh&&isHard()){e._hh=1;e.hp*=1.3;e.max*=1.3;if(e.hp1)e.hp1*=1.3;}return e;}
+/* ═════════ 게임 모드: EASY / HARD(비용 1.8배·체력 2배·보상 1.3배) · 최종장 클리어 뒤 무한 모드 ═════════ */
+const costMul=()=>typeof S!=="undefined"&&S&&S.mode==="hard"?1.8:1;
+/*v488 HARD: 비용 ×1.8 · 적 체력 ×2 · 보상 ×1.3 (체감 약 2.6배)*/
+const isHard=()=>typeof S!=="undefined"&&S&&S.mode==="hard",HHP=()=>isHard()?2:1,HRW=()=>isHard()?1.3:1;
+function hardE(e){if(e&&!e._hh&&isHard()){e._hh=1;const k=HHP();e.hp*=k;e.max*=k;if(e.hp1)e.hp1*=k;}return e;}
 const modeTag=m=>(m||"easy")==="hard"?"HARD":"EASY";
 function metaGet(){let m={};try{m=JSON.parse(localStorage.getItem("lld_meta")||"{}")||{};}catch(e){}if(typeof S!=="undefined"&&S&&S.meta)Object.assign(m,S.meta);if(typeof S!=="undefined"&&S&&S.endSeen)m[S.mode||"easy"]=true;return m;}
 function metaSet(k){const m=metaGet();m[k]=true;try{localStorage.setItem("lld_meta",JSON.stringify(m));}catch(e){}if(typeof S!=="undefined"&&S)S.meta=m;}
@@ -2491,7 +2491,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);$("tAch").addEventListener("click",achOpen);const BUILD="v487 · 11/09 00:40";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);$("tAch").addEventListener("click",achOpen);const BUILD="v488 · 11/09 00:45";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2512,7 +2512,7 @@ $("mvMake").addEventListener("click",async()=>{try{save(true);}catch(e){}const c
 $("mvLoad").addEventListener("click",()=>{const raw=($("mvCode").value||"").trim().replace(/^LLD1\./,"");try{const o=JSON.parse(decodeURIComponent(escape(atob(raw))));if(!apply(o))throw 0;hasSave=true;save(true);$("mvMsg").textContent="불러왔어요! "+S.country+"스테이지 · "+S.wave+"단계";showTitle();}catch(e){$("mvMsg").style.color="#d9573c";$("mvMsg").textContent="코드가 올바르지 않아요.";setTimeout(()=>{$("mvMsg").style.color="";},2000);}});$("tNew").addEventListener("click",()=>{const b=$("tNew");{modeOpen();return;}if(S.earned>0&&Date.now()-newArm>3000){newArm=Date.now();b.textContent="기록이 지워집니다 · 한 번 더 누르면 시작";b.classList.add("warn");setTimeout(()=>{if(titleOn&&Date.now()-newArm>=3000){b.textContent="새 게임";b.classList.remove("warn");}},3100);return;}
   if(BGM.on)bgmStart();if(S.earned>0||S.country!==1)newGame("easy");hideTitle();});
 let modeArm="";function modeOpen(){slotMode="mode";modeArm="";$("slTitle").textContent="게임 모드";$("slHint").textContent="새 게임의 난이도를 고르세요."+(S.earned>0?" 지금 진행 기록은 지워집니다(저장소에 저장해 두면 나중에 불러올 수 있어요).":"");$("slMsg").textContent="";$("slotPanel").hidden=false;modeRender();}
-function modeRender(){const m=metaGet(),it=[["easy","EASY","기본 난이도",true],["hard","HARD","비용 1.4배 · 적 체력 1.3배 · 보상 1.15배",!!m.trueEnd]];
+function modeRender(){const m=metaGet(),it=[["easy","EASY","기본 난이도",true],["hard","HARD","비용 1.8배 · 적 체력 2배 · 보상 1.3배",!!m.trueEnd]];
   $("slList").innerHTML=it.map(([k,n,d,ok])=>`<button class="sl${ok?"":" empty"}${modeArm===k?" arm":""}" data-m="${k}"><b>${n}</b><span>${ok?d:"무한 모드 800단계 공허를 쓰러뜨리면(진짜 엔딩) 열립니다"}</span><small>${modeArm===k?"한 번 더 누르면 시작":m[k]?"클리어 ✓":""}</small></button>`).join("")+`<p style="margin:8px 0 0">♾ 무한 모드: EASY·HARD 최종장(외계 침공)을 깨면 이어서 할 수 있어요.${m.easy?" 엔딩을 본 기록에서 6스테이지 화면의 <b>무한 모드 ▶</b>로도 들어갈 수 있어요.":""}</p>`;}
 $("slList").addEventListener("click",e=>{const b=e.target.closest(".sl[data-m]");if(!b||slotMode!=="mode")return;const k=b.dataset.m;if(k==="hard"&&!metaGet().trueEnd){$("slMsg").textContent="진짜 엔딩(무한 800단계 공허 처치)을 먼저 봐야 해요.";return;}if(S.earned>0&&modeArm!==k){modeArm=k;modeRender();return;}$("slotPanel").hidden=true;slotMode="";if(BGM.on)bgmStart();newGame(k);hideTitle();},true);
 $("go").addEventListener("click",()=>{if(paused)togglePause();startWave();});
@@ -3246,5 +3246,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611090034 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611090035 */</script>
 </body></html>
