@@ -1861,7 +1861,7 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
   for(const e of enemies)if(e.x!==undefined&&!e.air&&!e.fly)drawEnemy(e,T);
   for(const e of enemies)if(e.x!==undefined&&e.air)drawDrone(e,T);
   for(const e of enemies)if(e.x!==undefined&&e.fly)drawVeh(e,T);
-  drawDebuffs(T);lgBegin();drawBeams(T);
+  drawDebuffs(T);lgBegin();{const ga=enemies.length>40?.72:1;X.globalAlpha=ga;drawBeams(T);X.globalAlpha=1;}/*v485 적이 많을 땐 공격 빔을 조금 투명하게*/
   drawTowerDrones(T);
 
   for(const P of pillars){const a=Math.min(1,P.T/.4,(P.T0-P.T)/.15+.3),w=P.R*.42*(.92+.08*Math.sin(P.T*40+P.x));const g2=X.createLinearGradient(P.x-w,0,P.x+w,0);g2.addColorStop(0,"rgba(255,90,110,0)");g2.addColorStop(.5,P.col);g2.addColorStop(1,"rgba(255,90,110,0)");
@@ -1964,6 +1964,9 @@ function draw(now){const s=CS*DPR;X.setTransform(1,0,0,1,0,0);X.fillStyle="#3a2f
     else if(f.k==="pt"){X.fillStyle=f.col;X.fillRect(f.x-.03,f.y-.03,.06,.06);}
     else if(f.k==="txt"){X.font=`700 ${f.sz}px "IBM Plex Mono","IBM Plex Sans KR",monospace`;X.textAlign="center";X.lineWidth=.06;X.strokeStyle="rgba(0,0,0,.8)";X.strokeText(f.txt,f.x,f.y);X.fillStyle=f.col;X.fillText(f.txt,f.x,f.y);}}
   X.globalAlpha=1;X.textAlign="left";
+  /* v485 공격 이펙트에 가려도 적이 보이게: 이펙트 위에 적을 반투명하게 한 번 더 (많을 땐 외곽선만) */
+  {const many=enemies.length>140;X.save();X.globalAlpha=many?.7:.5;if(many){X.lineWidth=.045;X.strokeStyle="rgba(255,255,240,.9)";X.beginPath();for(const e of enemies){if(e.dead||e.x===undefined||e.air||e.fly)continue;const r=e.size*.55;X.moveTo(e.x+r,e.y);X.arc(e.x,e.y,r,0,7);}X.stroke();}
+    else for(const e of enemies)if(!e.dead&&e.x!==undefined&&!e.air&&!e.fly&&e.alien!=="void")drawEnemy(e,T);X.restore();X.globalAlpha=1;}
   /* v388 보스 체력바·이름은 모든 공격 이펙트 위에 다시 그림 */for(const e of enemies){const B=e._bar;if(!e.boss||e.dead||!B)continue;if(B.hpb){X.fillStyle="rgba(0,0,0,.75)";X.fillRect(B.x-B.w/2,B.yy,B.w,B.h);X.fillStyle=B.col;X.fillRect(B.x-B.w/2,B.yy,B.w*Math.max(0,e.hp/e.max),B.h);}X.font=`700 ${B.fs}px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.lineWidth=.05;X.strokeStyle="rgba(0,0,0,.85)";X.strokeText(e.title,B.x,B.ty);X.fillStyle=B.tc;X.fillText(e.title,B.x,B.ty);X.textAlign="left";}}
 // 네모 받침(초소·진지형)을 쓰는 무기. 나머지는 무기 자체 모양만 보이게.
 const BOXED={rifle:1,drone:1,emp:1};
@@ -2485,7 +2488,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);$("tAch").addEventListener("click",achOpen);const BUILD="v484 · 11/09 00:40";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyAll);$("tAch").addEventListener("click",achOpen);const BUILD="v485 · 11/09 00:18";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3234,5 +3237,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611090003 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611090011 */</script>
 </body></html>
