@@ -151,7 +151,7 @@ html.rot #title .tc{inset:0;gap:6px;padding:8px}html.rot #title .tk{font-size:10
 #cut .dots{display:flex;gap:6px}
 #cut .dots i{width:28px;height:5px;border-radius:2px;background:#3a3f2c}
 #cut .dots i.on{background:var(--accent)}
-#modal{position:fixed;inset:0;background:rgba(5,7,3,.72);display:grid;place-items:center;padding:20px;z-index:20}
+#modal{position:fixed;inset:0;background:rgba(5,7,3,.72);display:grid;place-items:center;padding:20px;z-index:70}
 #modal .box{max-width:400px;width:100%;border-color:var(--accent);max-height:calc(100dvh - 24px);overflow-y:auto}html.rot #modal .box{max-height:calc(var(--sw) - 24px)}#modal .unls{display:flex;flex-direction:column;gap:8px}#modal #mOk{position:sticky;bottom:0}body.cmp #modal{padding:8px}body.cmp #modal .box{max-width:min(640px,100%);padding:10px 12px;gap:6px}body.cmp #modal h2{font-size:18px;margin:0}body.cmp #modal p{font-size:13px;line-height:1.45}body.cmp #modal .unls{display:grid;grid-template-columns:1fr 1fr;gap:6px}body.cmp #modal .unl{padding:5px 8px}body.cmp #modal .unl b{font-size:15px}body.cmp #modal .unl span{font-size:11.5px;line-height:1.35}body.cmp #modal .btn{padding:7px 10px}
 #modal p{margin:0;line-height:1.6}
 #modal .unl{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:2px solid var(--accent);border-radius:6px;background:var(--panel2)}
@@ -243,7 +243,7 @@ body.cmp.drawer #drawerBg{display:block;position:fixed;inset:0;z-index:44;backgr
   <div id="title"><canvas id="titleCv" aria-hidden="true"></canvas>
     <div class="tc"><div class="tk">대한민국 최후 방어 사령부</div><h1>최후방어선</h1>
       <p class="tq">세계가 한꺼번에 등을 돌렸다.<br>이 선이 무너지면, <b>다음은 없다.</b></p>
-      <div class="tbtns"><button id="tPlay">이어하기</button><button id="tNew" class="tnew">새 게임</button><button id="tLoad" class="tnew">불러오기</button><button id="tMove" class="tnew">기록 옮기기</button><button id="tBgm" class="tnew" aria-pressed="true">♪ BGM 켜짐</button><button id="tStory" class="tnew" hidden>스토리 다시 보기</button><button id="tAch" class="tnew">🏆 업적 보기</button><div class="tsave" id="tSave"></div></div></div>
+      <div class="tbtns"><button id="tPlay">이어하기</button><button id="tNew" class="tnew">새 게임</button><button id="tLoad" class="tnew">불러오기</button><button id="tMove" class="tnew">기록 옮기기</button><button id="tBgm" class="tnew" aria-pressed="true">♪ BGM 켜짐</button><button id="tStory" class="tnew" hidden>📖 스토리</button><button id="tAch" class="tnew">🏆 업적 보기</button><div class="tsave" id="tSave"></div></div></div>
     <div class="tfoot">LAST LINE OF DEFENSE</div><div id="tVer"></div></div>
 <div id="slotPanel" hidden><div class="mv"><h3 id="slTitle">저장하기</h3><p id="slHint"></p><div class="slots" id="slList"></div><div class="row"><button id="slClose">닫기</button></div><div class="msg" id="slMsg"></div></div></div>
 <div id="movePanel" hidden><div class="mv"><h3>기록 옮기기</h3><p>다른 기기(폰 앱 ↔ 이 페이지)로 진행 기록을 옮깁니다.<br>① 원래 기기에서 <b>코드 만들기</b> → 복사 ② 새 기기에서 붙여 넣고 <b>이 코드로 불러오기</b></p><textarea id="mvCode" placeholder="여기에 기록 코드가 나타나거나, 받은 코드를 붙여 넣으세요"></textarea><div class="row"><button id="mvMake">코드 만들기 · 복사</button><button id="mvLoad">이 코드로 불러오기</button><button id="mvClose">닫기</button></div><div class="msg" id="mvMsg"></div></div></div>
@@ -528,12 +528,15 @@ const TT={
   nuke:{label:"핵 사일로",role:"15분(실제 시간, 배속 영향 없음, 전직마다 1분 단축·최소 5분) 충전 뒤 '핵 발사' 버튼을 누르면 핵미사일이 지도 위 모든 적을 한꺼번에 타격한다. 1기만 설치 가능. 보스에게는 최대 체력의 5%까지만",cost:2.5e9,up:1023020899,dmg:3333333334,curve:"flat",rate:1/900,range:99,splash:99,unlock:1,stage:4,
     names:["핵 사일로","전술 핵","전략 핵","다탄두 사일로","수소탄","중성자탄","반물질 사일로","항성 붕괴탄","초신성 사일로","블랙홀 탄두","창세기"]},
   orbit:{label:"궤도 방어 플랫폼",role:"떠 있는 방어 플랫폼이 여러 줄기 펄스 레이저로 동시에 여러 분대를 지진다",cost:3e9,up:2028587161,dmg:1e6,curve:"flat",rate:2,range:4.5,unlock:1,stage:4,
-    names:["궤도 방어 플랫폼","무장 위성","방어 정거장","레이저 함대","궤도 성채","별빛 방벽","은하 방어망","성간 요새","우주 사령부","천상 요새","창공의 왕좌"]}
+    names:["궤도 방어 플랫폼","무장 위성","방어 정거장","레이저 함대","궤도 성채","별빛 방벽","은하 방어망","성간 요새","우주 사령부","천상 요새","창공의 왕좌"]},
+  /*v489 800단계(공허) 클리어 해금 · 진짜 청소기에서 시작 → 50렙 블랙홀 → 150렙 공허*/
+  vacuum:{label:"진공청소기",role:"사거리 안의 모든 적을 빨아들이며 피해를 주고 뒤로 끌어당긴다(보스·공허 소환체 제외). 50렙에 블랙홀, 150렙에 공허가 된다",cost:200,up:150,dmg:6,rate:4,range:2.2,unlock:1,stage:7,req:()=>!!(S&&S.trueEnd),
+    names:["진공청소기","업소용 청소기","산업용 집진기","진공 흡입포","중력 흡입기","블랙홀","사건의 지평선","특이점","중력 붕괴","차원 흡수","만물 흡수"]}
 };
 const ORDER=Object.keys(TT);
 // 1차 전직 특성 (무기마다 하나)
 const EVOX={tesla:{2:"연쇄 10분대",3:"연쇄 14분대",4:"연쇄 20분대",5:"번개 줄기 3개(서로 다른 적에서 시작)"},laser:{2:"기둥 +1개(2개) · 기둥 지속 5초",3:"기둥 +1개(3개) · 기둥 지속 10초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사 4줄기가 적들 사이를 무작위로 옮겨 다님"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사) · 적이 적으면 남는 줄기를 모아 집중",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 1% 확률 즉사"},mortar:{2:"사거리 +1칸 · 폭발 범위 +35%",3:"포탄 2발 연속 발사",4:"포탄 4발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"사거리 +2칸 · 같은 적을 계속 조사하면 피해 증가(10분에 최대 10배 · 100렙부터 20분에 최대 30배)"},sniper:{2:"보스 피해 ×4 · 사거리 +1칸",3:"보스 피해 ×6 · 사거리 +1칸",4:"보스 피해 ×8 · 일반 적 1% 확률 즉사",5:"보스 피해 ×12 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"현재 체력 비례 화상: 붙는 순간 현재 체력의 10%를 5초에 걸쳐(보스 0.1%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
-const EVO1={tesla:"연쇄 7분대 · 감전 마비 0.4초",laser:"레이저 기둥 범위 +50% · 사거리 +1칸",nuke:"충전 시간 -1분 (15분 → 14분) · 전직마다 1분씩 더 줄어 최소 5분",orbit:"레이저 +2줄기",drone:"드론 +1대 · 연사 +30% · 사거리 +1칸",emp:"마비 시간 +50% · 범위 +1칸",tank:"폭발 범위 +50% · 공격 속도 +25%",rifle:"공격 속도 +40%",mortar:"사거리 +1칸 · 폭발 범위 +35%",rail:"빔 지속 2배 · 사거리 +1칸",sniper:"사거리 +1.5칸 · 보스 피해 ×3",flame:"맞은 적 20% 감속",gas:"감속 +1초 · 피해 ×3 (2차: 가스 맞은 적 받는 피해 ×1.2 / 3차: 2발씩 / 4차: ×1.5 / 5차: 사방 살포·×2 / 이후 전직마다 +0.4)",missile:"동시 발사 +2발"};
+const EVO1={tesla:"연쇄 7분대 · 감전 마비 0.4초",laser:"레이저 기둥 범위 +50% · 사거리 +1칸",vacuum:"흡입 범위 +0.5칸 · 끌어당김 +50%",nuke:"충전 시간 -1분 (15분 → 14분) · 전직마다 1분씩 더 줄어 최소 5분",orbit:"레이저 +2줄기",drone:"드론 +1대 · 연사 +30% · 사거리 +1칸",emp:"마비 시간 +50% · 범위 +1칸",tank:"폭발 범위 +50% · 공격 속도 +25%",rifle:"공격 속도 +40%",mortar:"사거리 +1칸 · 폭발 범위 +35%",rail:"빔 지속 2배 · 사거리 +1칸",sniper:"사거리 +1.5칸 · 보스 피해 ×3",flame:"맞은 적 20% 감속",gas:"감속 +1초 · 피해 ×3 (2차: 가스 맞은 적 받는 피해 ×1.2 / 3차: 2발씩 / 4차: ×1.5 / 5차: 사방 살포·×2 / 이후 전직마다 +0.4)",missile:"동시 발사 +2발"};
 let nukeReq=false,nukeCin=0;
 function drawCinBars(){const k=Math.min(1,(6.6-nukeCin)/.4,nukeCin/.5),h=C.height*.09*k;X.setTransform(1,0,0,1,0,0);X.fillStyle="#000";X.fillRect(0,0,C.width,h);X.fillRect(0,C.height-h,C.width,h);
   if(nukeCin>4){X.globalAlpha=.18*k;X.fillRect(0,h,C.width,C.height-2*h);X.globalAlpha=1;}X.fillStyle=`rgba(255,211,107,${k})`;X.font=`700 ${Math.round(h*.42)}px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.fillText((()=>{const t=nukeTower();return t&&isHid(t)?"✦ 초신성 폭발":"☢ 핵 타격 진행 중";})(),C.width/2,h*.66);X.textAlign="left";}
@@ -545,7 +548,7 @@ function nukeTower(){return S.towers.find(t=>t.type==="nuke");}
 function mmss(x){x=Math.ceil(x);return Math.floor(x/60)+":"+String(x%60).padStart(2,"0");}
 let nukeTxt="";function updNukeBtn(){const b=$("nukeBtn");if(!b)return;const t=nukeTower();if(!t){if(!b.hidden)b.hidden=true;return;}if(b.hidden)b.hidden=false;
   const rem=Math.max(0,t.cd||0),has=enemies.some(e=>!e.dead),txt=nukeCin>0?"☢ 발사 중…":rem>0?"☢ 충전 "+mmss(rem):has?"☢ 핵 발사":"☢ 준비 완료";if(txt!==nukeTxt){nukeTxt=txt;b.textContent=txt;}b.disabled=nukeCin>0||rem>0||!has;const pn=$("popNuke");if(pn){const pt=nukeCin>0?"☢ …":rem>0?"☢ "+mmss(rem):"☢ 발사";if(pn.textContent!==pt)pn.textContent=pt;pn.disabled=b.disabled;}}
-function lockText(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())return"1기만 설치";if(st>S.country)return st+"스테이지 해금";if(T.wip)return"준비 중";if(st===S.country&&S.best<(T.unlock||1))return T.unlock+"단계 해금";return null;}
+function lockText(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())return"1기만 설치";if(st>S.country)return st+"스테이지 해금";if(T.wip)return"준비 중";if(T.req&&!T.req())return"800단계 클리어 해금";if(st===S.country&&S.best<(T.unlock||1))return T.unlock+"단계 해금";return null;}
 const ATTACK=ORDER.filter(k=>TT[k].dmg);
 // 최고 레벨: 5스테이지 미국 점령 전까지 50(5차 전직), 미국 점령 후 100(사용자 결정)
 const BT=(n,C)=>{C=C||COUNTRY;return(C&&C.titles&&C.titles[n])||n;};
@@ -728,6 +731,11 @@ const placeCost=type=>Math.ceil(TT[type].cost*costMul()); // 개수와 무관한
 const HID={orbit:["태초",1e45,0],laser:["섬멸",1e44,6e49]/*v459 태초 10재 · v458 섬멸 1재·60극*/,tesla:["천벌",4e43,2e49],drone:["천공",2e43,1.2e49],tank:["철혈",1e43,7e48],missile:["극점",8e42,5e48],flame:["홍련",7e42,4e48],sniper:["관통",2e42,2e49],emp:["혼돈",0,0],gas:["침식",0,0],mortar:["천궁",5e42,3e48],rail:["초월",3e42,2e49],rifle:["철우",1e42,1e48]/*v461 히든 화력 ×10*/,nuke:["초신성",0,1e49]};
 let TAECHO_ERR=null;try{{const seen=new Set();for(const k in TT){if(k==="nuke")continue;const c=curveOf(k);if(seen.has(c))continue;seen.add(c);const D=c.D,o149=D[149],o150=D[150];for(let L=141;L<=149;L++)D[L]=D[L-1]*(1+2*(1.52-1));D[150]=o150*D[149]/o149;}}/*v464 핵 제외 141~149렙 레벨당 화력 증가폭 2배(×1.52→×2.04), 150렙은 히든 값 그대로(EMP·최루탄은 4.6배 점프 유지)*/const seen=new Set();for(const k in HID){const[nm,dp,co]=HID[k],c=curveOf(k);if((dp||co)&&seen.has(c))throw Error("shared curve "+k);seen.add(c);if(dp){const d=dpsOf({type:k,l:150,tier:tierOf(150),x:0,y:0});c.D[150]*=dp/d;}if(co){c.Cm[149]*=co/(TT[k].up*c.Cm[149]);}}{const c=curveOf("nuke"),d=st0({type:"nuke",l:150,tier:tierOf(150)}).dmg;c.D[150]*=1e47/d;}/*v420·v464 초신성 한 발 1000재, 149→150 10극*/}catch(e){TAECHO_ERR=e.message;}
 {const C=CURVE.ob.Cm,f=1e49/(TT.orbit.up*C[148]);for(let l=140;l<=148;l++)C[l]*=Math.pow(f,(l-139)/9);}{const C=CURVE.ls.Cm,f=3e48/(TT.laser.up*C[148]);for(let l=140;l<=148;l++)C[l]*=Math.pow(f,(l-139)/9);}/*v458 위성 148→149 = 3극*/ /*v457 궤도 140~148→ 강화비 서서히 인하, 148→149 = 10극*/
+/*v489 진공청소기 곡선: 소총 레벨당 증가폭 2배(화력·강화비) — 50렙까지 그대로, 51~149렙은 149렙 초당 1재(태초 수준)·148→149 강화비 3극에 맞춰 압축, 150렙 공허 = 궤도 최대 화력(태초 10재)의 10배 = 100재 · 149→150 강화비 30극*/
+{const r=CURVE.rf,D=[0,1],C=[0,1];for(let L=2;L<=150;L++)D[L]=D[L-1]*(1+2*(r.D[L]/r.D[L-1]-1));for(let l=2;l<=149;l++)C[l]=C[l-1]*(1+2*(r.Cm[l]/r.Cm[l-1]-1));
+  const T=TT.vacuum,rt=L=>T.dmg*BAL.atk*T.rate*(1+.06*Math.min(10,Math.floor(L/10))),fD=Math.log(1e45/(rt(149)*D[50]))/Math.log(D[149]/D[50]),fC=Math.log(3e49/(T.up*C[50]))/Math.log(C[148]/C[50]),d50=D[50],d149=D[149],c50=C[50],c148=C[148];
+  for(let L=51;L<=149;L++)D[L]=d50*Math.pow(D[L]/d50,fD);for(let l=51;l<=148;l++)C[l]=c50*Math.pow(C[l]/c50,fC);C[149]=3e50/T.up;
+  D[150]=1e46/rt(150);D[151]=D[150];CURVE.vc={D,Cm:C};B4.vacuum="vc";HID.vacuum=["공허",1e46,3e50];}
 const isHid=t=>t&&t.l>=150&&!!HID[t.type],hidName=t=>HID[t.type][0];const isTaecho=t=>t&&t.type==="orbit"&&t.l>=150;
 function avgRew(s){const m=mix(s);let v=0;for(const r in m)v+=m[r]*rewOf(s,+r);return v;}
 const depotPay=(t,s)=>Math.floor(avgRew(s)*BAL.dpA*Math.pow(BAL.dpG,t.l-1));
@@ -849,6 +857,12 @@ function drawTowerDrones(T){for(const t of S.towers){if(t.type!=="drone"||!t.dro
     X.fillStyle=Math.sin(T*9+d.a)>0?"#7dff6a":"#2a5a20";X.beginPath();X.arc(d.x,d.y-.02,.025,0,7);X.fill();}}}
 // 분대: 체력은 병사 체력의 합. 단일 공격은 한 명씩(남는 피해는 다음 병사로), 광역 공격은 살아 있는 전원에게.
 const alive=e=>e.hp<=0?0:Math.ceil(e.hp/e.hp1-1e-9);
+/*v489 진공청소기: 사거리 안 전원 흡입 피해 + 길 뒤로 끌어당김(보스·공허·소환체 제외)*/
+function vacAtk(t,s,x,y,R2){const e1=s.tier>=1,RR=e1?(Math.sqrt(R2)+.5)**2:R2,pull=(.035+.004*s.tier)*(e1?1.5:1);let n=0;
+  for(const e of nearList(x,y,Math.sqrt(RR),NB0)){if(e.dead)continue;const dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy>RR)continue;hit(e,s.dmg,t,true);n++;
+    if(!e.dead&&!e.boss&&!e.vm&&e.alien!=="void"&&e.alien!=="bhole"&&!e.air&&!e.fly)e.d=Math.max(0,e.d-pull);
+    if(n<=3&&fx.length<380){const L=Math.hypot(dx,dy)||1;fx.push({k:"pt",x:e.x,y:e.y,vx:-dx/L*3.2,vy:-dy/L*3.2,life:Math.min(.4,L/3.2),m:.4,col:s.tier>=10?"#c9a8ff":s.tier>=5?"#9a7cff":"#d8e6f0"});}}
+  t.vacT=n?.3:0;}
 function hit(e,dmg,t,aoe){if(e.dead)return;const b=alive(e);e.hp-=dmg*(e.gasT>0?e.gasV||1:1); // 분대 하나 = 표적 하나(사용자 지정): 범위 공격도 분대 체력 합에서 한 번만 깎음
 e.hitT=.1;const a=alive(e),kd=b-a;
   if(kd>0&&!e.boss){earn(e.rew*kd*totemMul()*HRW());S.kills+=kd;if(t)t.kills=(t.kills||0)+kd;}
@@ -884,7 +898,7 @@ function update(dt){const frz=nukeCin>0;if(frz)nukeCin-=dt;
     if(!best){t.lastAim=null;continue;}t.ang=Math.atan2(best.y-y,best.x-x);t.aim=best;t.lastAim=best;
     if(t.cd>0)continue;if(t.cd<-.25)t.cd=0;t.cd+=1/s.rate*(t.fever&&ty==="tank"?1/3:1);t.flash=ty==="flame"?.16:.08;const tc=TCOL[s.tier];
     const ev=s.tier>=1&&fx.length<420;
-    if(ty==="rifle"){hit(best,s.dmg,t);if(fx.length<450)fx.push({k:"tr",x1:x,y1:y,x2:best.x,y2:best.y,life:.07,m:.07,col:tc,w:1+s.tier*.25});
+    if(ty==="vacuum")vacAtk(t,s,x,y,R2);else if(ty==="rifle"){hit(best,s.dmg,t);if(fx.length<450)fx.push({k:"tr",x1:x,y1:y,x2:best.x,y2:best.y,life:.07,m:.07,col:tc,w:1+s.tier*.25});
       if(s.tier>=5&&inR){/* 5차 전직: 양쪽 보조포 2문 — 다음 우선순위 표적 2개(없으면 같은 표적)에 60% 피해 */const o=inR.filter(e=>e!==best&&!e.dead).sort((a,b)=>tgScore(tgm,b)-tgScore(tgm,a));const ca=Math.cos(t.ang),sa=Math.sin(t.ang);
         for(let q=0;q<2;q++){const tg=o[q]||best;if(tg.dead)continue;hit(tg,s.dmg*.6,t);const side=q?1:-1,sx=x-sa*.26*side,sy=y+ca*.26*side;if(fx.length<450)fx.push({k:"tr",x1:sx,y1:sy,x2:tg.x,y2:tg.y,life:.06,m:.06,col:tc,w:.9+s.tier*.15});}}
       if(ev&&Math.random()<.5){const a=t.ang+Math.PI/2;fx.push({k:"pt",x,y,vx:Math.cos(a)*1.4,vy:Math.sin(a)*1.4,life:.3,m:.3,col:"#e8c060"});}}
@@ -1807,7 +1821,7 @@ function drawTitle(now){if(!titleOn)return;const cv=$("titleCv"),dpr=Math.min(2,
   for(let i=EMB.length-1;i>=0;i--)if(EMB[i].l<=0)EMB.splice(i,1);
   const vg=g.createRadialGradient(W/2,H*.45,Math.min(W,H)*.3,W/2,H*.5,Math.max(W,H)*.75);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.75)");g.fillStyle=vg;g.fillRect(0,0,W,H);
   titleRaf=requestAnimationFrame(drawTitle);}
-function showTitle(){titleOn=true;$("title").hidden=false;$("tStory").hidden=!(S.endSeen||(S.conqBy&&S.conqBy[6]));const hs=S.earned>0;$("tPlay").hidden=!hs;$("tNew").textContent="새 게임";$("tNew").classList.remove("warn");newArm=0;const c=COUNTRIES[S.country-1];$("tSave").textContent=S.earned>0?`진행 기록 · ${modeTag(S.mode)} · ${c&&c.inf?"무한 모드":S.country+"스테이지 "+(c?c.name:"")} · ${S.wave}단계`:"새 작전";bgmLabels();titleRaf=requestAnimationFrame(drawTitle);}
+function showTitle(){titleOn=true;$("title").hidden=false;$("tStory").hidden=false;const hs=S.earned>0;$("tPlay").hidden=!hs;$("tNew").textContent="새 게임";$("tNew").classList.remove("warn");newArm=0;const c=COUNTRIES[S.country-1];$("tSave").textContent=S.earned>0?`진행 기록 · ${modeTag(S.mode)} · ${c&&c.inf?"무한 모드":S.country+"스테이지 "+(c?c.name:"")} · ${S.wave}단계`:"새 작전";bgmLabels();titleRaf=requestAnimationFrame(drawTitle);}
 function landLock(){try{const m=matchMedia("(pointer:coarse)").matches;if(!m)return;const go=()=>{try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{});}catch(e){}};const de=document.documentElement;if(!document.fullscreenElement&&de.requestFullscreen&&!matchMedia("(display-mode: fullscreen)").matches&&!matchMedia("(display-mode: standalone)").matches)de.requestFullscreen({navigationUI:"hide"}).then(go).catch(go);else go();}catch(e){}} /* 폰에서 게임 시작 시 가로 고정(지원 기기) */
 function hideTitle(){titleOn=false;cancelAnimationFrame(titleRaf);$("title").hidden=true;last=0;if(!S.intro&&!(S.earned>0))setTimeout(()=>{if(!S.intro&&!(S.earned>0))startIntro();},300);}
 function drawKorea(g,x,y,w,h){g.save();g.fillStyle="#ffffff";g.fillRect(x,y,w,h);const cx=x+w/2,cy=y+h/2,R=h/4,an=Math.atan2(2,3);g.translate(cx,cy);g.rotate(an);
@@ -2108,7 +2122,7 @@ let SC=null;const SCN={
   draw(g,W,H,t){g.fillStyle="#000";g.fillRect(0,0,W,H);const cx=W/2,cy=H/2,dark=Math.max(0,(t-2)/12),R0=Math.max(W,H)*dark;
    for(let i=0;i<320;i++){const x=(Math.sin(i*91.3)*.5+.5)*W,y=(Math.sin(i*47.7+3)*.5+.5)*H,d=Math.hypot(x-cx,y-cy),off=(i%37)/37*16<t;if(d<R0||off&&i%5===0)continue;g.fillStyle=i%7?"rgba(235,235,255,.85)":"rgba(255,200,160,.85)";const z=1+(i%3);g.fillRect(x,y,z,z);}
    if(R0>0){const vg=g.createRadialGradient(cx,cy,R0*.8,cx,cy,R0*1.15+1);vg.addColorStop(0,"rgba(0,0,0,1)");vg.addColorStop(.8,"rgba(60,20,90,.35)");vg.addColorStop(1,"rgba(0,0,0,0)");g.fillStyle=vg;g.beginPath();g.arc(cx,cy,R0*1.15+1,0,7);g.fill();}}}};
-function storyScene(key,done){const D=SCN[key];S.st=S.st||{};S.st[key]=1;try{save();}catch(e){}
+function storyScene(key,done){const D=SCN[key];S.st=S.st||{};S.st[key]=1;metaSet("st_"+key);try{save();}catch(e){}
   try{document.fonts&&document.fonts.load('400 40px "Black And White Picture"',D.lines.join(""));}catch(e){}
   const o=document.createElement("div");o.id="voidOv";o.innerHTML=`<canvas class="vbg"></canvas><p></p><small>화면을 누르면 건너뜀</small>`;document.body.appendChild(o);const P=o.querySelector("p"),cv=o.querySelector("canvas"),t0=performance.now();let i=-1,tm=null;SC={o,key};
   const loopS=now=>{if(!SC||SC.o!==o)return;const W=cv.width=innerWidth,H=cv.height=innerHeight,g=cv.getContext("2d"),t=(now-t0)/1000;g.globalAlpha=1;g.fillStyle="#000";g.fillRect(0,0,W,H);g.globalAlpha=.55*Math.min(1,t/1.5);D.draw(g,W,H,t);requestAnimationFrame(loopS);};requestAnimationFrame(loopS);
@@ -2138,7 +2152,7 @@ function drawTower(t,T){const s=st(t),tier=s.tier,col=TCOL[tier],x=t.x+.5,y=t.y+
   else baseC(boxed,tier,col,b,x,y); /* 최적화: 정적인 진지 받침은 미리 그려 둔 그림을 붙임 */
   if(t.type==="sniper"&&t.aim&&tier>=1){X.strokeStyle="rgba(255,60,60,.55)";X.lineWidth=.02;X.beginPath();X.moveTo(x,y);X.lineTo(t.aim.x,t.aim.y);X.stroke();X.fillStyle="#ff3c3c";X.beginPath();X.arc(t.aim.x,t.aim.y,.045,0,7);X.fill();}
   X.save();X.translate(x,y);X.rotate(t.ang||0);
-  if(tier>=2&&REAL2[t.type])drawReal(t,s,tier,col,T);
+  if(t.type==="vacuum")drawVac(t,s,tier,col,T);else if(tier>=2&&REAL2[t.type])drawReal(t,s,tier,col,T);
   else if(t.type==="rifle"){const n=Math.min(6,1+Math.floor(tier/2)),sp=.07;
     X.fillStyle="#15180f";for(let i=0;i<n;i++){const o=(i-(n-1)/2)*sp;X.fillRect(.05,o-.025,.36+tier*.012,.05);}
     if(t.flash>0){X.fillStyle=tier>=5?col:"#ffd36b";X.beginPath();X.arc(.45+tier*.012,0,.08+tier*.012,0,7);X.fill();}
@@ -2431,6 +2445,15 @@ function drawSoldier(e,T,lite,noIns){const CC=e.uni||COUNTRY;
   if(e.hp<e.max){const w=e.boss?1.1:.46,h=e.boss?.09:.05,yy=y+r*.75;X.fillStyle="rgba(0,0,0,.6)";X.fillRect(x-w/2,yy,w,h);X.fillStyle=e.boss?"#d9573c":"#93c25c";X.fillRect(x-w/2,yy,w*Math.max(0,e.hp/e.max),h);}
   if(e.boss){X.font=`700 .26px "IBM Plex Sans KR",sans-serif`;X.textAlign="center";X.lineWidth=.05;X.strokeStyle="rgba(0,0,0,.8)";X.strokeText(e.title,x,y+r+.33);X.fillStyle="#ffe2a8";X.fillText(e.title,x,y+r+.33);X.textAlign="left";e._bar={x,yy:y+r*.75,w:1.1,h:.09,col:"#d9573c",ty:y+r+.33,fs:.26,tc:"#ffe2a8",hpb:e.hp<e.max};}}
 
+/*v489 진공청소기 그림: 0~4차 진짜 청소기 · 5차+ 블랙홀 · 150렙 공허*/
+function drawVac(t,s,tier,col,T){const hid=t.l>=150,on=(t.vacT||0)>0;
+  if(tier<5){X.fillStyle="#2a2f36";X.beginPath();X.ellipse(-.12,0,.2,.16,0,0,7);X.fill();X.fillStyle=tier>=3?"#4a7ad0":"#d23c3c";X.beginPath();X.ellipse(-.12,0,.16,.12,0,0,7);X.fill();
+    X.fillStyle="#e8e8e8";X.beginPath();X.arc(-.12,0,.05,0,7);X.fill();X.strokeStyle="#1b1e22";X.lineWidth=.05;X.beginPath();X.moveTo(.02,0);X.quadraticCurveTo(.18,.12,.3,0);X.stroke();
+    X.fillStyle="#555b63";X.fillRect(.28,-.11,.08,.22);if(on){X.fillStyle="rgba(220,235,255,.35)";X.beginPath();X.moveTo(.36,-.1);X.lineTo(.62,-.22);X.lineTo(.62,.22);X.lineTo(.36,.1);X.fill();}return;}
+  X.rotate(-(t.ang||0));const R=hid?.34:.26+(tier-5)*.012,sp=T*(hid?1.2:2.2);
+  X.save();X.rotate(sp);for(let i=0;i<3;i++){X.rotate(Math.PI*2/3);X.strokeStyle=hid?"rgba(200,170,255,.55)":"rgba(255,170,90,.6)";X.lineWidth=.035;X.beginPath();X.arc(0,0,R*1.45,0,1.6);X.stroke();}X.restore();
+  const g=X.createRadialGradient(0,0,R*.5,0,0,R*1.25);g.addColorStop(0,"#000");g.addColorStop(.75,"#000");g.addColorStop(.86,hid?"rgba(230,210,255,.95)":"rgba(255,200,120,.9)");g.addColorStop(1,"rgba(0,0,0,0)");
+  X.fillStyle=g;X.beginPath();X.arc(0,0,R*1.25,0,7);X.fill();if(hid){X.fillStyle="rgba(255,255,255,.85)";X.font='700 .2px "Yuji Boku",serif';X.textAlign="center";X.fillText("無",0,.07);X.textAlign="left";}}
 /* ═════════ 썸네일 ═════════ */
 const THUMB={};
 function makeThumbs(){for(const k of ORDER){const c=document.createElement("canvas");c.width=c.height=96;const old=X;X=c.getContext("2d");X.scale(96,96);
@@ -2491,7 +2514,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyAll);$("tAch").addEventListener("click",achOpen);const BUILD="v488 · 11/09 00:45";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v489 · 11/09 00:55";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2875,9 +2898,19 @@ function startCutscene(cc,replay){const c=cc||S.country;cutData={replay:!!replay
   $("cutCv").onclick=cutNav;if(BGM.on)bgmStart();try{document.fonts&&document.fonts.load('700 40px "Nanum Myeongjo"');}catch(e){}requestAnimationFrame(cutLoop);}
 let cutTimer=null;
 /* 엔딩을 본 뒤 메인 메뉴의 '스토리 다시 보기': 오프닝 → 나라별 점령 장면 → 최종 엔딩 → 크레딧을 이어서 재생 */
-let storyQ=null,storyI=0;const STORY_SEQ=["intro",1,2,3,4,5,6,"credits"];
+let storyQ=null,storyI=0,storyOne=false,STORY_SEQ=["intro",1,2,3,4,5,6,"credits"];
 /* 스토리 몰아보기: 화면 왼쪽 클릭 = 이전 장면, 오른쪽 클릭 = 다음 장면 (건너뛰기 버튼 없음) */
-function storyAll(){if(BGM.on)bgmStart();cancelAnimationFrame(titleRaf);$("title").hidden=true;titleOn=true;storyQ=STORY_SEQ;storyPlay(0,false);}
+function storyAll(){storyOne=false;STORY_SEQ=["intro",1,2,3,4,5,6,"credits"];if(BGM.on)bgmStart();cancelAnimationFrame(titleRaf);$("title").hidden=true;titleOn=true;storyQ=STORY_SEQ;storyPlay(0,false);}
+/*v489 스토리 다시보기 메뉴: 본 장면은 하나씩 골라 보기(무한 모드 스토리·진짜 엔딩 포함), 기록은 저장 파일이 바뀌어도 남음(lld_meta)*/
+const stSeen=k=>{const m=metaGet();return !!(m["st_"+k]||(S&&S.st&&S.st[k]));},teSeen=()=>!!(metaGet().trueEnd||(S&&S.trueEnd)),endAny=()=>{const m=metaGet();return !!(m.easy||m.hard||(S&&S.endSeen));};
+function storyMenu(){const conq=c=>endAny()||!!(S&&S.conqBy&&S.conqBy[c]);
+  const it=[["intro","오프닝",true],...[1,2,3,4,5,6].map(c=>[c,c+"스테이지 · "+(COUNTRIES[c-1].name||""),conq(c)]),["credits","엔딩 크레딧",endAny()],["inf1","무한의 전선",stSeen("inf1")||teSeen()],["inf2","차원의 균열",stSeen("inf2")||teSeen()],["inf3","공허의 전조",stSeen("inf3")||teSeen()],["te","공허 · 진짜 엔딩",teSeen()]];
+  $("modalBox").innerHTML=`<h2>📖 스토리 다시 보기</h2><div style="display:grid;gap:6px;max-height:60vh;overflow:auto">${it.map(([k,n,ok],i)=>`<button class="btn${ok?"":" dis"}" data-sk="${i}" ${ok?"":"disabled"} style="text-align:left;${ok?"":"opacity:.45"}">${ok?"▶":"🔒"} ${n}</button>`).join("")}</div><div class="row" style="gap:8px;justify-content:flex-end;margin-top:10px"><button class="btn" id="smX">닫기</button><button class="btn pri" id="smAll">처음부터 이어 보기</button></div>`;
+  $("modal").hidden=false;$("smX").onclick=()=>{$("modal").hidden=true;};$("smAll").onclick=()=>{$("modal").hidden=true;storyAll();};
+  $("modalBox").querySelectorAll("[data-sk]").forEach(b=>b.onclick=()=>{const k=it[+b.dataset.sk][0];$("modal").hidden=true;storyOnePlay(k);});}
+function storyOnePlay(k){if(BGM.on)bgmStart();cancelAnimationFrame(titleRaf);$("title").hidden=true;titleOn=true;
+  if(k==="inf1"||k==="inf2"||k==="inf3"){storyScene(k,()=>showTitle());return;}if(k==="te"){voidIntro(()=>startTrueEnd(true));return;}
+  storyOne=true;STORY_SEQ=[k];storyQ=STORY_SEQ;storyPlay(0,false);}
 function storyExit(){storyQ=null;clearTimeout(cutTimer);cutOn=false;$("cut").hidden=true;showTitle();}
 function storyNext(){storyPlay(storyI+1,false);}
 function sceneStarts(d){if(d.credits)return[0];if(isCine(d)){const L=cineList(d),r=[];let a=0;for(const s of L){r.push(a);a+=s.d;}return r;}const n=d.intro?3:cutNP(d);return Array.from({length:n},(_,k)=>k*3);}
@@ -2892,7 +2925,7 @@ function storyPlay(i,atEnd){if(i<0)i=0;if(i>=STORY_SEQ.length){storyExit();retur
 function cutEnd(){const d=cutData;if(d.from&&d.from.alien&&!d.credits&&!storyQ){if(!S.endSeen)S.endSeen=true;metaSet(S.mode||"easy");try{save();}catch(e){}}
   if(storyQ&&!d.credits){storyNext();return;}if(d.from&&d.from.alien&&!d.credits){startCredits();return;}if(d.credits&&!storyQ&&S.country===6&&S.conqBy[6]){clearTimeout(cutTimer);const toMain=()=>{cutOn=false;$("cut").hidden=true;$("cut").classList.remove("endq");try{save(true);}catch(e){}showTitle();},toInf=()=>{cutOn=false;$("cut").hidden=true;$("cut").classList.remove("endq");goCountry(7);try{save(true);}catch(e){}};
     $("cut").classList.add("endq");$("cutBtns").innerHTML=`<span style="align-self:center;margin-right:8px;color:#f1e3b0">${modeTag(S.mode)} 클리어 · 무한 모드로 계속하시겠습니까?</span><button class="btn" id="cutMain">메인 메뉴로</button><button class="btn pri" id="cutGo">♾ 무한 모드로 계속</button>`;$("cutMain").onclick=toMain;$("cutGo").onclick=toInf;return;}
-  if(d.credits&&storyQ&&(S.trueEnd||S.st)){clearTimeout(cutTimer);cutOn=false;$("cut").hidden=true;const L=["inf1","inf2","inf3"].filter(k=>S.trueEnd||(S.st&&S.st[k]));const run=i=>{if(i<L.length){storyScene(L[i],()=>run(i+1));return;}if(S.trueEnd)voidIntro(()=>startTrueEnd(true));else{storyQ=null;showTitle();}};run(0);return;} /*v484 스토리 다시보기: 크레딧 → 무한의 전선 → 차원의 균열 → 공허의 전조 → 공허 등장 → 진짜 엔딩*/ /*v483 스토리 다시보기: 크레딧 뒤 공허 등장 연출 → 진짜 엔딩*/
+  if(d.credits&&storyQ&&!storyOne&&(teSeen()||["inf1","inf2","inf3"].some(stSeen))){clearTimeout(cutTimer);cutOn=false;$("cut").hidden=true;const L=["inf1","inf2","inf3"].filter(k=>teSeen()||stSeen(k));const run=i=>{if(i<L.length){storyScene(L[i],()=>run(i+1));return;}if(teSeen())voidIntro(()=>startTrueEnd(true));else{storyQ=null;showTitle();}};run(0);return;} /*v484 스토리 다시보기: 크레딧 → 무한의 전선 → 차원의 균열 → 공허의 전조 → 공허 등장 → 진짜 엔딩*/ /*v483 스토리 다시보기: 크레딧 뒤 공허 등장 연출 → 진짜 엔딩*/
   if(d.credits){const toMain=()=>{clearTimeout(cutTimer);storyQ=null;cutOn=false;$("cut").hidden=true;try{save();}catch(e){}showTitle();};$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">메인 메뉴로</button>`;$("cutGo").onclick=toMain;clearTimeout(cutTimer);cutTimer=setTimeout(toMain,2500);return;} /* "끝" 뒤 2.5초 후 메인 메뉴로 */if(d.replay){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">닫기</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;};return;}if(d.intro){$("cutBtns").innerHTML=`<button class="btn pri" id="cutGo">방어 시작</button>`;$("cutGo").onclick=()=>{cutOn=false;$("cut").hidden=true;S.intro=true;save();};return;}const goLbl=d.to?`계속하기 · ${d.c+1}스테이지로 진군`:"계속하기";
   $("cutBtns").innerHTML=d.to?`<button class="btn" id="cutStay">더 머물기</button><button class="btn pri" id="cutGo"></button>`:`<button class="btn pri" id="cutGo"></button>`;
   const close=()=>{clearInterval(cutTimer);cutTimer=null;cutOn=false;$("cut").hidden=true;};
@@ -3246,5 +3279,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611090035 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611090041 */</script>
 </body></html>
