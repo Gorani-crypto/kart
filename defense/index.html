@@ -530,7 +530,7 @@ const TT={
   orbit:{label:"궤도 방어 플랫폼",role:"떠 있는 방어 플랫폼이 여러 줄기 펄스 레이저로 동시에 여러 분대를 지진다",cost:3e9,up:2028587161,dmg:1e6,curve:"flat",rate:2,range:4.5,unlock:1,stage:4,
     names:["궤도 방어 플랫폼","무장 위성","방어 정거장","레이저 함대","궤도 성채","별빛 방벽","은하 방어망","성간 요새","우주 사령부","천상 요새","창공의 왕좌"]},
   /*v489 800단계(공허) 클리어 해금 · 진짜 청소기에서 시작 → 50렙 블랙홀 → 150렙 공허*/
-  vacuum:{label:"진공청소기",role:"사거리 안의 모든 적을 빨아들이며 피해를 주고 뒤로 끌어당긴다(보스·공허 소환체 제외). 50렙에 블랙홀, 150렙에 공허가 된다",cost:200,up:150,dmg:6,rate:4,range:2.2,unlock:1,stage:7,req:()=>!!(S&&S.trueEnd),
+  vacuum:{label:"진공청소기",role:"사거리 안의 모든 적을 빨아들이며 피해를 주고 뒤로 끌어당긴다(보스·공허 소환체 제외). 50렙에 블랙홀, 150렙에 공허가 된다",cost:200,up:150,dmg:6,rate:4,range:2.2,unlock:1,stage:1,
     names:["진공청소기","업소용 청소기","산업용 집진기","진공 흡입포","중력 흡입기","블랙홀","사건의 지평선","특이점","중력 붕괴","차원 흡수","만물 흡수"]}
 };
 const ORDER=Object.keys(TT);
@@ -731,6 +731,7 @@ const placeCost=type=>Math.ceil(TT[type].cost*costMul()); // 개수와 무관한
 const HID={orbit:["태초",1e45,0],laser:["섬멸",1e44,6e49]/*v459 태초 10재 · v458 섬멸 1재·60극*/,tesla:["천벌",4e43,2e49],drone:["천공",2e43,1.2e49],tank:["철혈",1e43,7e48],missile:["극점",8e42,5e48],flame:["홍련",7e42,4e48],sniper:["관통",2e42,2e49],emp:["혼돈",0,0],gas:["침식",0,0],mortar:["천궁",5e42,3e48],rail:["초월",3e42,2e49],rifle:["철우",1e42,1e48]/*v461 히든 화력 ×10*/,nuke:["초신성",0,1e49]};
 let TAECHO_ERR=null;try{{const seen=new Set();for(const k in TT){if(k==="nuke")continue;const c=curveOf(k);if(seen.has(c))continue;seen.add(c);const D=c.D,o149=D[149],o150=D[150];for(let L=141;L<=149;L++)D[L]=D[L-1]*(1+2*(1.52-1));D[150]=o150*D[149]/o149;}}/*v464 핵 제외 141~149렙 레벨당 화력 증가폭 2배(×1.52→×2.04), 150렙은 히든 값 그대로(EMP·최루탄은 4.6배 점프 유지)*/const seen=new Set();for(const k in HID){const[nm,dp,co]=HID[k],c=curveOf(k);if((dp||co)&&seen.has(c))throw Error("shared curve "+k);seen.add(c);if(dp){const d=dpsOf({type:k,l:150,tier:tierOf(150),x:0,y:0});c.D[150]*=dp/d;}if(co){c.Cm[149]*=co/(TT[k].up*c.Cm[149]);}}{const c=curveOf("nuke"),d=st0({type:"nuke",l:150,tier:tierOf(150)}).dmg;c.D[150]*=1e47/d;}/*v420·v464 초신성 한 발 1000재, 149→150 10극*/}catch(e){TAECHO_ERR=e.message;}
 {const C=CURVE.ob.Cm,f=1e49/(TT.orbit.up*C[148]);for(let l=140;l<=148;l++)C[l]*=Math.pow(f,(l-139)/9);}{const C=CURVE.ls.Cm,f=3e48/(TT.laser.up*C[148]);for(let l=140;l<=148;l++)C[l]*=Math.pow(f,(l-139)/9);}/*v458 위성 148→149 = 3극*/ /*v457 궤도 140~148→ 강화비 서서히 인하, 148→149 = 10극*/
+/*v490 진공청소기: 1스테이지부터 해금(800단계 조건 제거)*/
 /*v489 진공청소기 곡선: 소총 레벨당 증가폭 2배(화력·강화비) — 50렙까지 그대로, 51~149렙은 149렙 초당 1재(태초 수준)·148→149 강화비 3극에 맞춰 압축, 150렙 공허 = 궤도 최대 화력(태초 10재)의 10배 = 100재 · 149→150 강화비 30극*/
 {const r=CURVE.rf,D=[0,1],C=[0,1];for(let L=2;L<=150;L++)D[L]=D[L-1]*(1+2*(r.D[L]/r.D[L-1]-1));for(let l=2;l<=149;l++)C[l]=C[l-1]*(1+2*(r.Cm[l]/r.Cm[l-1]-1));
   const T=TT.vacuum,rt=L=>T.dmg*BAL.atk*T.rate*(1+.06*Math.min(10,Math.floor(L/10))),fD=Math.log(1e45/(rt(149)*D[50]))/Math.log(D[149]/D[50]),fC=Math.log(3e49/(T.up*C[50]))/Math.log(C[148]/C[50]),d50=D[50],d149=D[149],c50=C[50],c148=C[148];
@@ -2514,7 +2515,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v489 · 11/09 00:55";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v490 · 11/09 16:20";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3279,5 +3280,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611090041 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091612 */</script>
 </body></html>
