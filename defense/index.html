@@ -736,7 +736,7 @@ let TAECHO_ERR=null;try{{const seen=new Set();for(const k in TT){if(k==="nuke")c
 {const r=CURVE.rf,D=[0,1],C=[0,1];for(let L=2;L<=150;L++)D[L]=D[L-1]*(1+2*(r.D[L]/r.D[L-1]-1));for(let l=2;l<=149;l++)C[l]=C[l-1]*(1+2*(r.Cm[l]/r.Cm[l-1]-1));
   const T=TT.vacuum,rt=L=>T.dmg*BAL.atk*T.rate*(1+.06*Math.min(10,Math.floor(L/10))),fD=Math.log(1e45/(rt(149)*D[50]))/Math.log(D[149]/D[50]),fC=Math.log(3e49/(T.up*C[50]))/Math.log(C[148]/C[50]),d50=D[50],d149=D[149],c50=C[50],c148=C[148];
   for(let L=51;L<=149;L++)D[L]=d50*Math.pow(D[L]/d50,fD);for(let l=51;l<=148;l++)C[l]=c50*Math.pow(C[l]/c50,fC);C[149]=3e50/T.up;
-  const oc149=2.0176162461323107e+50;/*궤도 149→150 강화비 202극(고정값, 로드 시점에 upCost 사용 불가)*/C[149]=100*oc149/T.up;D[150]=100*HID.orbit[1]/rt(150);D[151]=D[150];CURVE.vc={D,Cm:C};B4.vacuum="vc";HID.vacuum=["공허",100*HID.orbit[1],100*oc149];/*태초(궤도 150렙) 화력·강화비의 100배*/}
+  const oc149=2.0176162461323107e+50;/*궤도 149→150 강화비 202극(고정값, 로드 시점에 upCost 사용 불가)*/C[149]=1000*oc149/T.up;D[150]=100*HID.orbit[1]/rt(150);D[151]=D[150];CURVE.vc={D,Cm:C};B4.vacuum="vc";HID.vacuum=["공허",100*HID.orbit[1],1000*oc149];/*v493 화력은 태초의 100배, 149→150 강화비는 태초의 1000배*/}
 const isHid=t=>t&&t.l>=150&&!!HID[t.type],hidName=t=>HID[t.type][0];const isTaecho=t=>t&&t.type==="orbit"&&t.l>=150;
 function avgRew(s){const m=mix(s);let v=0;for(const r in m)v+=m[r]*rewOf(s,+r);return v;}
 const depotPay=(t,s)=>Math.floor(avgRew(s)*BAL.dpA*Math.pow(BAL.dpG,t.l-1));
@@ -859,10 +859,25 @@ function drawTowerDrones(T){for(const t of S.towers){if(t.type!=="drone"||!t.dro
 // 분대: 체력은 병사 체력의 합. 단일 공격은 한 명씩(남는 피해는 다음 병사로), 광역 공격은 살아 있는 전원에게.
 const alive=e=>e.hp<=0?0:Math.ceil(e.hp/e.hp1-1e-9);
 /*v489 진공청소기: 사거리 안 전원 흡입 피해 + 길 뒤로 끌어당김(보스·공허·소환체 제외)*/
-function vacAtk(t,s,x,y,R2){const e1=s.tier>=1,RR=e1?(Math.sqrt(R2)+.5)**2:R2,pull=(.035+.004*s.tier)*(e1?1.5:1);let n=0;
-  for(const e of nearList(x,y,Math.sqrt(RR),NB0)){if(e.dead)continue;const dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy>RR)continue;hit(e,s.dmg,t,true);n++;
+/*v492 진공청소기 전직 능력 (tierOf: 10렙마다 1차, 최대 10차)
+ 0차 흡입 · 1차 범위 +0.5·끌어당김 ×1.5 · 2차 피해 ×1.2 · 3차 4초마다 흡입포(끌어당김 ×3) · 4차 중력장(감속 35%)
+ 5차 블랙홀: 범위 +0.5·피해 ×1.5 · 6차 사건의 지평선: 체력 5% 이하 잡몹 즉사 · 7차 특이점: 5번째 공격마다 피해 ×3
+ 8차 중력 붕괴: 8초마다 범위 내 20% 피해(보스 0.2%) · 9차 차원 흡수: 끌어당김 ×2·범위 +0.3·피해 ×1.3 · 10차 만물 흡수: 전부 적용 */
+function vacAtk(t,s,x,y,R2){const T_=s.tier,e1=T_>=1;
+  const RR=(Math.sqrt(R2)+(e1?.5:0)+(T_>=5?.5:0)+(T_>=9?.3:0))**2;
+  let pull=(.035+.004*T_)*(e1?1.5:1)*(T_>=9?2:1),dmg=s.dmg*(T_>=2?1.2:1)*(T_>=5?1.5:1)*(T_>=9?1.3:1);
+  t.vn=(t.vn||0)+1;const pulse=T_>=3&&t.vn%16===0;if(pulse)pull*=3;
+  if(T_>=7&&t.vn%5===0)dmg*=3;
+  const coll=T_>=8&&t.vn%32===0;
+  if(t._tr!==undefined&&t._tr!==T_)fx.push({k:"ring",x,y,life:.9,m:.9,col:TCOL[T_],R:3.2});t._tr=T_;
+  let n=0;
+  for(const e of nearList(x,y,Math.sqrt(RR),NB0)){if(e.dead)continue;const dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy>RR)continue;
+    if(T_>=6&&!e.boss&&e.alien!=="void"&&e.hp<=e.max*.05){hit(e,e.hp+1,t,true);continue;}
+    hit(e,dmg,t,true);n++;
+    if(coll)hit(e,e.boss?e.max*.002:e.max*.2,t,true);
+    if(T_>=4&&!e.dead){e.slowT=Math.max(e.slowT||0,1.2);e.slowA=.35;}
     if(!e.dead&&!e.boss&&!e.vm&&e.alien!=="void"&&e.alien!=="bhole"&&!e.air&&!e.fly)e.d=Math.max(0,e.d-pull);
-    if(n<=3&&fx.length<380){const L=Math.hypot(dx,dy)||1;fx.push({k:"pt",x:e.x,y:e.y,vx:-dx/L*3.2,vy:-dy/L*3.2,life:Math.min(.4,L/3.2),m:.4,col:s.tier>=10?"#c9a8ff":s.tier>=5?"#9a7cff":"#d8e6f0"});}}
+    if(n<=3&&fx.length<380){const L=Math.hypot(dx,dy)||1;fx.push({k:"pt",x:e.x,y:e.y,vx:-dx/L*3.2,vy:-dy/L*3.2,life:Math.min(.4,L/3.2),m:.4,col:TCOL[T_]});}}
   t.vacT=n?.3:0;}
 function hit(e,dmg,t,aoe){if(e.dead)return;const b=alive(e);e.hp-=dmg*(e.gasT>0?e.gasV||1:1); // 분대 하나 = 표적 하나(사용자 지정): 범위 공격도 분대 체력 합에서 한 번만 깎음
 e.hitT=.1;const a=alive(e),kd=b-a;
@@ -2515,7 +2530,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v491 · 11/09 16:30";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v493 · 11/09 16:45";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3280,5 +3295,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091618 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091621 */</script>
 </body></html>
