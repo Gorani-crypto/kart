@@ -736,7 +736,7 @@ let TAECHO_ERR=null;try{{const seen=new Set();for(const k in TT){if(k==="nuke")c
 {const r=CURVE.rf,D=[0,1],C=[0,1];for(let L=2;L<=150;L++)D[L]=D[L-1]*(1+2*(r.D[L]/r.D[L-1]-1));for(let l=2;l<=149;l++)C[l]=C[l-1]*(1+2*(r.Cm[l]/r.Cm[l-1]-1));
   const T=TT.vacuum,rt=L=>T.dmg*BAL.atk*T.rate*(1+.06*Math.min(10,Math.floor(L/10))),fD=Math.log(1e45/(rt(149)*D[50]))/Math.log(D[149]/D[50]),fC=Math.log(3e49/(T.up*C[50]))/Math.log(C[148]/C[50]),d50=D[50],d149=D[149],c50=C[50],c148=C[148];
   for(let L=51;L<=149;L++)D[L]=d50*Math.pow(D[L]/d50,fD);for(let l=51;l<=148;l++)C[l]=c50*Math.pow(C[l]/c50,fC);C[149]=3e50/T.up;
-  const oc149=2.0176162461323107e+50;/*궤도 149→150 강화비 202극(고정값, 로드 시점에 upCost 사용 불가)*/C[149]=1000*oc149/T.up;D[150]=100*HID.orbit[1]/rt(150);D[151]=D[150];CURVE.vc={D,Cm:C};B4.vacuum="vc";HID.vacuum=["공허",100*HID.orbit[1],1000*oc149];/*v493 화력은 태초의 100배, 149→150 강화비는 태초의 1000배*/}
+  const oc149=2.0176162461323107e+50;/*궤도 149→150 강화비 202극(고정값, 로드 시점에 upCost 사용 불가)*/C[149]=1000*oc149/T.up;D[150]=1000*HID.orbit[1]/rt(150);D[151]=D[150];CURVE.vc={D,Cm:C};B4.vacuum="vc";HID.vacuum=["공허",1000*HID.orbit[1],1000*oc149];/*v494 화력·149→150 강화비 모두 태초의 1000배*/}
 const isHid=t=>t&&t.l>=150&&!!HID[t.type],hidName=t=>HID[t.type][0];const isTaecho=t=>t&&t.type==="orbit"&&t.l>=150;
 function avgRew(s){const m=mix(s);let v=0;for(const r in m)v+=m[r]*rewOf(s,+r);return v;}
 const depotPay=(t,s)=>Math.floor(avgRew(s)*BAL.dpA*Math.pow(BAL.dpG,t.l-1));
@@ -2530,7 +2530,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v493 · 11/09 16:45";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v494 · 11/09 16:50";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3295,5 +3295,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091621 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091625 */</script>
 </body></html>
