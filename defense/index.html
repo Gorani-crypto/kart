@@ -549,7 +549,10 @@ function nukeTower(){return S.towers.find(t=>t.type==="nuke");}
 function mmss(x){x=Math.ceil(x);return Math.floor(x/60)+":"+String(x%60).padStart(2,"0");}
 let nukeTxt="";function updNukeBtn(){const b=$("nukeBtn");if(!b)return;const t=nukeTower();if(!t){if(!b.hidden)b.hidden=true;return;}if(b.hidden)b.hidden=false;
   const rem=Math.max(0,t.cd||0),has=enemies.some(e=>!e.dead),txt=nukeCin>0?"☢ 발사 중…":rem>0?"☢ 충전 "+mmss(rem):has?"☢ 핵 발사":"☢ 준비 완료";if(txt!==nukeTxt){nukeTxt=txt;b.textContent=txt;}b.disabled=nukeCin>0||rem>0||!has;const pn=$("popNuke");if(pn){const pt=nukeCin>0?"☢ …":rem>0?"☢ "+mmss(rem):"☢ 발사";if(pn.textContent!==pt)pn.textContent=pt;pn.disabled=b.disabled;}}
-function lockText(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())return"1기만 설치";if(st>S.country)return st+"스테이지 해금";if(T.wip)return"준비 중";if(T.req&&!T.req())return"이지 모드 800단계 클리어 해금";if(st===S.country&&S.best<(T.unlock||1))return T.unlock+"단계 해금";return null;}
+/*v497 한 번 해금된 타워는 영구 해금(lld_meta unl_<타워>) — 저장 파일·새 게임과 무관*/
+function permU(k){try{return !!metaGet()["unl_"+k];}catch(e){return false;}}
+function lockText(k){if(permU(k)&&!(k==="nuke"&&nukeTower()))return null;const r=lockTextR(k);if(r===null&&!permU(k))metaSet("unl_"+k);return r;}
+function lockTextR(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())return"1기만 설치";if(st>S.country)return st+"스테이지 해금";if(T.wip)return"준비 중";if(T.req&&!T.req())return"이지 모드 800단계 클리어 해금";if(st===S.country&&S.best<(T.unlock||1))return T.unlock+"단계 해금";return null;}
 const ATTACK=ORDER.filter(k=>TT[k].dmg);
 // 최고 레벨: 5스테이지 미국 점령 전까지 50(5차 전직), 미국 점령 후 100(사용자 결정)
 const BT=(n,C)=>{C=C||COUNTRY;return(C&&C.titles&&C.titles[n])||n;};
@@ -2531,7 +2534,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v496 · 11/09 16:58";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v497 · 11/09 17:05";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2599,7 +2602,7 @@ function popAt(p,cx,cy){const F=C.clientWidth,ox=C.offsetLeft,oy=C.offsetTop,cs=
   let y=(cy+.5)*cs-ph/2;y=Math.max(6,Math.min(cs*ROWS-ph-6,y));p.style.left=(x+ox)+"px";p.style.top=(y+oy)+"px";}
 function renderPop(){const p=$("pop");
   if(buildCell&&!sel){if(!canPlace(buildCell[0],buildCell[1])){buildCell=null;p.hidden=true;return;}
-    const here=ORDER.filter(k=>(TT[k].stage||1)<=S.country&&!TT[k].wip&&shownT(k));const key="b|"+buildCell+"|"+here.map(k=>!lockText(k)&&S.gold>=placeCost(k)).join();
+    const here=ORDER.filter(k=>((TT[k].stage||1)<=S.country||permU(k))&&!TT[k].wip&&shownT(k));const key="b|"+buildCell+"|"+here.map(k=>!lockText(k)&&S.gold>=placeCost(k)).join();
     if(key!==popKey){popKey=key;p.innerHTML=`<div class="ph"><b>무기 배치</b><span>칸 ${String.fromCharCode(65+buildCell[0])}${buildCell[1]+1}</span><button class="x" data-a="close" aria-label="닫기">×</button></div>
       <div class="bgrid">${here.map(k=>{const T=TT[k],lock=lockText(k);return`<button class="btn bopt" data-b="${k}" ${lock||S.gold<placeCost(k)?"disabled":""} title="${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span>${T.label}</span><small>${lock?T.unlock+"단계":fmt(placeCost(k))}</small></button>`;}).join("")}</div>`;}
     p.classList.add("bp");p.hidden=false;popAt(p,buildCell[0],buildCell[1]);return;}
@@ -3296,5 +3299,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091636 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091637 */</script>
 </body></html>
