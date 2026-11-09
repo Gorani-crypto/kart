@@ -784,7 +784,9 @@ function startWave(){if(phase!=="idle")return;
   if(mc)for(const B of bArr){const i=queue.indexOf(B),R=Math.max(1,(waveTotal-1-i)*gap0); /* 보스 속도는 간격을 좁히기 전 기준(사용자: 보스는 빨라지면 안 됨) */B.spd=Math.min(B.spd,mc[1]*PLEN/R);}if(bArr.pres&&bArr[0])bArr.pres.spd=bArr[0].spd*.9;if(bArr.s1)bArr[1].spd=Math.min(bArr[1].spd,bArr[0].spd*.9);
   if(s===100&&(cur()===3||cur()===4)){const mins=cur()===3?8:11.5;for(const B of bArr){B.spd=PLEN/(mins*60)*(B.title===BT("합참의장")?1.08:1);}} /* 최종 보스가 경로 끝까지: 중동 8분, 독일 11.5분 (합참의장은 조금 더 빠름) */if(s===100&&cur()===5){for(const B of bArr)if(B.title===BT(BOSS[100][1]))B.spd=PLEN/(30*60);if(bArr.pres)bArr.pres.spd=PLEN/(40*60);} /* 5스테이지: 국방부장관 30분 · 대통령 40분에 경로 끝까지(1배속, 일반 병사 속도와 무관) */phase="wave";spawnT=0;
   banner(boss?`${s}단계 · ${BKIND[boss[2]]} ${BT(boss[1])}${BT(boss[1])===RK[boss[0]][0]?"":"("+RK[boss[0]][0]+")"} 출현`:`${s}단계`);if(boss&&boss[2])shakeT=.6;dirtyUI=true;}
-function mkNormal(s,r,k=1){const sc=1,h1=hpOf(s,r)*(cur()===3&&s>80&&s<100?Math.pow(1.05,s-80):cur()===4?Math.pow(1.01,s-1):1)/* v322 4스테이지 일반 몹 체력 단계당 +1% 누적(100단계 ×2.7), 보상 그대로 *//* v318 3스테이지 81~99 일반 몹 체력 증가폭↑(단계당 +5% 누적, 보상 그대로) */,h=h1*k,dr=COUNTRY.drill,sf=cur()>=2&&s>50?1+.5*(s-50)/50:1;/* 2스테이지부터 51~100단계 일반 분대 이동속도 점진 증가(100단계 +25%) */return{r,n0:k,hp1:h1,max:h,hp:h,spd:spdOf(s)*sf*(dr?1:.94+Math.random()*.12),rew:rewOf(s,r)*sc*BAL.inc*(cur()===5&&s<=80?(s<=30?.75:s<=50?.75+.005*(s-30):.85+.1*(s-50)/30):1)/*v358 5스테이지 1~50단계 보상 ×0.85, v359 51~60단계 ×0.86→0.95, v360 1~30단계 ×0.75(31~50 ×0.755→0.85 서서히), v361 51~80단계 ×0.853→0.95*/,dmg:1,size:.25+r*.007,boss:false,d:0,id:nextId++,step:dr?0:Math.random()*6};}
+/*v499 일반 적 상태이상 내성: 캠페인 스테이지당 +10%(3스테이지부터 30%, 이후 유지) · 무한 40%→200단계 50%*/
+function resOf(s){const c=cur();if(c===7)return .4+.1*Math.min(1,s/200);return Math.min(.3,c*.1);}
+function mkNormal(s,r,k=1){const sc=1,h1=hpOf(s,r)*(cur()===3&&s>80&&s<100?Math.pow(1.05,s-80):cur()===4?Math.pow(1.01,s-1):1)/* v322 4스테이지 일반 몹 체력 단계당 +1% 누적(100단계 ×2.7), 보상 그대로 *//* v318 3스테이지 81~99 일반 몹 체력 증가폭↑(단계당 +5% 누적, 보상 그대로) */,h=h1*k,dr=COUNTRY.drill,sf=cur()>=2&&s>50?1+.5*(s-50)/50:1;/* 2스테이지부터 51~100단계 일반 분대 이동속도 점진 증가(100단계 +25%) */return{r,n0:k,hp1:h1,max:h,hp:h,spd:spdOf(s)*sf*(dr?1:.94+Math.random()*.12),rew:rewOf(s,r)*sc*BAL.inc*(cur()===5&&s<=80?(s<=30?.75:s<=50?.75+.005*(s-30):.85+.1*(s-50)/30):1)/*v358 5스테이지 1~50단계 보상 ×0.85, v359 51~60단계 ×0.86→0.95, v360 1~30단계 ×0.75(31~50 ×0.755→0.85 서서히), v361 51~80단계 ×0.853→0.95*/,dmg:1,res:resOf(s),size:.25+r*.007,boss:false,d:0,id:nextId++,step:dr?0:Math.random()*6};}
 function mkDrone(){return{r:-1,air:true,n0:1,hp1:DRONE_HP,max:DRONE_HP,hp:DRONE_HP,spd:DRONE_SPD*(.94+Math.random()*.12),rew:DRONE_REW,dmg:1,size:.3,boss:false,d:0,id:nextId++,step:Math.random()*6};}
 // 2스테이지 보스: 1스테이지 보스의 '최강 일반병 대비 배수'를 그대로 유지
 /* 3스테이지부터: 보스도 초반 완화(rampOf)를 똑같이 받고, 중간 보스는 0.6배(사용자: 10단계 중간보스 너무 셈) */
@@ -2534,7 +2536,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v498 · 11/09 17:15";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v499 · 11/09 17:30";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3300,5 +3302,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091639 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091709 */</script>
 </body></html>
