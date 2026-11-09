@@ -533,7 +533,8 @@ const TT={
   vacuum:{label:"진공청소기",role:"사거리 안의 모든 적을 빨아들이며 피해를 주고 뒤로 끌어당긴다(보스·공허 소환체 제외). 50렙에 블랙홀, 150렙에 공허가 된다",cost:200,up:150,dmg:6,rate:4,range:2.2,unlock:1,stage:1,req:()=>!!(metaGet().easy),
     names:["진공청소기","업소용 청소기","산업용 집진기","진공 흡입포","중력 흡입기","블랙홀","사건의 지평선","특이점","중력 붕괴","차원 흡수","만물 흡수"]}
 };
-const ORDER=Object.keys(TT);
+const ORDER=(()=>{const a=Object.keys(TT).filter(k=>k!=="vacuum");a.splice(a.indexOf("mortar")+1,0,"vacuum");return a;})();/*v495 진공청소기는 박격포 다음 위치*/
+const shownT=k=>!TT[k].req||TT[k].req();/*v495 해금 전에는 목록에서 숨김*/
 // 1차 전직 특성 (무기마다 하나)
 const EVOX={tesla:{2:"연쇄 10분대",3:"연쇄 14분대",4:"연쇄 20분대",5:"번개 줄기 3개(서로 다른 적에서 시작)"},laser:{2:"기둥 +1개(2개) · 기둥 지속 5초",3:"기둥 +1개(3개) · 기둥 지속 10초",4:"기둥 +1개(4개)",5:"사거리 +1칸 · 지속 조사 4줄기가 적들 사이를 무작위로 옮겨 다님"},orbit:{2:"레이저 전이: 맞은 분대 옆 분대에 50% 피해",3:"연속 레이저(계속 조사) · 적이 적으면 남는 줄기를 모아 집중",4:"사거리 +1.5칸 · 레이저 관통(뒤쪽 적 70% 피해)",5:"레이저 분쇄: 닿은 일반 분대 1초마다 1% 확률 즉사"},mortar:{2:"사거리 +1칸 · 폭발 범위 +35%",3:"포탄 2발 연속 발사",4:"포탄 4발 연속 발사",5:"포탄 10발 연속 발사"},rail:{2:"빔 지속 4배 · 사거리 +1칸",3:"빔 지속 10배 · 사거리 +1칸",4:"빔 지속 조사(계속 쏨)",5:"사거리 +2칸 · 같은 적을 계속 조사하면 피해 증가(10분에 최대 10배 · 100렙부터 20분에 최대 30배)"},sniper:{2:"보스 피해 ×4 · 사거리 +1칸",3:"보스 피해 ×6 · 사거리 +1칸",4:"보스 피해 ×8 · 일반 적 1% 확률 즉사",5:"보스 피해 ×12 · 일반 적 5% 확률 즉사"},flame:{2:"화상: 내 공격력만큼 5초에 걸쳐 피해",3:"화구 4개가 사방으로 회전 분사",4:"용암 화염 · 피해 ×2",5:"현재 체력 비례 화상: 붙는 순간 현재 체력의 10%를 5초에 걸쳐(보스 0.1%)"},tank:{4:"전차 3대 동시 사격 · 공격 속도 +30%",5:"20초마다 6초 피버 타임(공격 속도 ×3)"},rifle:{2:"공격 속도 +15%",3:"공격 속도 +15%",4:"연사 모드 · 공격 속도 +30%",5:"양쪽 보조포 2문 · 다음 표적 2개에 60% 피해"}};
 const EVO1={tesla:"연쇄 7분대 · 감전 마비 0.4초",laser:"레이저 기둥 범위 +50% · 사거리 +1칸",vacuum:"흡입 범위 +0.5칸 · 끌어당김 +50%",nuke:"충전 시간 -1분 (15분 → 14분) · 전직마다 1분씩 더 줄어 최소 5분",orbit:"레이저 +2줄기",drone:"드론 +1대 · 연사 +30% · 사거리 +1칸",emp:"마비 시간 +50% · 범위 +1칸",tank:"폭발 범위 +50% · 공격 속도 +25%",rifle:"공격 속도 +40%",mortar:"사거리 +1칸 · 폭발 범위 +35%",rail:"빔 지속 2배 · 사거리 +1칸",sniper:"사거리 +1.5칸 · 보스 피해 ×3",flame:"맞은 적 20% 감속",gas:"감속 +1초 · 피해 ×3 (2차: 가스 맞은 적 받는 피해 ×1.2 / 3차: 2발씩 / 4차: ×1.5 / 5차: 사방 살포·×2 / 이후 전직마다 +0.4)",missile:"동시 발사 +2발"};
@@ -2530,7 +2531,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v494 · 11/09 16:50";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v495 · 11/09 16:55";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -2598,7 +2599,7 @@ function popAt(p,cx,cy){const F=C.clientWidth,ox=C.offsetLeft,oy=C.offsetTop,cs=
   let y=(cy+.5)*cs-ph/2;y=Math.max(6,Math.min(cs*ROWS-ph-6,y));p.style.left=(x+ox)+"px";p.style.top=(y+oy)+"px";}
 function renderPop(){const p=$("pop");
   if(buildCell&&!sel){if(!canPlace(buildCell[0],buildCell[1])){buildCell=null;p.hidden=true;return;}
-    const here=ORDER.filter(k=>(TT[k].stage||1)<=S.country&&!TT[k].wip);const key="b|"+buildCell+"|"+here.map(k=>!lockText(k)&&S.gold>=placeCost(k)).join();
+    const here=ORDER.filter(k=>(TT[k].stage||1)<=S.country&&!TT[k].wip&&shownT(k));const key="b|"+buildCell+"|"+here.map(k=>!lockText(k)&&S.gold>=placeCost(k)).join();
     if(key!==popKey){popKey=key;p.innerHTML=`<div class="ph"><b>무기 배치</b><span>칸 ${String.fromCharCode(65+buildCell[0])}${buildCell[1]+1}</span><button class="x" data-a="close" aria-label="닫기">×</button></div>
       <div class="bgrid">${here.map(k=>{const T=TT[k],lock=lockText(k);return`<button class="btn bopt" data-b="${k}" ${lock||S.gold<placeCost(k)?"disabled":""} title="${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span>${T.label}</span><small>${lock?T.unlock+"단계":fmt(placeCost(k))}</small></button>`;}).join("")}</div>`;}
     p.classList.add("bp");p.hidden=false;popAt(p,buildCell[0],buildCell[1]);return;}
@@ -2624,7 +2625,7 @@ function renderUI(){renderPop();devLbl();{const lt=$("locTag");if(COUNTRY.inf){c
   $("auto").setAttribute("aria-pressed",S.auto);$("go").disabled=phase!=="idle";$("go").textContent=phase==="idle"?"출격":"교전 중";
   renderStage();
   const totList=TOTEMS.filter(D=>D.unl()&&!totPos(D.k)),bk=ORDER.map(k=>[k,lockText(k),S.gold>=(TT[k].cost?placeCost(k):0),buildType===k].join()).join("|")+Object.keys(THUMB).length+"|tot"+totList.map(D=>D.k).join()+totemPick+devOk();
-  if(bk!==barKey&&!drag){barKey=bk;$("bar").innerHTML=ORDER.map(k=>{const T=TT[k],lock=lockText(k);
+  if(bk!==barKey&&!drag){barKey=bk;$("bar").innerHTML=ORDER.filter(shownT).map(k=>{const T=TT[k],lock=lockText(k);
     return`<button class="slot${lock?" locked":""}${!lock&&S.gold<placeCost(k)?" poor":""}" data-t="${k}" aria-pressed="${buildType===k}" title="${T.label} — ${T.role}"><img src="${THUMB[k]||""}" alt="">${lock?LOCK_SVG:""}<span class="nm">${T.label}</span><span class="pr">${lock?lock.replace(" 해금",""):fmt(placeCost(k))}</span></button>`;}).join("")+totList.map(D=>{const lk=D.dev&&!devOk();return`<button class="slot${lk?" locked devlk":""}" data-t="tot_${D.k}" aria-pressed="${totemPick===D.k}" title="${D.nm} — 1기만 설치 · 모든 처치 보상 ×${D.mul} (중첩)${lk?" · 개발자 전용":""}" style="border-color:${D.bd}"><img src="${THUMB["tot_"+D.k]||""}" alt=""><span class="nm" style="color:${D.col}">${lk?"🔒 ":""}${D.nm}</span><span class="pr">${lk?"개발자 전용":"보상 ×"+D.mul}</span></button>`;}).join("");}
   const box=$("sel");
   if(sel&&S.towers.includes(sel)){const t=sel,T=TT[t.type],s=st(t),n={...t,l:Math.min(maxL(),t.l+1)},ns=st(n),c=upCost(t),max=t.l>=maxL();
@@ -3295,5 +3296,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091625 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091627 */</script>
 </body></html>
