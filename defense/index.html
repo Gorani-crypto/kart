@@ -530,7 +530,7 @@ const TT={
   orbit:{label:"궤도 방어 플랫폼",role:"떠 있는 방어 플랫폼이 여러 줄기 펄스 레이저로 동시에 여러 분대를 지진다",cost:3e9,up:2028587161,dmg:1e6,curve:"flat",rate:2,range:4.5,unlock:1,stage:4,
     names:["궤도 방어 플랫폼","무장 위성","방어 정거장","레이저 함대","궤도 성채","별빛 방벽","은하 방어망","성간 요새","우주 사령부","천상 요새","창공의 왕좌"]},
   /*v489 800단계(공허) 클리어 해금 · 진짜 청소기에서 시작 → 50렙 블랙홀 → 150렙 공허*/
-  vacuum:{label:"진공청소기",role:"사거리 안의 모든 적을 빨아들이며 피해를 주고 뒤로 끌어당긴다(보스·공허 소환체 제외). 50렙에 블랙홀, 150렙에 공허가 된다",cost:200,up:150,dmg:6,rate:4,range:2.2,unlock:1,stage:1,
+  vacuum:{label:"진공청소기",role:"사거리 안의 모든 적을 빨아들이며 피해를 주고 뒤로 끌어당긴다(보스·공허 소환체 제외). 50렙에 블랙홀, 150렙에 공허가 된다",cost:200,up:150,dmg:6,rate:4,range:2.2,unlock:1,stage:1,req:()=>!!(metaGet().easy),
     names:["진공청소기","업소용 청소기","산업용 집진기","진공 흡입포","중력 흡입기","블랙홀","사건의 지평선","특이점","중력 붕괴","차원 흡수","만물 흡수"]}
 };
 const ORDER=Object.keys(TT);
@@ -548,7 +548,7 @@ function nukeTower(){return S.towers.find(t=>t.type==="nuke");}
 function mmss(x){x=Math.ceil(x);return Math.floor(x/60)+":"+String(x%60).padStart(2,"0");}
 let nukeTxt="";function updNukeBtn(){const b=$("nukeBtn");if(!b)return;const t=nukeTower();if(!t){if(!b.hidden)b.hidden=true;return;}if(b.hidden)b.hidden=false;
   const rem=Math.max(0,t.cd||0),has=enemies.some(e=>!e.dead),txt=nukeCin>0?"☢ 발사 중…":rem>0?"☢ 충전 "+mmss(rem):has?"☢ 핵 발사":"☢ 준비 완료";if(txt!==nukeTxt){nukeTxt=txt;b.textContent=txt;}b.disabled=nukeCin>0||rem>0||!has;const pn=$("popNuke");if(pn){const pt=nukeCin>0?"☢ …":rem>0?"☢ "+mmss(rem):"☢ 발사";if(pn.textContent!==pt)pn.textContent=pt;pn.disabled=b.disabled;}}
-function lockText(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())return"1기만 설치";if(st>S.country)return st+"스테이지 해금";if(T.wip)return"준비 중";if(T.req&&!T.req())return"800단계 클리어 해금";if(st===S.country&&S.best<(T.unlock||1))return T.unlock+"단계 해금";return null;}
+function lockText(k){const T=TT[k],st=T.stage||1;if(k==="nuke"&&nukeTower())return"1기만 설치";if(st>S.country)return st+"스테이지 해금";if(T.wip)return"준비 중";if(T.req&&!T.req())return"이지 모드 800단계 클리어 해금";if(st===S.country&&S.best<(T.unlock||1))return T.unlock+"단계 해금";return null;}
 const ATTACK=ORDER.filter(k=>TT[k].dmg);
 // 최고 레벨: 5스테이지 미국 점령 전까지 50(5차 전직), 미국 점령 후 100(사용자 결정)
 const BT=(n,C)=>{C=C||COUNTRY;return(C&&C.titles&&C.titles[n])||n;};
@@ -736,7 +736,7 @@ let TAECHO_ERR=null;try{{const seen=new Set();for(const k in TT){if(k==="nuke")c
 {const r=CURVE.rf,D=[0,1],C=[0,1];for(let L=2;L<=150;L++)D[L]=D[L-1]*(1+2*(r.D[L]/r.D[L-1]-1));for(let l=2;l<=149;l++)C[l]=C[l-1]*(1+2*(r.Cm[l]/r.Cm[l-1]-1));
   const T=TT.vacuum,rt=L=>T.dmg*BAL.atk*T.rate*(1+.06*Math.min(10,Math.floor(L/10))),fD=Math.log(1e45/(rt(149)*D[50]))/Math.log(D[149]/D[50]),fC=Math.log(3e49/(T.up*C[50]))/Math.log(C[148]/C[50]),d50=D[50],d149=D[149],c50=C[50],c148=C[148];
   for(let L=51;L<=149;L++)D[L]=d50*Math.pow(D[L]/d50,fD);for(let l=51;l<=148;l++)C[l]=c50*Math.pow(C[l]/c50,fC);C[149]=3e50/T.up;
-  D[150]=1e46/rt(150);D[151]=D[150];CURVE.vc={D,Cm:C};B4.vacuum="vc";HID.vacuum=["공허",1e46,3e50];}
+  const oc149=2.0176162461323107e+50;/*궤도 149→150 강화비 202극(고정값, 로드 시점에 upCost 사용 불가)*/C[149]=100*oc149/T.up;D[150]=100*HID.orbit[1]/rt(150);D[151]=D[150];CURVE.vc={D,Cm:C};B4.vacuum="vc";HID.vacuum=["공허",100*HID.orbit[1],100*oc149];/*태초(궤도 150렙) 화력·강화비의 100배*/}
 const isHid=t=>t&&t.l>=150&&!!HID[t.type],hidName=t=>HID[t.type][0];const isTaecho=t=>t&&t.type==="orbit"&&t.l>=150;
 function avgRew(s){const m=mix(s);let v=0;for(const r in m)v+=m[r]*rewOf(s,+r);return v;}
 const depotPay=(t,s)=>Math.floor(avgRew(s)*BAL.dpA*Math.pow(BAL.dpG,t.l-1));
@@ -2515,7 +2515,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v490 · 11/09 16:20";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v491 · 11/09 16:30";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3280,5 +3280,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091612 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091618 */</script>
 </body></html>
