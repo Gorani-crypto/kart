@@ -530,7 +530,7 @@ const TT={
   orbit:{label:"궤도 방어 플랫폼",role:"떠 있는 방어 플랫폼이 여러 줄기 펄스 레이저로 동시에 여러 분대를 지진다",cost:3e9,up:2028587161,dmg:1e6,curve:"flat",rate:2,range:4.5,unlock:1,stage:4,
     names:["궤도 방어 플랫폼","무장 위성","방어 정거장","레이저 함대","궤도 성채","별빛 방벽","은하 방어망","성간 요새","우주 사령부","천상 요새","창공의 왕좌"]},
   /*v489 800단계(공허) 클리어 해금 · 진짜 청소기에서 시작 → 50렙 블랙홀 → 150렙 공허*/
-  vacuum:{label:"진공청소기",role:"사거리 안의 모든 적을 빨아들이며 피해를 주고 뒤로 끌어당긴다(보스·공허 소환체 제외). 50렙에 블랙홀, 150렙에 공허가 된다",cost:200,up:150,dmg:6,rate:4,range:2.2,unlock:1,stage:1,req:()=>!!(metaGet().easy),
+  vacuum:{label:"진공청소기",role:"사거리 안의 모든 적을 빨아들이며 피해를 주고 뒤로 끌어당긴다(보스·공허 소환체 제외). 50렙에 블랙홀, 150렙에 공허가 된다",cost:200,up:150,dmg:6,rate:4,range:2.2,unlock:1,stage:1,req:()=>{const m=metaGet();if(m.unl_vac)return true;if(m.easy){metaSet("unl_vac");return true;}return false;},/*v496 한 번 해금되면 영구 사용*/
     names:["진공청소기","업소용 청소기","산업용 집진기","진공 흡입포","중력 흡입기","블랙홀","사건의 지평선","특이점","중력 붕괴","차원 흡수","만물 흡수"]}
 };
 const ORDER=(()=>{const a=Object.keys(TT).filter(k=>k!=="vacuum");a.splice(a.indexOf("mortar")+1,0,"vacuum");return a;})();/*v495 진공청소기는 박격포 다음 위치*/
@@ -2531,7 +2531,7 @@ $("nukeBtn").addEventListener("click",nukeLaunch);
 $("bgmBtn").addEventListener("click",bgmToggle);$("homeBtn").addEventListener("click",()=>{$("modalBox").innerHTML=`<h2>메인 메뉴로</h2><p>저장하시겠습니까?</p><p class="hint">진행 상황은 자동 저장돼요. 저장소(1~5)에도 따로 남겨 두려면 <b>저장하고 나가기</b>를 누르세요.</p><div class="row"><button class="btn" id="exCancel">취소</button><button class="btn" id="exNo">저장 안 하고 나가기</button><button class="btn pri" id="exYes">저장하고 나가기</button></div>`;$("modal").hidden=false;
   $("exCancel").onclick=()=>{$("modal").hidden=true;};$("exNo").onclick=()=>{$("modal").hidden=true;try{save();}catch(e){}showTitle();};$("exYes").onclick=()=>{$("modal").hidden=true;slotExit=true;slotOpen("save");};});$("tBgm").addEventListener("click",bgmToggle);
 $("tPlay").addEventListener("click",()=>{if(BGM.on)bgmStart();hideTitle();});
-$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v495 · 11/09 16:55";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
+$("tStory").addEventListener("click",storyMenu);$("tAch").addEventListener("click",achOpen);const BUILD="v496 · 11/09 16:58";$("tVer").textContent=BUILD;$("gVer").textContent=BUILD;document.body.appendChild($("movePanel"));document.body.appendChild($("slotPanel"));
 /* 저장소 1~5: 이 기기(브라우저)에 저장, Claude 페이지에서는 계정에도 함께 저장 */
 const SLOTN=5,slotKey=i=>"lastline-slot-"+i;let slotMode="save",slotArm=0,slotCache={},slotExit=false;
 async function slotRead(i){let v=null;if(db&&uid){try{const s=await db.doc("data/users/"+uid+"/slot"+i).get();if(s.exists)v=s.data();}catch(e){}}if(!v){try{v=JSON.parse(localStorage.getItem(slotKey(i))||"null");}catch(e){}}return v;}
@@ -3296,5 +3296,5 @@ if(!window.__SIM__){window.claude?.hot?.snapshot?.(()=>({S:JSON.parse(ser())}));
   window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});}
 </script>
 
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091627 */</script>
+<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));/* app build 202611091636 */</script>
 </body></html>
