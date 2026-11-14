@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2345</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2350</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -816,6 +816,12 @@ const SHIFT_EV=SHIFT_TABLE.reduce((s,[m,p])=>s+m*p,0); // = 1.0975
 function shiftDraw(){ const r=Math.random(); let acc=0; for(const [m,p] of SHIFT_TABLE){ acc+=p; if(r<acc) return m; } return SHIFT_TABLE[SHIFT_TABLE.length-1][0]; }
 const SHIFT_PERIOD=10;
 /* 내 카트 최고속도에 곱하는 모드 배율 (속도전 개인·팀전에서는 항상 정확히 1) */
+function ckMirror(){ if(!FCAR()||state!=="race") return false; const fx=Math.sin(S.h), fz=Math.cos(S.h); let best=null;
+  const chk=(x,z,vx,vz)=>{ const dx=x-S.x, dz=z-S.z, fwd=dx*fx+dz*fz, lat=dx*fz-dz*fx, d=Math.hypot(dx,dz); if(fwd>1.5||fwd<-75||Math.abs(lat)>22) return; const close=-((vx-S.vx)*dx+(vz-S.vz)*dz)/Math.max(1,d); if(close<.8&&d>14) return; if(!best||d<best.d) best={d,lat}; };
+  for(const b of BOT.list){ const s=botSnap(b); chk(s.x,s.z,s.vx||0,s.vz||0); }
+  if(MP.racing) for(const [,g] of MP.ghosts){ if(g.obj.visible&&g.pr) chk(g.x,g.z,+g.pr.vx||0,+g.pr.vz||0); }
+  for(const o of (window.__fakeOpp||[])) chk(o.x,o.z,o.vx,o.vz);
+  if(best) S.mirSide=best.lat>0?1:-1; return !!best; }
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
@@ -7002,9 +7008,9 @@ function render(dt){
   camera.fov=lerp(camera.fov,targetFov,.08); camera.updateProjectionMatrix();
   skyDome.position.set(camera.position.x,0,camera.position.z); if(NIGHT) NIGHT.position.copy(skyDome.position);
   renderer.render(scene,camera);
-  { if(state==="race"&&S.novaT>0) S.mirT=1.5; else S.mirT=Math.max(0,(S.mirT||0)-dt); let mf=document.getElementById("sideMirror"); const on=S.mirT>0&&(state==="race"||state==="finish");
-    if(on){ if(!window.MIRCAM) window.MIRCAM=new THREE.PerspectiveCamera(58,1.8,.5,4000); const mc=MIRCAM, sz=renderer.getSize(new THREE.Vector2()), W=sz.x, H=sz.y, w=Math.round(Math.min(W*.34,340)), h=Math.round(w/1.8), x=W-w-12, top=Math.max(230,Math.round(H*.4)), y=H-top-h;
-      const fx=Math.sin(S.h), fz=Math.cos(S.h); mc.aspect=w/h; mc.updateProjectionMatrix(); mc.position.set(S.x+fx*1.5,S.y+3.2,S.z+fz*1.5); mc.lookAt(S.x-fx*40,S.y-4,S.z-fz*40);
+  { if(state==="race"&&S.novaT>0) S.mirT=1.5; else if(ckMirror()) S.mirT=Math.max(S.mirT||0,.9); else S.mirT=Math.max(0,(S.mirT||0)-dt); let mf=document.getElementById("sideMirror"); const on=S.mirT>0&&(state==="race"||state==="finish");
+    if(on){ if(!window.MIRCAM) window.MIRCAM=new THREE.PerspectiveCamera(58,1.8,.5,4000); const mc=MIRCAM, sz=renderer.getSize(new THREE.Vector2()), W=sz.x, H=sz.y, w=Math.round(Math.min(W*.34,340)), h=Math.round(w/1.8), x=(FCAR()&&S.mirSide===1)?12:W-w-12, top=Math.max(230,Math.round(H*.4)), y=H-top-h;
+      const fx=Math.sin(S.h), fz=Math.cos(S.h); mc.aspect=w/h; mc.updateProjectionMatrix(); if(FCAR()&&S.novaT<=0){ const sg=S.mirSide||-1, lx=fz*sg, lz=-fx*sg; mc.position.set(S.x+lx*.75+fx*.3,S.y+1.15,S.z+lz*.75+fz*.3); mc.lookAt(S.x-fx*40+lx*3,S.y+.2,S.z-fz*40+lz*3); } else { mc.position.set(S.x+fx*1.5,S.y+3.2,S.z+fz*1.5); mc.lookAt(S.x-fx*40,S.y-4,S.z-fz*40); }
       const myVis=kart.visible; kart.visible=false; renderer.setScissorTest(true); renderer.setViewport(x,y,w,h); renderer.setScissor(x,y,w,h); renderer.render(scene,mc); renderer.setScissorTest(false); renderer.setViewport(0,0,W,H); kart.visible=myVis;
       if(!mf){ mf=document.createElement("div"); mf.id="sideMirror"; mf.style.cssText="position:fixed;z-index:25;pointer-events:none;border:4px solid #1a1d2a;border-radius:14px;box-shadow:0 0 0 2px #b48cff,0 6px 18px rgba(0,0,0,.5)"; mf.innerHTML='<span style="position:absolute;left:8px;top:4px;font:900 12px sans-serif;color:#fff;text-shadow:0 1px 3px #000">🪞 사이드 미러</span>'; document.body.appendChild(mf); }
       mf.hidden=false; mf.style.left=(x-4)+"px"; mf.style.top=(top-4)+"px"; mf.style.width=w+"px"; mf.style.height=h+"px"; }
