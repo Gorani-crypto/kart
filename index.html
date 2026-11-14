@@ -327,7 +327,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1115-0430</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1115-0440</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5003,7 +5003,7 @@ const CHARS=[
   {id:"foal", lock:10, xpm:1.05, name:"망아지 콩콩", desc:"쫑긋 귀에 큰 눈, 갈기 달린 새끼 말 · 질주 말과 시너지", helmet:0xa86a3a, stripe:0xa86a3a, suit:0xa86a3a, glove:0x3a2414, acc:"foal"},
   {id:"lizard", lock:10, xpm:1.05, name:"도마뱀 인간 리자", desc:"초록 비늘, 노란 세로 눈, 등 가시와 꼬리 · 구렁이 뱀과 시너지", helmet:0x4fa84a, stripe:0x2f7a3a, suit:0x4fa84a, glove:0x2f7a3a, acc:"lizard"},
   {id:"baby", lock:10, xpm:1.05, name:"자이언트 베이비", desc:"2배 크기의 아기 · 머리카락 한 가닥, 쪽쪽이, 턱받이, 기저귀 · 유모차와 시너지", helmet:0xffcfa6, stripe:0xffffff, suit:0xffe4ec, glove:0xffcfa6, acc:"baby", big:2},
-  {id:"zero", xpm:1.07, name:"블랙 나이트 제로", desc:"무광 검은 갑옷 헬멧에 붉게 빛나는 눈 슬릿, 은빛 뿔 장식, 어깨 갑옷, 붉은 망토", helmet:0x15171c, stripe:0xc8ccd6, suit:0x1c1f26, glove:0x2a2e38, acc:"knight"},
+  {id:"zero", lock:20, xpm:1.1, name:"블랙 나이트 제로", desc:"무광 검은 갑옷 헬멧에 붉게 빛나는 눈 슬릿, 은빛 뿔 장식, 어깨 갑옷, 붉은 망토", helmet:0x15171c, stripe:0xc8ccd6, suit:0x1c1f26, glove:0x2a2e38, acc:"knight"},
   {id:"clown", lock:10, xpm:1.05, name:"광대 삐에로", desc:"하얀 얼굴에 빨간 코, 무지개 곱슬머리, 고깔모자 · 세발 자전거와 시너지", helmet:0xffffff, stripe:0xff3a3a, suit:0xffcf2e, glove:0xffffff, acc:"clown"}
 ];
 function buildRider(ch,pose){
@@ -5293,6 +5293,8 @@ function physics(dt, controls){ const fc=FCAR(); let dr=false;
     if(S.grounded&&S.slope) nv=Math.max(0,nv-9.8*S.slope*2.6*dt); /* 중력: 오르막 느려지고 내리막 빨라짐(최고속도 넘어서도) */
     if(v1r>1e-3){ const k=nv/v1r; S.vx*=k; S.vz*=k; } } }
   return r; }
+/* 관성: 평소 접지력을 조금 낮추고(옆으로 살짝 미끄러짐) 미끄러진 힘은 앞으로 대부분 보존 (모든 맵·차) */
+let INR=.6, INR_EFF=.95;
 /* 서킷 전용차 충돌 연기: 살짝 → 바퀴 쪽 연기(1~3초) · 정면/세게 → 앞쪽 짙은 연기로 시야 가림(5~10초) · 연기 나는 동안 살짝 느려짐 */
 function ckDmg(){ const m=S.smk; return m&&m.t>0?m.dmg*Math.min(1,m.t/1.5):0; }
 function ckCrash(imp,fr,dx,dz,car){ if(!FCAR()||state!=="race") return; const kmh=imp*CONFIG.kmh; if(kmh<14) return;
@@ -5450,8 +5452,8 @@ function physics0(dt, controls){
 
   S.gripRamp=Math.min(1,S.gripRamp+dt/C.driftRecover);
   let grip=S.drifting?C.gripDrift:lerp(C.gripDrift*1.1,C.gripNormal,S.gripRamp*S.gripRamp);
-  grip*=(K.grip||1); if(!ground) grip=.3;
-  const keep=Math.exp(-grip*dt), ls2=ls*keep, eff=S.drifting?(K.driftEff!==undefined?K.driftEff:C.driftEff):0.85;
+  grip*=(K.grip||1)*(S.drifting?1:INR); if(!ground) grip=.3;
+  const keep=Math.exp(-grip*dt), ls2=ls*keep, eff=S.drifting?(K.driftEff!==undefined?K.driftEff:C.driftEff):INR_EFF;
   fs=(fs>=0?1:-1)*Math.sqrt(fs*fs+(ls*ls-ls2*ls2)*eff); ls=ls2; if(S.drifting&&K.driftDrag) fs*=Math.exp(-K.driftDrag*dt);
 
   if(S.gLock&&!(controls&&input.drift)){ S.gLock=false; S.gauge=0; } /* 드리프트 키를 떼야 새 게이지 시작 */
