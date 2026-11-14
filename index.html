@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2125</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2135</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5072,7 +5072,7 @@ function physics0(dt, controls){
   else { yaw=steer*tb*(fs>=0?1:-1); S.dYaw=yaw;
     // 한쪽으로 오래 꺾을수록 감속이 지수적으로 커짐
     if(steerRaw!==0&&steerRaw===S.holdDir) S.hold+=dt; else { S.hold=0; S.holdDir=steerRaw; }
-    if(steerRaw!==0&&ground&&fs>5){ const rate=Math.min(C.turnLossMax,C.turnLossBase*(Math.exp(S.hold/C.turnLossTime)-1)+C.turnLossBase); fs-=fs*rate*Math.abs(steer)*dt; }
+    if(steerRaw!==0&&ground&&fs>5){ const tlm=FCAR()?2:1, rate=Math.min(C.turnLossMax*tlm,(C.turnLossBase*(Math.exp(S.hold/C.turnLossTime)-1)+C.turnLossBase)*tlm); /* 서킷 전용차: 조향 감속 2배 */ fs-=fs*rate*Math.abs(steer)*dt; }
   }
   if(S.superT>0||S.novaT>0) yaw*=clamp(fs/base,1,3.2)*.8; // 초고속에서도 돌 수는 있게
   if(!ground) yaw*=.35;
