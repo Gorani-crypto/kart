@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2310</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2320</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -822,8 +822,9 @@ const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART
 const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:1.5,acc:1,t:"코너 강함 · 감속 적음 · 최고속도 낮음"},storm:{top:650,dur:1.3,dec:2.8,steer:2.2,acc:.95,t:"최고속도 최강 · 차체 약함 · 감속 큼"}};
 function F1S(){ return F1STAT[KART&&KART.id]||F1STAT.gt; }
 function F1KMH(){ return F1S().top; } /* 서킷 전용차 최고속도 625~650km/h (차마다 다름) */
-function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?1.5:1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
-let CKA_V=0.8; function CKA(){ return FCAR()?CKA_V:CIRC()?1.5:1; } /* 서킷: 가속을 느리게(0→최고속도 약 5초) */
+function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?NCM():1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
+let CKA_V=0.8; function CKA(){ return FCAR()?CKA_V:CIRC()?NCM():1; }
+function NCM(){ return KART&&KART.id==="bike"?1.3:1.5; } /* 서킷 일반 차량 배율 (슈퍼바이크 1.3배) */ /* 서킷: 가속을 느리게(0→최고속도 약 5초) */
 function CCAM(){ return {d:1,h:1}; }
 function gmMul(){ if(GM.mode==="speed") return 1; const f=GM.me; return f.mul*(f.slowT>0?.6:1)*(f.magT>0?1.15:1)*(f.ufoT>0?.5:1); }
 function gmStunned(){ return GM.mode==="item"&&(GM.me.stunT>0||GM.me.slipT>0||GM.me.ejT>0); }
@@ -5079,7 +5080,7 @@ function physics(dt, controls){ const fc=FCAR(); let dr=false;
     if(controls&&state==="race"){ if(input.boost&&!S._gb) f1Shift(1); } S._gb=!!input.boost; S._gd=!!input.drift; dr=input.drift; input.drift=false; }
   const v0=Math.hypot(S.vx,S.vz), r=physics0(dt,controls); if(fc) input.drift=dr;
   if(!fc&&CIRC()&&!S.loop&&!S.rail&&!S.coast&&!S.launch&&S.grounded&&S.slope){ const vv=Math.hypot(S.vx,S.vz); if(vv>1){ const k=Math.max(0,vv-9.8*S.slope*3*dt)/vv; S.vx*=k; S.vz*=k; } } /* 일반 차량도 서킷 오르막·내리막 중력 */
-  if(!fc&&CIRC()&&!S.loop&&!S.rail&&!S.coast&&!S.launch){ const v1=Math.hypot(S.vx,S.vz); if(v1<v0&&v1>1e-3){ const nv=Math.max(0,v0-(v0-v1)*1.5), k=nv/v1; S.vx*=k; S.vz*=k; } } /* 서킷 + 일반(부스터) 차량: 감속 1.5배 */
+  if(!fc&&CIRC()&&!S.loop&&!S.rail&&!S.coast&&!S.launch){ const v1=Math.hypot(S.vx,S.vz); if(v1<v0&&v1>1e-3){ const nv=Math.max(0,v0-(v0-v1)*NCM()), k=nv/v1; S.vx*=k; S.vz*=k; } } /* 서킷 + 일반(부스터) 차량: 감속 1.5배 */
   if(fc){ S.gauge=0; }
   if(fc){ S.boostT=0; if(!S.loop&&!S.rail&&!S.coast&&!S.launch){ const v1r=Math.hypot(S.vx,S.vz), gk=S.grounded?9.8*(S.slope||0)*.75*(TR.def.grav||1)*dt:0, v1=v1r+gk, top=f1Top(), g=S.mg||1, vmax=top*F1R[g-1], vlow=g>1?top*F1R[g-2]*.55:0;
     S.shiftT=Math.max(0,(S.shiftT||0)-dt); let nv=v1;
