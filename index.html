@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2335</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2340</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -824,7 +824,7 @@ function F1S(){ return F1STAT[KART&&KART.id]||F1STAT.gt; }
 function F1KMH(){ return F1S().top; } /* 서킷 전용차 최고속도 625~650km/h (차마다 다름) */
 function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?NCM():1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
 let CKA_V=0.8; function CKA(){ return FCAR()?CKA_V:CIRC()?NCM():1; }
-function NCM(){ return KART&&KART.id==="bike"?1.15:1.3; } /* 서킷 일반 차량 배율 (슈퍼바이크 1.3배) */ /* 서킷: 가속을 느리게(0→최고속도 약 5초) */
+function NCM(){ return KART&&KART.id==="bike"?1.1:1.2; } /* 서킷 일반 차량 배율 (슈퍼바이크 1.3배) */ /* 서킷: 가속을 느리게(0→최고속도 약 5초) */
 function CCAM(){ return {d:1,h:1}; }
 function gmMul(){ if(GM.mode==="speed") return 1; const f=GM.me; return f.mul*(f.slowT>0?.6:1)*(f.magT>0?1.15:1)*(f.ufoT>0?.5:1); }
 function gmStunned(){ return GM.mode==="item"&&(GM.me.stunT>0||GM.me.slipT>0||GM.me.ejT>0); }
