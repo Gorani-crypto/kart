@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2255</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2265</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5090,19 +5090,25 @@ function physics(dt, controls){ const fc=FCAR(); let dr=false;
 function ckDmg(){ const m=S.smk; return m&&m.t>0?m.dmg*Math.min(1,m.t/1.5):0; }
 function ckCrash(imp,fr,dx,dz,car){ if(!FCAR()||state!=="race") return; const kmh=imp*CONFIG.kmh; if(kmh<14) return;
   const sev=clamp(clamp((kmh-14)/230,0,1)*(.3+.7*clamp(fr,0,1))*F1S().dur*(car?1.1:1),0,1); if(sev<.03) return;
-  const heavy=sev>.4, dur=heavy?5+(sev-.4)/.6*5:1.2+sev/.4*1.8, side=Math.sign(dx*Math.cos(S.h)-dz*Math.sin(S.h))||1, front=(dx*Math.sin(S.h)+dz*Math.cos(S.h))>.5;
+  const heavy=sev>.4, dur=heavy?10+(sev-.4)/.6*10:10, /* 바퀴 쪽 10초 · 차체 정면 10~20초 */ side=Math.sign(dx*Math.cos(S.h)-dz*Math.sin(S.h))||1, front=(dx*Math.sin(S.h)+dz*Math.cos(S.h))>.5;
   const m=S.smk&&S.smk.t>0?S.smk:(S.smk={t:0,T:1,sev:0,dmg:0,side,front,acc:0});
-  if(sev>=m.sev*.7){ m.side=side; m.front=front||heavy; } m.sev=Math.max(m.sev*Math.min(1,m.t/m.T),sev); m.t=Math.max(m.t,dur); m.T=Math.max(m.t,1); m.dmg=Math.max(m.dmg*Math.min(1,m.t/1.5),.02+.1*sev);
+  if(sev>=m.sev*.7){ m.side=side; m.front=front||heavy; } m.sev=Math.max(m.sev*Math.min(1,m.t/m.T),sev); m.t=Math.max(m.t,dur); m.T=Math.max(m.t,1); m.e=0; m.vt=heavy?5+5*(sev-.4)/.6:0; ckSparks(sev,dx,dz); m.dmg=Math.max(m.dmg*Math.min(1,m.t/1.5),.02+.1*sev);
   const k=heavy?1-(.2+.2*(sev-.4)/.6):.8; S.vx*=k; S.vz*=k; /* 바퀴 쪽 충돌 20% · 정면 큰 충돌 20~40% 감속 */ if(heavy){ S.shake=Math.max(S.shake||0,.6); if(DCAM) DCAM.kick=1.4; } }
+const SPK={g:new THREE.BoxGeometry(.03,.03,.22),m:[0xffe066,0xffa21a,0xff6a10].map(c=>new THREE.MeshBasicMaterial({color:c}))};
+function ckSparks(sev,dx,dz){ if(sev<.12) return; const n=Math.round(8+sev*55), c=Math.cos(S.h), s=Math.sin(S.h), px=S.x+dx*.9, pz=S.z+dz*.9, py=S.y+.35, v=Math.hypot(S.vx,S.vz);
+  for(let k=0;k<n;k++){ const m=new THREE.Mesh(SPK.g,SPK.m[k%3]); m.position.set(px+(Math.random()-.5)*.6,py+Math.random()*.4,pz+(Math.random()-.5)*.6); scene.add(m);
+    const sp=6+Math.random()*16*(.5+sev); const vel=new THREE.Vector3(-dx*sp*.5+(Math.random()-.5)*sp+S.vx*.6,3+Math.random()*7*(.4+sev),-dz*sp*.5+(Math.random()-.5)*sp+S.vz*.6); m.lookAt(m.position.clone().add(vel));
+    FX.booms.push({m,t:0,life:.35+Math.random()*.5*(.5+sev),debris:true,vel}); } } /* 충돌 불꽃: 세게 부딪힐수록 많이·멀리 */
 function ckSmoke(dt){ const m=S.smk; let ov=document.getElementById("f1Smoke");
   if(!m||m.t<=0||!FCAR()||(state!=="race"&&state!=="finish")){ if(ov) ov.style.opacity=0; if(m&&state==="countdown") S.smk=null; return; }
-  m.t-=dt; const f=clamp(m.t/Math.min(m.T,3),0,1), heavy=m.sev>.4, c=Math.cos(S.h), s=Math.sin(S.h), W=(lx,ly,lz)=>new THREE.Vector3(S.x+lx*c+lz*s,S.y+ly,S.z-lx*s+lz*c);
-  const vb=new THREE.Vector3(S.vx*.25,0,S.vz*.25); m.acc+=dt*(heavy?55:28)*(.35+.65*f);
+  m.t-=dt; m.e=(m.e||0)+dt; const f=clamp(m.t/Math.min(m.T,3),0,1), heavy=m.sev>.4, c=Math.cos(S.h), s=Math.sin(S.h), W=(lx,ly,lz)=>new THREE.Vector3(S.x+lx*c+lz*s,S.y+ly,S.z-lx*s+lz*c);
+  const vb=new THREE.Vector3(S.vx*.25,0,S.vz*.25); m.acc+=dt*(heavy?55:36)*(.35+.65*f)*(heavy&&m.e>m.vt?.6:1);
   while(m.acc>1){ m.acc--; const g=Math.round(150-50*m.sev+Math.random()*30), mat=new THREE.MeshBasicMaterial({color:(g<<16)|(g<<8)|g,transparent:true,opacity:heavy?.75:.55,depthWrite:false});
     let p; if(heavy&&Math.random()<.7){ p=W((Math.random()-.5)*1.2,.6+Math.random()*.4,.6+Math.random()*1.6); puff(p,(1.6+Math.random()*1.8)*(.5+m.sev),1.3+m.sev,mat,new THREE.Vector3(S.vx*.55+(Math.random()-.5)*2,1.8+Math.random()*2,S.vz*.55+(Math.random()-.5)*2)); }
-    else { const fz=m.front?1.65:(Math.random()<.5?1.65:-1.55), sx=m.front&&Math.random()<.5?-m.side:m.side; p=W(sx*.88,.25,fz); puff(p,.7+Math.random()*.7+m.sev,1.0+m.sev,mat,new THREE.Vector3(vb.x+(Math.random()-.5),.8+Math.random(),vb.z+(Math.random()-.5))); } }
+    else { const fz=m.front?1.65:(Math.random()<.5?1.65:-1.55), sx=m.front&&Math.random()<.5?-m.side:m.side; p=W(sx*.88,.25,fz); puff(p,1.0+Math.random()*.9+m.sev,1.4+m.sev,mat,new THREE.Vector3(vb.x+(Math.random()-.5),.8+Math.random(),vb.z+(Math.random()-.5))); } }
   if(!ov){ ov=document.createElement("div"); ov.id="f1Smoke"; ov.style.cssText="position:fixed;inset:0;pointer-events:none;z-index:5;opacity:0;transition:opacity .25s;background:radial-gradient(ellipse at 30% 70%,rgba(120,120,124,.95),rgba(120,120,124,0) 55%),radial-gradient(ellipse at 70% 75%,rgba(95,95,100,.9),rgba(95,95,100,0) 50%),radial-gradient(ellipse at 50% 55%,rgba(150,150,155,.85),rgba(150,150,155,0) 60%),linear-gradient(0deg,rgba(80,80,84,.8),rgba(110,110,115,.25) 70%)"; document.body.appendChild(ov); }
-  ov.style.opacity=heavy&&DCAM.on?(clamp((m.sev-.35)/.6,.25,1)*.92*f).toFixed(3):0;
+  ov.style.opacity=heavy&&DCAM.on?(clamp((m.sev-.35)/.6,.25,1)*.92*clamp(1-(m.e-m.vt)/2.5,.18,1)*f).toFixed(3):0; /* 시야 가림은 5~10초, 그 뒤엔 옅게 */
+  if(m.sev>.75&&m.e<3.5&&Math.random()<dt*25){ const fm=new THREE.MeshBasicMaterial({color:Math.random()<.5?0xff7a1a:0xffc23a,transparent:true,opacity:1,depthWrite:false,blending:THREE.AdditiveBlending}); puff(W((Math.random()-.5)*.5,.8,-1.5+Math.random()*.6),.5+Math.random()*.5,.5,fm,new THREE.Vector3(S.vx*.8,2.5,S.vz*.8)); } /* 아주 센 충돌: 엔진 쪽 불길 3초 */
   ov.style.backgroundPosition=Math.sin(performance.now()/700)*30+"px "+Math.cos(performance.now()/900)*20+"px"; }
 function f1Msg(t){ const n=performance.now(); if(n-(S._fm||0)<700) return; S._fm=n; toast(t,"#ff8a5a"); }
 function f1Help(sec){ let el=document.getElementById("f1Help"); if(!el){ el=document.createElement("div"); el.id="f1Help"; el.style.cssText="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;background:rgba(8,12,28,.94);color:#fff;border:2px solid #5ad8ff;border-radius:20px;padding:20px 24px;width:min(92vw,520px);font:600 17px/1.5 sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.55);pointer-events:auto;text-align:center"; document.body.appendChild(el); }
