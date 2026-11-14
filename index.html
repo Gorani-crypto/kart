@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2110</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2125</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -819,7 +819,7 @@ const SHIFT_PERIOD=10;
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-function CKM(){ return FCAR()?2:CIRC()?1.5:1; }
+function CKM(){ return FCAR()?1.7:CIRC()?1.5:1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
 let CKA_V=0.8; function CKA(){ return FCAR()?CKA_V:CIRC()?1.5:1; } /* 서킷: 가속을 느리게(0→최고속도 약 5초) */
 function CCAM(){ return {d:1,h:1}; }
 function gmMul(){ if(GM.mode==="speed") return 1; const f=GM.me; return f.mul*(f.slowT>0?.6:1)*(f.magT>0?1.15:1)*(f.ufoT>0?.5:1); }
@@ -4955,8 +4955,8 @@ function physics(dt, controls){ const fc=FCAR(); let dr=false;
   if(fc){ S.gauge=0; }
   if(fc){ S.boostT=0; if(!S.loop&&!S.rail&&!S.coast&&!S.launch){ const v1=Math.hypot(S.vx,S.vz), top=f1Top(), g=S.mg||1, vmax=top*F1R[g-1], vlow=g>1?top*F1R[g-2]*.55:0;
     S.shiftT=Math.max(0,(S.shiftT||0)-dt); let nv=v1;
-    if(v1<v0) nv=Math.max(0,v0-(v0-v1)*2);
-    else if(v1>v0){ const lug=v0<vlow?.3:1, room=clamp((vmax-v0)/(vmax*.22),0,1), pw=1.55-.1*(g-1); nv=v0+(v1-v0)*(S.shiftT>0?.05:pw*lug*Math.sqrt(room)); }
+    if(v1<v0) nv=Math.max(0,v0-(v0-v1)*1.7);
+    else if(v1>v0&&input.accel){ /* 기어마다 그 기어 최고속도까지 약 4초 */ const vs=g>1?top*F1R[g-2]:0, span=vmax-vs, room=clamp((vmax-v0)/(span*.25),0,1), lug=v0<vlow?.3:1, rate=span/3.2*lug*(.3+.7*Math.sqrt(room)); nv=Math.min(Math.max(v0,vmax),v0+rate*dt*(S.shiftT>0?.05:1)); }
     { let gg=S.mg||1; while(gg>1&&nv<top*F1R[gg-2]*.72) gg--; if(gg<(S.mg||1)){ S.mg=gg; S.shiftT=.1; gearFx(gg,false); shiftSnd(false); } } /* 속도가 떨어지면 기어 자동으로 내려감 */
     if(nv>vmax) nv=Math.max(vmax,Math.min(nv,v0)-(Math.min(nv,v0)-vmax)*Math.min(1,dt*1.6)); /* 낮은 기어로 내리면 엔진 브레이크 */
     if(v1>1e-3){ const k=nv/v1; S.vx*=k; S.vz*=k; } } }
@@ -4968,7 +4968,7 @@ function f1Help(sec){ let el=document.getElementById("f1Help"); if(!el){ el=docu
     ${row(T?"기어 ▲":"Ctrl","기어 올리기 (1단 → 7단)")}
     ${row("자동","속도가 줄면 기어가 저절로 내려가요")}
     ${row("80%","지금 기어 최고속도의 80% 넘으면 올릴 수 있어요")}
-    <div style="margin:12px 0 4px;color:#c8d4ec;font-size:15px">부스터·드리프트 없음 · 최고속도·감속 2배</div>
+    <div style="margin:12px 0 4px;color:#c8d4ec;font-size:15px">부스터·드리프트 없음 · 최고속도·가속·감속 1.7배 · 기어마다 약 4초</div>
     <div style="margin-top:12px;font:800 16px sans-serif;color:#9fb0d0">${s}초 뒤 출발 · <span style="color:#ffcf2e">${T?"설명 넘기기 버튼":"Shift"}</span>로 넘기기</div>`;
   let t=sec; el.innerHTML=html(t); el.hidden=false; clearInterval(el._iv); el.onclick=()=>{ el.hidden=true; clearInterval(el._iv); if(state==="countdown"&&countT>3.2+INTRO) countT=3.2+INTRO; };
   el._iv=setInterval(()=>{ t--; if(t<=0||state!=="countdown"){ el.hidden=true; clearInterval(el._iv); return; } el.innerHTML=html(t); },1000); }
@@ -4988,7 +4988,7 @@ function f1Engine(t,on,sp){ const c=SND.ctx; if(!c) return;
   F1E.a.frequency.setTargetAtTime(f,t,.06); F1E.b.frequency.setTargetAtTime(f*1.498,t,.06); F1E.s.frequency.setTargetAtTime(f*.5,t,.06); F1E.d.frequency.setTargetAtTime(f*2.01,t,.06); F1E.nf.frequency.setTargetAtTime(120+f*2.2,t,.06);
   F1E.lfo.frequency.setTargetAtTime(f*.5,t,.06);
   F1E.lp.frequency.setTargetAtTime(260+rpm*1300+(input.accel?180:0),t,.07);
-  const idleChug=on&&sp<1.5, redline=on&&rpm>.97&&input.accel;
+  const idleChug=on&&sp<1.5, redline=on&&rpm>.97&&input.accel&&gear<7; /* 7단 최고속도에선 끊김 없이 꽉 찬 소리 유지 */
   F1E.lim.gain.setTargetAtTime(redline?(Math.sin(t*70)>0?1:.2):idleChug?(Math.sin(t*2*Math.PI*11)>0?1:.35):1,t,.006);
   F1E.g.gain.setTargetAtTime(on?(.13+rpm*.12)*(input.accel?1:.7)*((S.shiftT||0)>0?.3:1):0,t,(S.shiftT||0)>0?.015:.06); }
 function shiftSnd(up){ if(!SND.ctx||!SND.on) return; const c=SND.ctx, t=c.currentTime, o=c.createOscillator(), o2=c.createOscillator(), f=c.createBiquadFilter(), g=c.createGain();
