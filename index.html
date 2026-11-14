@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2250</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2255</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5093,7 +5093,7 @@ function ckCrash(imp,fr,dx,dz,car){ if(!FCAR()||state!=="race") return; const km
   const heavy=sev>.4, dur=heavy?5+(sev-.4)/.6*5:1.2+sev/.4*1.8, side=Math.sign(dx*Math.cos(S.h)-dz*Math.sin(S.h))||1, front=(dx*Math.sin(S.h)+dz*Math.cos(S.h))>.5;
   const m=S.smk&&S.smk.t>0?S.smk:(S.smk={t:0,T:1,sev:0,dmg:0,side,front,acc:0});
   if(sev>=m.sev*.7){ m.side=side; m.front=front||heavy; } m.sev=Math.max(m.sev*Math.min(1,m.t/m.T),sev); m.t=Math.max(m.t,dur); m.T=Math.max(m.t,1); m.dmg=Math.max(m.dmg*Math.min(1,m.t/1.5),.02+.1*sev);
-  const k=1-.12*sev; S.vx*=k; S.vz*=k; if(heavy){ S.shake=Math.max(S.shake||0,.6); if(DCAM) DCAM.kick=1.4; } }
+  const k=heavy?1-(.2+.2*(sev-.4)/.6):.8; S.vx*=k; S.vz*=k; /* 바퀴 쪽 충돌 20% · 정면 큰 충돌 20~40% 감속 */ if(heavy){ S.shake=Math.max(S.shake||0,.6); if(DCAM) DCAM.kick=1.4; } }
 function ckSmoke(dt){ const m=S.smk; let ov=document.getElementById("f1Smoke");
   if(!m||m.t<=0||!FCAR()||(state!=="race"&&state!=="finish")){ if(ov) ov.style.opacity=0; if(m&&state==="countdown") S.smk=null; return; }
   m.t-=dt; const f=clamp(m.t/Math.min(m.T,3),0,1), heavy=m.sev>.4, c=Math.cos(S.h), s=Math.sin(S.h), W=(lx,ly,lz)=>new THREE.Vector3(S.x+lx*c+lz*s,S.y+ly,S.z-lx*s+lz*c);
