@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2015</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2110</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -819,8 +819,8 @@ const SHIFT_PERIOD=10;
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-function CKM(){ return FCAR()?2:1; }
-let CKA_V=2; function CKA(){ return FCAR()?CKA_V:1; } /* 서킷: 가속을 느리게(0→최고속도 약 5초) */
+function CKM(){ return FCAR()?2:CIRC()?1.5:1; }
+let CKA_V=0.8; function CKA(){ return FCAR()?CKA_V:CIRC()?1.5:1; } /* 서킷: 가속을 느리게(0→최고속도 약 5초) */
 function CCAM(){ return {d:1,h:1}; }
 function gmMul(){ if(GM.mode==="speed") return 1; const f=GM.me; return f.mul*(f.slowT>0?.6:1)*(f.magT>0?1.15:1)*(f.ufoT>0?.5:1); }
 function gmStunned(){ return GM.mode==="item"&&(GM.me.stunT>0||GM.me.slipT>0||GM.me.ejT>0); }
@@ -4948,46 +4948,52 @@ function f1Shift(d){ const g=S.mg||1, n=clamp(g+d,1,7); if(n===g) return; const 
   if(d>0&&v<top*F1R[g-1]*.8){ f1Msg("속도가 부족해요 · "+Math.round(top*F1R[g-1]*.8*CONFIG.kmh)+"km/h 이상에서 올리기"); return; }
   if(d<0&&v>top*F1R[n-1]*1.02){ f1Msg("너무 빨라요 · "+Math.round(top*F1R[n-1]*CONFIG.kmh)+"km/h 이하에서 내리기"); return; } S.mg=n; S.shiftT=d>0?.18:.12; gearFx(n,d>0); shiftSnd(d>0); }
 function physics(dt, controls){ const fc=FCAR(); let dr=false;
-  if(fc){ S.boostT=0; S.superT=0; S.startUsed=true; if(!S.mg) S.mg=1;
-    if(controls&&state==="race"){ if(input.boost&&!S._gb) f1Shift(1); if(input.drift&&!S._gd) f1Shift(-1); } S._gb=!!input.boost; S._gd=!!input.drift; dr=input.drift; input.drift=false; }
+  if(fc){ S.boostT=0; S.superT=0; S.startUsed=true; S.gauge=0; if(!S.mg) S.mg=1;
+    if(controls&&state==="race"){ if(input.boost&&!S._gb) f1Shift(1); } S._gb=!!input.boost; S._gd=!!input.drift; dr=input.drift; input.drift=false; }
   const v0=Math.hypot(S.vx,S.vz), r=physics0(dt,controls); if(fc) input.drift=dr;
+  if(!fc&&CIRC()&&!S.loop&&!S.rail&&!S.coast&&!S.launch){ const v1=Math.hypot(S.vx,S.vz); if(v1<v0&&v1>1e-3){ const nv=Math.max(0,v0-(v0-v1)*1.5), k=nv/v1; S.vx*=k; S.vz*=k; } } /* 서킷 + 일반(부스터) 차량: 감속 1.5배 */
+  if(fc){ S.gauge=0; }
   if(fc){ S.boostT=0; if(!S.loop&&!S.rail&&!S.coast&&!S.launch){ const v1=Math.hypot(S.vx,S.vz), top=f1Top(), g=S.mg||1, vmax=top*F1R[g-1], vlow=g>1?top*F1R[g-2]*.55:0;
     S.shiftT=Math.max(0,(S.shiftT||0)-dt); let nv=v1;
     if(v1<v0) nv=Math.max(0,v0-(v0-v1)*2);
     else if(v1>v0){ const lug=v0<vlow?.3:1, room=clamp((vmax-v0)/(vmax*.22),0,1), pw=1.55-.1*(g-1); nv=v0+(v1-v0)*(S.shiftT>0?.05:pw*lug*Math.sqrt(room)); }
+    { let gg=S.mg||1; while(gg>1&&nv<top*F1R[gg-2]*.72) gg--; if(gg<(S.mg||1)){ S.mg=gg; S.shiftT=.1; gearFx(gg,false); shiftSnd(false); } } /* 속도가 떨어지면 기어 자동으로 내려감 */
     if(nv>vmax) nv=Math.max(vmax,Math.min(nv,v0)-(Math.min(nv,v0)-vmax)*Math.min(1,dt*1.6)); /* 낮은 기어로 내리면 엔진 브레이크 */
     if(v1>1e-3){ const k=nv/v1; S.vx*=k; S.vz*=k; } } }
   return r; }
 function f1Msg(t){ const n=performance.now(); if(n-(S._fm||0)<700) return; S._fm=n; toast(t,"#ff8a5a"); }
-function f1Help(sec){ let el=document.getElementById("f1Help"); if(!el){ el=document.createElement("div"); el.id="f1Help"; el.style.cssText="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;background:rgba(10,16,34,.92);color:#fff;border:2px solid #5ad8ff;border-radius:18px;padding:18px 22px;max-width:min(92vw,520px);font:600 15px/1.55 sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.5);pointer-events:auto"; document.body.appendChild(el); }
-  const up=touchMode?"기어 ▲ 버튼":"Ctrl", dn=touchMode?"기어 ▼ 버튼":"Shift";
-  const html=s=>`<div style="font:800 20px sans-serif;color:#5ad8ff;margin-bottom:8px">🏁 서킷 전용 차량 · 수동 7단 기어</div>
-    <div><b style="color:#ffcf2e">${up}</b> 기어 올리기 &nbsp;·&nbsp; <b style="color:#ffcf2e">${dn}</b> 기어 내리기</div>
-    <div>· 기어마다 최고속도가 있어요. 그 기어 최고속도의 80%를 넘어야 올릴 수 있어요</div>
-    <div>· 내릴 때는 아래 기어의 최고속도 이하로 줄여야 해요</div>
-    <div>· 높은 기어에서 너무 느리면 힘이 약하고, 낮은 기어에서 빠르면 엔진 브레이크가 걸려요</div>
-    <div>· 부스터·드리프트는 없어요. 대신 최고속도 2배 · 감속도 2배</div>
-    <div style="margin-top:10px;text-align:right;color:#9fb0d0">${s}초 뒤 출발 준비 · 화면을 누르면 닫기</div>`;
+function f1Help(sec){ let el=document.getElementById("f1Help"); if(!el){ el=document.createElement("div"); el.id="f1Help"; el.style.cssText="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;background:rgba(8,12,28,.94);color:#fff;border:2px solid #5ad8ff;border-radius:20px;padding:20px 24px;width:min(92vw,520px);font:600 17px/1.5 sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.55);pointer-events:auto;text-align:center"; document.body.appendChild(el); }
+  const T=touchMode, row=(k,v)=>`<div style="display:flex;align-items:center;gap:12px;margin:8px 0;text-align:left"><span style="flex:0 0 auto;min-width:96px;padding:6px 10px;border-radius:10px;background:#ffcf2e;color:#1a1a1a;font:900 18px sans-serif;text-align:center">${k}</span><span>${v}</span></div>`;
+  const html=s=>`<div style="font:900 24px sans-serif;color:#5ad8ff;margin-bottom:12px">🏁 서킷 전용 차량</div>
+    ${row(T?"기어 ▲":"Ctrl","기어 올리기 (1단 → 7단)")}
+    ${row("자동","속도가 줄면 기어가 저절로 내려가요")}
+    ${row("80%","지금 기어 최고속도의 80% 넘으면 올릴 수 있어요")}
+    <div style="margin:12px 0 4px;color:#c8d4ec;font-size:15px">부스터·드리프트 없음 · 최고속도·감속 2배</div>
+    <div style="margin-top:12px;font:800 16px sans-serif;color:#9fb0d0">${s}초 뒤 출발 · <span style="color:#ffcf2e">${T?"설명 넘기기 버튼":"Shift"}</span>로 넘기기</div>`;
   let t=sec; el.innerHTML=html(t); el.hidden=false; clearInterval(el._iv); el.onclick=()=>{ el.hidden=true; clearInterval(el._iv); if(state==="countdown"&&countT>3.2+INTRO) countT=3.2+INTRO; };
   el._iv=setInterval(()=>{ t--; if(t<=0||state!=="countdown"){ el.hidden=true; clearInterval(el._iv); return; } el.innerHTML=html(t); },1000); }
-/* 서킷 전용 차량 엔진음: 높고 날카로운 고회전 엔진(톱니·사각 배음 겹침) · 회전수는 지금 기어의 최고속도 대비 속도 · 레드존에서는 리미터가 탁탁 끊김 */
+/* 서킷 전용 차량 엔진음: 낮고 둔탁한 대배기량 엔진(부릉부릉 맥동 · 묵직한 저음 · 거친 배기) · 회전수는 지금 기어 최고속도 대비 속도 · 레드존 리미터 · 정차 중 덜덜덜 */
 const F1E={};
 function f1Engine(t,on,sp){ const c=SND.ctx; if(!c) return;
-  if(!F1E.g){ const g=c.createGain(); g.gain.value=0; const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=1200; lp.Q.value=4; const sh=c.createWaveShaper(), cv=new Float32Array(1024); for(let i=0;i<1024;i++){ const x=i/512-1; cv[i]=Math.tanh(x*3.2); } sh.curve=cv;
+  if(!F1E.g){ const g=c.createGain(); g.gain.value=0; const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=500; lp.Q.value=1.4; const lp2=c.createBiquadFilter(); lp2.type="lowpass"; lp2.frequency.value=2200;
+    const sh=c.createWaveShaper(), cv=new Float32Array(2048); for(let i=0;i<2048;i++){ const x=i/1024-1; cv[i]=Math.tanh(x*4.5)*.9; } sh.curve=cv;
     const mk=(type,v)=>{ const o=c.createOscillator(); o.type=type; const gg=c.createGain(); gg.gain.value=v; o.connect(gg); gg.connect(sh); o.start(); return o; };
-    const a=mk("sawtooth",.5), b2=mk("square",.22), d=mk("sawtooth",.18), s=mk("triangle",.4);
-    const n=c.createBufferSource(); n.buffer=SND.buf; n.loop=true; const nf=c.createBiquadFilter(); nf.type="bandpass"; nf.Q.value=6; const ng=c.createGain(); ng.gain.value=.12; n.connect(nf); nf.connect(ng); ng.connect(lp); n.start();
-    const lim=c.createGain(); lim.gain.value=1; sh.connect(lp); lp.connect(lim); lim.connect(g); g.connect(SND.master);
-    Object.assign(F1E,{g,lp,a,b:b2,d,s,nf,lim}); }
-  const top=typeof f1Top==="function"&&KART?f1Top():1, gear=S.mg||1, vmax=top*F1R[gear-1], rpm=on?clamp(.16+.84*sp/vmax,.16,1.03):0;
-  const f=95+rpm*560+(state==="countdown"?60*Math.abs(Math.sin(t*6)):0);
-  F1E.a.frequency.setTargetAtTime(f,t,.05); F1E.b.frequency.setTargetAtTime(f*2.003,t,.05); F1E.d.frequency.setTargetAtTime(f*3.01,t,.05); F1E.s.frequency.setTargetAtTime(f*.5,t,.05); F1E.nf.frequency.setTargetAtTime(f*4,t,.05);
-  F1E.lp.frequency.setTargetAtTime(700+rpm*3200,t,.06);
-  const redline=on&&rpm>.97&&input.accel; F1E.lim.gain.setTargetAtTime(redline?(Math.sin(t*90)>0?1:.25):1,t,.005);
-  F1E.g.gain.setTargetAtTime(on?(.07+rpm*.1)*((S.shiftT||0)>0?.35:1):0,t,(S.shiftT||0)>0?.015:.05); }
+    const a=mk("sawtooth",.55), b2=mk("sawtooth",.35), s=mk("sine",.9), d=mk("square",.12);
+    const n=c.createBufferSource(); n.buffer=SND.buf; n.loop=true; const nf=c.createBiquadFilter(); nf.type="bandpass"; nf.Q.value=1.2; const ng=c.createGain(); ng.gain.value=.35; n.connect(nf); nf.connect(ng); ng.connect(sh); n.start();
+    const pul=c.createGain(); pul.gain.value=.55; const lfo=c.createOscillator(); lfo.type="square"; const lg=c.createGain(); lg.gain.value=.45; lfo.connect(lg); lg.connect(pul.gain); lfo.start();
+    const lim=c.createGain(); lim.gain.value=1; sh.connect(lp); lp.connect(lp2); lp2.connect(pul); pul.connect(lim); lim.connect(g); g.connect(SND.master);
+    Object.assign(F1E,{g,lp,a,b:b2,d,s,nf,lim,lfo}); }
+  const top=typeof f1Top==="function"&&KART?f1Top():1, gear=S.mg||1, vmax=top*F1R[gear-1], rpm=on?clamp(.14+.86*sp/vmax,.14,1.03):0;
+  const idle=(state==="countdown"?18*Math.max(0,Math.sin(t*3.2)):0)+(on&&sp<1.5?3*Math.sin(t*2*Math.PI*5.5):0), f=34+rpm*140+idle;
+  F1E.a.frequency.setTargetAtTime(f,t,.06); F1E.b.frequency.setTargetAtTime(f*1.498,t,.06); F1E.s.frequency.setTargetAtTime(f*.5,t,.06); F1E.d.frequency.setTargetAtTime(f*2.01,t,.06); F1E.nf.frequency.setTargetAtTime(120+f*2.2,t,.06);
+  F1E.lfo.frequency.setTargetAtTime(f*.5,t,.06);
+  F1E.lp.frequency.setTargetAtTime(260+rpm*1300+(input.accel?180:0),t,.07);
+  const idleChug=on&&sp<1.5, redline=on&&rpm>.97&&input.accel;
+  F1E.lim.gain.setTargetAtTime(redline?(Math.sin(t*70)>0?1:.2):idleChug?(Math.sin(t*2*Math.PI*11)>0?1:.35):1,t,.006);
+  F1E.g.gain.setTargetAtTime(on?(.13+rpm*.12)*(input.accel?1:.7)*((S.shiftT||0)>0?.3:1):0,t,(S.shiftT||0)>0?.015:.06); }
 function shiftSnd(up){ if(!SND.ctx||!SND.on) return; const c=SND.ctx, t=c.currentTime, o=c.createOscillator(), o2=c.createOscillator(), f=c.createBiquadFilter(), g=c.createGain();
   o.type="sawtooth"; o2.type="square"; f.type="lowpass"; f.frequency.value=900;
-  const a=up?300:160, z=up?150:260; o.frequency.setValueAtTime(a,t); o.frequency.exponentialRampToValueAtTime(z,t+.38); o2.frequency.setValueAtTime(a/2,t); o2.frequency.exponentialRampToValueAtTime(z/2,t+.38);
+  const a=up?190:95, z=up?85:170; o.frequency.setValueAtTime(a,t); o.frequency.exponentialRampToValueAtTime(z,t+.38); o2.frequency.setValueAtTime(a/2,t); o2.frequency.exponentialRampToValueAtTime(z/2,t+.38);
   g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.22,t+.04); g.gain.exponentialRampToValueAtTime(.0001,t+.45);
   o.connect(f); o2.connect(f); f.connect(g); g.connect(SND.master); o.start(t); o2.start(t); o.stop(t+.5); o2.stop(t+.5);
   if(SND.eG){ SND.eG.gain.cancelScheduledValues(t); SND.eG.gain.setTargetAtTime(.04,t,.02); } }
@@ -5826,7 +5832,7 @@ function loadBest(){ bestEver=null; try{const v=localStorage.getItem(bestKey());
 
 function startRace(){ autoBackStop();
   initAudio(); unlockSpeech(); endCeremony(); if(TR) resetDestruction();
-  loadTrack(selTrack); resetDestruction(); if(["gt","volt","ruby","storm"].includes(KARTS[selKart].id)&&!TRACKS[selTrack].circuit){ selKart=KARTS.findIndex(k=>k.id==="blue"); setTimeout(()=>toast("서킷 전용 차량은 서킷 테마에서만 탈 수 있어요 · 러스티 세단으로 출발","#5ad8ff"),300); } KART=effKart(KARTS[selKart],CHARS[selChar]); if(FCAR()) setTimeout(()=>toast(touchMode?"서킷 전용차 · 기어 ▲ / 기어 ▼ 버튼으로 변속":"서킷 전용차 · Ctrl 기어 올림 · Shift 기어 내림","#5ad8ff"),INTRO*1000+300); if(KART.syn) setTimeout(()=>toast("시너지! 성능 +4%","#ffcf2e"),INTRO*1000); paintKart(KART); attachRider(CHARS[selChar]); loadBest(); bestLap=null;
+  loadTrack(selTrack); resetDestruction(); if(["gt","volt","ruby","storm"].includes(KARTS[selKart].id)&&!TRACKS[selTrack].circuit){ selKart=KARTS.findIndex(k=>k.id==="blue"); setTimeout(()=>toast("서킷 전용 차량은 서킷 테마에서만 탈 수 있어요 · 러스티 세단으로 출발","#5ad8ff"),300); } KART=effKart(KARTS[selKart],CHARS[selChar]); if(FCAR()) setTimeout(()=>toast(touchMode?"서킷 전용차 · 기어 ▲ 버튼으로 변속":"서킷 전용차 · Ctrl로 기어 올리기","#5ad8ff"),INTRO*1000+300); if(KART.syn) setTimeout(()=>toast("시너지! 성능 +4%","#ffcf2e"),INTRO*1000); paintKart(KART); attachRider(CHARS[selChar]); loadBest(); bestLap=null;
   const fb=document.getElementById("fireBtn"); if(fb){ fb.hidden=!(KART.id==="tank"||KART.id==="trex"||KART.hover); fb.textContent=KART.id==="trex"?"꼬리치기":KART.hover?"비행":"포탄"; }
   resetKart(); resetMissions(); kart.visible=true; updUpg(); rankHud(); state="countdown"; countT=3.2+INTRO; if(FCAR()){ countT+=10; f1Help(10); } raceT=0; lapStart=0; lap=1; laps=[]; cp1=cp2=false; prevIdx=S.prog;
   clearSkids();
@@ -6640,7 +6646,8 @@ function mpToLobby(){ autoBackStop(); gmEnd(); endCeremony(); botsClear(); raceE
 const ghostRiderCache={};
 function mpTag(name,color){ const t_=mpTag0(name,color); t_.userData.isTag=true; return t_; }
 /* 서킷 테마: 이름표를 작게 */
-function ckTags(){ const gb=document.getElementById("gearBox"); if(gb){ const on=CIRC()&&(state==="race"||state==="finish"); gb.style.display=on?"block":"none"; if(on&&S.gear===undefined) S.gear=0; } if(!CIRC()) S.gear=undefined; const f=CIRC()?.32:1, fix=t=>{ if(!t) return; const cf=t.userData.cf||1; if(cf!==f){ t.scale.multiplyScalar(f/cf); t.userData.cf=f; } }; fix(typeof myTag!=="undefined"?myTag:null); if(typeof MP!=="undefined"&&MP&&MP.ghosts) for(const g of MP.ghosts.values()) for(const c of g.obj.children) if(c.userData.isTag) fix(c); }
+function ckIdleShake(fc){ const bd=CAR&&CAR.body; if(!bd) return; if(bd.userData.y0===undefined) bd.userData.y0=bd.position.y; const sp=Math.hypot(S.vx||0,S.vz||0), on=fc&&sp<1.5&&(state==="race"||state==="countdown"); if(on){ bd.position.y=bd.userData.y0+(Math.random()-.5)*.05; bd.rotation.z=(Math.random()-.5)*.012; bd.userData.sh=true; } else if(bd.userData.sh){ bd.position.y=bd.userData.y0; bd.rotation.z=0; bd.userData.sh=false; } }
+function ckTags(){ const fc=FCAR(); ckIdleShake(fc); const gb=document.getElementById("gearBox"); if(gb){ const on=fc&&(state==="race"||state==="finish"||state==="countdown"); gb.style.display=on?"block":"none"; const gh=document.getElementById("gearHud"); if(on&&gh&&gh.textContent!==String(S.mg||1)) gh.textContent=S.mg||1; } if(state==="countdown") S.mg=1; const bb=document.getElementById("boostBtn"), db=document.querySelector('#touch [data-k="drift"]'); if(bb&&bb.dataset.f1!==String(fc)){ bb.dataset.f1=String(fc); if(!bb.dataset.t0) bb.dataset.t0=bb.textContent; bb.textContent=fc?"기어 ▲":bb.dataset.t0; if(db){ if(!db.dataset.t0) db.dataset.t0=db.textContent; db.textContent=db.dataset.t0; } } if(db){ const hv=document.getElementById("f1Help"); const showSkip=fc&&hv&&!hv.hidden; db.style.visibility=fc&&!showSkip?"hidden":"visible"; if(fc) db.textContent=showSkip?"설명 넘기기":db.dataset.t0; } { const hv=document.getElementById("f1Help"); if(fc&&hv&&!hv.hidden&&input.drift) hv.onclick(); } const f=fc?.32:1, fix=t=>{ if(!t) return; const cf=t.userData.cf||1; if(cf!==f){ t.scale.multiplyScalar(f/cf); t.userData.cf=f; } }; fix(typeof myTag!=="undefined"?myTag:null); if(typeof MP!=="undefined"&&MP&&MP.ghosts) for(const g of MP.ghosts.values()) for(const c of g.obj.children) if(c.userData.isTag) fix(c); }
 /* 서킷 테마: 운전자 시점 (내 캐릭터 머리 위치에서 앞을 봄, 내 캐릭터는 숨김) */
 const DCK={h:2.7,b:1.8,d:3.3}; const DCAM={v:new THREE.Vector3(),s:new THREE.Vector3(),on:false,yaw:0};
 function ckDriverCam(dt){ const on=FCAR()&&(state==="race"||state==="finish"||state==="countdown")&&!S.ej&&CAR&&CAR.rider;
