@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2175</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2195</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -819,7 +819,7 @@ const SHIFT_PERIOD=10;
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-function F1KMH(){ return 610+clamp((KART.speed-1.3)/(1.33818-1.3),0,1)*20; } /* 서킷 전용차 최고속도 610~630km/h */
+function F1KMH(){ return 630+clamp((KART.speed-1.3)/(1.33818-1.3),0,1)*20; } /* 서킷 전용차 최고속도 630~650km/h */
 function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?1.5:1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
 let CKA_V=0.8; function CKA(){ return FCAR()?CKA_V:CIRC()?1.5:1; } /* 서킷: 가속을 느리게(0→최고속도 약 5초) */
 function CCAM(){ return {d:1,h:1}; }
@@ -4942,11 +4942,11 @@ function nearest(x,z,hint){
 }
 
 /* 서킷 테마: 한 번의 계산에서 줄어든 속도(벽·코너·마찰·브레이크)를 1.5배로 */
-/* 서킷 전용 차량(서킷 테마): 부스터·드리프트 없음 · 감속 2배 · 수동 7단 기어(기어마다 최고속도, 변속 순간 힘이 잠깐 빠짐) */
-const F1R=[.2,.33,.46,.59,.72,.86,1];
+/* 서킷 전용 차량(서킷 테마): 부스터·드리프트 없음 · 감속 2배 · 수동 8단 기어(기어마다 최고속도, 변속 순간 힘이 잠깐 빠짐) */
+const F1R=[.19,.31,.43,.55,.67,.78,.89,1];
 function f1Top(){ return CONFIG.maxSpeed*KART.speed*CKM(); }
-function f1Shift(d){ const g=S.mg||1, n=clamp(g+d,1,7); if(n===g) return; const v=Math.hypot(S.vx,S.vz), top=f1Top();
-  if(d>0&&v<top*F1R[g-1]*.8){ f1Msg("속도가 부족해요 · "+Math.round(top*F1R[g-1]*.8*CONFIG.kmh)+"km/h 이상에서 올리기"); return; }
+function f1Shift(d){ const g=S.mg||1, n=clamp(g+d,1,8); if(n===g) return; const v=Math.hypot(S.vx,S.vz), top=f1Top();
+  if(d>0&&v<top*F1R[g-1]*.9){ f1Msg("속도가 부족해요 · "+Math.round(top*F1R[g-1]*.9*CONFIG.kmh)+"km/h 이상에서 올리기"); return; }
   if(d<0&&v>top*F1R[n-1]*1.02){ f1Msg("너무 빨라요 · "+Math.round(top*F1R[n-1]*CONFIG.kmh)+"km/h 이하에서 내리기"); return; } S.mg=n; S.shiftT=d>0?.18:.12; gearFx(n,d>0); shiftSnd(d>0); }
 function physics(dt, controls){ const fc=FCAR(); let dr=false;
   if(fc){ S.boostT=0; S.superT=0; S.startUsed=true; S.gauge=0; if(!S.mg) S.mg=1;
@@ -4957,7 +4957,7 @@ function physics(dt, controls){ const fc=FCAR(); let dr=false;
   if(fc){ S.boostT=0; if(!S.loop&&!S.rail&&!S.coast&&!S.launch){ const v1=Math.hypot(S.vx,S.vz), top=f1Top(), g=S.mg||1, vmax=top*F1R[g-1], vlow=g>1?top*F1R[g-2]*.55:0;
     S.shiftT=Math.max(0,(S.shiftT||0)-dt); let nv=v1;
     if(v1<v0) nv=Math.max(0,v0-(v0-v1)*2.5); /* 서킷 전용차 감속 2.5배 (브레이크·관성·충돌·코너) */
-    else if(v1>v0&&input.accel){ /* 기어마다 그 기어 최고속도까지 약 4초 */ const vs=g>1?top*F1R[g-2]:0, span=vmax-vs, room=clamp((vmax-v0)/(span*.25),0,1), lug=v0<vlow?.3:1, rate=span/3.2*lug*(.3+.7*Math.sqrt(room)); nv=Math.min(Math.max(v0,vmax),v0+rate*dt*(S.shiftT>0?.05:1)); }
+    else if(v1>v0&&input.accel){ /* 기어마다 그 기어 최고속도까지 약 4초 */ const vs=g>1?top*F1R[g-2]:0, span=vmax-vs, room=clamp((vmax-v0)/(span*.25),0,1), lug=v0<vlow?.3:1, rate=span/(3.2*(g===8?1.75:g===7?1.25:1))*lug*(.3+.7*Math.sqrt(room)); nv=Math.min(Math.max(v0,vmax),v0+rate*dt*(S.shiftT>0?.05:1)); }
     { let gg=S.mg||1; while(gg>1&&nv<top*F1R[gg-2]*.72) gg--; if(gg<(S.mg||1)){ S.mg=gg; S.shiftT=.1; gearFx(gg,false); shiftSnd(false); } } /* 속도가 떨어지면 기어 자동으로 내려감 */
     if(nv>vmax) nv=Math.max(vmax,Math.min(nv,v0)-(Math.min(nv,v0)-vmax)*Math.min(1,dt*1.6)); /* 낮은 기어로 내리면 엔진 브레이크 */
     if(v1>1e-3){ const k=nv/v1; S.vx*=k; S.vz*=k; } } }
@@ -4966,10 +4966,10 @@ function f1Msg(t){ const n=performance.now(); if(n-(S._fm||0)<700) return; S._fm
 function f1Help(sec){ let el=document.getElementById("f1Help"); if(!el){ el=document.createElement("div"); el.id="f1Help"; el.style.cssText="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;background:rgba(8,12,28,.94);color:#fff;border:2px solid #5ad8ff;border-radius:20px;padding:20px 24px;width:min(92vw,520px);font:600 17px/1.5 sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.55);pointer-events:auto;text-align:center"; document.body.appendChild(el); }
   const T=touchMode, row=(k,v)=>`<div style="display:flex;align-items:center;gap:12px;margin:8px 0;text-align:left"><span style="flex:0 0 auto;min-width:96px;padding:6px 10px;border-radius:10px;background:#ffcf2e;color:#1a1a1a;font:900 18px sans-serif;text-align:center">${k}</span><span>${v}</span></div>`;
   const html=s=>`<div style="font:900 24px sans-serif;color:#5ad8ff;margin-bottom:12px">🏁 서킷 전용 차량</div>
-    ${row(T?"기어 ▲":"Ctrl","기어 올리기 (1단 → 7단)")}
+    ${row(T?"기어 ▲":"Ctrl","기어 올리기 (1단 → 8단)")}
     ${row("자동","속도가 줄면 기어가 저절로 내려가요")}
-    ${row("80%","지금 기어 최고속도의 80% 넘으면 올릴 수 있어요")}
-    <div style="margin:12px 0 4px;color:#c8d4ec;font-size:15px">최고속도 610~630km/h · 기어마다 약 4초 · 부스터·드리프트 없음</div>
+    ${row("90%","지금 기어 최고속도의 90% 넘으면 올릴 수 있어요")}
+    <div style="margin:12px 0 4px;color:#c8d4ec;font-size:15px">최고속도 630~650km/h · 8단 · 기어마다 약 4초 · 부스터·드리프트 없음</div>
     <div style="margin-top:12px;font:800 16px sans-serif;color:#9fb0d0">${s}초 뒤 출발 · <span style="color:#ffcf2e">${T?"설명 넘기기 버튼":"Shift"}</span>로 넘기기</div>`;
   let t=sec; el.innerHTML=html(t); el.hidden=false; clearInterval(el._iv); el.onclick=()=>{ el.hidden=true; clearInterval(el._iv); if(state==="countdown"&&countT>3.2+INTRO) countT=3.2+INTRO; };
   el._iv=setInterval(()=>{ t--; if(t<=0||state!=="countdown"){ el.hidden=true; clearInterval(el._iv); return; } el.innerHTML=html(t); },1000); }
@@ -4989,7 +4989,7 @@ function f1Engine(t,on,sp){ const c=SND.ctx; if(!c) return;
   F1E.a.frequency.setTargetAtTime(f,t,.06); F1E.b.frequency.setTargetAtTime(f*1.498,t,.06); F1E.s.frequency.setTargetAtTime(f*.5,t,.06); F1E.d.frequency.setTargetAtTime(f*2.01,t,.06); F1E.nf.frequency.setTargetAtTime(120+f*2.2,t,.06);
   F1E.lfo.frequency.setTargetAtTime(f*.5,t,.06);
   F1E.lp.frequency.setTargetAtTime(260+rpm*1300+(input.accel?180:0),t,.07);
-  const idleChug=on&&sp<1.5, redline=on&&rpm>.97&&input.accel&&gear<7; /* 7단 최고속도에선 끊김 없이 꽉 찬 소리 유지 */
+  const idleChug=on&&sp<1.5, redline=on&&rpm>.97&&input.accel&&gear<8; /* 7단 최고속도에선 끊김 없이 꽉 찬 소리 유지 */
   F1E.lim.gain.setTargetAtTime(redline?(Math.sin(t*70)>0?1:.2):idleChug?(Math.sin(t*2*Math.PI*11)>0?1:.35):1,t,.006);
   F1E.g.gain.setTargetAtTime(on?(.13+rpm*.12)*(input.accel?1:.7)*((S.shiftT||0)>0?.3:1):0,t,(S.shiftT||0)>0?.015:.06); }
 function shiftSnd(up){ if(!SND.ctx||!SND.on) return; const c=SND.ctx, t=c.currentTime, o=c.createOscillator(), o2=c.createOscillator(), f=c.createBiquadFilter(), g=c.createGain();
@@ -5034,7 +5034,7 @@ function physics0(dt, controls){
   const brake=controls&&input.brake, accel=controls&&!brake&&(input.accel||touchMode);
   if(controls&&!accel&&(S.boostT>0||S.instT>0||S.stackT>0||S.superT>0||S.novaT>0)){ S.boostT=0; S.instT=0; S.stackT=0; S.superT=0; S.novaT=0; } if(controls&&!accel){ S.padT=0; S.padHold=0; } /* 전진키를 떼면 부스터가 끊김 */
   const boosting=S.boostT>0||S.instT>0, ground=S.grounded||!!S.flying; /* 비행 중에도 땅처럼 가속·조향 */
-  const roadMax=S.novaT>0?500/C.kmh:S.superT>0?superRamp(SUPER_T-S.superT,S.superV0||30):S.stackT>0?DUAL_V:S.boostT>0?(gmM===1?base*(K.boost||C.boostRatio):base+base/gmM*((K.boost||C.boostRatio)-1)):(S.instT>0?(gmM===1?base*C.instRatio:base+base/gmM*(C.instRatio-1)):base);
+  const roadMax=S.novaT>0?500/C.kmh*CKM():S.superT>0?superRamp(SUPER_T-S.superT,S.superV0||30):S.stackT>0?DUAL_V*CKM():S.boostT>0?(gmM===1?base*(K.boost||C.boostRatio):base+base/gmM*((K.boost||C.boostRatio)-1)):(S.instT>0?(gmM===1?base*C.instRatio:base+base/gmM*(C.instRatio-1)):base);
   let gf=1; if(S.offroad){ const gc=C.grassCurve, t=S.grassT; gf=gc[gc.length-1][1];
     for(let k=0;k<gc.length-1;k++){ if(t<gc[k+1][0]){ gf=lerp(gc[k][1],gc[k+1][1],(t-gc[k][0])/(gc[k+1][0]-gc[k][0])); break; } } }
   const inSlow=TR.slowSet&&TR.slowSet.size&&S.grounded&&TR.slowSet.has(S.idx)&&!(S.boostT>0||S.superT>0); const max=roadMax*gf*(inSlow?.6:1);
@@ -5332,7 +5332,7 @@ function renderOptions(){ const _ks=keepScroll(KEEP_SC); try{ renderOptions0(); 
 function renderOptions0(){ setTimeout(rankRenderAll,0); gmRenderMenu();
   { const grps=trackGroups(), tab=thTab("menu",grps,selTrack); $("trackOpts").innerHTML=`<button class="opt rnd-card" type="button" id="trk-random" aria-pressed="${selRandom}"><span class="rnd-ico">🎲</span><span style="display:flex;flex-direction:column;gap:2px"><b>랜덤 맵</b><span>출발하면 룰렛이 돌아가서 ${TRACKS.length}개 맵 중 하나를 뽑아요</span></span></button>`+`<div class="th-wrap"><div class="th-tabs">${grps.map(g=>`<button type="button" data-th="${g.n}" aria-pressed="${g.n===tab}">${g.n}${!selRandom&&g.L.includes(selTrack)?'<span class="dot"></span>':""}</button>`).join("")}</div><div class="th-maps">`+(grps.find(g=>g.n===tab)||grps[0]).L.map(i=>{ const t=TRACKS[i]; return `<button class="opt" type="button" id="trk-${t.id}" aria-pressed="${!selRandom&&i===selTrack}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>trackThumb(t))}"><b>${t.name}</b><i class="diff">난이도 ${"●".repeat(t.diff||2)}${"○".repeat(5-(t.diff||2))}</i><span>${t.desc}</span>${t.records?`<span class="stat">랭킹 1위 ${t.records[0].name} ${fmtT(t.records[0].t)}</span>`:""}</button>`; }).join("")+`</div></div>`; { const tg=$("trackOpts").querySelector(".th-tabs [aria-pressed=true]"); if(tg&&tg.parentNode) tg.parentNode.scrollTop=Math.max(0,tg.offsetTop-tg.parentNode.offsetTop-90); } thCue($("trackOpts")); }
   $("kartOpts").innerHTML=ktabHTML("menu")+KARTS.map((k,i)=>{ if(!kInTab(k,"menu")) return ""; const top=Math.round(CONFIG.maxSpeed*k.speed*CONFIG.kmh), bst=Math.round(CONFIG.maxSpeed*k.speed*(k.boost||CONFIG.boostRatio)*CONFIG.kmh);
-    return `<button class="opt" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span>${["gt","volt","ruby","storm"].includes(k.id)?'<span class="stat" style="color:#5ad8ff">🏁 서킷 전용 · 서킷에서 최고 ${top*2} km/h · 수동 7단 기어</span>':'<span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>'}${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
+    return `<button class="opt" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span>${["gt","volt","ruby","storm"].includes(k.id)?'<span class="stat" style="color:#5ad8ff">🏁 서킷 전용 · 서킷에서 최고 ${Math.round(630+Math.min(1,Math.max(0,(k.speed-1.3)/.03818))*20)} km/h · 수동 8단 기어</span>':'<span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>'}${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
   $("charOpts").innerHTML=CHARS.map((c,i)=>`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="${i===selChar}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>charThumb(c))}"><b><span class="dot" style="background:#${c.helmet.toString(16).padStart(6,"0")}"></span>${c.name}</b><span>${c.desc}</span>${SYN[KARTS[selKart].id]===c.id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}</button>`).join("");
   $("colorOpts").innerHTML=swatchesHTML(); $("colorOpts").querySelectorAll(".sw").forEach(b=>b.addEventListener("click",()=>{ setColor(+b.dataset.i); renderOptions(); }));
   $("charOpts").querySelectorAll("button.opt").forEach(b=>b.addEventListener("click",()=>{selChar=+b.dataset.i; try{localStorage.setItem("kartrebuild.char",String(selChar));}catch(_){} renderOptions();}));
@@ -6665,7 +6665,7 @@ function ckDriverCam(dt){ const on=FCAR()&&(state==="race"||state==="finish"||st
   { const t=performance.now()/1000, v=Math.hypot(S.vx,S.vz), r=clamp(v/f1Top(),0,1.05); const a=(v-(DCAM.lv??v))/Math.max(dt,1e-3); DCAM.lv=v;
     DCAM.g=lerp(DCAM.g||0,clamp(a/(f1Top()*.12),-1.5,1),1-Math.exp(-5*dt)); /* +가속 → 몸이 뒤로, -감속 → 앞으로 쏠림 */
     if((S.shiftT||0)>.15&&!DCAM.sk){ DCAM.kick=1; } DCAM.sk=(S.shiftT||0)>.15; DCAM.kick=Math.max(0,(DCAM.kick||0)-dt*3.2);
-    const tp=f1Top(), gq=S.mg||1, vm=tp*F1R[gq-1], bad=(input.accel&&gq<7&&v>vm*.97)||v>vm*1.02?1:(input.accel&&gq>1&&v<tp*F1R[gq-2]*.85)?.6:0; DCAM.bad=lerp(DCAM.bad||0,bad,1-Math.exp(-8*dt)); /* 진동은 변속 타이밍 놓침(레드존)·엔진브레이크·기어 너무 높음일 때만 */
+    const tp=f1Top(), gq=S.mg||1, vm=tp*F1R[gq-1], bad=(input.accel&&gq<8&&v>vm*.97)||v>vm*1.02?1:(input.accel&&gq>1&&v<tp*F1R[gq-2]*.85)?.6:0; DCAM.bad=lerp(DCAM.bad||0,bad,1-Math.exp(-8*dt)); /* 진동은 변속 타이밍 놓침(레드존)·엔진브레이크·기어 너무 높음일 때만 */
     const vib=DCAM.bad*.045, back=DCAM.g*.22+DCAM.kick*.18, bob=Math.sin(t*61)*vib+Math.sin(t*37.3)*vib*.6, side=Math.sin(t*47.1)*vib*.7;
     const sx=-fz*side, sz=fx*side;
     camera.position.set(px-fx*back+sx,py+bob-DCAM.g*.05,pz-fz*back+sz); camera.lookAt(lx,ly+bob*2,lz);
