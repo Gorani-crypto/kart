@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2440</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1115-0330</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6086,7 +6086,7 @@ function raceEndTick(dt){
   const all=rows.every(r=>r.ft), sec=Math.max(0,Math.ceil(RE.t)); el.hidden=all||CER.on; if(el.dataset.s!==String(sec)){ el.dataset.s=sec; el.innerHTML='🏁 1등 골인! 남은 시간<div style="font-size:64px;line-height:1;color:#ffcf2e">'+sec+'</div>'; }
   if(RE.t>0&&!all) return;
   RE.done=true; el.hidden=true;
-  if(state==="race"){ RE.dnf=true; state="finish"; S.boostT=0; S.superT=0; $("finTotal").textContent="완주 못 함"; $("finSub").textContent=TR.def.name+" · 시간 초과"; $("finLaps").innerHTML=""; toast("시간 종료!","#ff7a1a"); voice("bad",0);
+  if(state==="race"){ RE.dnf=true; state="finish"; try{ acctRaceXP(true); }catch(_){} S.boostT=0; S.superT=0; $("finTotal").textContent="완주 못 함"; $("finSub").textContent=TR.def.name+" · 시간 초과"; $("finLaps").innerHTML=""; toast("시간 종료!","#ff7a1a"); voice("bad",0);
     if(MP.racing){ MP.finished=true; MP.finAt=performance.now(); mpSend({st:"done",rid:MP.raceId,ft:null,pg:Math.round(mpProgress()*1000)/1000}); } }
   BOT.on=false; setTimeout(()=>{ if(state==="finish"&&!CER.on) startCeremony(MP.racing?mpStandings():soloStandings()); },800);
 }
@@ -6156,7 +6156,7 @@ hudVoice.style.cssText="position:fixed;right:12px;top:232px;z-index:40;backgroun
 hudVoice.addEventListener("click",()=>{ initAudio(); voiceTest(); });
 
 function finishRace(){
-  state="finish";
+  state="finish"; ACCT.pbLap=GM.mode==="speed"&&laps.length&&(bestEver===null||Math.min(...laps)<bestEver);
   $("finTotal").textContent=fmt(raceT);
   const best=Math.min(...laps);
   if(GM.mode==="speed"&&(bestEver===null||best<bestEver)){bestEver=best; try{localStorage.setItem(bestKey(),String(best));}catch(_){}}
@@ -6164,7 +6164,7 @@ function finishRace(){
   $("finLaps").innerHTML=laps.map((t,i)=>`<span>LAP ${i+1}</span><span class="${t===best?"hl":""}">${fmt(t)}</span>`).join("")+
     `<span>개인 최고 랩</span><span class="hl">${fmt(bestEver)}</span>`+missionHTML()+(GM.mode==="speed"?rankHTML(raceT):"")+gmFinishBlock();
   if(MP.racing) mpFinish();
-  if(GM.mode==="speed"){ const pos=RANK.submit(TR.def.rankKey||TR.def.id,cleanName(MP.nick)||"라이더",raceT); if(pos>0){ $("finLaps").innerHTML+=`<span class="hl">${pos===1?"🏆 신기록 경신!":"🏅 랭킹 "+pos+"위"}</span><span class="hl">${fmt(raceT)}</span>`; rankBanner(pos,raceT); } }
+  acctRaceXP(false); if(GM.mode==="speed"){ const pos=RANK.submit(TR.def.rankKey||TR.def.id,cleanName(MP.nick)||"라이더",raceT); ACCT.lastRank=pos; if(pos===-1) $("finLaps").innerHTML+=`<span>🏆 랭킹</span><span>로그인하면 등록돼요</span>`; if(pos>0){ $("finLaps").innerHTML+=`<span class="hl">${pos===1?"🏆 신기록 경신!":"🏅 랭킹 "+pos+"위"}</span><span class="hl">${fmt(raceT)}</span>`; rankBanner(pos,raceT); acctRankXP(pos); } }
   setTimeout(()=>{ if(state==="finish"&&!CER.on) $("finish").hidden=false; },900);
   if(false){ const nm=(typeof MP!=="undefined"&&MP&&MP.nick)||"나"; setTimeout(()=>{ if(state==="finish") startCeremony([{name:nm,ch:selChar,k:selKart,ft:raceT,me:true}]); },1300); }
 }
@@ -6442,7 +6442,7 @@ const NETA=(()=>{
   const CFG=window.FIREBASE_CONFIG; let db=null, uid=null, peerId=null, myRef=null, roomRef=null, peers=new Map(), onP=null, emitT=0, offset=0, hbT=0, initP=null;
   function init(){ if(initP) return initP; initP=(async()=>{ if(!window.firebase||!CFG) return false;
       if(!firebase.apps.length) firebase.initializeApp(CFG);
-      const cred=await firebase.auth().signInAnonymously(); uid=cred.user.uid; db=firebase.database();
+      const au=firebase.auth(); let u=au.currentUser||await new Promise(r=>{ const off=au.onAuthStateChanged(x=>{ off(); r(x); }); }); if(!u) u=(await au.signInAnonymously()).user; uid=u.uid; db=firebase.database();
       db.ref(".info/serverTimeOffset").on("value",s=>{ offset=s.val()||0; }); return true; })().catch(e=>{ console.warn(e); initP=null; return false; }); return initP; }
   function emit(){ if(emitT) return; emitT=setTimeout(()=>{ emitT=0; if(!onP) return; const now=Date.now()+offset, list=[];
       for(const [id,v] of peers){ if(id!==peerId&&typeof v.p.hb==="number"&&now-v.p.hb>45000) continue; list.push({peer:id,sameTab:id===peerId,isMe:id===peerId,guest:false,presence:v.p,at:v.at}); }
@@ -6475,20 +6475,59 @@ const NETA=(()=>{
     close(){ return false; },
     // 랭킹: kart/rooms/__rank/peers/{uid}_rank_{맵} 에 각자 최고 기록. 맵마다 상위 5명만 보여주고, 5위 밖으로 밀린 내 기록은 지움
     rankWatch(cb){ init().then(ok=>{ if(!ok) return cb(null); const ref=db.ref("kart/rooms/__rank/peers");
-        ref.on("value",snap=>{ const v=snap.val()||{}, by={}; for(const k in v){ const e=v[k]; if(!e||typeof e!=="object"||typeof e.tr!=="string") continue; (by[e.tr]=by[e.tr]||[]).push({n:e.n,t:+e.t,at:+e.at||0,k}); }
+        ref.on("value",snap=>{ const v=snap.val()||{}, by={}; for(const k in v){ const e=v[k]; if(!e||typeof e!=="object"||typeof e.tr!=="string") continue; (by[e.tr]=by[e.tr]||[]).push({n:e.n,t:+e.t,at:+e.at||0,lv:+e.lv||0,k}); }
           const out={}; for(const tr in by){ const L=by[tr].filter(e=>e.n&&e.t>5).sort((a,b)=>a.t-b.t||a.at-b.at), seen=new Set(), top=[];
             for(const e of L){ if(seen.has(e.n)) continue; seen.add(e.n); if(top.length<5) top.push(e); }
             out[tr]=top; const keep=new Set(top.map(e=>e.k)); for(const e of L) if(uid&&e.k.indexOf(uid+"_")===0&&!keep.has(e.k)) db.ref("kart/rooms/__rank/peers/"+e.k).remove().catch(()=>{}); }
           cb(out); },()=>cb(null)); }); },
     rankPut(tr,n,t){ init().then(ok=>{ if(!ok) return; const key=uid+"_rank_"+String(tr).replace(/[^a-z0-9]/g,"")+"_"+Array.from(String(n)).map(c=>c.codePointAt(0).toString(36)).join("").slice(0,40), r=db.ref("kart/rooms/__rank/peers/"+key);
-        r.once("value").then(s=>{ const o=s.val(); if(o&&+o.t<=t) return; return r.set({tr:String(tr),n:String(n).slice(0,10),t:Math.round(t*100)/100,at:firebase.database.ServerValue.TIMESTAMP,hb:firebase.database.ServerValue.TIMESTAMP}); }).catch(e=>console.warn(e)); }); }
+        r.once("value").then(s=>{ const o=s.val(); if(o&&+o.t<=t) return; return r.set({tr:String(tr),n:String(n).slice(0,10),lv:(window.ACCT&&ACCT.lv)||0,t:Math.round(t*100)/100,at:firebase.database.ServerValue.TIMESTAMP,hb:firebase.database.ServerValue.TIMESTAMP}); }).catch(e=>console.warn(e)); }); }
   };
 })();
 NETA.hello();
 
 // ===== 맵별 랭킹 (TOP 5 · 계속 기록 · 5위 밑은 지움) =====
+const ACCT={user:null,prof:null,lv:0};
+const LV_T=[[30,"레전드"],[20,"에이스"],[10,"프로"],[5,"아마추어"],[1,"루키"]];
+function lvTitle(l){ for(const [k,t] of LV_T) if(l>=k) return t; return "루키"; }
+function lvNeed(l){ return 80+l*40; }
+function lvOf(xp){ let l=1, x=Math.max(0,xp|0); while(x>=lvNeed(l)&&l<999){ x-=lvNeed(l); l++; } return {lv:l,cur:x,need:lvNeed(l)}; }
+function acctEmail(n){ return "u"+Array.from(n).map(c=>c.codePointAt(0).toString(36)).join("-")+"@kartrebuild.app"; }
+function acctErr(e){ const c=e&&e.code||""; return c.includes("email-already-in-use")?"이미 있는 닉네임이에요":c.includes("weak-password")?"비밀번호는 6자 이상이어야 해요":c.includes("operation-not-allowed")?"아직 로그인 기능이 켜지지 않았어요 (관리자 설정 필요)":(c.includes("wrong-password")||c.includes("user-not-found")||c.includes("invalid-credential")||c.includes("invalid-login"))?"닉네임 또는 비밀번호가 틀려요":c.includes("too-many-requests")?"잠시 후 다시 해 주세요":c.includes("network")?"인터넷 연결을 확인해 주세요":"오류: "+(c||e); }
+function acctBox(){ let el=document.getElementById("acctBox"); const host=document.getElementById("titleScr"); if(!host) return; if(!el){ el=document.createElement("div"); el.id="acctBox"; el.style.cssText="position:absolute;top:12px;right:12px;z-index:30;background:rgba(10,16,34,.82);color:#fff;border:2px solid rgba(255,255,255,.18);border-radius:14px;padding:8px 12px;font:700 14px/1.35 sans-serif;max-width:240px;text-align:right"; host.appendChild(el); }
+  if(ACCT.user){ const L=lvOf(ACCT.prof&&ACCT.prof.xp||0); el.innerHTML=`<div>👤 <b>${MP.nick.replace(/[<>&]/g,"")}</b></div><div style="color:#ffcf2e">Lv.${L.lv} · ${lvTitle(L.lv)}</div><div style="height:6px;background:#26314f;border-radius:4px;margin:4px 0 6px;overflow:hidden"><div style="height:100%;width:${Math.round(L.cur/L.need*100)}%;background:#5ad8ff"></div></div><div style="font-size:11px;color:#9fb0d0">${L.cur} / ${L.need} XP · <a href="#" id="acctOut" style="color:#ff9a8a">로그아웃</a></div>`;
+    document.getElementById("acctOut").onclick=e=>{ e.preventDefault(); firebase.auth().signOut().then(()=>location.reload()); }; }
+  else { el.innerHTML=`<div style="font-size:12px;color:#c8d4ec;margin-bottom:6px">게스트 · 레벨·랭킹은 로그인 필요</div><button id="acctIn" style="font:800 14px sans-serif;padding:7px 14px;border-radius:10px;border:0;background:#ffcf2e;color:#1a1a1a;cursor:pointer">로그인 / 가입</button>`; document.getElementById("acctIn").onclick=acctModal; } }
+function acctModal(){ let m=document.getElementById("acctModal"); if(m){ m.hidden=false; return; } m=document.createElement("div"); m.id="acctModal"; m.style.cssText="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center";
+  m.innerHTML=`<div style="background:#0d1428;color:#fff;border:2px solid #5ad8ff;border-radius:18px;padding:20px;width:min(90vw,340px);font:600 15px sans-serif"><div style="font:900 20px sans-serif;margin-bottom:12px">👤 로그인 / 가입</div>
+    <input id="acN" maxlength="10" placeholder="닉네임 (10자까지)" autocomplete="username" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:0;margin-bottom:8px;font-size:16px">
+    <input id="acP" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" style="width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:0;margin-bottom:10px;font-size:16px">
+    <div id="acMsg" style="min-height:20px;color:#ff9a8a;font-size:13px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px"><button id="acLogin" style="flex:1;padding:10px;border:0;border-radius:10px;background:#5ad8ff;font:800 15px sans-serif">로그인</button><button id="acJoin" style="flex:1;padding:10px;border:0;border-radius:10px;background:#ffcf2e;font:800 15px sans-serif">가입</button><button id="acX" style="padding:10px 12px;border:0;border-radius:10px;background:#34405e;color:#fff;font:800 15px sans-serif">닫기</button></div>
+    <div style="font-size:11px;color:#9fb0d0;margin-top:10px">비밀번호를 잊으면 찾을 수 없어요. 닉네임은 한 사람만 쓸 수 있어요.</div></div>`;
+  document.body.appendChild(m); const $a=id=>document.getElementById(id), msg=t=>$a("acMsg").textContent=t;
+  const go=async join=>{ const n=cleanName($a("acN").value), p=$a("acP").value; if(!n) return msg("닉네임을 입력해 주세요"); if(p.length<6) return msg("비밀번호는 6자 이상이어야 해요"); msg("잠시만요…");
+    try{ const au=firebase.auth(); let u; if(join){ u=(await au.createUserWithEmailAndPassword(acctEmail(n),p)).user; await u.updateProfile({displayName:n}); await firebase.database().ref("kart/users/"+u.uid).set({n,xp:0,races:0,wins:0,at:firebase.database.ServerValue.TIMESTAMP}); }
+      else { u=(await au.signInWithEmailAndPassword(acctEmail(n),p)).user; }
+      try{ localStorage.setItem("kartrebuild.nick",n); localStorage.setItem("kartrebuild.nickset","1"); }catch(_){} location.reload(); }catch(e){ msg(acctErr(e)); } };
+  $a("acLogin").onclick=()=>go(false); $a("acJoin").onclick=()=>go(true); $a("acX").onclick=()=>{ m.hidden=true; }; $a("acP").onkeydown=e=>{ if(e.key==="Enter") go(false); }; }
+function acctStart(){ if(!window.firebase||!firebase.apps||!firebase.apps.length){ setTimeout(acctStart,400); return; } acctBox();
+  firebase.auth().onAuthStateChanged(u=>{ if(!u||u.isAnonymous){ ACCT.user=null; acctBox(); return; } ACCT.user=u; const n=u.displayName||MP.nick; MP.nick=n; MP.nickSet=true; try{ updateMyTag(); localStorage.setItem("kartrebuild.nick",n); localStorage.setItem("kartrebuild.nickset","1"); }catch(_){}
+    try{ const rn=document.getElementById("rNick"); if(rn){ rn.value=n; rn.disabled=true; } }catch(_){}
+    firebase.database().ref("kart/users/"+u.uid).on("value",s=>{ ACCT.prof=s.val()||{n,xp:0}; ACCT.lv=lvOf(ACCT.prof.xp||0).lv; acctBox(); }); }); }
+setTimeout(acctStart,300);
+/* 레이스 끝 경험치: 완주 20 + 순위 보너스 + 1등 + 개인 최고 랩 + 랭킹 */
+function acctRaceXP(dnf){ if(!ACCT.user){ if(!dnf) $("finLaps").innerHTML+=`<span>⭐ 경험치</span><span>로그인하면 받아요</span>`; return; }
+  let xp=dnf?5:20, why=[]; if(!dnf){ let rows=[]; try{ rows=gmStandingsIds(); }catch(_){} const n=rows.length, pl=rows.findIndex(r=>r.me)+1;
+    if(n>1&&pl>0){ const b=Math.round(40*(n-pl)/(n-1)); xp+=b; if(pl===1){ xp+=20; why.push("1등"); } else why.push(pl+"등"); }
+    if(ACCT.pbLap){ xp+=15; why.push("최고 랩"); } }
+  const old=lvOf(ACCT.prof&&ACCT.prof.xp||0).lv;
+  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ p=p||{n:MP.nick,xp:0,races:0,wins:0}; p.xp=(p.xp|0)+xp; p.races=(p.races|0)+1; if(why[0]==="1등") p.wins=(p.wins|0)+1; p.n=MP.nick; return p; })
+    .then(r=>{ const v=r.snapshot.val()||{}, L=lvOf(v.xp||0); if(L.lv>old){ toast("🎉 레벨 업! Lv."+L.lv+" · "+lvTitle(L.lv),"#ffcf2e"); try{ chime(); }catch(_){} } }).catch(e=>console.warn(e));
+  if(!dnf) $("finLaps").innerHTML+=`<span>⭐ 경험치</span><span class="hl">+${xp} XP${why.length?" ("+why.join(" · ")+")":""}</span>`; }
+function acctRankXP(pos){ if(!ACCT.user||!(pos>0)) return; const xp=pos===1?60:30; firebase.database().ref("kart/users/"+ACCT.user.uid+"/xp").transaction(x=>(x|0)+xp).catch(()=>{}); $("finLaps").innerHTML+=`<span>⭐ 랭킹 보너스</span><span class="hl">+${xp} XP</span>`; }
 const RANK={rows:{},src:"local",sig:""};
-function rankClean(list){ const best=new Map(); for(const e of Array.isArray(list)?list:[]){ if(!e) continue; const n=cleanName(e.n), t=+e.t; if(!n||!(t>5&&t<3600)) continue; const o=best.get(n); if(!o||t<o.t) best.set(n,{n,t:Math.round(t*100)/100,at:+e.at||0}); }
+function rankClean(list){ const best=new Map(); for(const e of Array.isArray(list)?list:[]){ if(!e) continue; const n=cleanName(e.n), t=+e.t; if(!n||!(t>5&&t<3600)) continue; const o=best.get(n); if(!o||t<o.t) best.set(n,{n,t:Math.round(t*100)/100,at:+e.at||0,lv:Math.max(0,Math.min(999,+e.lv||0))}); }
   return [...best.values()].sort((a,b)=>a.t-b.t||a.at-b.at).slice(0,5); }
 function rankLocalLoad(){ try{ const v=JSON.parse(localStorage.getItem("kartrebuild.rank")||"{}"); return v&&typeof v==="object"?v:{}; }catch(_){ return {}; } }
 function rankLocalSave(){ try{ localStorage.setItem("kartrebuild.rank",JSON.stringify(RANK.rows)); }catch(_){} }
@@ -6497,12 +6536,12 @@ function rankSet(data){ const o={}; for(const k in data||{}) if(/^[a-z0-9_]{1,24
 function rankInit(){ RANK.rows={}; const loc=rankLocalLoad(); for(const k in loc) RANK.rows[k]=rankClean(loc[k]); rankRenderAll();
   if(NETA.rankWatch) NETA.rankWatch(d=>{ if(d&&typeof d==="object"){ RANK.src="online"; rankSet(d); } }); }
 /* 이번 기록이 몇 위로 들어갔는지 (0 = 5위 밖) */
-function rankSubmit(id,n,t){ t=Math.round(t*100)/100; const before=rankTop(id), mine=before.find(e=>e.n===n); if(mine&&mine.t<=t) return 0;
+function rankSubmit(id,n,t){ if(!(window.ACCT&&ACCT.user)) return -1; t=Math.round(t*100)/100; const before=rankTop(id), mine=before.find(e=>e.n===n); if(mine&&mine.t<=t) return 0;
   const after=rankClean(before.concat([{n,t,at:Date.now()}])); const pos=after.findIndex(e=>e.n===n&&e.t===t)+1; if(!pos) return 0;
   RANK.rows[id]=after; if(RANK.src!=="online") rankLocalSave(); if(NETA.rankPut) try{ NETA.rankPut(id,n,t); }catch(_){} rankRenderAll(); rankHud(); return pos; }
 RANK.submit=rankSubmit;
 function rankBoxHTML(tr){ const L=rankTop(tr.rankKey||tr.id), me=cleanName(MP.nick); const esc=x=>String(x).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  return `<div class="rk-h">🏆 ${esc(tr.name)} 랭킹 TOP 5</div>`+(L.length?`<ol>${L.map((e,i)=>`<li class="${e.n===me?"me":""}"><b>${["🥇","🥈","🥉","4","5"][i]}</b><span>${esc(e.n)}</span><i>${fmt(e.t)}</i></li>`).join("")}</ol>`:`<div class="rk-e">아직 기록이 없어요. 첫 기록의 주인공이 되어 보세요!</div>`)+`<div class="rk-s">${RANK.src==="online"?"모든 플레이어 공동 랭킹":"이 기기 랭킹"} · 완주 시간 기준</div>`; }
+  return `<div class="rk-h">🏆 ${esc(tr.name)} 랭킹 TOP 5</div>`+(L.length?`<ol>${L.map((e,i)=>`<li class="${e.n===me?"me":""}"><b>${["🥇","🥈","🥉","4","5"][i]}</b><span>${esc(e.n)}${e.lv?`<small style="opacity:.7;font-size:.8em"> Lv.${e.lv}</small>`:""}</span><i>${fmt(e.t)}</i></li>`).join("")}</ol>`:`<div class="rk-e">아직 기록이 없어요. 첫 기록의 주인공이 되어 보세요!</div>`)+`<div class="rk-s">${RANK.src==="online"?"모든 플레이어 공동 랭킹":"이 기기 랭킹"} · 완주 시간 기준</div>`; }
 function rankRenderAll(){ const tr=TRACKS[selTrack]; if(!tr) return; const sig=JSON.stringify([tr.id,RANK.src,rankTop(tr.rankKey||tr.id),MP.nick]); if(sig===RANK.sig&&document.getElementById("rankMenu")&&document.getElementById("rankMenu").childElementCount) return; RANK.sig=sig;
   for(const id of ["rankMenu","rankLobby"]){ const e=document.getElementById(id); if(e) e.innerHTML=rankBoxHTML(tr); } }
 function rankHud(){ if(typeof state==="undefined") return; let e=document.getElementById("rank1Hud"); if(!e){ e=document.createElement("div"); e.id="rank1Hud"; document.body.appendChild(e); }
@@ -6758,7 +6797,7 @@ $m("menuHome").addEventListener("click",()=>openTitle());
 $m("rBack").addEventListener("click",()=>openTitle());
 $m("titleHub").addEventListener("click",()=>{ const hb=document.getElementById("hubBack"); if(hb) hb.click(); });
 $m("titleVoice").addEventListener("click",()=>{ chime(); unlockSpeech(); });
-$m("rNickSave").addEventListener("click",()=>{ const v=cleanName($m("rNick").value); if(!v){ toastNote("닉네임을 입력해 주세요"); return; } MP.nick=v; MP.nickSet=true; updateMyTag(); try{ localStorage.setItem("kartrebuild.nick",v); localStorage.setItem("kartrebuild.nickset","1"); }catch(_){} nickUI(); });
+$m("rNickSave").addEventListener("click",()=>{ if(ACCT.user){ toastNote("로그인한 닉네임은 바꿀 수 없어요"); return; } const v=cleanName($m("rNick").value); if(!v){ toastNote("닉네임을 입력해 주세요"); return; } MP.nick=v; MP.nickSet=true; updateMyTag(); try{ localStorage.setItem("kartrebuild.nick",v); localStorage.setItem("kartrebuild.nickset","1"); }catch(_){} nickUI(); });
 $m("rNick").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); $m("rNickSave").click(); } });
 $m("rCreate").addEventListener("click",()=>{ if(!nickOK()){ toastNote("먼저 닉네임을 정해 주세요!"); $m("rNick").focus(); return; } openModal("create"); });
 $m("rmCancel").addEventListener("click",()=>closeModal());
