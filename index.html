@@ -327,7 +327,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1115-0505</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1115-0507</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5719,7 +5719,7 @@ function rouletteRun(target,done){ if(ROUL.busy) return; ROUL.busy=true; try{ in
   requestAnimationFrame(step); setTimeout(land,D+900); }
 function trackGroups(){ const used=new Set(), out=[]; for(const c of TRACK_CATS){ const L=[]; for(const id of c.ids){ const i=TRACKS.findIndex(t=>t.id===id); if(i>=0&&!used.has(i)){ used.add(i); L.push(i); } } if(L.length) out.push({n:c.n,d:c.d,L}); }
   const rest=TRACKS.map((t,i)=>i).filter(i=>!used.has(i)); if(rest.length) out.push({n:"🏁 기타",d:"",L:rest}); return out; }
-(function(){ const F=CONFIG.maxSpeed*CONFIG.kmh; for(const k of KARTS){ if(["gt","volt","ruby","storm"].includes(k.id)) continue; const base=k.speed*F, bst=base*(k.boost||CONFIG.boostRatio); k.speed=(base+10)/F; k.boost=(bst+10)/(base+10); } })(); /* +10km/h */
+(function(){ const F=CONFIG.maxSpeed*CONFIG.kmh; for(const k of KARTS){ if(["gt","volt","ruby","storm"].includes(k.id)) continue; const base=k.speed*F, bst=base*(k.boost||CONFIG.boostRatio); k.speed=(base+10)/F; k.boost=(bst+(k.id==="bike"?0:10))/(base+10); } /* 슈퍼바이크는 기본속도만 +10 */ })(); /* +10km/h */
 const KART_CATS=[{n:"🚗 자동차",ids:["blue","gold","kart","panther","truck"]},{n:"🏁 서킷 전용",ids:["gt","volt","ruby","storm"]},{n:"🏍️ 오토바이",ids:["scoot","bike","ringbike","trike"]},{n:"🐾 동물",ids:["roach","snake","horse","trex"]},{n:"🛠️ 특수카",ids:["dump","dozer","rearcart","chair","sushi","stroller"]},{n:"⚡ 능력카",ids:["tank","giant","trex","jet","nova"]}];
 const KTAB={menu:"전체",mp:"전체"};
 KART_CATS.push({n:"👑 전설",ids:["tiger","dragon","griffin"]});
