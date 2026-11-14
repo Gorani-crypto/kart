@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-1855</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-1905</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6593,15 +6593,19 @@ function mpTag(name,color){ const t_=mpTag0(name,color); t_.userData.isTag=true;
 /* 서킷 테마: 이름표를 작게 */
 function ckTags(){ const f=CIRC()?.32:1, fix=t=>{ if(!t) return; const cf=t.userData.cf||1; if(cf!==f){ t.scale.multiplyScalar(f/cf); t.userData.cf=f; } }; fix(typeof myTag!=="undefined"?myTag:null); if(typeof MP!=="undefined"&&MP&&MP.ghosts) for(const g of MP.ghosts.values()) for(const c of g.obj.children) if(c.userData.isTag) fix(c); }
 /* 서킷 테마: 운전자 시점 (내 캐릭터 머리 위치에서 앞을 봄, 내 캐릭터는 숨김) */
-const DCAM={v:new THREE.Vector3(),s:new THREE.Vector3(),on:false,yaw:0};
+const DCK={h:2.7,b:1.8,d:3.3}; const DCAM={v:new THREE.Vector3(),s:new THREE.Vector3(),on:false,yaw:0};
 function ckDriverCam(dt){ const on=CIRC()&&(state==="race"||state==="finish"||state==="countdown")&&!S.ej&&CAR&&CAR.rider;
   if(CAR&&CAR.rider) CAR.rider.visible=!on; if(typeof myTag!=="undefined"&&myTag) myTag.visible=!on&&myTag.visible!==false?myTag.visible:!on;
   if(!on){ DCAM.on=false; return; }
   CAR.rider.updateWorldMatrix(true,false); CAR.rider.getWorldPosition(DCAM.v); CAR.rider.getWorldScale(DCAM.s);
   let yaw=S.h; if(!DCAM.on){ DCAM.yaw=yaw; DCAM.on=true; } while(yaw-DCAM.yaw>Math.PI) DCAM.yaw+=Math.PI*2; while(yaw-DCAM.yaw<-Math.PI) DCAM.yaw-=Math.PI*2; DCAM.yaw=lerp(DCAM.yaw,yaw,1-Math.exp(-14*dt));
-  const eye=DCAM.v.y+1.95*DCAM.s.y, fx=Math.sin(DCAM.yaw), fz=Math.cos(DCAM.yaw), sh=(S.shake||0)*.4;
-  camera.position.set(DCAM.v.x+fx*.15+(Math.random()-.5)*sh, eye+(Math.random()-.5)*sh, DCAM.v.z+fz*.15);
-  camera.lookAt(DCAM.v.x+fx*30, eye-1.4, DCAM.v.z+fz*30); }
+  const eye=DCAM.v.y+DCK.h*DCAM.s.y, fx=Math.sin(DCAM.yaw), fz=Math.cos(DCAM.yaw), sh=(S.shake||0)*.4;
+  const px=DCAM.v.x-fx*DCK.b+(Math.random()-.5)*sh, py=eye+(Math.random()-.5)*sh, pz=DCAM.v.z-fz*DCK.b, lx=DCAM.v.x+fx*30, ly=eye-DCK.d, lz=DCAM.v.z+fz*30;
+  /* 출발 전: 처음엔 차 전체가 보이는 시점 → 서서히 운전자 시점으로 */
+  let e=1; if(state==="countdown"){ const ct=typeof countT==="number"?countT:0; e=clamp((2.6-ct)/1.8,0,1); e=e*e*(3-2*e); }
+  if(e<1){ const d=new THREE.Vector3(); camera.getWorldDirection(d); const c=camera.position, tx=c.x+d.x*30, ty=c.y+d.y*30, tz=c.z+d.z*30;
+    camera.position.set(lerp(c.x,px,e),lerp(c.y,py,e),lerp(c.z,pz,e)); camera.lookAt(lerp(tx,lx,e),lerp(ty,ly,e),lerp(tz,lz,e)); CAR.rider.visible=e<.5; return; }
+  camera.position.set(px,py,pz); camera.lookAt(lx,ly,lz); }
 function mpTag0(name,color){ const c=document.createElement("canvas"); c.width=256; c.height=64; const x=c.getContext("2d"); x.fillStyle="rgba(14,22,48,.75)"; x.beginPath(); x.roundRect?x.roundRect(8,10,240,44,22):x.rect(8,10,240,44); x.fill(); x.fillStyle=color; x.beginPath(); x.arc(34,32,9,0,Math.PI*2); x.fill();
   x.fillStyle="#fff"; x.font="800 26px sans-serif"; x.textBaseline="middle"; x.fillText(name,52,33,190); const t=new THREE.CanvasTexture(c); const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true})); s.scale.set(4.2,1.05,1); s.renderOrder=10; return s; }
 function mpGhost(peer,pr,map){ map=map||MP.ghosts;
