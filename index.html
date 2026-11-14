@@ -310,7 +310,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2165</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1114-2175</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6665,7 +6665,8 @@ function ckDriverCam(dt){ const on=FCAR()&&(state==="race"||state==="finish"||st
   { const t=performance.now()/1000, v=Math.hypot(S.vx,S.vz), r=clamp(v/f1Top(),0,1.05); const a=(v-(DCAM.lv??v))/Math.max(dt,1e-3); DCAM.lv=v;
     DCAM.g=lerp(DCAM.g||0,clamp(a/(f1Top()*.12),-1.5,1),1-Math.exp(-5*dt)); /* +가속 → 몸이 뒤로, -감속 → 앞으로 쏠림 */
     if((S.shiftT||0)>.15&&!DCAM.sk){ DCAM.kick=1; } DCAM.sk=(S.shiftT||0)>.15; DCAM.kick=Math.max(0,(DCAM.kick||0)-dt*3.2);
-    const vib=r*r*.035, back=DCAM.g*.22+DCAM.kick*.18, bob=Math.sin(t*61)*vib+Math.sin(t*37.3)*vib*.6, side=Math.sin(t*47.1)*vib*.7;
+    const tp=f1Top(), gq=S.mg||1, vm=tp*F1R[gq-1], bad=(input.accel&&gq<7&&v>vm*.97)||v>vm*1.02?1:(input.accel&&gq>1&&v<tp*F1R[gq-2]*.85)?.6:0; DCAM.bad=lerp(DCAM.bad||0,bad,1-Math.exp(-8*dt)); /* 진동은 변속 타이밍 놓침(레드존)·엔진브레이크·기어 너무 높음일 때만 */
+    const vib=DCAM.bad*.045, back=DCAM.g*.22+DCAM.kick*.18, bob=Math.sin(t*61)*vib+Math.sin(t*37.3)*vib*.6, side=Math.sin(t*47.1)*vib*.7;
     const sx=-fz*side, sz=fx*side;
     camera.position.set(px-fx*back+sx,py+bob-DCAM.g*.05,pz-fz*back+sz); camera.lookAt(lx,ly+bob*2,lz);
     const st=(input.left?1:0)-(input.right?1:0); DCAM.roll=lerp(DCAM.roll||0,st*.05*Math.min(1,r*1.4),1-Math.exp(-6*dt)); camera.rotateZ(DCAM.roll);
