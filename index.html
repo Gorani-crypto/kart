@@ -285,13 +285,14 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
     <h1 class="ttl">카트 리빌드</h1>
     <p class="tsub">드리프트 · 부스터 · 12대의 차 · 8명의 캐릭터</p>
     <div class="tbtns"><button class="btn tbig" id="goSingle" type="button">🏁 싱글 플레이<small>혼자 또는 AI와 달리기</small></button><button class="btn tbig alt" id="goOnline" type="button">🌐 온라인 대전<small>방을 만들거나 들어가기</small></button></div>
-    <div class="tsnd"><button class="btn ghost" id="sndToggle" type="button">🔊 소리 켜짐</button><input type="range" id="sndVol" min="0" max="100" value="80" aria-label="소리 크기"><span id="sndVolTxt">80</span><button class="btn ghost" id="titleVoice" type="button">🔔 소리 테스트</button><button class="btn ghost" id="titleHub" type="button">← 미니게임방</button></div>
+    <div class="tsnd"><button class="btn ghost" id="sndToggle" type="button">🔊 소리 켜짐</button><input type="range" id="sndVol" min="0" max="100" value="80" aria-label="소리 크기"><span id="sndVolTxt">80</span><button class="btn ghost" id="titleVoice" type="button">🔔 소리 테스트</button><button class="btn ghost" id="titleHub" type="button" hidden style="display:none">← 미니게임방</button><button class="btn" id="titleShop" type="button" style="background:linear-gradient(135deg,#ffe27a,#ffb21a);color:#1a1a1a;font-weight:900">🛒 상점</button></div>
   </div>
 </div>
 <div class="overlay" id="roomScr" hidden>
   <div class="card rcard">
     <div class="eyebrow">ONLINE · 방 목록</div>
     <h1>온라인 대전</h1>
+    <button type="button" id="shopBtn2" style="align-self:flex-start;font:900 16px sans-serif;padding:9px 16px;border-radius:12px;border:0;background:linear-gradient(135deg,#ffe27a,#ffb21a);color:#1a1a1a;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);margin:4px 0 10px">🛒 상점</button>
     <div class="rwrap">
       <div class="rleft">
         <div class="mp-field"><label for="rNick">닉네임</label><input id="rNick" maxlength="10" placeholder="닉네임을 정해 주세요" autocomplete="off"></div>
@@ -327,7 +328,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0235</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0240</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -362,7 +363,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
   <div class="card">
     <div class="eyebrow">ONLINE · 대기실</div>
     <h1>온라인 대전</h1>
-    <button type="button" id="shopBtn" onclick="shopOpen()" style="align-self:flex-start;font:900 16px sans-serif;padding:9px 16px;border-radius:12px;border:0;background:linear-gradient(135deg,#ffe27a,#ffb21a);color:#1a1a1a;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);margin:4px 0 10px">🛒 상점 <span id="shopMoneyTag" style="font-weight:800"></span></button>
+    <button type="button" id="shopBtn" style="align-self:flex-start;font:900 16px sans-serif;padding:9px 16px;border-radius:12px;border:0;background:linear-gradient(135deg,#ffe27a,#ffb21a);color:#1a1a1a;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);margin:4px 0 10px">🛒 상점 <span id="shopMoneyTag" style="font-weight:800"></span></button>
     <div id="mpJoinBox" style="display:flex;flex-direction:column;gap:10px">
       <div class="mp-field"><label for="mpName">닉네임</label><input id="mpName" maxlength="10" placeholder="닉네임" autocomplete="off"></div>
       <div class="mp-field"><label for="mpCode">방 번호</label><input id="mpCode" maxlength="12" value="1" autocomplete="off"></div>
@@ -6095,6 +6096,7 @@ function shopBuy(id){ const it=shopItem(id); if(!it||!ACCT.user) return; if(shop
   firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; p.own=p.own||{}; if(p.own[id]) return; if((p.money|0)<it.p) return; p.money=(p.money|0)-it.p; p.own[id]=true; return p; })
     .then(r=>{ if(r.committed){ ACCT.prof=r.snapshot.val()||ACCT.prof; toast("🛒 "+shopName(it)+" 구매 완료! -"+wonFmt(it.p),"#46e08a"); try{ chime(); }catch(_){} if(it.t==="hat"){ COSEQ.hat=it.id; cosSave(); } else if(it.t==="skin"){ COSEQ.skin=it.id; cosSave(); } shopRefreshLook(); } else toast("돈이 부족하거나 이미 가지고 있어요","#ff9a8a"); shopRender(); })
     .catch(e=>{ console.warn(e); toast("구매 실패 · 잠시 뒤 다시 해 주세요","#ff9a8a"); }); }
+document.addEventListener("click",e=>{ const t=e.target&&e.target.closest&&e.target.closest("#titleShop,#shopBtn,#shopBtn2"); if(t){ e.preventDefault(); e.stopPropagation(); shopOpen(); } },true);
 
 function swatchesHTML(){ return PAINTS.map((h,i)=>`<button type="button" class="sw" data-i="${i}" aria-pressed="${i===selColor}" title="${PAINT_NAMES[i]}" style="background:${h==null?"conic-gradient(#e8344a,#ffd21f,#3cc46a,#3ec6ff,#9b5de5,#e8344a)":"#"+h.toString(16).padStart(6,"0")}"></button>`).join(""); }
 try{ selTrack=Math.min(TRACKS.length-1,parseInt(localStorage.getItem("kartrebuild.track")||"0",10)||0); selKart=Math.min(KARTS.length-1,parseInt(localStorage.getItem("kartrebuild.kart")||"0",10)||0); selChar=Math.min(CHARS.length-1,parseInt(localStorage.getItem("kartrebuild.char")||"0",10)||0);}catch(_){}
