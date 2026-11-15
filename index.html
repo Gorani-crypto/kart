@@ -327,7 +327,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1115-2230</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1115-2240</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6484,7 +6484,7 @@ function finishRace(){
   $("finLaps").innerHTML=laps.map((t,i)=>`<span>LAP ${i+1}</span><span class="${t===best?"hl":""}">${fmt(t)}</span>`).join("")+
     `<span>개인 최고 랩</span><span class="hl">${fmt(bestEver)}</span>`+missionHTML()+(GM.mode==="speed"?rankHTML(raceT):"")+gmFinishBlock();
   if(MP.racing) mpFinish();
-  acctRaceXP(false); if(GM.mode==="speed"){ const pos=RANK.submit(TR.def.rankKey||TR.def.id,cleanName(MP.nick)||"라이더",raceT); ACCT.lastRank=pos; if(pos===-1) $("finLaps").innerHTML+=`<span>🏆 랭킹</span><span>로그인하면 등록돼요</span>`; if(pos>0){ $("finLaps").innerHTML+=`<span class="hl">${pos===1?"🏆 신기록 경신!":"🏅 랭킹 "+pos+"위"}</span><span class="hl">${fmt(raceT)}</span>`; rankBanner(pos,raceT); } }
+  acctRaceXP(false); if(GM.mode==="speed"){ const pos=RANK.submit(TR.def.rankKey||TR.def.id,cleanName(MP.nick)||"라이더",raceT); ACCT.lastRank=pos; if(pos!==-1&&laps.length>=2&&bestLap>5){ const lp=RANK.submit((TR.def.rankKey||TR.def.id)+"_lap",cleanName(MP.nick)||"라이더",bestLap); if(lp>0) setTimeout(()=>toast("⏱ 1랩 랭킹 "+lp+"위 등록! "+fmt(bestLap),"#5ad8ff"),2200); } if(pos===-1) $("finLaps").innerHTML+=`<span>🏆 랭킹</span><span>로그인하면 등록돼요</span>`; if(pos>0){ $("finLaps").innerHTML+=`<span class="hl">${pos===1?"🏆 신기록 경신!":"🏅 랭킹 "+pos+"위"}</span><span class="hl">${fmt(raceT)}</span>`; rankBanner(pos,raceT); } }
   setTimeout(()=>{ if(state==="finish"&&!CER.on) $("finish").hidden=false; },900);
   if(false){ const nm=(typeof MP!=="undefined"&&MP&&MP.nick)||"나"; setTimeout(()=>{ if(state==="finish") startCeremony([{name:nm,ch:selChar,k:selKart,ft:raceT,me:true}]); },1300); }
 }
@@ -6909,12 +6909,13 @@ function rankSubmit(id,n,t){ if(!((typeof ACCT!=="undefined"&&ACCT)&&ACCT.user))
   RANK.rows[id]=after; if(RANK.src!=="online") rankLocalSave(); if(NETA.rankPut) try{ NETA.rankPut(id,n,t); }catch(_){} rankRenderAll(); rankHud(); return pos; }
 RANK.submit=rankSubmit;
 function rankBoxHTML(tr){ const L=rankTop(tr.rankKey||tr.id), me=cleanName(MP.nick); const esc=x=>String(x).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  return `<div class="rk-h">🏆 ${esc(tr.name)} 랭킹 TOP 5</div>`+(L.length?`<ol>${L.map((e,i)=>`<li class="${e.n===me?"me":""}"><b>${["🥇","🥈","🥉","4","5"][i]}</b><span>${esc(e.n)}${e.lv?" "+lvTag(e.lv,16):""}</span><i>${fmt(e.t)}</i></li>`).join("")}</ol>`:`<div class="rk-e">아직 기록이 없어요. 첫 기록의 주인공이 되어 보세요!</div>`)+`<div class="rk-s">${RANK.src==="online"?"모든 플레이어 공동 랭킹":"이 기기 랭킹"} · 완주 시간 기준</div>`; }
-function rankRenderAll(){ const tr=TRACKS[selTrack]; if(!tr) return; const sig=JSON.stringify([tr.id,RANK.src,rankTop(tr.rankKey||tr.id),MP.nick]); if(sig===RANK.sig&&document.getElementById("rankMenu")&&document.getElementById("rankMenu").childElementCount) return; RANK.sig=sig;
+  const LL=rankTop((tr.rankKey||tr.id)+"_lap"), lapList=(tr.laps||CONFIG.laps)>=2||LL.length;
+  return `<div class="rk-h">🏆 ${esc(tr.name)} 랭킹 TOP 5</div>`+(L.length?`<ol>${L.map((e,i)=>`<li class="${e.n===me?"me":""}"><b>${["🥇","🥈","🥉","4","5"][i]}</b><span>${esc(e.n)}${e.lv?" "+lvTag(e.lv,16):""}</span><i>${fmt(e.t)}</i></li>`).join("")}</ol>`:`<div class="rk-e">아직 기록이 없어요. 첫 기록의 주인공이 되어 보세요!</div>`)+`<div class="rk-s">완주 시간 기준</div>`+(lapList?`<div class="rk-h" style="margin-top:8px">⏱ 1랩 기록 TOP 5</div>`+(LL.length?`<ol>${LL.map((e,i)=>`<li class="${e.n===me?"me":""}"><b>${["🥇","🥈","🥉","4","5"][i]}</b><span>${esc(e.n)}${e.lv?" "+lvTag(e.lv,16):""}</span><i>${fmt(e.t)}</i></li>`).join("")}</ol>`:`<div class="rk-e">아직 1랩 기록이 없어요.</div>`)+`<div class="rk-s">한 바퀴 최고 기록 기준</div>`:"")+`<div class="rk-s">${RANK.src==="online"?"모든 플레이어 공동 랭킹":"이 기기 랭킹"} · 로그인해야 등록돼요</div>`; }
+function rankRenderAll(){ const tr=TRACKS[selTrack]; if(!tr) return; const sig=JSON.stringify([tr.id,RANK.src,rankTop(tr.rankKey||tr.id),rankTop((tr.rankKey||tr.id)+"_lap"),MP.nick]); if(sig===RANK.sig&&document.getElementById("rankMenu")&&document.getElementById("rankMenu").childElementCount) return; RANK.sig=sig;
   for(const id of ["rankMenu","rankLobby"]){ const e=document.getElementById(id); if(e) e.innerHTML=rankBoxHTML(tr); } }
 function rankHud(){ if(typeof state==="undefined") return; let e=document.getElementById("rank1Hud"); if(!e){ e=document.createElement("div"); e.id="rank1Hud"; document.body.appendChild(e); }
   const inRace=TR&&(state==="race"||state==="countdown"||state==="finish"); if(!inRace){ e.hidden=true; return; } const L=rankTop(TR.def.rankKey||TR.def.id); e.hidden=false; e.classList.toggle("tm",!!touchMode);
-  e.textContent=L.length?"👑 1위 "+L[0].n+" · "+fmt(L[0].t):"👑 아직 1위 기록 없음"; }
+  e.textContent=(L.length?"👑 1위 "+L[0].n+" · "+fmt(L[0].t):"👑 아직 1위 기록 없음"); const LL=rankTop((TR.def.rankKey||TR.def.id)+"_lap"); if(LL.length) e.textContent+="  ⏱ 1랩 "+LL[0].n+" · "+fmt(LL[0].t); }
 function rankBanner(pos,t){ let e=document.getElementById("nrBanner"); if(!e){ e=document.createElement("div"); e.id="nrBanner"; document.body.appendChild(e); }
   e.innerHTML=(pos===1?"🏆 신기록 경신!":"🏅 랭킹 "+pos+"위 등록!")+"<small>"+TR.def.name+" · "+fmt(t)+"</small>"; e.classList.add("on"); clearTimeout(e._t); e._t=setTimeout(()=>e.classList.remove("on"),7000);
   try{ chime(); }catch(_){} }
