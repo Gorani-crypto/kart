@@ -328,7 +328,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0305</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0320</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -484,7 +484,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"rearcart", name:"리어카", desc:"할아버지가 끄는 짐 가득 리어카 · 최고속도 311km · 묵직하지만 엄청 빠름", speed:1.4133, accel:1.05, turn:.85, boost:1.2791, mass:1.4, driftEff:.7, driftDrag:.1},
   {id:"volt", name:"실버 볼트 EV", desc:"서킷 전용 포뮬러 · 은색 전기차, 바늘 노즈와 청록 빛 줄 · 가속이 가장 빠르지만 충돌에 약함 · 서킷 최고 640km/h", speed:1.32, accel:1.52, turn:1.06, boost:1.22, mass:1},
   {id:"ruby", name:"루비 컨버터블", desc:"서킷 전용 포뮬러 · 빨강 레트로, 높은 공기흡입구와 금색 휠 · 코너에서 속도를 가장 덜 잃고 튼튼함 · 최고속도는 가장 낮은 625km/h", speed:1.3, accel:1.38, turn:1.14, boost:1.23, mass:.95},
-  {id:"storm", name:"스톰 윙", desc:"서킷 전용 포뮬러 · 흰·파랑, 넓게 휜 앞뒤 날개 · 최고속도 최강 650km/h · 차체가 가장 약하고 감속이 큼", speed:1.33818, accel:1.32, turn:1.02, boost:1.24211, mass:1},
+  {id:"storm", name:"스톰 윙", desc:"서킷 전용 포뮬러 · 흰·파랑, 넓게 휜 앞뒤 날개 · 최고속도 최강 730km/h · 9단 기어 · 차체가 가장 약하고 감속이 큼", speed:1.33818, accel:1.32, turn:1.02, boost:1.24211, mass:1},
   {id:"panther", name:"블랙 팬서", desc:"파란 눈빛의 검정 슈퍼카 · 부스터가 강하고 조금 묵직함", speed:1.31, accel:1.36, turn:1.04, boost:1.27, mass:1.1},
   {id:"dozer", name:"불도저", desc:"큰 삽날 달린 무한궤도 불도저 · 느리지만 아주 무거워서 앞을 막는 차를 삽날로 밀어냄 · 부스터 빠르고 4초로 김", speed:1.17, accel:.95, turn:.84, boost:1.4, boostTime:4, gaugeMul:.85, mass:3.1, rad:2.1, ram:1},
   {id:"ringbike", name:"네온 링 바이크", desc:"바퀴살 없이 빛나는 링 바퀴의 미래형 바이크 · 빠르고 가벼움 · 조금 미끄러움(넘어지진 않음)", speed:1.32879, accel:1.5, turn:1.12, grip:.85, boost:1.22968, mass:.7, fly:1.4},
@@ -877,7 +877,7 @@ function ckMirror(){ if(!FCAR()||state!=="race") return false; const fx=Math.sin
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:1.1,acc:1,turn:1.2,t:"코너링 최강(회전 1.2배) · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},storm:{top:650,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 · 차체 약함 · 감속 큼 · V8 엔진음"}};
+const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:1.1,acc:1,turn:1.2,t:"코너링 최강(회전 1.2배) · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},storm:{top:730,gears:9,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 730km/h · 9단 기어 · 차체 약함 · 감속 큼 · V8 엔진음"}};
 function F1S(){ return F1STAT[KART&&KART.id]||F1STAT.gt; }
 function F1KMH(){ return F1S().top; } /* 서킷 전용차 최고속도 625~650km/h (차마다 다름) */
 function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?NCM():1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
@@ -5515,9 +5515,11 @@ function nearest(x,z,hint){
 
 /* 서킷 테마: 한 번의 계산에서 줄어든 속도(벽·코너·마찰·브레이크)를 1.5배로 */
 /* 서킷 전용 차량(서킷 테마): 부스터·드리프트 없음 · 감속 2배 · 수동 8단 기어(기어마다 최고속도, 변속 순간 힘이 잠깐 빠짐) */
-const F1R=[.19,.31,.43,.55,.67,.78,.89,1];
+const F1R=[.19,.31,.43,.55,.67,.78,.89,1], F1R0=F1R.slice();
+/* 차마다 기어 수: 스톰윙 9단(1~8단은 예전 650km/h 기준 그대로, 9단에서 730km/h) */
+function f1Gears(){ const n=(F1S()&&F1S().gears)||8; if(F1R.length===n&&F1R._for===(KART&&KART.id)) return; F1R.length=0; if(n===9){ const k=650/F1S().top; F1R0.forEach(x=>F1R.push(x*k)); F1R.push(1); } else F1R0.forEach(x=>F1R.push(x)); F1R._for=KART&&KART.id; if((S.mg||1)>F1R.length) S.mg=F1R.length; }
 function f1Top(){ return CONFIG.maxSpeed*KART.speed*CKM()*(typeof F1EZ!=="undefined"&&F1EZ.on?F1EZ.topMul:1); }
-function f1Shift(d){ const g=S.mg||1, n=clamp(g+d,1,8); if(n===g) return; const v=Math.hypot(S.vx,S.vz), top=f1Top();
+function f1Shift(d){ f1Gears(); const g=S.mg||1, n=clamp(g+d,1,F1R.length); if(n===g) return; const v=Math.hypot(S.vx,S.vz), top=f1Top();
   if(d>0&&v<top*F1R[g-1]*.9){ f1Msg("속도가 부족해요 · "+Math.round(top*F1R[g-1]*.9*CONFIG.kmh)+"km/h 이상에서 올리기"); return; }
   if(d<0&&v>top*F1R[n-1]*1.02){ f1Msg("너무 빨라요 · "+Math.round(top*F1R[n-1]*CONFIG.kmh)+"km/h 이하에서 내리기"); return; } S.mg=n; S.shiftT=d>0?.18:.12; gearFx(n,d>0); shiftSnd(d>0); }
 
@@ -5576,7 +5578,7 @@ var F1BRK={ max:12,      /* 최대 제동 감속(내부단위/s², ×5.8=km/h/s 
   slideHi:.62,           /* 최고속도에서 제동 중 접지 감소 비율(0~1). ↑ 고속 제동 시 더 미끄러짐(관성) */
   slideFrom:.35          /* 최고속도의 이 비율 이상부터 미끄러짐 시작 → 저속 제동은 안정 */ };
 function physics(dt, controls){ const fc=FCAR(); let dr=false;
-  if(fc){ S.boostT=0; S.superT=0; S.startUsed=true; S.gauge=0; if(!S.mg) S.mg=1;
+  if(fc){ f1Gears(); S.boostT=0; S.superT=0; S.startUsed=true; S.gauge=0; if(!S.mg) S.mg=1;
     if(controls&&state==="race"){ if(input.boost&&!S._gb) f1Shift(1); }
     { const want=!!(controls&&state==="race"&&input.drift); S.brkA=clamp((S.brkA||0)+(want?F1BRK.rise:-F1BRK.release)*dt,0,1); S.brkOn=want; } S._gb=!!input.boost; S._gd=!!input.drift; dr=input.drift; input.drift=false; }
   const v0=Math.hypot(S.vx,S.vz); let accSave=input.accel; if(fc&&S.brkOn) input.accel=false; const r=physics0(dt,controls); if(fc){ input.drift=dr; input.accel=accSave; }
@@ -5586,7 +5588,7 @@ function physics(dt, controls){ const fc=FCAR(); let dr=false;
   if(fc){ S.boostT=0; if(!S.loop&&!S.rail&&!S.coast&&!S.launch){ const v1r=Math.hypot(S.vx,S.vz), gk=S.grounded?9.8*(S.slope||0)*.75*(TR.def.grav||1)*dt:0, v1=v1r+gk, top=f1Top(), g=S.mg||1, vmax=top*F1R[g-1], vlow=g>1?top*F1R[g-2]*.55:0;
     S.shiftT=Math.max(0,(S.shiftT||0)-dt); let nv=v1;
     if(v1<v0) nv=Math.max(0,v0-(v0-v1)*(F1EZ.on?1:F1S().dec)); /* 서킷 전용차 감속 2.5배 (브레이크·관성·충돌·코너) */
-    else if(v1>v0&&input.accel){ /* 기어마다 그 기어 최고속도까지 약 4초 */ const vs=g>1?top*F1R[g-2]:0, span=vmax-vs, room=clamp((vmax-v0)/(span*.25),0,1), lug=v0<vlow?.3:1, rate=span/(3.2*(g===8?1.75:g===7?4.73:g===6?2.22:1))*lug*F1S().acc*(1-ckDmg()*1.5)*(.3+.7*Math.sqrt(room))*(S.f1L&&S.f1L.t>0?S.f1L.mul:1)*(F1EZ.on?F1EZ.accelMul*(1-F1EZ.traction*Math.abs(S.ezS||0)*clamp(v0/(top*.5),0,1)):1); nv=Math.min(Math.max(v0,vmax),v0+rate*dt*(S.shiftT>0?.05:1)); }
+    else if(v1>v0&&input.accel){ /* 기어마다 그 기어 최고속도까지 약 4초 */ const vs=g>1?top*F1R[g-2]:0, span=vmax-vs, room=clamp((vmax-v0)/(span*.25),0,1), lug=v0<vlow?.3:1, rate=span/(3.2*(g===9?3.2:g===8?1.75:g===7?4.73:g===6?2.22:1))*lug*F1S().acc*(1-ckDmg()*1.5)*(.3+.7*Math.sqrt(room))*(S.f1L&&S.f1L.t>0?S.f1L.mul:1)*(F1EZ.on?F1EZ.accelMul*(1-F1EZ.traction*Math.abs(S.ezS||0)*clamp(v0/(top*.5),0,1)):1); nv=Math.min(Math.max(v0,vmax),v0+rate*dt*(S.shiftT>0?.05:1)); }
     { let gg=S.mg||1; while(gg>1&&nv<top*F1R[gg-2]*.72) gg--; if(gg<(S.mg||1)){ S.mg=gg; S.shiftT=.1; gearFx(gg,false); shiftSnd(false); } } /* 속도가 떨어지면 기어 자동으로 내려감 */
     if(S.offroad){ const gc=CONFIG.grassCurve, gt=S.grassT||0; let gf=gc[gc.length-1][1]; for(let k=0;k<gc.length-1;k++){ if(gt<gc[k+1][0]){ gf=gc[k][1]+(gc[k+1][1]-gc[k][1])*(gt-gc[k][0])/(gc[k+1][0]-gc[k][0]); break; } } const cap=Math.min(top,CONFIG.maxSpeed*1.1)*gf; if(nv>cap) nv-=(nv-cap)*Math.min(1,3.5*dt); } /* 서킷 전용차도 잔디에선 일반 차량 수준 속도로 묶임 */
     if((S.brkA||0)>0&&S.grounded) nv=Math.max(0,nv-F1BRK.max*S.brkA*dt); /* 부드러운 브레이크 */
@@ -5634,12 +5636,12 @@ function f1Msg(t){ const n=performance.now(); if(n-(S._fm||0)<700) return; S._fm
 function f1Help(sec){ let el=document.getElementById("f1Help"); if(!el){ el=document.createElement("div"); el.id="f1Help"; el.style.cssText="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;background:rgba(8,12,28,.94);color:#fff;border:2px solid #5ad8ff;border-radius:20px;padding:20px 24px;width:min(92vw,520px);font:600 17px/1.5 sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.55);pointer-events:auto;text-align:center"; document.body.appendChild(el); }
   const T=touchMode, row=(k,v)=>`<div style="display:flex;align-items:center;gap:12px;margin:8px 0;text-align:left"><span style="flex:0 0 auto;min-width:96px;padding:6px 10px;border-radius:10px;background:#ffcf2e;color:#1a1a1a;font:900 18px sans-serif;text-align:center">${k}</span><span>${v}</span></div>`;
   const html=s=>`<div style="font:900 24px sans-serif;color:#5ad8ff;margin-bottom:12px">🏁 서킷 전용 차량</div>
-    ${row(T?"기어 ▲":"Ctrl","기어 올리기 (1단 → 8단)")}
+    ${row(T?"기어 ▲":"Ctrl","기어 올리기 (1단 → "+((F1S()&&F1S().gears)||8)+"단)")}
     ${row(T?"드리프트 버튼":"Shift","브레이크 · 부드럽게 걸리고, 빠를수록 미끄러져요")}
     ${row("자동","속도가 줄면 기어가 저절로 내려가요")}
     ${row("90%","지금 기어 최고속도의 90% 넘으면 올릴 수 있어요")}
     ${row("스타트",(T?"엑셀/기어 ▲":"↑")+" — 일반 차량처럼 출발 직전(불 꺼지기 바로 전·직후)에 누르면 출발 부스터!")}
-    <div style="margin:12px 0 4px;color:#c8d4ec;font-size:15px">최고속도 630~650km/h · 8단 · 기어마다 약 4초 · 부스터·드리프트 없음</div>
+    <div style="margin:12px 0 4px;color:#c8d4ec;font-size:15px">최고속도 ${F1S().top}km/h · ${(F1S().gears)||8}단 · 기어마다 약 4초 · 부스터·드리프트 없음</div>
     <div style="margin-top:12px;font:800 16px sans-serif;color:#9fb0d0">${s}초 뒤 출발 · <span style="color:#ffcf2e">${T?"설명 넘기기 버튼":"Shift"}</span>로 넘기기</div>`;
   let t=sec; el.innerHTML=html(t); el.hidden=false; clearInterval(el._iv); el.onclick=()=>{ el.hidden=true; clearInterval(el._iv); if(state==="countdown"&&countT>3.2+INTRO) countT=3.2+INTRO; };
   el._iv=setInterval(()=>{ t--; if(t<=0||state!=="countdown"){ el.hidden=true; clearInterval(el._iv); return; } el.innerHTML=html(t); },1000); }
@@ -6160,7 +6162,7 @@ function renderOptions(){ const _ks=keepScroll(KEEP_SC); try{ renderOptions0(); 
 function renderOptions0(){ setTimeout(rankRenderAll,0); gmRenderMenu();
   { const grps=trackGroups(), tab=thTab("menu",grps,selTrack); $("trackOpts").innerHTML=`<button class="opt rnd-card" type="button" id="trk-random" aria-pressed="${selRandom}"><span class="rnd-ico">🎲</span><span style="display:flex;flex-direction:column;gap:2px"><b>랜덤 맵</b><span>출발하면 룰렛이 돌아가서 ${TRACKS.length}개 맵 중 하나를 뽑아요</span></span></button>`+`<div class="th-wrap"><div class="th-tabs">${grps.map(g=>`<button type="button" data-th="${g.n}" aria-pressed="${g.n===tab}">${g.n}${!selRandom&&g.L.includes(selTrack)?'<span class="dot"></span>':""}</button>`).join("")}</div><div class="th-maps">`+(grps.find(g=>g.n===tab)||grps[0]).L.map(i=>{ const t=TRACKS[i]; return `<button class="opt" type="button" id="trk-${t.id}" aria-pressed="${!selRandom&&i===selTrack}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>trackThumb(t))}"><b>${t.name}</b><i class="diff">난이도 ${"●".repeat(t.diff||2)}${"○".repeat(5-(t.diff||2))}</i><span>${t.desc}</span>${t.records?`<span class="stat">랭킹 1위 ${t.records[0].name} ${fmtT(t.records[0].t)}</span>`:""}</button>`; }).join("")+`</div></div>`; { const tg=$("trackOpts").querySelector(".th-tabs [aria-pressed=true]"); if(tg&&tg.parentNode) tg.parentNode.scrollTop=Math.max(0,tg.offsetTop-tg.parentNode.offsetTop-90); } thCue($("trackOpts")); }
   $("kartOpts").innerHTML=ktabHTML("menu")+KARTS.map((k,i)=>{ if(!kInTab(k,"menu")) return ""; if(kartLocked(k)) return `<button class="opt" type="button" id="krt-${k.id}" aria-pressed="false" data-i="${i}"><img class="thumb" alt="" src="${qThumb()}"><b>?</b><span>?</span></button>`; const top=Math.round(CONFIG.maxSpeed*k.speed*CONFIG.kmh), bst=Math.round(CONFIG.maxSpeed*k.speed*(k.boost||CONFIG.boostRatio)*CONFIG.kmh);
-    return `<button class="opt" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span>${["gt","volt","ruby","storm"].includes(k.id)?`<span class="stat" style="color:#5ad8ff">🏁 서킷 전용 · 서킷 최고 ${F1STAT[k.id].top} km/h · ${F1STAT[k.id].t} · 수동 8단 기어</span>`:`<span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>`}${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
+    return `<button class="opt" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span>${["gt","volt","ruby","storm"].includes(k.id)?`<span class="stat" style="color:#5ad8ff">🏁 서킷 전용 · 서킷 최고 ${F1STAT[k.id].top} km/h · ${F1STAT[k.id].t} · 수동 ${F1STAT[k.id].gears||8}단 기어</span>`:`<span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>`}${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
   $("charOpts").innerHTML=CHARS.map((c,i)=>charLocked(c)?`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="false" data-i="${i}"><img class="thumb" alt="" src="${qThumb()}"><b>?</b><span>?</span></button>`:`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="${i===selChar}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>charThumb(c))}"><b><span class="dot" style="background:#${c.helmet.toString(16).padStart(6,"0")}"></span>${c.name}</b><span>${c.desc}</span>${SYN[KARTS[selKart].id]===c.id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}</button>`).join("");
   $("colorOpts").innerHTML=swatchesHTML()+cosHTML(); $("colorOpts").querySelectorAll(".sw").forEach(b=>b.addEventListener("click",()=>{ setColor(+b.dataset.i); renderOptions(); })); cosBind($("colorOpts"),renderOptions);
   $("charOpts").querySelectorAll("button.opt").forEach(b=>b.addEventListener("click",()=>{ if(charLocked(CHARS[+b.dataset.i])){ toast(lockMsg(),"#9fb0d0"); return; } selChar=+b.dataset.i; try{localStorage.setItem("kartrebuild.char",String(selChar));}catch(_){} renderOptions();}));
