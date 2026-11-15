@@ -327,7 +327,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0025</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0035</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -875,7 +875,7 @@ function ckMirror(){ if(!FCAR()||state!=="race") return false; const fx=Math.sin
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:1.5,acc:1,t:"코너 강함 · 감속 적음 · 최고속도 낮음"},storm:{top:650,dur:1.3,dec:2.8,steer:2.2,acc:.95,t:"최고속도 최강 · 차체 약함 · 감속 큼 · V8 엔진음"}};
+const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:1.5,acc:1,t:"코너 강함 · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},storm:{top:650,dur:1.3,dec:2.8,steer:2.2,acc:.95,t:"최고속도 최강 · 차체 약함 · 감속 큼 · V8 엔진음"}};
 function F1S(){ return F1STAT[KART&&KART.id]||F1STAT.gt; }
 function F1KMH(){ return F1S().top; } /* 서킷 전용차 최고속도 625~650km/h (차마다 다름) */
 function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?NCM():1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
@@ -5652,13 +5652,14 @@ function f1Engine(t,on,sp){ const c=SND.ctx; if(!c) return;
     const lim=c.createGain(); lim.gain.value=1; const ls=c.createBiquadFilter(); ls.type="lowshelf"; ls.frequency.value=110; ls.gain.value=9; sh.connect(lp); lp.connect(lp2); lp2.connect(ls); ls.connect(pul); pul.connect(lim); lim.connect(g); g.connect(SND.master);
     const sub=c.createOscillator(); sub.type="sine"; const sg=c.createGain(); sg.gain.value=.55; sub.connect(sg); sg.connect(pul); sub.start(); /* 묵직한 서브 저음 */
     const dl=c.createDelay(.2); dl.delayTime.value=.055; const fb=c.createGain(); fb.gain.value=.32; const wet=c.createGain(); wet.gain.value=.38; const dlp=c.createBiquadFilter(); dlp.type="lowpass"; dlp.frequency.value=900; lim.connect(dl); dl.connect(dlp); dlp.connect(fb); fb.connect(dl); dlp.connect(wet); wet.connect(g); /* 울림(웅장함) */
-    Object.assign(F1E,{g,lp,a,a2,b:b2,d,s,nf,lim,lfo,sub}); }
+    Object.assign(F1E,{g,lp,a,a2,b:b2,d,s,nf,lim,lfo,sub,ls,sg,wet}); }
   const top=typeof f1Top==="function"&&KART?f1Top():1, gear=S.mg||1, vmax=top*F1R[gear-1], rpm=on?clamp(.14+.86*sp/vmax,.14,1.03):0;
-  const v8=!!KART&&KART.id==="storm"; /* 스톰윙: V8 엔진음 (낮고 굵은 음 · 불규칙 폭발의 '두둥두둥' · 감속 시 팝콘 소리) */
-  const idle=(state==="countdown"?18*Math.max(0,Math.sin(t*3.2)):0)+(on&&sp<1.5?3*Math.sin(t*2*Math.PI*(v8?4.2:5.5)):0), f=(v8?20+rpm*92:27+rpm*118)+idle;
+  const v8=!!KART&&KART.id==="storm", rb=!!KART&&KART.id==="ruby", ev=!!KART&&KART.id==="volt"; /* 루비: 둔하고 웅장한 배기 · 볼트 EV: 가볍게 */
+  const PF=rb?{p:.86,lp:.78,ls:13,sg:.85,wet:.6,lg:.6}:ev?{p:1.2,lp:1.3,ls:3,sg:.25,wet:.18,lg:.3}:{p:1,lp:1,ls:9,sg:.55,wet:.38,lg:.45}; if(F1E.ls){ F1E.ls.gain.setTargetAtTime(v8?9:PF.ls,t,.2); F1E.sg.gain.setTargetAtTime(v8?.55:PF.sg,t,.2); F1E.wet.gain.setTargetAtTime(v8?.38:PF.wet,t,.2); } /* 스톰윙: V8 엔진음 (낮고 굵은 음 · 불규칙 폭발의 '두둥두둥' · 감속 시 팝콘 소리) */
+  const idle=(state==="countdown"?18*Math.max(0,Math.sin(t*3.2)):0)+(on&&sp<1.5?3*Math.sin(t*2*Math.PI*(v8?4.2:5.5)):0), f=(v8?20+rpm*92:(27+rpm*118)*PF.p)+idle;
   F1E.a.frequency.setTargetAtTime(f,t,.06); F1E.a2.frequency.setTargetAtTime(f*.994,t,.06); F1E.sub.frequency.setTargetAtTime(f*.5,t,.06); F1E.b.frequency.setTargetAtTime(f*1.498,t,.06); F1E.s.frequency.setTargetAtTime(f*.5,t,.06); F1E.d.frequency.setTargetAtTime(f*2.01,t,.06); F1E.nf.frequency.setTargetAtTime(120+f*2.2,t,.06);
-  F1E.lfo.frequency.setTargetAtTime(f*(v8?.25:.5),t,.06); if(F1E.lg) F1E.lg.gain.setTargetAtTime(v8?.75:.45,t,.1); if(F1E.dg) F1E.dg.gain.setTargetAtTime(v8?.32:.08,t,.1);
-  F1E.lp.frequency.setTargetAtTime((v8?170+rpm*760:200+rpm*1000)+(input.accel?150:0),t,.07);
+  F1E.lfo.frequency.setTargetAtTime(f*(v8?.25:.5),t,.06); if(F1E.lg) F1E.lg.gain.setTargetAtTime(v8?.75:PF.lg,t,.1); if(F1E.dg) F1E.dg.gain.setTargetAtTime(v8?.32:.08,t,.1);
+  F1E.lp.frequency.setTargetAtTime((v8?170+rpm*760:(200+rpm*1000)*PF.lp)+(input.accel?150:0),t,.07);
   const idleChug=on&&sp<1.5, redline=on&&rpm>.97&&input.accel&&gear<8; /* 7단 최고속도에선 끊김 없이 꽉 찬 소리 유지 */
   const pop=v8&&on&&!input.accel&&rpm>.45&&Math.random()<.18; /* V8: 가속 뗄 때 배기 팝 */
   F1E.lim.gain.setTargetAtTime(redline?(Math.sin(t*70)>0?1:.2):idleChug?(Math.sin(t*2*Math.PI*(v8?8:11))>0?1:.35):pop?1.9:1,t,pop?.002:.006);
