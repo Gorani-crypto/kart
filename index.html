@@ -328,7 +328,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0425</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0500</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -1246,6 +1246,19 @@ function nmHazards(tr,o){ o=o||{}; const {P,NR,T,Y,HW}=tr; tr.hazards=[]; const 
     tr.hazards.push({i,side:h.side,W,len,w,reach,period:h.period||2.6,phase:h.phase||0,head,rod,lamp,lampOff,def:h}); }
   tr.anim.push(()=>{ const t=hzClock(); for(const h of tr.hazards){ const e=hzExt(h,t), c=h.side*(h.W+h.w/2+.5-e*(h.w+.5)); h.head.position.x=c; h.rod.position.x=c+h.side*(h.w/2+3); const u=(((t/h.period)+h.phase)%1+1)%1; h.lamp.visible=u>.82||u<.46||Math.sin(t*20)>0; } }); }
 /* 내 카트 ↔ 피스톤: 겹친 깊이가 얕은 쪽으로 밀어냄(정면이면 튕겨 나옴, 옆이면 옆으로 밀림) */
+function parkedHit(){ const L=TR.parked; if(!L||S.rail||S.coast||S.loop) return; const N=TR.N, r=(KART.rad||1.15)*.95, rl=r*1.8;
+  for(const o of L){ const dI=Math.abs(S.idx-o.i); if(Math.min(dI,N-dI)>12) continue; if(Math.abs(S.y-TR.Y[o.i])>3) continue; const p=TR.P[o.i], n=TR.NR[o.i], t=TR.T[o.i], dx=S.x-p.x, dz=S.z-p.z, al=dx*t.x+dz*t.z, lat=dx*n.x+dz*n.z-o.lat;
+    const ox=o.hl+rl-Math.abs(al), oy=o.hw+r-Math.abs(lat); if(ox<=0||oy<=0) continue;
+    const vf=S.vx*t.x+S.vz*t.z, vl=S.vx*n.x+S.vz*n.z;
+    if(oy<ox*.6){ const sg=lat>=0?1:-1; S.x+=n.x*sg*oy; S.z+=n.z*sg*oy; if(vl*sg<0){ S.vx-=n.x*vl*1.3; S.vz-=n.z*vl*1.3; } S.vx*=.93; S.vz*=.93; if(!(S.pkT>raceT-.5&&S.pkT<=raceT)){ S.pkT=raceT; thud(); } }
+    else { const sg=al>=0?1:-1; S.x+=t.x*sg*ox; S.z+=t.z*sg*ox; const imp=Math.abs(vf); if(vf*sg<0){ S.vx-=t.x*vf*1.25; S.vz-=t.z*vf*1.25; } S.vx*=.35; S.vz*=.35; S.shake=Math.max(S.shake||0,Math.min(.8,imp*.02));
+      if(!(S.pkT>raceT-.5&&S.pkT<=raceT)){ S.pkT=raceT; thud(); try{ ckCrash(imp,true,-t.x*sg,-t.z*sg,true); }catch(_){} if(state==="race") toast("쾅! 세워진 차","#ff7a1a"); } } } }
+function parkedBot(b){ const L=TR.parked; if(!L) return; const N=TR.N, r=(b.K.rad||1.15); let block=null;
+  for(const o of L){ const d=(o.i-Math.floor(b.p)+N)%N; if(d>70) continue; if(Math.abs((b.off||0)-o.lat)<o.hw+r+1.2){ if(!block||d<block.d) block={o,d}; } }
+  if(block){ const lanes=[-TR.HW*2/3,0,TR.HW*2/3]; let best=b.off||0, bs=-1e9; for(const ln of lanes){ let ok=true; for(const o of L){ const d=(o.i-Math.floor(b.p)+N)%N; if(d<=70&&Math.abs(ln-o.lat)<o.hw+r+1.2) ok=false; } const sc=(ok?1000:0)-Math.abs(ln-(b.off||0)); if(sc>bs){bs=sc;best=ln;} }
+    b.off=(b.off||0)+Math.sign(best-(b.off||0))*Math.min(Math.abs(best-(b.off||0)),18*BOT_DT()); }
+  for(const o of L){ const d=Math.abs(b.p-o.i); if(Math.min(d,N-d)>1.8) continue; const dl=(b.off||0)-o.lat, m=o.hw+r; if(Math.abs(dl)<m){ b.off=o.lat+(dl>=0?1:-1)*m; b.v*=.8; } } }
+function BOT_DT(){ return 1/60; }
 function hazardHit(){ if(!TR.hazards||S.rail||S.coast||S.loop) return; const t=hzClock(), N=TR.N, hw=(KART.rad||1.15)*.95, hl=hw*1.7;
   for(const h of TR.hazards){ const dI=Math.abs(S.idx-h.i); if(Math.min(dI,N-dI)>14) continue; if(Math.abs(S.y-TR.Y[h.i])>4) continue; const e=hzExt(h,t); if(e<.04) continue;
     const p=TR.P[h.i], n=TR.NR[h.i], tt=TR.T[h.i], f=h.W+.5-e*(h.w+.5), dx=S.x-p.x, dz=S.z-p.z, lat=dx*n.x+dz*n.z, al=dx*tt.x+dz*tt.z;
@@ -2243,6 +2256,21 @@ function decorateAutobahn(tr){ seed=7301; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=
   { const dist=(i)=>{ let d=0; for(let k=h0;k<i;k++) d+=Math.hypot(P[k+1].x-P[k].x,P[k+1].z-P[k].z); return d; }; let acc=0, next=1000;
     for(let i=h0;i<h1;i++){ acc+=Math.hypot(P[i+1].x-P[i].x,P[i+1].z-P[i].z); if(acc>=next){ sign(i,-1,2.2,1.2,txt(String(next/1000)+" km","#f4f4f4","#1a1a1a"),1.6); next+=1000; } }
     let back=0; for(let i=h1;i>h0;i--){ back+=Math.hypot(P[i].x-P[i-1].x,P[i].z-P[i-1].z); if(Math.abs(back-1000)<5) sign(i,1,9,3.6,txt("출구 1000m · AUSFAHRT","#1a4aa8","#fff"),4); if(Math.abs(back-400)<5) sign(i,1,9,3.6,txt("출구 400m →","#1a4aa8","#fff"),4); } }
+  /* 고속도로 중간부터 세워진 차(장애물): 갈수록 촘촘 · 항상 한 차로는 비워 둠 · 출구 앞 600m는 비움 */
+  { const lanes=[-HW*2/3,0,HW*2/3], hm=h0+Math.floor((h1-h0)/2), end=h1-80, cols=[0xd8282a,0x2a6ad8,0xf2f2f2,0x2a2e38,0xffc21a,0x3a9a4a,0x9aa4b0], parked=[]; let i=hm+40;
+    const carMesh=(truck,col)=>{ const g=new THREE.Group(), L=truck?9:4.6, W=truck?2.5:2.0; const body=new THREE.Mesh(new THREE.BoxGeometry(W,truck?1.4:.9,L),Lam(col)); body.position.y=truck?1.3:.75; g.add(body);
+      if(truck){ const box=new THREE.Mesh(new THREE.BoxGeometry(W+.1,3,L*.68),Lam(0xe8eaee)); box.position.set(0,3.4,-L*.14); g.add(box); const cab=new THREE.Mesh(new THREE.BoxGeometry(W,1.8,L*.24),Lam(col)); cab.position.set(0,2.8,L*.36); g.add(cab); }
+      else { const cab=new THREE.Mesh(new THREE.BoxGeometry(W*.9,.75,L*.5),Lam(0x2a3a4a)); cab.position.set(0,1.55,-.2); g.add(cab); }
+      for(const sx of [-1,1]) for(const sz of [-1,1]){ const wh=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.3,10),Lam(0x1a1a1a)); wh.rotation.z=Math.PI/2; wh.position.set(sx*W/2,.42,sz*L*.33); g.add(wh); }
+      const lamps=[]; for(const sx of [-1,1]){ const l=new THREE.Mesh(new THREE.BoxGeometry(.4,.25,.08),new THREE.MeshBasicMaterial({color:0xff8a1a})); l.position.set(sx*(W/2-.3),truck?1.6:1.0,-L/2-.02); g.add(l); lamps.push(l); }
+      g.userData.lamps=lamps; return {g,L,W}; };
+    const blink=[]; let free=1, prevDbl=false;
+    while(i<end){ const u=(i-hm)/Math.max(1,end-hm); /* 0→1 갈수록 촘촘 */ const gap=Math.round(80-48*u+rnd()*18); 
+      const nBlock=u>.55&&rnd()<.45?2:1; if(nBlock===1&&!prevDbl&&rnd()<.5) free=Math.floor(rnd()*3); prevDbl=nBlock===2; let pick=[0,1,2].filter(k=>k!==free); pick.sort(()=>rnd()-.5); pick=pick.slice(0,nBlock);
+      for(const ln of pick){ const truck=rnd()<.28, c=carMesh(truck,cols[Math.floor(rnd()*cols.length)]); const lat=lanes[ln]+(rnd()-.5)*1.2, p=P[i].clone().addScaledVector(NR[i],lat); c.g.position.set(p.x,Y[i],p.z); c.g.rotation.y=Math.atan2(T[i].x,T[i].z)+(rnd()-.5)*.12; nmAdd(tr,c.g).userData.keepOnRoad=true; blink.push(c.g); parked.push({i,lat,hl:c.L/2,hw:c.W/2}); }
+      i+=gap; }
+    tr.parked=parked; tr.anim.push(()=>{ const on=Math.floor(performance.now()/450)%2===0; for(const g of blink) for(const l of g.userData.lamps) l.visible=on; });
+    sign((hm-60+N)%N,1,10,3.6,txt("⚠ 정차 차량 주의 · 앞으로 갈수록 많아요","#ffcf2e","#1a1a1a"),4); }
   /* 고속도로 위를 지나는 다리(육교) 약 3km마다 */
   { let acc=0; for(let i=h0+100;i<h1-100;i++){ acc+=8; if(acc>=3000){ acc=0; const g=new THREE.Group(); g.position.set(P[i].x,Y[i],P[i].z); g.rotation.y=Math.atan2(T[i].x,T[i].z); nmAdd(tr,g);
         const deck=new THREE.Mesh(new THREE.BoxGeometry(2*HW+40,1.8,14),Lam(0xb8bec8)); deck.position.y=10.5; g.add(deck); for(const sx of [-1,1]){ const pr=new THREE.Mesh(new THREE.BoxGeometry(3,10.5+16,10),Lam(0xa8aeb8)); pr.position.set(sx*(HW+8),(10.5-16)/2+0,0); g.add(pr); const rl=new THREE.Mesh(new THREE.BoxGeometry(2*HW+40,1,.4),Lam(0x2a6ad8)); rl.position.set(0,11.9,sx*6.8); g.add(rl); } } } }
@@ -5887,7 +5915,7 @@ function physics0(dt, controls){
     if(Math.sign(vn)===sg){ckCrash(Math.abs(vn),Math.abs(vn)/Math.max(.1,Math.hypot(S.vx,S.vz)),n.x*sg,n.z*sg);S.vx-=n.x*vn*1.4;S.vz-=n.z*vn*1.4; S.vx*=.88; S.vz*=.88; S.shake=Math.min(.5,Math.abs(vn)*.04); if(Math.abs(vn)>4) thud(); if(S.drifting){S.drifting=false;S.gripRamp=0;}}
   }
 
-  if(TR.hazards) hazardHit(); /* 신규 맵(공장) 피스톤 */
+  if(TR.hazards) hazardHit(); /* 신규 맵(공장) 피스톤 */ if(TR.parked) parkedHit(); /* 아우토반 세워진 차 */
   // 높이: 도로 높이를 앞뒤 샘플 사이로 보간
   let gy=0, slope=0;
   if(!onB||score>=-1){
@@ -6646,7 +6674,7 @@ function botsUpdate(dt){
     if(Math.abs(b.off)>lim){ const sg=Math.sign(b.off); b.off=sg*lim; if(b.vo*sg>0){ if(Math.abs(b.vo)>8){ b.v*=.85; if(Math.hypot(b.x-S.x,b.z-S.z)<60) thud(); } b.vo=-b.vo*.3; } }
     if(b.hitT>0){ b.hitT-=dt; b.v=Math.max(0,b.v-60*dt); } /* 포탄 맞으면 1초 멈칫 */
     if(GM.live) gmBot(b,dt);
-    if(TR.hazards) hazardBot(b);
+    if(TR.hazards) hazardBot(b); if(TR.parked) parkedBot(b);
     const j=(i+1)%N, seg=Math.hypot(TR.P[j].x-TR.P[i].x,TR.P[j].z-TR.P[i].z)||1.4; b.p+=b.v*dt/seg;
     if(TR.def.p2p&&b.lapN>=0&&b.p>=TR.finIdx&&b.p<TR.finIdx+150){ if(!b.ft){ b.ft=Math.max(.01,BOT.t); if(!MP.racing) toast(b.c.n+" 골인!","#ffcf2e"); } if(b.p>TR.finIdx+60){ b.p=TR.finIdx+60; b.v=0; } }
     if(b.p>=N){ b.p-=N; b.lapN++; if(b.lapN>=L&&!b.ft){ b.ft=Math.max(.01,BOT.t); if(!MP.racing) toast(b.c.n+" 골인!","#ffcf2e"); } }
