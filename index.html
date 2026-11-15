@@ -327,7 +327,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0020</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0025</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5567,7 +5567,7 @@ function ezYaw(st,fs,top){ const C=F1EZ, v=Math.abs(fs), u=clamp((v-15)/(top*.75
   const want=st*tb*clamp(v/6,0,1), y=clamp(want,-lim,lim); S.ezWant=want; S.ezLim=lim; return (fs>=0?1:-1)*y; }
 
 /* 브레이크(서킷 전용차 · 드리프트 키): 누르면 제동력이 0→최대로 서서히 붙음(급브레이크 아님). 빠를수록 타이어가 덜 잡혀 미끄러짐 */
-var F1BRK={ max:24,      /* 최대 제동 감속(내부단위/s², ×5.8=km/h/s → 약 140km/h/s). ↑ 더 세게 섬 */
+var F1BRK={ max:12,      /* 최대 제동 감속(내부단위/s², ×5.8=km/h/s → 약 70km/h/s). ↑ 더 세게 섬 */
   rise:2.8,              /* 제동력이 차오르는 속도(1/s, 약 0.35초에 최대). ↑ 즉각 급제동, ↓ 부드럽게 */
   release:6,             /* 떼면 제동이 풀리는 속도 */
   slideHi:.62,           /* 최고속도에서 제동 중 접지 감소 비율(0~1). ↑ 고속 제동 시 더 미끄러짐(관성) */
