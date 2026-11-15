@@ -328,7 +328,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0300</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0305</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -877,7 +877,7 @@ function ckMirror(){ if(!FCAR()||state!=="race") return false; const fx=Math.sin
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:1.5,acc:1,t:"코너 강함 · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},storm:{top:650,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 · 차체 약함 · 감속 큼 · V8 엔진음"}};
+const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:1.1,acc:1,turn:1.2,t:"코너링 최강(회전 1.2배) · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},storm:{top:650,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 · 차체 약함 · 감속 큼 · V8 엔진음"}};
 function F1S(){ return F1STAT[KART&&KART.id]||F1STAT.gt; }
 function F1KMH(){ return F1S().top; } /* 서킷 전용차 최고속도 625~650km/h (차마다 다름) */
 function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?NCM():1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
@@ -5566,7 +5566,7 @@ function ezSteer(raw,dt){ let s=S.ezS||0; const C=F1EZ;
   else s=raw*Math.min(1,Math.abs(s)+C.steerRise*dt*(Math.abs(s)<.3?1:.75));
   S.ezS=clamp(s,-1,1); return S.ezS; }
 /* 속도에 따라 최대 회전 속도: 저속 turnLow → 고속 turnHigh, 그리고 옆 가속도 한계(latGrip/속도) */
-function ezYaw(st,fs,top){ const C=F1EZ, v=Math.abs(fs), u=clamp((v-15)/(top*.75),0,1), tb=C.turnLow+(C.turnHigh-C.turnLow)*u*u*(3-2*u); const lim=Math.max(C.turnHigh*.8,C.latGrip/Math.max(v,1));
+function ezYaw(st,fs,top){ const C=F1EZ, cm=(F1S()&&F1S().turn)||1, v=Math.abs(fs), u=clamp((v-15)/(top*.75),0,1), tb=(C.turnLow+(C.turnHigh-C.turnLow)*u*u*(3-2*u))*cm; const lim=Math.max(C.turnHigh*.8,C.latGrip*cm/Math.max(v,1)); /* 차량별 회전 배율(루비 1.2) */
   const want=st*tb*clamp(v/6,0,1), y=clamp(want,-lim,lim); S.ezWant=want; S.ezLim=lim; return (fs>=0?1:-1)*y; }
 
 /* 브레이크(서킷 전용차 · 드리프트 키): 누르면 제동력이 0→최대로 서서히 붙음(급브레이크 아님). 빠를수록 타이어가 덜 잡혀 미끄러짐 */
@@ -5746,7 +5746,7 @@ function physics0(dt, controls){
     if(ground){ const loss=C.driftSpeedLoss+Math.min(.6,C.driftHoldLoss*(Math.exp(S.dHold/0.7)-1)); fs-=fs*loss*dt; }
   }
   else if(EZ()){ const top=f1Top()*F1EZ.topMul; yaw=ezYaw(steer,fs,top); S.dYaw=yaw; S.hold=0;
-    if(ground&&fs>8&&Math.abs(steer)>F1EZ.cornerSteerMin&&F1EZ.cornerAssist>0){ const vT=F1EZ.latGrip/Math.max(.05,Math.abs(steer)*F1EZ.turnLow*.62); if(fs>vT){ const k=(Math.abs(steer)-F1EZ.cornerSteerMin)/(1-F1EZ.cornerSteerMin); fs-=(fs-vT)*F1EZ.cornerAssist*k*dt; } } /* 코너 자동 감속 보조 */ }
+    if(ground&&fs>8&&Math.abs(steer)>F1EZ.cornerSteerMin&&F1EZ.cornerAssist>0){ const vT=F1EZ.latGrip/Math.max(.05,Math.abs(steer)*F1EZ.turnLow*.62)*((F1S()&&F1S().turn)||1); if(fs>vT){ const k=(Math.abs(steer)-F1EZ.cornerSteerMin)/(1-F1EZ.cornerSteerMin); fs-=(fs-vT)*F1EZ.cornerAssist*k*dt; } } /* 코너 자동 감속 보조 */ }
   else { yaw=steer*tb*(fs>=0?1:-1); S.dYaw=yaw;
     // 한쪽으로 오래 꺾을수록 감속이 지수적으로 커짐
     if(steerRaw!==0&&steerRaw===S.holdDir) S.hold+=dt; else { S.hold=0; S.holdDir=steerRaw; }
