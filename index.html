@@ -327,7 +327,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1115-2350</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0000</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -875,7 +875,7 @@ function ckMirror(){ if(!FCAR()||state!=="race") return false; const fx=Math.sin
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:1.5,acc:1,t:"코너 강함 · 감속 적음 · 최고속도 낮음"},storm:{top:650,dur:1.3,dec:2.8,steer:2.2,acc:.95,t:"최고속도 최강 · 차체 약함 · 감속 큼"}};
+const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:1.5,acc:1,t:"코너 강함 · 감속 적음 · 최고속도 낮음"},storm:{top:650,dur:1.3,dec:2.8,steer:2.2,acc:.95,t:"최고속도 최강 · 차체 약함 · 감속 큼 · V8 엔진음"}};
 function F1S(){ return F1STAT[KART&&KART.id]||F1STAT.gt; }
 function F1KMH(){ return F1S().top; } /* 서킷 전용차 최고속도 625~650km/h (차마다 다름) */
 function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?NCM():1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
@@ -5587,21 +5587,23 @@ const F1E={};
 function f1Engine(t,on,sp){ const c=SND.ctx; if(!c) return;
   if(!F1E.g){ const g=c.createGain(); g.gain.value=0; const lp=c.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=500; lp.Q.value=1.4; const lp2=c.createBiquadFilter(); lp2.type="lowpass"; lp2.frequency.value=2200;
     const sh=c.createWaveShaper(), cv=new Float32Array(2048); for(let i=0;i<2048;i++){ const x=i/1024-1; cv[i]=Math.tanh(x*4.5)*.9; } sh.curve=cv;
-    const mk=(type,v)=>{ const o=c.createOscillator(); o.type=type; const gg=c.createGain(); gg.gain.value=v; o.connect(gg); gg.connect(sh); o.start(); return o; };
-    const a=mk("sawtooth",.55), b2=mk("sawtooth",.32), s=mk("sine",1), d=mk("square",.08), a2=mk("sawtooth",.4);
+    const mk=(type,v)=>{ const o=c.createOscillator(); o.type=type; const gg=c.createGain(); gg.gain.value=v; o.connect(gg); gg.connect(sh); o.start(); o._g=gg; return o; };
+    const a=mk("sawtooth",.55), b2=mk("sawtooth",.32), s=mk("sine",1), d=mk("square",.08), a2=mk("sawtooth",.4); F1E.dg=d._g;
     const n=c.createBufferSource(); n.buffer=SND.buf; n.loop=true; const nf=c.createBiquadFilter(); nf.type="bandpass"; nf.Q.value=1.2; const ng=c.createGain(); ng.gain.value=.35; n.connect(nf); nf.connect(ng); ng.connect(sh); n.start();
-    const pul=c.createGain(); pul.gain.value=.55; const lfo=c.createOscillator(); lfo.type="square"; const lg=c.createGain(); lg.gain.value=.45; lfo.connect(lg); lg.connect(pul.gain); lfo.start();
+    const pul=c.createGain(); pul.gain.value=.55; const lfo=c.createOscillator(); lfo.type="square"; const lg=c.createGain(); lg.gain.value=.45; F1E.lg=lg; lfo.connect(lg); lg.connect(pul.gain); lfo.start();
     const lim=c.createGain(); lim.gain.value=1; const ls=c.createBiquadFilter(); ls.type="lowshelf"; ls.frequency.value=110; ls.gain.value=9; sh.connect(lp); lp.connect(lp2); lp2.connect(ls); ls.connect(pul); pul.connect(lim); lim.connect(g); g.connect(SND.master);
     const sub=c.createOscillator(); sub.type="sine"; const sg=c.createGain(); sg.gain.value=.55; sub.connect(sg); sg.connect(pul); sub.start(); /* 묵직한 서브 저음 */
     const dl=c.createDelay(.2); dl.delayTime.value=.055; const fb=c.createGain(); fb.gain.value=.32; const wet=c.createGain(); wet.gain.value=.38; const dlp=c.createBiquadFilter(); dlp.type="lowpass"; dlp.frequency.value=900; lim.connect(dl); dl.connect(dlp); dlp.connect(fb); fb.connect(dl); dlp.connect(wet); wet.connect(g); /* 울림(웅장함) */
     Object.assign(F1E,{g,lp,a,a2,b:b2,d,s,nf,lim,lfo,sub}); }
   const top=typeof f1Top==="function"&&KART?f1Top():1, gear=S.mg||1, vmax=top*F1R[gear-1], rpm=on?clamp(.14+.86*sp/vmax,.14,1.03):0;
-  const idle=(state==="countdown"?18*Math.max(0,Math.sin(t*3.2)):0)+(on&&sp<1.5?3*Math.sin(t*2*Math.PI*5.5):0), f=27+rpm*118+idle;
+  const v8=!!KART&&KART.id==="storm"; /* 스톰윙: V8 엔진음 (낮고 굵은 음 · 불규칙 폭발의 '두둥두둥' · 감속 시 팝콘 소리) */
+  const idle=(state==="countdown"?18*Math.max(0,Math.sin(t*3.2)):0)+(on&&sp<1.5?3*Math.sin(t*2*Math.PI*(v8?4.2:5.5)):0), f=(v8?20+rpm*92:27+rpm*118)+idle;
   F1E.a.frequency.setTargetAtTime(f,t,.06); F1E.a2.frequency.setTargetAtTime(f*.994,t,.06); F1E.sub.frequency.setTargetAtTime(f*.5,t,.06); F1E.b.frequency.setTargetAtTime(f*1.498,t,.06); F1E.s.frequency.setTargetAtTime(f*.5,t,.06); F1E.d.frequency.setTargetAtTime(f*2.01,t,.06); F1E.nf.frequency.setTargetAtTime(120+f*2.2,t,.06);
-  F1E.lfo.frequency.setTargetAtTime(f*.5,t,.06);
-  F1E.lp.frequency.setTargetAtTime(200+rpm*1000+(input.accel?150:0),t,.07);
+  F1E.lfo.frequency.setTargetAtTime(f*(v8?.25:.5),t,.06); if(F1E.lg) F1E.lg.gain.setTargetAtTime(v8?.75:.45,t,.1); if(F1E.dg) F1E.dg.gain.setTargetAtTime(v8?.32:.08,t,.1);
+  F1E.lp.frequency.setTargetAtTime((v8?170+rpm*760:200+rpm*1000)+(input.accel?150:0),t,.07);
   const idleChug=on&&sp<1.5, redline=on&&rpm>.97&&input.accel&&gear<8; /* 7단 최고속도에선 끊김 없이 꽉 찬 소리 유지 */
-  F1E.lim.gain.setTargetAtTime(redline?(Math.sin(t*70)>0?1:.2):idleChug?(Math.sin(t*2*Math.PI*11)>0?1:.35):1,t,.006);
+  const pop=v8&&on&&!input.accel&&rpm>.45&&Math.random()<.18; /* V8: 가속 뗄 때 배기 팝 */
+  F1E.lim.gain.setTargetAtTime(redline?(Math.sin(t*70)>0?1:.2):idleChug?(Math.sin(t*2*Math.PI*(v8?8:11))>0?1:.35):pop?1.9:1,t,pop?.002:.006);
   F1E.g.gain.setTargetAtTime(on?(.15+rpm*.13)*(input.accel?1:.7)*((S.shiftT||0)>0?.3:1):0,t,(S.shiftT||0)>0?.015:.06); }
 function shiftSnd(up){ if(!SND.ctx||!SND.on) return; const c=SND.ctx, t=c.currentTime, o=c.createOscillator(), o2=c.createOscillator(), f=c.createBiquadFilter(), g=c.createGain();
   o.type="sawtooth"; o2.type="square"; f.type="lowpass"; f.frequency.value=900;
