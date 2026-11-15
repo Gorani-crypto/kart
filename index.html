@@ -328,7 +328,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0330</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-0340</div>
     <h1>카트 리빌드</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -877,7 +877,7 @@ function ckMirror(){ if(!FCAR()||state!=="race") return false; const fx=Math.sin
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1.05,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:.9,acc:1,turn:1.35,t:"코너링 최강(회전 1.35배) · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},storm:{top:730,gears:9,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 730km/h · 9단 기어 · 차체 약함 · 감속 큼 · V8 엔진음"}};
+const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1.05,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:625,dur:.8,dec:2,steer:.9,acc:1,turn:1.3,t:"코너링 최강(회전 1.3배) · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},storm:{top:730,gears:9,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 730km/h · 9단 기어 · 차체 약함 · 감속 큼 · V8 엔진음"}};
 function F1S(){ return F1STAT[KART&&KART.id]||F1STAT.gt; }
 function F1KMH(){ return F1S().top; } /* 서킷 전용차 최고속도 625~650km/h (차마다 다름) */
 function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?NCM():1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
