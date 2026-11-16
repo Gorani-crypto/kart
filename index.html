@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1645</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1650</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7454,7 +7454,7 @@ function roomsRender(){ const L=$m("rList"); const fb=!NETA.watchRooms; if(fb) L
   for(const r of list){ const n=Math.max(0,+r.n||0), ai=Math.max(0,+r.ai||0), full=n+ai>=8, tr=TRACKS[Math.max(0,Math.min(TRACKS.length-1,+r.tr||0))];
     const b=document.createElement("button"); b.type="button"; b.className="room"+(full?" full":""); const im=document.createElement("img"); im.alt=""; im.src=trackThumb(tr);
     const ri=document.createElement("div"); ri.className="ri"; const t=document.createElement("b"); t.textContent=(r.lk?"🔒 ":"")+(String(r.t||"").replace(/[\u0000-\u001f]/g,"").slice(0,20)||("방 "+r.code));
-    const st=document.createElement("span"); st.className="tg"+(r.st==="race"?" race":""); st.textContent=r.st==="race"?"경기 중":"대기 중"; t.appendChild(st);
+    const st=document.createElement("span"); st.className="tg"+(r.st==="race"?" race":""); st.textContent=r.st==="race"?"🏁 게임 중":"대기 중"; t.appendChild(st); if(r.st==="race") b.title="지금 게임 중이에요 · 들어가서 기다리면 다음 판부터 같이 달릴 수 있어요";
     const sm=document.createElement("small"); sm.textContent="맵: "+tr.name+(r.h?" · 방장 "+cleanName(r.h):""); ri.append(t,sm);
     const rn=document.createElement("div"); rn.className="rn"; rn.textContent=n+(ai?"+"+ai:"")+"/8"; rn.title=ai?("사람 "+n+"명 + AI "+ai+"대"):("사람 "+n+"명");
     b.append(im,ri,rn); b.onclick=()=>{ if(full){ toastNote("방이 꽉 찼어요"); return; } tryJoin(r); }; L.appendChild(b); } }
@@ -7487,7 +7487,7 @@ for(const id of ["rmName","rmPw","rmPw2"]) $m(id).addEventListener("keydown",e=>
 $m("rCodeGo").addEventListener("click",()=>{ if(!nickOK()){ toastNote("먼저 닉네임을 정해 주세요!"); return; } const c=String($m("rCode").value||"").replace(/[^0-9A-Za-z가-힣_-]/g,"").slice(0,12); if(!c) return; enterRoom(c,"방 "+c,""); });
 // 방장이 방 목록에 방 정보를 올림 (4초마다)
 setInterval(()=>{ if(!MP.joined||!NETA.announce) return; if(!mpIsHost()){ if(MP.announced){ NETA.announce(MP.code,null); MP.announced=false; } return; }
-  const L=mpList(); NETA.announce(MP.code,{t:MP.roomTitle||("방 "+MP.code),lk:MP.roomPw?1:0,pwh:MP.roomPw||"",n:L.filter(p=>!p.bot).length,ai:L.filter(p=>p.bot).length,tr:selTrack,st:MP.racing?"race":"lobby",h:MP.nick}); MP.announced=true; },4000);
+  const L=mpList(); NETA.announce(MP.code,{t:MP.roomTitle||("방 "+MP.code),lk:MP.roomPw?1:0,pwh:MP.roomPw||"",n:L.filter(p=>!p.bot).length,ai:L.filter(p=>p.bot).length,tr:selTrack,st:(MP.racing||L.some(p=>p.presence&&p.presence.st==="race"))?"race":"lobby",h:MP.nick}); MP.announced=true; },4000);
 // 소리 켜기/끄기 · 크기
 const SVOL={v:.8}; try{ const v=localStorage.getItem("kartrebuild.vol"); if(v!==null) SVOL.v=Math.max(0,Math.min(1,+v)); }catch(_){}
 const VOL3={bgm:1,sfx:.8,voice:1}; try{ const v=JSON.parse(localStorage.getItem("kartrebuild.vol3")||"null"); if(v) for(const k in VOL3) if(typeof v[k]==="number") VOL3[k]=Math.max(0,Math.min(1,v[k])); }catch(_){}
@@ -7962,6 +7962,10 @@ const css=`
 #roomScr #rCreate,#rModal #rmGo,#rModal .btn:not(.ghost){background:linear-gradient(135deg,#ff3b2f,#c4070d);color:#fff}
 #roomScr .vrow input{accent-color:#ff3b2f}
 #mpLobby .card,#menu .card{border-top:3px solid #e8231b}
+#rList .tg.race{background:#e8231b!important;color:#fff!important;font-weight:900;animation:rlBlink 1.2s ease-in-out infinite}
+@keyframes rlBlink{50%{opacity:.55}}
+#rlInGame{margin:0 0 10px;padding:11px 14px;border-radius:12px;background:linear-gradient(135deg,#e8231b,#b30d12);color:#fff;font:700 14px/1.45 system-ui,sans-serif;box-shadow:0 4px 14px rgba(232,35,27,.35)}
+#rlInGame b{color:#fff}
 #mpLobby .eyebrow,#menu .eyebrow{color:#ff6a4a}
 #titleScr .ttl.rlttl{margin:6px 0 4px;line-height:0}
 #titleScr .ttl.rlttl img{width:min(78vw,430px);height:auto;filter:drop-shadow(0 6px 18px rgba(255,30,30,.35))}
@@ -8074,6 +8078,12 @@ window.addEventListener("keydown",e=>{ if(!kWait) return; const m=document.getEl
   const arr=(KB[a]||[]).slice(); const dup=arr.indexOf(e.code); if(dup>=0) arr.splice(dup,1); arr[Math.min(i,arr.length)]=e.code; KB[a]=arr.filter(Boolean).slice(0,3); kSave(); kRender(); },true);
 window.addEventListener("keyup",e=>{ const m=document.getElementById("rlSet"); if(m&&!m.hidden) e.stopImmediatePropagation(); },true);
 { const rb=document.getElementById("rBack"); if(rb&&!document.getElementById("rSettings")){ const b=document.createElement("button"); b.className="btn ghost"; b.id="rSettings"; b.type="button"; b.textContent="⚙️ 설정 (키 설정)"; b.addEventListener("click",setPanel); rb.parentNode.insertBefore(b,rb); } }
+
+/* ---------- 대기방: 다른 사람들이 게임 중이면 안내 ---------- */
+setInterval(()=>{ try{ const box=document.getElementById("mpRoomBox"); if(!box) return; let el=document.getElementById("rlInGame");
+  const racing=MP.joined&&!MP.racing&&state==="menu"&&mpList().some(p=>p.peer!==MP.myPeer&&p.presence&&p.presence.st==="race");
+  if(racing){ if(!el){ el=document.createElement("div"); el.id="rlInGame"; box.insertBefore(el,box.firstChild); } const n=mpList().filter(p=>p.presence&&p.presence.st==="race").length; el.innerHTML=`🏁 <b>지금 게임 중이에요</b> (${n}명 주행 중) · 이번 판이 끝나면 같이 달릴 수 있어요. 여기서 기다려 주세요!`; el.hidden=false; }
+  else if(el) el.hidden=true; }catch(_){} },700);
 /* ---------- BGM: 메뉴곡(인트로·로그인·메인·방 목록) / 대기방곡(방 안·싱글 준비) ---------- */
 const mk=u=>{ const a=new Audio(); a.loop=true; a.preload="none"; a.volume=0; a.dataset.src=u; return a; };
 const TR2=[{a:mk(BGM_URL),v:0},{a:mk(BGM2_URL),v:0},{a:mk(BGM3_URL),v:0},{a:mk(BGM4_URL),v:0},{a:mk(BGM5_URL),v:0},{a:mk(BGM6_URL),v:0},{a:mk(BGM7_URL),v:0},{a:mk(BGM8_URL),v:0},{a:mk(BGM9_URL),v:0},{a:mk(BGM10_URL),v:0},{a:mk(BGM11_URL),v:0},{a:mk(BGM12_URL),v:0},{a:mk(BGM13_URL),v:0}];
