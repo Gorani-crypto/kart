@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1410</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1415</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7965,6 +7965,25 @@ const css=`
 const st=document.createElement("style"); st.textContent=css; document.head.appendChild(st);
 
 { const ts=document.getElementById("titleScr"); if(ts&&!ts.querySelector(".rlfx")){ const fx=document.createElement("div"); fx.className="rlfx"; let h=""; for(let i=0;i<8;i++) h+=`<i style="top:${6+i*12+Math.random()*6}%;animation-duration:${1.8+Math.random()*2.6}s;animation-delay:${-Math.random()*3}s"></i>`; fx.innerHTML=h; ts.insertBefore(fx,ts.firstChild); } }
+
+/* ---------- 대기방: 음성 테스트 버튼 → 소리 설정(배경음악·효과음·캐릭터 음성) ---------- */
+function volPanel(){ let m=document.getElementById("rlVol"); if(!m){ m=document.createElement("div"); m.id="rlVol";
+    m.style.cssText="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center";
+    const row=(k,ic,n)=>`<label style="display:flex;align-items:center;gap:10px;margin:12px 0;font:700 15px system-ui,sans-serif"><span style="width:112px;white-space:nowrap">${ic} ${n}</span><input type="range" min="0" max="100" data-k="${k}" style="flex:1;accent-color:#ff3b2f"><b data-t="${k}" style="width:34px;text-align:right">0</b></label>`;
+    m.innerHTML=`<div style="width:min(92vw,380px);background:#141824;color:#fff;border:1px solid rgba(255,255,255,.14);border-top:3px solid #e8231b;border-radius:18px;padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+      <div style="font:900 18px system-ui,sans-serif;margin-bottom:4px">🎚️ 소리 설정</div>
+      ${row("bgm","🎵","배경음악")}${row("sfx","💥","효과음")}${row("voice","🗣️","캐릭터 음성")}
+      <div style="display:flex;gap:8px;margin-top:8px"><button type="button" data-a="test" style="flex:1;padding:11px;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:transparent;color:#fff;font:800 14px system-ui,sans-serif;cursor:pointer">🔊 음성 들어보기</button><button type="button" data-a="close" style="flex:1;padding:11px;border:0;border-radius:12px;background:linear-gradient(135deg,#ff3b2f,#c4070d);color:#fff;font:900 14px system-ui,sans-serif;cursor:pointer">닫기</button></div></div>`;
+    document.body.appendChild(m);
+    m.addEventListener("click",e=>{ if(e.target===m) m.hidden=true; });
+    m.querySelector('[data-a="close"]').onclick=()=>{ m.hidden=true; };
+    m.querySelector('[data-a="test"]').onclick=()=>{ try{ initAudio(); voiceTest(); }catch(_){} };
+    m.querySelectorAll("input[data-k]").forEach(inp=>{ const k=inp.dataset.k;
+      inp.addEventListener("input",()=>{ try{ VOL3[k]=(+inp.value)/100; localStorage.setItem("kartrebuild.vol3",JSON.stringify(VOL3)); }catch(_){} m.querySelector(`[data-t="${k}"]`).textContent=inp.value; try{ initAudio(); applyVol(); if(k==="sfx") beep(880,.08,.2); }catch(_){} });
+      inp.addEventListener("change",()=>{ if(k==="voice"){ try{ initAudio(); voiceTest(); }catch(_){} } }); }); }
+  m.querySelectorAll("input[data-k]").forEach(inp=>{ const k=inp.dataset.k; let v=100; try{ v=Math.round(VOL3[k]*100); }catch(_){} inp.value=v; m.querySelector(`[data-t="${k}"]`).textContent=v; });
+  m.hidden=false; }
+for(const id of ["voiceBtn","mpVoice"]){ const b=document.getElementById(id); if(!b) continue; const nb=b.cloneNode(false); nb.textContent="🎚️ 소리 설정"; nb.addEventListener("click",volPanel); b.replaceWith(nb); }
 /* ---------- BGM: 메뉴곡(인트로·로그인·메인·방 목록) / 대기방곡(방 안·싱글 준비) ---------- */
 const mk=u=>{ const a=new Audio(u); a.loop=true; a.preload="auto"; a.volume=0; return a; };
 const TR2=[{a:mk(BGM_URL),v:0},{a:mk(BGM2_URL),v:0},{a:mk(BGM3_URL),v:0},{a:mk(BGM4_URL),v:0},{a:mk(BGM5_URL),v:0},{a:mk(BGM6_URL),v:0}];
