@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1310</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1330</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7876,6 +7876,9 @@ const BGM_URL="bgm.mp3", BGM2_URL="bgm2.mp3";
 const css=`
 #rlIntro,#rlLogin{position:fixed;inset:0;z-index:5000;background:#000;color:#fff;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;overflow:hidden;user-select:none}
 #rlIntro canvas.rl3{position:absolute;inset:0;width:100%;height:100%;filter:contrast(1.12) saturate(1.15);transition:filter .5s}
+#rlIntro.slow canvas.rl3{filter:contrast(1.25) saturate(.75) brightness(.95)}
+#rlIntro.slow .vig{background:radial-gradient(ellipse at center,rgba(0,0,0,0) 35%,rgba(0,0,0,.9) 100%)}
+#rlIntro .vig{transition:background .3s}
 #rlIntro.logo canvas.rl3{filter:contrast(1.1) brightness(.32) blur(7px) saturate(1.3)}
 #rlIntro .grain{position:absolute;inset:-2%;width:104%;height:104%;opacity:.09;mix-blend-mode:overlay;pointer-events:none}
 #rlIntro .vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(0,0,0,.78) 100%);pointer-events:none}
@@ -7936,21 +7939,42 @@ const css=`
 #rlLogin .note{margin-top:12px;font:600 11.5px/1.5 system-ui,sans-serif;color:#9aa1b3;text-align:center}
 #rlLogin .me{text-align:center;font:700 16px system-ui,sans-serif;margin:4px 0 14px}
 #rlLogin .me b{color:#ff4a3a}
+
+/* ===== 메뉴 화면 테마: 메인(진하게) → 방 목록·방 만들기(중간) → 대기방·싱글 준비(살짝) ===== */
+#titleScr.overlay{background:radial-gradient(ellipse 70% 55% at 80% 110%,rgba(225,20,20,.5),transparent 70%),radial-gradient(ellipse 50% 40% at 0% -10%,rgba(255,60,40,.22),transparent 70%),repeating-linear-gradient(-12deg,rgba(255,255,255,.035) 0 2px,transparent 2px 46px),rgba(7,8,12,.985);overflow:hidden}
+#titleScr .rlfx{position:absolute;inset:0;pointer-events:none;z-index:0}
+#titleScr .rlfx i{position:absolute;height:2px;left:-40%;width:40%;background:linear-gradient(90deg,transparent,#ff2a2a,#fff);opacity:.6;animation:rlStreak linear infinite;transform:rotate(-12deg)}
+#titleScr .tcard{position:relative;z-index:1;background:rgba(14,16,24,.8);border:1px solid rgba(255,255,255,.12);border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(10px)}
+#titleScr .eyebrow{color:#ff4a3a;letter-spacing:.3em}
+#titleScr .tsub{color:#9aa1b3;letter-spacing:.06em}
+#titleScr .tbig{background:linear-gradient(135deg,#ff3b2f,#c4070d);color:#fff;border-radius:14px;box-shadow:0 8px 22px rgba(230,20,20,.35);transition:transform .1s,box-shadow .2s}
+#titleScr .tbig.alt{background:#fff;color:#111;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+#titleScr .tbig:hover{transform:translateY(-2px)}
+#titleScr .tsnd .btn.ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);color:#e8ebf2}
+#titleScr .tsnd input[type=range]{accent-color:#ff3b2f}
+#roomScr.overlay,#rModal.overlay{background:radial-gradient(ellipse 60% 50% at 85% 110%,rgba(225,20,20,.32),transparent 70%),repeating-linear-gradient(-12deg,rgba(255,255,255,.025) 0 2px,transparent 2px 60px),rgba(9,11,20,.78)}
+#roomScr .card,#rModal .card{background:linear-gradient(180deg,#151824,#11152a);border:1px solid rgba(255,255,255,.12);border-top:3px solid #e8231b;border-radius:18px}
+#roomScr .eyebrow,#rModal .eyebrow{color:#ff4a3a;letter-spacing:.24em}
+#roomScr #rCreate,#rModal #rmGo,#rModal .btn:not(.ghost){background:linear-gradient(135deg,#ff3b2f,#c4070d);color:#fff}
+#roomScr .vrow input{accent-color:#ff3b2f}
+#mpLobby .card,#menu .card{border-top:3px solid #e8231b}
+#mpLobby .eyebrow,#menu .eyebrow{color:#ff6a4a}
 #titleScr .ttl.rlttl{margin:6px 0 4px;line-height:0}
 #titleScr .ttl.rlttl img{width:min(78vw,430px);height:auto;filter:drop-shadow(0 6px 18px rgba(255,30,30,.35))}
 `;
 const st=document.createElement("style"); st.textContent=css; document.head.appendChild(st);
 
+{ const ts=document.getElementById("titleScr"); if(ts&&!ts.querySelector(".rlfx")){ const fx=document.createElement("div"); fx.className="rlfx"; let h=""; for(let i=0;i<8;i++) h+=`<i style="top:${6+i*12+Math.random()*6}%;animation-duration:${1.8+Math.random()*2.6}s;animation-delay:${-Math.random()*3}s"></i>`; fx.innerHTML=h; ts.insertBefore(fx,ts.firstChild); } }
 /* ---------- BGM: 메뉴곡(인트로·로그인·메인·방 목록) / 대기방곡(방 안·싱글 준비) ---------- */
 const mk=u=>{ const a=new Audio(u); a.loop=true; a.preload="auto"; a.volume=0; return a; };
 const TR2=[{a:mk(BGM_URL),v:0},{a:mk(BGM2_URL),v:0}];
 const RL={unlocked:false, introOn:false};
 window.RLBGM=RL;
-const vis=id=>{ const e=document.getElementById(id); return !!(e&&!e.hidden&&e.offsetParent!==null); };
+const vis=id=>{ const e=document.getElementById(id); return !!(e&&!e.hidden&&getComputedStyle(e).display!=="none"); };
 function bgmLevel(){ let on=true, v=.8, m=1; try{ on=SND.on; v=SVOL.v; m=VOL3.bgm; }catch(_){} return on?.7*v*m:0; }
 function which(){ const menu=RL.introOn||document.getElementById("rlLogin")||(typeof state==="undefined"||state==="menu"); if(!menu) return -1;
   if(!RL.introOn&&!document.getElementById("rlLogin")&&(vis("mpLobby")||vis("menu"))) return 1; return 0; }
-window.RL_BGM_ACTIVE=()=>RL.unlocked&&which()>=0&&bgmLevel()>0;
+window.RL_WHICH=which; window.RL_BGM_ACTIVE=()=>RL.unlocked&&which()>=0&&bgmLevel()>0;
 function play(tr){ if(!tr.a.paused) return; const p=tr.a.play(); if(p&&p.then) p.then(()=>{ RL.unlocked=true; const h=document.querySelector("#rlIntro .snd"); if(h) h.remove(); }).catch(()=>{}); else RL.unlocked=true; }
 function tryPlay(){ const w=which(); play(TR2[w<0?0:w]); }
 setInterval(()=>{ const w=which(), L=bgmLevel();
@@ -7971,7 +7995,7 @@ function introStart(){
   root.innerHTML=`<canvas class="rl3"></canvas><canvas class="grain" width="360" height="200"></canvas><div class="vig"></div>
    <div class="bar t"></div><div class="bar b"></div>
    <div class="hudt tl"><b>●</b> REC &nbsp;RL-01 PROTOTYPE<br>V12 · 0–100 2.4s · 7,800 RPM</div>
-   <div class="hudt br"><span class="tc">00:00:00:00</span><br>REDLINE · CAM A</div>
+   <div class="hudt br"><span class="slw" style="color:#ff3b2f"></span><br><span class="tc">00:00:00:00</span><br>REDLINE · CAM A</div>
    <div class="slash"></div><div class="flash"></div>
    <div class="lg"><img class="main" src="${LOGO}" alt="REDLINE"><img class="r" src="${LOGO}" alt=""><img class="c" src="${LOGO}" alt=""></div>
    <div class="uline"></div><div class="tag">PUSH PAST THE LIMIT</div>
@@ -7990,11 +8014,12 @@ function introStart(){
   const grain=()=>{ const d=gimg.data; for(let i=0;i<d.length;i+=4){ const v=Math.random()*255|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } gx.putImageData(gimg,0,0); };
 
   let sc=null; try{ sc=buildScene(root.querySelector("canvas.rl3")); R=sc.renderer; }catch(err){ console.warn("intro 3D 실패",err); }
-  const tc=root.querySelector(".tc"); const t0=performance.now(); let logoOn=false, last=t0;
-  const LOGO_T=3.35, END_T=5.3;
-  const loop=now=>{ raf=requestAnimationFrame(loop); const t=window.__rlFreeze!=null?window.__rlFreeze:(now-t0)/1000, dt=Math.min(.05,(now-last)/1000); last=now;
+  const tc=root.querySelector(".tc"), sl=root.querySelector(".slw"); const t0=performance.now(); let logoOn=false, last=t0;
+  const LOGO_T=6.45, END_T=8.1;
+  const loop=now=>{ raf=requestAnimationFrame(loop); let t=(now-t0)/1000, dt=Math.min(.05,(now-last)/1000); last=now; if(window.__rlVT!=null){ t=window.__rlVT; window.__rlVT+=1/30; dt=1/30; } if(window.__rlFreeze!=null) t=window.__rlFreeze;
     if(sc) sc.update(t,dt); grain();
     const f=Math.floor(t*24); tc.textContent="00:00:"+String(Math.floor(t)).padStart(2,"0")+":"+String(f%24).padStart(2,"0");
+    root.classList.toggle("slow",!!window.__rlSlow&&!logoOn); sl.textContent=window.__rlSlow?"◀◀ SLOW 0.14x":"";
     if(!logoOn&&t>=LOGO_T-.28){ root.querySelector(".slash").classList.add("go"); }
     if(!logoOn&&t>=LOGO_T){ logoOn=true; root.classList.add("logo"); root.querySelector(".flash").classList.add("go"); }
     if(t>=END_T) finish(); };
@@ -8043,7 +8068,7 @@ function buildScene(cv){
   const cabin=loft(50,40,t=>{ const yt=ci(CT,t); return {w:ci(CW,t),yt,yb:Math.min(yt-.03,ci(YT,t)-.06),n:3.2}; },.29,.69,glass); car.add(cabin);
   /* 사이드 흡기구 · 디퓨저 · 스포일러 · 사이드 스커트 */
   for(const sx of [-1,1]){ const sk=new THREE.Mesh(new THREE.BoxGeometry(.05,.07,1.9),carbon); sk.position.set(sx*.84,.22,.03); car.add(sk); }
-  const dif=new THREE.Mesh(new THREE.BoxGeometry(1.4,.1,.3),carbon); dif.position.set(0,.26,-2.05); dif.rotation.x=-.2; car.add(dif);
+  
   const wing=new THREE.Mesh(new THREE.BoxGeometry(1.82,.035,.3),carbon); wing.position.set(0,1.12,-1.98); wing.rotation.x=.12; car.add(wing);
   for(const sx of [-1,1]){ const p=new THREE.Mesh(new THREE.BoxGeometry(.03,.22,.12),carbon); p.position.set(sx*.5,1.0,-1.95); car.add(p); const ep=new THREE.Mesh(new THREE.BoxGeometry(.02,.16,.34),carbon); ep.position.set(sx*.92,1.12,-1.98); car.add(ep); }
   const spl=new THREE.Mesh(new THREE.BoxGeometry(1.25,.025,.18),carbon); spl.position.set(0,.2,2.02); car.add(spl);
@@ -8087,20 +8112,26 @@ function buildScene(cv){
   const tailL=new THREE.PointLight(0xff1010,0,6,2); tailL.position.set(0,.8,-2.6); car.add(tailL);
 
   const lerp=(a,b,u)=>a+(b-a)*u, ease=u=>u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2, cl=(u)=>Math.max(0,Math.min(1,u));
-  let carZ=0, carV=0;
+  /* 8초 타임라인: A 정면 3/4(0~2.2) · B 측면 트래킹(2.2~3.6) · C 휠 클로즈업(3.6~4.5) · D 슬로모션 패스바이(4.5~6.5) · 로고 */
+  const SLOW0=5.05, SLOW1=5.95;
+  const fac=t=>t<SLOW0-.15?1:t<SLOW0?lerp(1,.14,(t-(SLOW0-.15))/.15):t<SLOW1?.14:t<SLOW1+.2?lerp(.14,1.6,(t-SLOW1)/.2):1.6;
+  let carZ=0, dZ=0, dV=0, lastCut="";
   function update(t,dt){
-    /* 0.0~0.35 암전 → 헤드램프 점등(깜빡) */
-    const on=t<.35?0:t<.42?1:t<.5?.15:t<.58?1:1;
+    const f=fac(t), sdt=dt*f; window.__rlSlow=f<.5;
+    const on=t<.35?0:t<.42?1:t<.5?.15:1;
     ledW.color.setRGB(3.2*on,3.4*on,3.8*on); headL.intensity=3*on;
-    const tOn=t>1.45?1:0; ledR.color.setRGB(2.6*tOn,.04*tOn,.03*tOn); tailL.intensity=2.5*tOn;
-    const spd=t<.5?0:Math.min(40,(t-.5)*28);
-    for(const w of wheels) w.rotation.x+=spd*dt/.36;
-    for(const d of dashes){ d.position.z-=spd*dt; if(d.position.z<-60) d.position.z+=120; }
-    for(const s of streaks){ s.position.z-=spd*dt*2.2; if(s.position.z<-60) s.position.z+=120; s.visible=spd>4; }
-    /* 카메라 컷 */
-    if(t<1.5){ const u=ease(cl(t/1.5)); cam.fov=30; cam.position.set(lerp(4.4,3.3,u),lerp(.55,.75,u),lerp(6.2,5.4,u)); cam.lookAt(lerp(.3,0,u),.5,lerp(.9,.3,u)); }
-    else if(t<2.55){ const u=ease(cl((t-1.5)/1.05)); cam.fov=30; cam.position.set(lerp(6.2,5.8,u),lerp(.7,.55,u),lerp(1.6,-1.2,u)); cam.lookAt(0,.55,lerp(.5,-.3,u)); }
-    else { const u=cl((t-2.55)/.8); carV+=dt*(8+u*40); carZ+=carV*dt; cam.fov=36; cam.position.set(lerp(-1.2,-.6,u),lerp(.5,.75,u),-6.4); cam.lookAt(0,.7,carZ+2); }
+    const tOn=t>2.6?1:0; ledR.color.setRGB(2.6*tOn,.04*tOn,.03*tOn); tailL.intensity=2.5*tOn;
+    const spd=t<.5?0:Math.min(42,(t-.5)*26);
+    for(const w of wheels) w.rotation.x+=spd*sdt/.36;
+    for(const d of dashes){ d.position.z-=spd*sdt; if(d.position.z<-60) d.position.z+=120; }
+    for(const s of streaks){ s.position.z-=spd*sdt*2.2; if(s.position.z<-60) s.position.z+=120; s.visible=spd>4; }
+    let roll=0;
+    if(t<2.2){ const u=ease(cl(t/2.2)); cam.fov=30; cam.position.set(lerp(4.6,3.2,u),lerp(.5,.78,u),lerp(6.4,5.2,u)); cam.lookAt(lerp(.3,0,u),.5,lerp(.9,.3,u)); carZ=0; }
+    else if(t<3.6){ const u=ease(cl((t-2.2)/1.4)); cam.fov=30; cam.position.set(lerp(6.2,5.8,u),lerp(.7,.55,u),lerp(1.8,-1.4,u)); cam.lookAt(0,.55,lerp(.5,-.3,u)); carZ=0; }
+    else if(t<4.5){ const u=ease(cl((t-3.6)/.9)); cam.fov=38; cam.position.set(lerp(2.6,2.3,u),lerp(.36,.5,u),lerp(.1,-2.7,u)); cam.lookAt(.8,.42,lerp(-.9,-1.5,u)); carZ=0; roll=lerp(.06,-.04,u); }
+    else { if(dZ===0){ dZ=-8; dV=17; } dV+=sdt*(t>SLOW1?55:0); dZ+=dV*sdt; carZ=dZ;
+      cam.fov=lerp(34,28,cl((t-4.5)/1.5)); cam.position.set(2.5,.36,3.2); cam.lookAt(0,.55,Math.min(carZ+1.2,40)); roll=-.05; }
+    cam.rotateZ(roll);
     car.position.z=carZ; refl.position.z=carZ; car.position.y=Math.sin(t*38)*.003*(spd>0?1:0); refl.position.y=-car.position.y;
     refl.children.forEach((c,i)=>{ const src=car.children[i]; if(src&&src.children&&src.children[0]&&wheels.includes(src.children[0])) c.children[0].rotation.x=src.children[0].rotation.x; });
     cam.updateProjectionMatrix(); renderer.render(scene,cam); }
