@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-2020</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-2050</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5895,8 +5895,8 @@ function physics0(dt, controls){
   if(onB&&score<-1&&onBj>onB.M*.75) S.idx=onB.b; // 지름길 끝: 본선 위치를 합류 지점으로 넘김
   let margin=TR.margin;
   /* 가드레일: 지름길 입구(벽 틈)에서만 지나갈 수 있음 */
-  let hwMain=TR.HW*(TR.WS?TR.WS[S.idx]:1); let inGap=false; for(const gp of TR.gapPts||[]){ if(Math.hypot(S.x-gp[0],S.z-gp[1])<gp[2]){ inGap=true; break; } }
-  let mainTrue=mainAbs; if(onB||inGap){ let bd=1e9, bi=S.idx; for(let i=0;i<N;i+=2){ const q=P[i], dd=(q.x-S.x)**2+(q.z-S.z)**2; if(dd<bd){bd=dd;bi=i;} } const q=P[bi], nn=NR[bi]; mainTrue=Math.abs((S.x-q.x)*nn.x+(S.z-q.z)*nn.z); hwMain=TR.HW*(TR.WS?TR.WS[bi]:1); if(Math.sqrt(bd)>mainTrue+6) mainTrue=Math.sqrt(bd); } /* 진짜 가장 가까운 본선 기준 */
+  let hwMain=TR.HW*(TR.WS&&!TR.def.grass?TR.WS[S.idx]:1); let inGap=false; for(const gp of TR.gapPts||[]){ if(Math.hypot(S.x-gp[0],S.z-gp[1])<gp[2]){ inGap=true; break; } }
+  let mainTrue=mainAbs; if(onB||inGap){ let bd=1e9, bi=S.idx; for(let i=0;i<N;i+=2){ const q=P[i], dd=(q.x-S.x)**2+(q.z-S.z)**2; if(dd<bd){bd=dd;bi=i;} } const q=P[bi], nn=NR[bi]; mainTrue=Math.abs((S.x-q.x)*nn.x+(S.z-q.z)*nn.z); hwMain=TR.HW*(TR.WS&&!TR.def.grass?TR.WS[bi]:1); if(Math.sqrt(bd)>mainTrue+6) mainTrue=Math.sqrt(bd); } /* 진짜 가장 가까운 본선 기준 */
   let freeWall=false; if(onB){ if(mainTrue<=hwMain+.6||(inGap&&Math.abs(d)<=hw+.6)) freeWall=true; margin=.5; } else if(inGap&&onB===null&&false) freeWall=true;
   if(onB&&onB!==S.onBranch&&score<-1&&(!onB.same||onBj>8)) toast(onB.name+"!","#ffcf2e");
   S.onBranch=(score<-1&&(!onB||!onB.same||onBj>8||S.onBranch===onB))?onB:(onB?S.onBranch:null);
