@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1600</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1620</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6024,7 +6024,11 @@ function trackThumb(t){
   x.fillStyle="#ffcf2e"; x.beginPath(); x.arc(X(pts[0]),Z(pts[0]),6,0,Math.PI*2); x.fill();
   return thumbCache[key]=c.toDataURL("image/png");
 }
-const safeThumb=f=>{ try{ return f(); }catch(_){ return ""; } };
+const TQ={q:[],n:0,busy:false,used:0,armed:false,PH:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="150"><rect width="240" height="150" rx="12" fill="#1a2238"/></svg>')};
+function tqPump(){ if(TQ.busy||!TQ.q.length) return; TQ.busy=true; const step=()=>{ const it=TQ.q.shift(); if(it){ let url=""; try{ url=it[1](); }catch(_){} document.querySelectorAll('img[src$="#'+it[0]+'"]').forEach(im=>{ im.src=url; }); } if(TQ.q.length) setTimeout(step,20); else TQ.busy=false; }; setTimeout(step,40); }
+const safeThumb=f=>{ if(!TQ.armed){ TQ.armed=true; TQ.used=0; Promise.resolve().then(()=>{ TQ.armed=false; }); }
+  if(TQ.used<20){ const t=performance.now(); let r=""; try{ r=f(); }catch(_){ r=""; } TQ.used+=performance.now()-t; return r; }
+  const id="tq"+(++TQ.n); TQ.q.push([id,f]); tqPump(); return TQ.PH+"#"+id; };
 
 /* ===== 메뉴: 트랙·카트 선택 ===== */
 const $=id=>document.getElementById(id);
@@ -8025,6 +8029,7 @@ const mk=u=>{ const a=new Audio(); a.loop=true; a.preload="none"; a.volume=0; a.
 const TR2=[{a:mk(BGM_URL),v:0},{a:mk(BGM2_URL),v:0},{a:mk(BGM3_URL),v:0},{a:mk(BGM4_URL),v:0},{a:mk(BGM5_URL),v:0},{a:mk(BGM6_URL),v:0},{a:mk(BGM7_URL),v:0},{a:mk(BGM8_URL),v:0},{a:mk(BGM9_URL),v:0},{a:mk(BGM10_URL),v:0},{a:mk(BGM11_URL),v:0},{a:mk(BGM12_URL),v:0},{a:mk(BGM13_URL),v:0}];
 const RL={unlocked:false, introOn:false};
 window.RLBGM=RL;
+try{ const _mr=renderer.render.bind(renderer); renderer.render=function(sc,cm){ if(RL.introOn||RL.loginOn) return; return _mr(sc,cm); }; }catch(_){}
 const vis=id=>{ const e=document.getElementById(id); return !!(e&&!e.hidden&&getComputedStyle(e).display!=="none"); };
 function bgmLevel(){ let on=true, v=.8, m=1; try{ on=SND.on; v=SVOL.v; m=VOL3.bgm; }catch(_){} return on?(which()>=2?.5:.7)*v*m:0; }
 function which(){ const menu=RL.introOn||document.getElementById("rlLogin")||(typeof state==="undefined"||state==="menu"); if(!menu){ let id="", c=false; try{ id=TR.def.id; c=CIRC(); }catch(_){} if(["harbor","hill","village","sky","boom"].includes(id)) return 2; if(["autobahn","austria","korea","bok"].includes(id)) return 3; if(["street","terra"].includes(id)) return 5; let df=9; try{ df=TR.def.diff; }catch(_){} if(["ice","heli"].includes(id)) return df<=3?6:7; if(["neon2","city","temple"].includes(id)) return 8; if(["arena","desert"].includes(id)) return 9; if(["sakura","osaka"].includes(id)) return df<=3?11:10; if(id==="suzuka") return 10; if(["summit","peak"].includes(id)) return 12; return c?4:-1; }
@@ -8068,8 +8073,8 @@ function introStart(){
   const gc=root.querySelector(".grain"), gx=gc.getContext("2d"), gimg=gx.createImageData(360,200);
   const grain=()=>{ const d=gimg.data; for(let i=0;i<d.length;i+=4){ const v=Math.random()*255|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } gx.putImageData(gimg,0,0); };
 
-  let sc=null; try{ sc=buildScene(root.querySelector("canvas.rl3")); R=sc.renderer; }catch(err){ console.warn("intro 3D 실패",err); }
-  const tc=root.querySelector(".tc"), sl=root.querySelector(".slw"); const t0=performance.now(); let logoOn=false, last=t0;
+  let sc=null; const tc=root.querySelector(".tc"), sl=root.querySelector(".slw"); let t0=performance.now(), logoOn=false, last=t0;
+  setTimeout(()=>{ if(done) return; try{ sc=buildScene(root.querySelector("canvas.rl3")); R=sc.renderer; }catch(err){ console.warn("intro 3D 실패",err); } t0=last=performance.now(); },30);
   const LOGO_T=6.45, END_T=8.1;
   const loop=now=>{ raf=requestAnimationFrame(loop); let t=(now-t0)/1000, dt=Math.min(.05,(now-last)/1000); last=now; if(window.__rlVT!=null){ t=window.__rlVT; window.__rlVT+=1/30; dt=1/30; } if(window.__rlFreeze!=null) t=window.__rlFreeze;
     if(sc) sc.update(t,dt); grain();
@@ -8114,8 +8119,8 @@ function buildScene(cv){
     const cap=(i,flip)=>{ const ctr=pos.length/3; let cx=0,cy=0,cz=0; for(let j=0;j<nR;j++){ cx+=pos[(i*nR+j)*3]; cy+=pos[(i*nR+j)*3+1]; cz+=pos[(i*nR+j)*3+2]; } pos.push(cx/nR,cy/nR,cz/nR); for(let j=0;j<nR;j++){ const a=i*nR+j, b=i*nR+(j+1)%nR; flip?idx.push(ctr,b,a):idx.push(ctr,a,b); } };
     cap(0,false); cap(nS,true);
     const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx); g.computeVertexNormals(); return new THREE.Mesh(g,mat); }
-  const paint=new THREE.MeshPhysicalMaterial({color:0x780309,metalness:.6,roughness:.24,clearcoat:1,clearcoatRoughness:.04,envMapIntensity:1.5});
-  const glass=new THREE.MeshPhysicalMaterial({color:0x050608,metalness:.9,roughness:.04,clearcoat:1,envMapIntensity:1.8});
+  const paint=new THREE.MeshStandardMaterial({color:0x780309,metalness:.6,roughness:.24,envMapIntensity:1.5});
+  const glass=new THREE.MeshStandardMaterial({color:0x050608,metalness:.9,roughness:.04,envMapIntensity:1.8});
   const carbon=new THREE.MeshStandardMaterial({color:0x0b0b0d,metalness:.4,roughness:.45,envMapIntensity:1});
   const car=new THREE.Group();
   const body=loft(90,48,t=>({w:ci(WD,t),yt:ci(YT,t),yb:Math.min(YB(t),ci(YT,t)-.12),n:5.2}),0,1,paint); car.add(body);
@@ -8135,7 +8140,7 @@ function buildScene(cv){
   for(const sx of [-1,1]){ const t2=new THREE.Mesh(new THREE.BoxGeometry(.045,.16,.06),ledR); t2.position.set(sx*.82,.74,-2.22); car.add(t2); }
   /* 휠: 타이어 + 메탈 5스포크 + 브레이크 디스크 */
   const tireM=new THREE.MeshStandardMaterial({color:0x0c0c0c,roughness:.85,metalness:.05});
-  const rimM=new THREE.MeshPhysicalMaterial({color:0x8d939c,metalness:1,roughness:.18,clearcoat:.6,envMapIntensity:1.6});
+  const rimM=new THREE.MeshStandardMaterial({color:0x8d939c,metalness:1,roughness:.18,envMapIntensity:1.6});
   const diskM=new THREE.MeshStandardMaterial({color:0x44464a,metalness:.9,roughness:.35});
   const calM=new THREE.MeshStandardMaterial({color:0xd8141a,metalness:.3,roughness:.35});
   const wheels=[];
@@ -8195,12 +8200,12 @@ function buildScene(cv){
 
 /* ---------- 로그인 화면 ---------- */
 function loginOpen(){
-  const el=document.createElement("div"); el.id="rlLogin";
+  RL.loginOn=true; const el=document.createElement("div"); el.id="rlLogin";
   let streaks=""; for(let i=0;i<9;i++) streaks+=`<i class="streak" style="top:${8+i*10+Math.random()*6}%;animation-duration:${1.6+Math.random()*2.4}s;animation-delay:${-Math.random()*3}s"></i>`;
   el.innerHTML=`<div class="bg"></div>${streaks}<div class="box"><img src="${LOGO}" alt="REDLINE"><div class="body"></div></div>`;
   document.body.appendChild(el);
   const body=el.querySelector(".body");
-  const close=()=>{ el.classList.add("out"); setTimeout(()=>{ el.remove(); try{ if(typeof openTitle==="function") openTitle(); }catch(_){} },550); };
+  const close=()=>{ RL.loginOn=false; el.classList.add("out"); setTimeout(()=>{ el.remove(); try{ if(typeof openTitle==="function") openTitle(); }catch(_){} },550); };
   const esc=s=>String(s||"").replace(/[<>&"]/g,"");
   let mode=null;
   const render=()=>{ const u=(typeof ACCT!=="undefined"&&ACCT&&ACCT.user)||null;
