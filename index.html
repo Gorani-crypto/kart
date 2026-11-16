@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1700</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-2020</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6121,7 +6121,7 @@ function skinTex(id){ if(SKIN_TEX[id]) return SKIN_TEX[id]; const R=(a,b)=>a+Mat
       for(const [cx,cy] of [[103,128],[128,82],[153,128]]){ x.fillStyle="#ff3a5a"; x.beginPath(); x.arc(cx,cy,6,0,7); x.fill(); }
       x.fillStyle="#ffd24a"; for(const [cx,cy] of [[40,40],[216,40],[40,216],[216,216]]){ x.beginPath(); for(let q=0;q<8;q++){ const a=q*Math.PI/4, r=q%2?5:12; x.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r); } x.fill(); } }
   }[id]; if(!draw) return null; const t=canvasTex(256,256,draw,1,1); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1.5,1.5); return SKIN_TEX[id]=t; }
-function skinApply(mats,sk){ (mats||[]).forEach((m,i)=>{ if(!m) return; const want=sk&&i===0?skinTex(sk):null; if(want){ m.map=want; m.color.setHex(0xffffff); m.needsUpdate=true; } else if(m.map&&m.userData.skinned!==false&&SKIN_TEX_VAL(m.map)){ m.map=null; m.needsUpdate=true; } }); }
+function skinApply(mats,sk){ (mats||[]).forEach((m,i)=>{ if(!m) return; const want=sk?skinTex(sk):null; if(want){ m.map=want; m.color.setHex(0xffffff); m.needsUpdate=true; } else if(m.map&&m.userData.skinned!==false&&SKIN_TEX_VAL(m.map)){ m.map=null; m.needsUpdate=true; } }); }
 function SKIN_TEX_VAL(t){ for(const k in SKIN_TEX) if(SKIN_TEX[k]===t) return true; return false; }
 /* ---------- 모자 · 액세서리 ---------- */
 var HAT_TEX={};
