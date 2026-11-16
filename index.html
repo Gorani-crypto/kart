@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1540</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1600</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2257,8 +2257,8 @@ function decorateAutobahn(tr){ seed=7301; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=
   { const dist=(i)=>{ let d=0; for(let k=h0;k<i;k++) d+=Math.hypot(P[k+1].x-P[k].x,P[k+1].z-P[k].z); return d; }; let acc=0, next=1000;
     for(let i=h0;i<h1;i++){ acc+=Math.hypot(P[i+1].x-P[i].x,P[i+1].z-P[i].z); if(acc>=next){ sign(i,-1,2.2,1.2,txt(String(next/1000)+" km","#f4f4f4","#1a1a1a"),1.6); next+=1000; } }
     let back=0; for(let i=h1;i>h0;i--){ back+=Math.hypot(P[i].x-P[i-1].x,P[i].z-P[i-1].z); if(Math.abs(back-1000)<5) sign(i,1,9,3.6,txt("출구 1000m · AUSFAHRT","#1a4aa8","#fff"),4); if(Math.abs(back-400)<5) sign(i,1,9,3.6,txt("출구 400m →","#1a4aa8","#fff"),4); } }
-  /* 고속도로 중간부터 세워진 차(장애물): 갈수록 촘촘 · 항상 한 차로는 비워 둠 · 출구 앞 600m는 비움 */
-  { const lanes=[-HW*2/3,0,HW*2/3], hm=h0+Math.floor((h1-h0)/2), end=h1-80, cols=[0xd8282a,0x2a6ad8,0xf2f2f2,0x2a2e38,0xffc21a,0x3a9a4a,0x9aa4b0], parked=[]; let i=hm+40;
+  /* 고속도로 1/3 지점부터 세워진 차(장애물): 갈수록 촘촘 · 항상 한 차로는 비워 둠 · 출구 앞 600m는 비움 */
+  { const lanes=[-HW*2/3,0,HW*2/3], hm=h0+Math.floor((h1-h0)/3), end=h1-80, cols=[0xd8282a,0x2a6ad8,0xf2f2f2,0x2a2e38,0xffc21a,0x3a9a4a,0x9aa4b0], parked=[]; let i=hm+40;
     const carMesh=(truck,col)=>{ const g=new THREE.Group(), L=truck?9:4.6, W=truck?2.5:2.0; const body=new THREE.Mesh(new THREE.BoxGeometry(W,truck?1.4:.9,L),Lam(col)); body.position.y=truck?1.3:.75; g.add(body);
       if(truck){ const box=new THREE.Mesh(new THREE.BoxGeometry(W+.1,3,L*.68),Lam(0xe8eaee)); box.position.set(0,3.4,-L*.14); g.add(box); const cab=new THREE.Mesh(new THREE.BoxGeometry(W,1.8,L*.24),Lam(col)); cab.position.set(0,2.8,L*.36); g.add(cab); }
       else { const cab=new THREE.Mesh(new THREE.BoxGeometry(W*.9,.75,L*.5),Lam(0x2a3a4a)); cab.position.set(0,1.55,-.2); g.add(cab); }
@@ -7998,8 +7998,30 @@ try{ if(typeof cosHTML==="function"&&typeof SHOP!=="undefined"){
     if(it.t==="hat") COSEQ.hat=COSEQ.hat===it.id?null:it.id; else COSEQ.skin=COSEQ.skin===it.id?null:it.id;
     try{ cosSave(); }catch(_){} try{ shopRefreshLook(); }catch(_){} after&&after(); }); };
 } }catch(e){ console.warn("wear",e); }
+
+/* ---------- 최적화: 지난 맵 메모리 정리 · 인스턴스(나무 등) 화면 밖 생략 ---------- */
+try{ if(typeof loadTrack==="function"&&typeof builtTracks!=="undefined"){
+  const KEEP=2, order=[];
+  const disposeGroup=g=>{ const seen=new Set(); g.traverse(o=>{ if(o.geometry&&!seen.has(o.geometry)){ seen.add(o.geometry); try{ o.geometry.dispose(); }catch(_){} }
+      const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(const m of ms){ if(seen.has(m)) continue; seen.add(m); for(const k in m){ const v=m[k]; if(v&&v.isTexture&&!seen.has(v)){ seen.add(v); try{ v.dispose(); }catch(_){} } } try{ m.dispose(); }catch(_){} } }); };
+  const chunkIM=im=>{ const n=im.count, par=im.parent; if(!par||n<300) return; const m4=new THREE.Matrix4(), p=new THREE.Vector3(), q=new THREE.Quaternion(), sc=new THREE.Vector3(), C=320, cells=new Map();
+    if(!im.geometry.boundingSphere) im.geometry.computeBoundingSphere(); const gr=im.geometry.boundingSphere.radius, gc=im.geometry.boundingSphere.center;
+    for(let k=0;k<n;k++){ im.getMatrixAt(k,m4); m4.decompose(p,q,sc); const key=Math.floor(p.x/C)+","+Math.floor(p.z/C); let c=cells.get(key); if(!c){ c=[]; cells.set(key,c); } c.push(k); }
+    for(const list of cells.values()){ const g=im.geometry.clone(), ch=new THREE.InstancedMesh(g,im.material,list.length); const box=new THREE.Box3(); let maxS=1;
+      list.forEach((k,j)=>{ im.getMatrixAt(k,m4); ch.setMatrixAt(j,m4); m4.decompose(p,q,sc); box.expandByPoint(p); maxS=Math.max(maxS,sc.x,sc.y,sc.z); if(im.instanceColor){ const col=new THREE.Color(); im.getColorAt(k,col); ch.setColorAt(j,col); } });
+      const sph=new THREE.Sphere(); box.getBoundingSphere(sph); sph.center.add(gc); sph.radius+=gr*maxS+1; g.boundingSphere=sph;
+      ch.instanceMatrix.needsUpdate=true; if(ch.instanceColor) ch.instanceColor.needsUpdate=true; ch.frustumCulled=true; ch.position.copy(im.position); ch.quaternion.copy(im.quaternion); ch.scale.copy(im.scale);
+      ch.renderOrder=im.renderOrder; ch.userData=Object.assign({},im.userData); ch.visible=im.visible; par.add(ch); }
+    par.remove(im); };
+  const _lt=loadTrack;
+  loadTrack=function(i){ const def=TRACKS[i]; const fresh=!builtTracks[def.id]; _lt(i);
+    const id=def.id, at=order.indexOf(id); if(at>=0) order.splice(at,1); order.push(id);
+    while(order.length>KEEP){ const old=order.shift(); const t=builtTracks[old]; if(t&&t!==TR){ try{ disposeGroup(t.group); }catch(_){} delete builtTracks[old]; } }
+    if(fresh&&TR&&TR.group){ const big=[]; TR.group.traverse(o=>{ if(o.isInstancedMesh&&o.count>=300&&!o.userData.rlChunk) big.push([o,o.instanceMatrix.version]); });
+      const tr=TR; setTimeout(()=>{ for(const [o,v] of big){ if(o.instanceMatrix.version!==v||!o.parent) continue; try{ chunkIM(o); }catch(e){ console.warn("chunk",e); } } tr.rlChunked=true; },2500); } };
+} }catch(e){ console.warn("opt",e); }
 /* ---------- BGM: 메뉴곡(인트로·로그인·메인·방 목록) / 대기방곡(방 안·싱글 준비) ---------- */
-const mk=u=>{ const a=new Audio(u); a.loop=true; a.preload="auto"; a.volume=0; return a; };
+const mk=u=>{ const a=new Audio(); a.loop=true; a.preload="none"; a.volume=0; a.dataset.src=u; return a; };
 const TR2=[{a:mk(BGM_URL),v:0},{a:mk(BGM2_URL),v:0},{a:mk(BGM3_URL),v:0},{a:mk(BGM4_URL),v:0},{a:mk(BGM5_URL),v:0},{a:mk(BGM6_URL),v:0},{a:mk(BGM7_URL),v:0},{a:mk(BGM8_URL),v:0},{a:mk(BGM9_URL),v:0},{a:mk(BGM10_URL),v:0},{a:mk(BGM11_URL),v:0},{a:mk(BGM12_URL),v:0},{a:mk(BGM13_URL),v:0}];
 const RL={unlocked:false, introOn:false};
 window.RLBGM=RL;
@@ -8008,7 +8030,7 @@ function bgmLevel(){ let on=true, v=.8, m=1; try{ on=SND.on; v=SVOL.v; m=VOL3.bg
 function which(){ const menu=RL.introOn||document.getElementById("rlLogin")||(typeof state==="undefined"||state==="menu"); if(!menu){ let id="", c=false; try{ id=TR.def.id; c=CIRC(); }catch(_){} if(["harbor","hill","village","sky","boom"].includes(id)) return 2; if(["autobahn","austria","korea","bok"].includes(id)) return 3; if(["street","terra"].includes(id)) return 5; let df=9; try{ df=TR.def.diff; }catch(_){} if(["ice","heli"].includes(id)) return df<=3?6:7; if(["neon2","city","temple"].includes(id)) return 8; if(["arena","desert"].includes(id)) return 9; if(["sakura","osaka"].includes(id)) return df<=3?11:10; if(id==="suzuka") return 10; if(["summit","peak"].includes(id)) return 12; return c?4:-1; }
   if(!RL.introOn&&!document.getElementById("rlLogin")&&(vis("mpLobby")||vis("menu"))) return 1; return 0; }
 window.RL_WHICH=which; window.RL_BGM_ACTIVE=()=>RL.unlocked&&which()>=0&&bgmLevel()>0;
-function play(tr){ if(!tr.a.paused) return; const p=tr.a.play(); if(p&&p.then) p.then(()=>{ RL.unlocked=true; const h=document.querySelector("#rlIntro .snd"); if(h) h.remove(); }).catch(()=>{}); else RL.unlocked=true; }
+function play(tr){ if(!tr.a.paused) return; if(!tr.a.src) tr.a.src=tr.a.dataset.src; const p=tr.a.play(); if(p&&p.then) p.then(()=>{ RL.unlocked=true; const h=document.querySelector("#rlIntro .snd"); if(h) h.remove(); }).catch(()=>{}); else RL.unlocked=true; }
 function tryPlay(){ const w=which(); play(TR2[w<0?0:w]); }
 setInterval(()=>{ const w=which(), L=bgmLevel();
   TR2.forEach((tr,i)=>{ const t=i===w?L:0; tr.v+=(t-tr.v)*.2; if(Math.abs(t-tr.v)<.005) tr.v=t; try{ tr.a.volume=Math.max(0,Math.min(1,tr.v)); }catch(_){}
