@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-2050</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-2100</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6108,7 +6108,13 @@ function skinTex(id){ if(SKIN_TEX[id]) return SKIN_TEX[id]; const R=(a,b)=>a+Mat
     s_bolt:(x,w,h)=>{ x.fillStyle="#1a2a6a"; x.fillRect(0,0,w,h); x.fillStyle="#ffe24a"; for(let k=0;k<3;k++){ const ox=k*90+20; x.beginPath(); x.moveTo(ox+40,0); x.lineTo(ox+10,120); x.lineTo(ox+40,120); x.lineTo(ox+15,256); x.lineTo(ox+70,100); x.lineTo(ox+40,100); x.lineTo(ox+65,0); x.closePath(); x.fill(); } },
     s_check:(x,w,h)=>{ for(let i=0;i<8;i++) for(let j=0;j<8;j++){ x.fillStyle=(i+j)%2?"#111":"#f4f4f4"; x.fillRect(i*32,j*32,32,32); } },
     s_heart:(x,w,h)=>{ x.fillStyle="#ffd6e6"; x.fillRect(0,0,w,h); for(let i=0;i<4;i++) for(let j=0;j<4;j++){ const cx=i*64+32+(j%2)*16, cy=j*64+32, s=12; x.fillStyle=(i+j)%2?"#ff3a7a":"#ff7aa8"; x.beginPath(); x.moveTo(cx,cy+s*1.4); x.bezierCurveTo(cx-s*2,cy,cx-s,cy-s*1.4,cx,cy-s*.4); x.bezierCurveTo(cx+s,cy-s*1.4,cx+s*2,cy,cx,cy+s*1.4); x.fill(); } },
-    s_camo:(x,w,h)=>{ x.fillStyle="#5a6a3a"; x.fillRect(0,0,w,h); for(const c of ["#3a4a2a","#8a8a5a","#2a2a1e","#6f7f4a"]) for(let k=0;k<10;k++){ x.fillStyle=c; x.beginPath(); const cx=R(0,w),cy=R(0,h); x.ellipse(cx,cy,R(14,40),R(10,26),R(0,3),0,7); x.fill(); } },
+    s_camo:(x,w,h)=>{ /* 우드랜드 군용 위장: 이어 붙여도 끊기지 않는 4색 얼룩 */
+      const field=()=>{ const T=[]; for(let k=0;k<14;k++){ const fx=Math.round(R(1,5))*(Math.random()<.5?-1:1), fy=Math.round(R(1,5)); T.push([fx,fy,R(0,6.283),1/Math.hypot(fx,fy)]); } const wa=[Math.round(R(1,3)),Math.round(R(1,3)),R(0,6.283),R(0,6.283)];
+        return (U,V)=>{ const u=U+.55*Math.sin(wa[0]*V+wa[2]), v=V+.55*Math.sin(wa[1]*U+wa[3]); let s=0,n=0; for(const [a,b,ph,am] of T){ s+=am*Math.sin(a*u+b*v+ph); n+=am; } return s/n; }; };
+      const f1=field(), f2=field(), f3=field(), img=x.createImageData(w,h), d=img.data;
+      const C=[[156,142,96],[78,104,46],[98,76,46],[30,30,24]];
+      for(let j=0;j<h;j++) for(let i=0;i<w;i++){ const U=i/w*6.2832, V=j/h*6.2832; const a=f1(U,V), b=f2(U,V), c=f3(U,V); let k=0; if(a>.06) k=1; if(b>.16) k=2; if(c>.26) k=3; if(a<-.32) k=1; const o=(j*w+i)*4, col=C[k], nz=(Math.random()-.5)*10; d[o]=col[0]+nz; d[o+1]=col[1]+nz; d[o+2]=col[2]+nz; d[o+3]=255; }
+      x.putImageData(img,0,0); },
     s_star:(x,w,h)=>{ const g=x.createLinearGradient(0,0,w,h); g.addColorStop(0,"#0a0a3a"); g.addColorStop(1,"#3a1a6a"); x.fillStyle=g; x.fillRect(0,0,w,h); for(let k=0;k<70;k++){ x.fillStyle=["#fff","#ffe27a","#9ad8ff"][k%3]; const s=R(.8,3); x.beginPath(); x.arc(R(0,w),R(0,h),s,0,7); x.fill(); } x.fillStyle="#ffe27a"; for(let k=0;k<6;k++){ const cx=R(20,236),cy=R(20,236),r=R(7,12); x.beginPath(); for(let q=0;q<10;q++){ const a=q*Math.PI/5-Math.PI/2, rr=q%2?r*.45:r; x.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr); } x.fill(); } },
     s_splash:(x,w,h)=>{ x.fillStyle="#f4f4f4"; x.fillRect(0,0,w,h); for(const c of ["#ff3a5a","#2a8aff","#ffd23a","#3ad87a","#b04aff"]) for(let k=0;k<4;k++){ const cx=R(0,w),cy=R(0,h); x.fillStyle=c; x.beginPath(); x.arc(cx,cy,R(12,26),0,7); x.fill(); for(let q=0;q<9;q++){ const a=R(0,7),d=R(18,48); x.beginPath(); x.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d,R(2,7),0,7); x.fill(); } } },
     s_drip:(x,w,h)=>{ x.fillStyle="#141414"; x.fillRect(0,0,w,h); const cs=["#ff3a8a","#3ad8ff","#c8ff3a","#ffb23a"]; for(let k=0;k<12;k++){ x.fillStyle=cs[k%4]; const cx=k*22+R(-4,4); x.fillRect(cx,0,14,40); const L=R(50,230); x.fillRect(cx+3,0,8,L); x.beginPath(); x.arc(cx+7,L,6,0,7); x.fill(); } },
@@ -6121,7 +6127,12 @@ function skinTex(id){ if(SKIN_TEX[id]) return SKIN_TEX[id]; const R=(a,b)=>a+Mat
       for(const [cx,cy] of [[103,128],[128,82],[153,128]]){ x.fillStyle="#ff3a5a"; x.beginPath(); x.arc(cx,cy,6,0,7); x.fill(); }
       x.fillStyle="#ffd24a"; for(const [cx,cy] of [[40,40],[216,40],[40,216],[216,216]]){ x.beginPath(); for(let q=0;q<8;q++){ const a=q*Math.PI/4, r=q%2?5:12; x.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r); } x.fill(); } }
   }[id]; if(!draw) return null; const t=canvasTex(256,256,draw,1,1); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1.5,1.5); return SKIN_TEX[id]=t; }
-function skinApply(mats,sk){ (mats||[]).forEach((m,i)=>{ if(!m) return; const want=sk?skinTex(sk):null; if(want){ m.map=want; m.color.setHex(0xffffff); m.needsUpdate=true; } else if(m.map&&m.userData.skinned!==false&&SKIN_TEX_VAL(m.map)){ m.map=null; m.needsUpdate=true; } }); }
+function skinProj(m,on){ if(!!m.userData.skProj===on) return; m.userData.skProj=on;
+  if(on){ m.onBeforeCompile=sh=>{ sh.vertexShader="varying vec3 vSkP; varying vec3 vSkN;\n"+sh.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\n vSkP=position; vSkN=normal;");
+      sh.fragmentShader="varying vec3 vSkP; varying vec3 vSkN;\n"+sh.fragmentShader.replace("#include <map_fragment>","#ifdef USE_MAP\n vec3 skA=abs(vSkN); vec2 skUv=(skA.x>skA.y&&skA.x>skA.z)?vSkP.zy:((skA.y>skA.z)?vSkP.xz:vSkP.xy); vec4 texelColor=texture2D(map,skUv*0.42+0.5); texelColor=mapTexelToLinear(texelColor); diffuseColor*=texelColor;\n#endif"); };
+    m.customProgramCacheKey=()=>"skproj"; }
+  else { m.onBeforeCompile=()=>{}; m.customProgramCacheKey=()=>""; } m.needsUpdate=true; }
+function skinApply(mats,sk){ (mats||[]).forEach((m,i)=>{ if(!m) return; const want=sk?skinTex(sk):null; if(want){ m.map=want; m.color.setHex(0xffffff); skinProj(m,true); m.needsUpdate=true; } else if(m.map&&m.userData.skinned!==false&&SKIN_TEX_VAL(m.map)){ m.map=null; skinProj(m,false); m.needsUpdate=true; } }); }
 function SKIN_TEX_VAL(t){ for(const k in SKIN_TEX) if(SKIN_TEX[k]===t) return true; return false; }
 /* ---------- 모자 · 액세서리 ---------- */
 var HAT_TEX={};
