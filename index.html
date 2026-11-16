@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1445</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1515</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7984,6 +7984,20 @@ function volPanel(){ let m=document.getElementById("rlVol"); if(!m){ m=document.
   m.querySelectorAll("input[data-k]").forEach(inp=>{ const k=inp.dataset.k; let v=100; try{ v=Math.round(VOL3[k]*100); }catch(_){} inp.value=v; m.querySelector(`[data-t="${k}"]`).textContent=v; });
   m.hidden=false; }
 for(const id of ["voiceBtn","mpVoice"]){ const b=document.getElementById(id); if(!b) continue; const nb=b.cloneNode(false); nb.textContent="🎚️ 소리 설정"; nb.addEventListener("click",volPanel); b.replaceWith(nb); }
+
+/* ---------- 대기방 치장 칸: 상점에서 산 모자·카트 스킨 착용 ---------- */
+try{ if(typeof cosHTML==="function"&&typeof SHOP!=="undefined"){
+  const _ch=cosHTML, _cb=cosBind;
+  const wearHTML=()=>{ const own=SHOP.filter(it=>(it.t==="hat"||it.t==="skin")&&shopOwned(it.id));
+    const card=it=>{ const on=(it.t==="hat"&&COSEQ.hat===it.id)||(it.t==="skin"&&COSEQ.skin===it.id);
+      return `<button type="button" class="wear" data-id="${it.id}" aria-pressed="${on}" style="padding:10px 8px;border-radius:12px;border:2px solid ${on?"#ffcf2e":"#3a4870"};background:${on?"#2a2a14":"#141c33"};color:#fff;font:700 12px/1.35 sans-serif;text-align:left;cursor:pointer"><b style="font-size:14px">${it.t==="hat"?(it.e||"🎩"):"🎨"} ${it.n||it.id}</b><br><span style="color:${on?"#ffcf2e":"#9fb0d0"};font-weight:900">${on?"착용 중 · 누르면 벗기":"누르면 착용"}</span></button>`; };
+    const sec=(t,list,empty)=>`<div style="font:900 15px sans-serif;margin:14px 0 8px">${t}</div>`+(list.length?`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${list.map(card).join("")}</div>`:`<div style="font:600 12px sans-serif;color:#9fb0d0">${empty}</div>`);
+    return `<div style="grid-column:1/-1;width:100%">`+sec("🎩 내 모자·액세서리",own.filter(i=>i.t==="hat"),"상점에서 산 모자가 여기에 나와요")+sec("🚗 내 카트 스킨",own.filter(i=>i.t==="skin"),"상점에서 산 카트 스킨이 여기에 나와요")+`</div>`; };
+  cosHTML=function(){ return _ch()+wearHTML(); };
+  cosBind=function(root,after){ _cb(root,after); root.querySelectorAll(".wear").forEach(b=>b.onclick=()=>{ const it=shopItem(b.dataset.id); if(!it) return;
+    if(it.t==="hat") COSEQ.hat=COSEQ.hat===it.id?null:it.id; else COSEQ.skin=COSEQ.skin===it.id?null:it.id;
+    try{ cosSave(); }catch(_){} try{ shopRefreshLook(); }catch(_){} after&&after(); }); };
+} }catch(e){ console.warn("wear",e); }
 /* ---------- BGM: 메뉴곡(인트로·로그인·메인·방 목록) / 대기방곡(방 안·싱글 준비) ---------- */
 const mk=u=>{ const a=new Audio(u); a.loop=true; a.preload="auto"; a.volume=0; return a; };
 const TR2=[{a:mk(BGM_URL),v:0},{a:mk(BGM2_URL),v:0},{a:mk(BGM3_URL),v:0},{a:mk(BGM4_URL),v:0},{a:mk(BGM5_URL),v:0},{a:mk(BGM6_URL),v:0},{a:mk(BGM7_URL),v:0},{a:mk(BGM8_URL),v:0},{a:mk(BGM9_URL),v:0},{a:mk(BGM10_URL),v:0},{a:mk(BGM11_URL),v:0},{a:mk(BGM12_URL),v:0}];
