@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-2100</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-2230</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -486,6 +486,7 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"volt", name:"실버 볼트 EV", desc:"서킷 전용 포뮬러 · 은색 전기차, 바늘 노즈와 청록 빛 줄 · 가속이 가장 빠르지만 충돌에 약함 · 서킷 최고 640km/h", speed:1.32, accel:1.52, turn:1.06, boost:1.22, mass:1},
   {id:"ruby", name:"루비 컨버터블", desc:"서킷 전용 포뮬러 · 빨강 레트로, 높은 공기흡입구와 금색 휠 · 코너에서 속도를 가장 덜 잃고 튼튼함 · 최고속도는 가장 낮은 610km/h", speed:1.3, accel:1.38, turn:1.14, boost:1.23, mass:.95},
   {id:"storm", name:"스톰 윙", desc:"서킷 전용 포뮬러 · 흰·파랑, 넓게 휜 앞뒤 날개 · 최고속도 최강 730km/h · 9단 기어 · 차체가 가장 약하고 감속이 큼", speed:1.33818, accel:1.32, turn:1.02, boost:1.24211, mass:1},
+  {id:"apex", lock:50, name:"레드라인 RX", desc:"레벨 50 전용 서킷 포뮬러 · 검정·빨강 · 최고속도 732km/h · 가속·코너·튼튼함·감속 모두 서킷카 중 아주 조금씩 최고", speed:1.34, accel:1.33, turn:1.03, boost:1.245, mass:1},
   {id:"panther", name:"블랙 팬서", desc:"파란 눈빛의 검정 슈퍼카 · 부스터가 강하고 조금 묵직함", speed:1.31, accel:1.36, turn:1.04, boost:1.27, mass:1.1},
   {id:"dozer", name:"불도저", desc:"큰 삽날 달린 무한궤도 불도저 · 느리지만 아주 무거워서 앞을 막는 차를 삽날로 밀어냄 · 부스터 빠르고 4초로 김", speed:1.17, accel:.95, turn:.84, boost:1.4, boostTime:4, gaugeMul:.85, mass:3.1, rad:2.1, ram:1},
   {id:"ringbike", name:"네온 링 바이크", desc:"바퀴살 없이 빛나는 링 바퀴의 미래형 바이크 · 빠르고 가벼움 · 조금 미끄러움(넘어지진 않음)", speed:1.32879, accel:1.5, turn:1.12, grip:.85, boost:1.22968, mass:.7, fly:1.4},
@@ -882,8 +883,8 @@ function ckMirror(){ if(!FCAR()||state!=="race") return false; const fx=Math.sin
   if(best) S.mirSide=best.lat>0?1:-1; return !!best; }
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
-const F1IDS=["gt","volt","ruby","storm"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1.1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:610,dur:.8,dec:2,steer:.9,acc:1,turn:1.2,t:"코너링 최강(회전 1.2배) · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},storm:{top:730,gears:9,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 730km/h · 9단 기어 · 차체 약함 · 감속 큼 · V8 엔진음"}};
+const F1IDS=["gt","volt","ruby","storm","apex"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
+const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1.1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:610,dur:.8,dec:2,steer:.9,acc:1,turn:1.2,t:"코너링 최강(회전 1.2배) · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},apex:{top:732,gears:9,dur:.54,dec:1.98,steer:.88,acc:1.19,turn:1.21,t:"레벨 50 전용 · 모든 성능이 서킷카 중 아주 조금씩 최고 · 9단 기어"},storm:{top:730,gears:9,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 730km/h · 9단 기어 · 차체 약함 · 감속 큼 · V8 엔진음"}};
 function F1S(){ return F1STAT[KART&&KART.id]||F1STAT.gt; }
 function F1KMH(){ return F1S().top; } /* 서킷 전용차 최고속도 625~650km/h (차마다 다름) */
 function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?NCM():1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
@@ -5020,6 +5021,8 @@ function titanRun(rootObj,dt,v){
   buildF1("ruby",{col:0xd8203a,acc:0xf4f4f4,num:"16",numFg:"#f4f4f4",nose:"std",noseH:0,bodyN:2.2,pod:"round",airbox:"tall",rw:"retro",rim:0xd8a93a,stripe:"accent",fw:1,fwSpan:1.02});
   /* 스톰윙: 넓고 휜 4단 앞날개 · 카나드 · 바지보드 · 사이드 윙렛 · 큰 엔드플레이트 · T윙 */
   buildF1("storm",{col:0xf2f4f8,acc:0x2a3fcf,num:"4",numFg:"#2a3fcf",nose:"std",noseH:.04,bodyN:3,pod:"wing",fin:.06,rw:"twin",twing:true,fw:4,fwSpan:1.05,fwSweep:.12,canard:true,haloAcc:true});
+  /* 레드라인 RX: 무광 검정 + 빨강 · 빨간 빛 줄 · 넓은 4단 앞날개 · 2단 뒷날개 */
+  buildF1("apex",{col:0x16171c,acc:0xe8231b,glow:0xff2a1a,num:"1",numFg:"#ff2a1a",nose:"needle",noseH:.02,bodyN:3,pod:"wing",fin:.1,rw:"twin",twing:true,fw:4,fwSpan:1.06,fwSweep:.14,canard:true,haloAcc:true,stripe:"glow",band:"glow"});
 })();
 
 // 블랙 팬서: 검정 슈퍼카 · 보닛 공기구멍 · 큰 그릴 · 파랗게 빛나는 헤드램프 · 지붕 흡입구
@@ -5732,7 +5735,7 @@ function f1Engine(t,on,sp){ const c=SND.ctx; if(!c) return;
     const dl=c.createDelay(.2); dl.delayTime.value=.055; const fb=c.createGain(); fb.gain.value=.32; const wet=c.createGain(); wet.gain.value=.38; const dlp=c.createBiquadFilter(); dlp.type="lowpass"; dlp.frequency.value=900; lim.connect(dl); dl.connect(dlp); dlp.connect(fb); fb.connect(dl); dlp.connect(wet); wet.connect(g); /* 울림(웅장함) */
     Object.assign(F1E,{g,lp,a,a2,b:b2,d,s,nf,lim,lfo,sub,ls,sg,wet}); }
   const top=typeof f1Top==="function"&&KART?f1Top():1, gear=S.mg||1, vmax=top*F1R[gear-1], rpm=on?clamp(.14+.86*sp/vmax,.14,1.03):0;
-  const v8=!!KART&&KART.id==="storm", rb=!!KART&&KART.id==="ruby", ev=!!KART&&KART.id==="volt"; /* 루비: 둔하고 웅장한 배기 · 볼트 EV: 가볍게 */
+  const v8=!!KART&&(KART.id==="storm"||KART.id==="apex"), rb=!!KART&&KART.id==="ruby", ev=!!KART&&KART.id==="volt"; /* 루비: 둔하고 웅장한 배기 · 볼트 EV: 가볍게 */
   const PF=rb?{p:.86,lp:.78,ls:13,sg:.85,wet:.6,lg:.6}:ev?{p:1.2,lp:1.3,ls:3,sg:.25,wet:.18,lg:.3}:{p:1,lp:1,ls:9,sg:.55,wet:.38,lg:.45}; if(F1E.ls){ F1E.ls.gain.setTargetAtTime(v8?9:PF.ls,t,.2); F1E.sg.gain.setTargetAtTime(v8?.55:PF.sg,t,.2); F1E.wet.gain.setTargetAtTime(v8?.38:PF.wet,t,.2); } /* 스톰윙: V8 엔진음 (낮고 굵은 음 · 불규칙 폭발의 '두둥두둥' · 감속 시 팝콘 소리) */
   const idle=(state==="countdown"?18*Math.max(0,Math.sin(t*3.2)):0)+(on&&sp<1.5?3*Math.sin(t*2*Math.PI*(v8?4.2:5.5)):0), f=(v8?20+rpm*92:(27+rpm*118)*PF.p)+idle;
   F1E.a.frequency.setTargetAtTime(f,t,.06); F1E.a2.frequency.setTargetAtTime(f*.994,t,.06); F1E.sub.frequency.setTargetAtTime(f*.5,t,.06); F1E.b.frequency.setTargetAtTime(f*1.498,t,.06); F1E.s.frequency.setTargetAtTime(f*.5,t,.06); F1E.d.frequency.setTargetAtTime(f*2.01,t,.06); F1E.nf.frequency.setTargetAtTime(120+f*2.2,t,.06);
@@ -6035,7 +6038,7 @@ const $=id=>document.getElementById(id);
 let selTrack=0, selKart=0, selChar=0, selColor=0;
 try{ selColor=Math.min(PAINTS.length-1,parseInt(localStorage.getItem("kartrebuild.color")||"0",10)||0); }catch(_){}
 function setColor(i){ selColor=i; try{localStorage.setItem("kartrebuild.color",String(i));}catch(_){} paintMats(CAR.paint,CAR.paintDef,selColor); }
-var COSM=[{id:"aura",lv:30,name:"오라",d:"대기실과 출발 전까지 몸 주위에 빛나는 오라 · 달릴 땐 사라짐",xp:1.3},{id:"tattoo",lv:50,name:"문신",d:"모든 캐릭터 얼굴에 새기는 불꽃 문신",xp:1.5},{id:"wings",lv:85,name:"날개",d:"등에 다는 금빛 날개"}];
+var COSM=[{id:"aura",lv:30,name:"오라",d:"대기실과 출발 전까지 몸 주위에 빛나는 오라 · 달릴 땐 사라짐",xp:1.3},{id:"tattoo",lv:50,name:"문신",d:"모든 캐릭터 얼굴에 새기는 불꽃 문신",xp:1.5},{id:"wings",lv:85,name:"날개",d:"등에 다는 금빛 날개"},{id:"bighead",lv:30,name:"왕머리 가면",d:"얼굴에 쓰는 엄청엄청 큰 머리 가면"}];
 var COSEQ={}; try{ COSEQ=JSON.parse(localStorage.getItem("kartrebuild.cos")||"{}")||{}; }catch(_){}
 function cosLocked(c){ return !((typeof ACCT!=="undefined"&&ACCT)&&ACCT.user&&ACCT.lv>=c.lv); }
 function cosOn(id){ const c=COSM.find(x=>x.id===id); return !!(c&&COSEQ[id]&&!cosLocked(c)); }
@@ -6051,6 +6054,20 @@ function cosApplyRider(rd){ if(!rd) return; (rd.userData.cosObjs||[]).forEach(o=
       x.lineWidth=5; x.beginPath(); x.moveTo(64,100); x.lineTo(64,60); x.stroke(); x.beginPath(); x.arc(64,52,7,0,Math.PI*2); x.fill(); });
     const mt=new THREE.MeshBasicMaterial({map:TAT_TEX,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4});
     for(const sx of [1,-1]){ const d=new THREE.Mesh(new THREE.PlaneGeometry(.34,.34),mt); d.position.set(sx*.42,-.02,.56); d.rotation.y=sx*.62; add(head,d); } }
+  if(cosOn("bighead")&&head){ if(!window.BIGHEAD_TEX) window.BIGHEAD_TEX=canvasTex(256,256,(x,w,h)=>{ x.clearRect(0,0,w,h); x.fillStyle="#ffd2a8"; x.beginPath(); x.arc(128,128,126,0,7); x.fill();
+      for(const [ex,r] of [[86,30],[172,36]]){ x.fillStyle="#fff"; x.beginPath(); x.arc(ex,100,r,0,7); x.fill(); x.lineWidth=5; x.strokeStyle="#3a2414"; x.stroke(); }
+      x.fillStyle="#1a1a1a"; x.beginPath(); x.arc(96,108,12,0,7); x.fill(); x.beginPath(); x.arc(160,92,14,0,7); x.fill();
+      x.strokeStyle="#3a2414"; x.lineWidth=8; x.lineCap="round"; x.beginPath(); x.moveTo(56,58); x.lineTo(108,70); x.moveTo(146,62); x.lineTo(206,46); x.stroke();
+      x.fillStyle="#f29a7a"; x.beginPath(); x.ellipse(128,146,18,13,0,0,7); x.fill();
+      x.fillStyle="rgba(255,120,120,.45)"; x.beginPath(); x.arc(56,156,20,0,7); x.fill(); x.beginPath(); x.arc(200,156,20,0,7); x.fill();
+      x.fillStyle="#7a1a1a"; x.beginPath(); x.moveTo(70,176); x.quadraticCurveTo(128,252,186,176); x.closePath(); x.fill(); x.fillStyle="#fff"; x.fillRect(100,176,26,20); x.fillRect(130,176,26,20); x.fillStyle="#ff6a8a"; x.beginPath(); x.ellipse(128,216,24,12,0,0,7); x.fill(); },1,1);
+    const R=.72*2.7, g=new THREE.Group(); g.position.set(0,.95,.05); const skin=new THREE.MeshLambertMaterial({color:0xffd2a8});
+    const ball=new THREE.Mesh(new THREE.SphereGeometry(R,28,20),skin); ball.scale.set(1.05,.95,1); g.add(ball);
+    const face=new THREE.Mesh(new THREE.CircleGeometry(R*.9,40),new THREE.MeshBasicMaterial({map:window.BIGHEAD_TEX,transparent:true})); face.position.z=R*.86; g.add(face);
+    for(const sx of [1,-1]){ const ear=new THREE.Mesh(new THREE.SphereGeometry(R*.24,14,10),skin); ear.scale.set(.5,1,.8); ear.position.set(sx*R*1.03,0,0); g.add(ear); }
+    const hair=new THREE.Mesh(new THREE.ConeGeometry(R*.16,R*.5,8),new THREE.MeshLambertMaterial({color:0x2a1a10})); hair.position.set(0,R*.98,0); hair.rotation.z=.4; g.add(hair);
+    add(head,g); }
+
   if(cosOn("wings")){ const g=new THREE.Group(); g.position.set(0,.75,-.38); const fA=new THREE.MeshLambertMaterial({color:0xfff6dc,side:THREE.DoubleSide}), fB=new THREE.MeshLambertMaterial({color:0xffd24a,side:THREE.DoubleSide});
     for(const sx of [1,-1]){ const w=new THREE.Group(); w.userData.side=sx; g.add(w); for(let k=0;k<6;k++){ const f=new THREE.Mesh(new THREE.PlaneGeometry(.22,1.05-k*.08),k<2?fB:fA); f.position.set(sx*(.18+k*.16),.28+k*.05,-k*.05); f.rotation.set(-.25,0,-sx*(.5+k*.14)); w.add(f); } }
     g.userData.wings=true; add(inner,g); } }
@@ -6072,9 +6089,9 @@ var SHOP=[
   /* 캐릭터(레벨 해금 후 구매) · 경험치 능력 캐릭터 */
   {id:"zero",t:"char",p:500},{id:"foal",t:"char",p:250},{id:"lizard",t:"char",p:250},{id:"baby",t:"char",p:250},{id:"clown",t:"char",p:250},{id:"sumo",t:"char",p:250},{id:"granny",t:"char",p:250},{id:"grandpa",t:"char",p:250},{id:"bigma",t:"char",p:1000},
   /* 전설 카트 */
-  {id:"tiger",t:"kart",p:5000},{id:"dragon",t:"kart",p:7500},{id:"griffin",t:"kart",p:10000},
+  {id:"tiger",t:"kart",p:15000},{id:"dragon",t:"kart",p:22500},{id:"griffin",t:"kart",p:30000},{id:"apex",t:"kart",p:10000},
   /* 특수 치장(레벨 해금) */
-  {id:"aura",t:"cos",p:1500},{id:"tattoo",t:"cos",p:2500},{id:"wings",t:"cos",p:4000},
+  {id:"aura",t:"cos",p:1500},{id:"tattoo",t:"cos",p:2500},{id:"wings",t:"cos",p:4000},{id:"bighead",t:"cos",p:2000},
   /* 모자 · 액세서리 (한 개 착용) */
   {id:"h_cap",t:"hat",p:500,n:"야구모자",e:"🧢"},{id:"h_beanie",t:"hat",p:500,n:"비니",e:"🧶"},{id:"h_ribbon",t:"hat",p:500,n:"리본",e:"🎀"},{id:"h_flower",t:"hat",p:600,n:"꽃핀",e:"🌸"},
   {id:"h_shades",t:"hat",p:600,n:"선글라스",e:"🕶️"},{id:"h_goggle",t:"hat",p:750,n:"레이싱 고글",e:"🥽"},{id:"h_phones",t:"hat",p:750,n:"헤드폰",e:"🎧"},{id:"h_santa",t:"hat",p:750,n:"산타 모자",e:"🎅"},
@@ -6083,7 +6100,7 @@ var SHOP=[
   /* 카트 스킨(무늬 · 한 개 착용) */
   {id:"s_flame",t:"skin",p:1500,n:"불꽃 무늬"},{id:"s_bolt",t:"skin",p:1500,n:"번개 무늬"},{id:"s_check",t:"skin",p:1500,n:"체커 무늬"},{id:"s_heart",t:"skin",p:1500,n:"하트 무늬"},
   {id:"s_camo",t:"skin",p:1750,n:"위장 무늬"},{id:"s_star",t:"skin",p:1750,n:"별빛 무늬"},{id:"s_splash",t:"skin",p:2000,n:"페인트 스플래시"},{id:"s_drip",t:"skin",p:2000,n:"페인트 흘림"},
-  {id:"s_chick",t:"skin",p:2500,n:"닭 무늬"},{id:"s_tiger",t:"skin",p:3000,n:"호랑이 무늬"},{id:"s_zebra",t:"skin",p:5000,n:"얼룩말 무늬"},{id:"s_emperor",t:"skin",p:5000,n:"황제 무늬"}
+  {id:"s_chick",t:"skin",p:2500,n:"닭 무늬"},{id:"s_tiger",t:"skin",p:3000,n:"호랑이 무늬"},{id:"s_zebra",t:"skin",p:5000,n:"얼룩말 무늬"},{id:"s_emperor",t:"skin",p:5000,n:"황제 무늬"},{id:"s_amb",t:"skin",p:5000,n:"🚑 구급차"},{id:"s_cat",t:"skin",p:5000,n:"🐱 멍청한 고양이"}
 ];
 function shopItem(id){ return SHOP.find(x=>x.id===id); }
 function shopOwned(id){ const it=shopItem(id); if(!it) return true; return !!(typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof&&ACCT.prof.own&&ACCT.prof.own[id]); }
@@ -6121,6 +6138,17 @@ function skinTex(id){ if(SKIN_TEX[id]) return SKIN_TEX[id]; const R=(a,b)=>a+Mat
     s_chick:(x,w,h)=>{ x.fillStyle="#fffaf0"; x.fillRect(0,0,w,h); for(let k=0;k<40;k++){ x.fillStyle=k%3?"#f2e6cc":"#ffffff"; x.beginPath(); x.ellipse(R(0,w),R(0,h),R(10,20),R(5,9),R(0,3),0,7); x.fill(); } for(let i=0;i<3;i++){ const cx=i*90+40, cy=i%2?70:180; x.fillStyle="#e8282a"; for(let q=0;q<3;q++){ x.beginPath(); x.arc(cx-10+q*10,cy-18,7,0,7); x.fill(); } x.fillStyle="#ffc21a"; x.beginPath(); x.moveTo(cx+14,cy); x.lineTo(cx+28,cy+4); x.lineTo(cx+14,cy+8); x.fill(); x.fillStyle="#222"; x.beginPath(); x.arc(cx+6,cy-2,3,0,7); x.fill(); } },
     s_tiger:(x,w,h)=>{ const g=x.createLinearGradient(0,0,0,h); g.addColorStop(0,"#ff9a2a"); g.addColorStop(1,"#e8701a"); x.fillStyle=g; x.fillRect(0,0,w,h); x.fillStyle="#1a1410"; for(let k=0;k<9;k++){ const y=k*30+R(-6,6); x.beginPath(); x.moveTo(0,y); x.bezierCurveTo(60,y-R(10,20),120,y+R(10,24),180,y+R(-8,8)); x.lineTo(256,y+R(-6,10)); x.lineTo(256,y+10); x.bezierCurveTo(150,y+R(14,26),80,y+R(4,10),0,y+12); x.fill(); } },
     s_zebra:(x,w,h)=>{ x.fillStyle="#fafafa"; x.fillRect(0,0,w,h); x.fillStyle="#111"; for(let k=0;k<11;k++){ const xx=k*24; x.beginPath(); x.moveTo(xx,0); x.bezierCurveTo(xx+R(-20,20),80,xx+R(-24,24),170,xx+R(-10,10),256); x.lineTo(xx+R(9,14),256); x.bezierCurveTo(xx+R(0,30),170,xx+R(-10,30),80,xx+12,0); x.fill(); } },
+    s_amb:(x,w,h)=>{ /* 119 구급차: 형광 연두 차체 · 빨간 줄 · 빨강/노랑 바텐버그 체크 띠 · 빨간 119 글씨 · 생명의 별 */
+      x.fillStyle="#d6ec2a"; x.fillRect(0,0,w,h);
+      x.fillStyle="#e3141c"; x.font="900 40px sans-serif"; x.textAlign="left"; x.textBaseline="middle"; x.fillText("119",8,24); x.font="900 30px sans-serif"; x.fillText("구급대",96,25);
+      /* 생명의 별(파랑) */ { const cx=232, cy=24, r=16; x.fillStyle="#1a5ad8"; for(let k=0;k<3;k++){ x.save(); x.translate(cx,cy); x.rotate(k*Math.PI/3); x.fillRect(-4,-r,8,r*2); x.restore(); } x.fillStyle="#fff"; x.fillRect(cx-1.5,cy-10,3,20); }
+      x.fillStyle="#e3141c"; x.fillRect(0,50,w,13);
+      for(let i=0;i<16;i++) for(let j=0;j<2;j++){ x.fillStyle=(i+j)%2?"#ffd400":"#e3141c"; x.fillRect(i*16,63+j*17,16,17); }
+      x.fillStyle="#e3141c"; x.fillRect(0,97,w,4);
+      x.fillStyle="#cfe42a"; x.fillRect(0,200,w,56); },
+    s_cat:(x,w,h)=>{ /* 주황 줄무늬 고양이 털 */ x.fillStyle="#f6a84c"; x.fillRect(0,0,w,h); x.fillStyle="#b8561a";
+      for(let k=0;k<7;k++){ const y=k*37+R(-5,5); x.beginPath(); x.moveTo(0,y); x.bezierCurveTo(70,y+R(-14,14),150,y+R(-14,14),256,y+R(-4,4)); x.lineTo(256,y+R(9,14)); x.bezierCurveTo(150,y+R(8,22),70,y+R(4,20),0,y+12); x.fill(); }
+      x.globalAlpha=.25; x.fillStyle="#fff2dc"; for(let k=0;k<60;k++){ x.fillRect(R(0,w),R(0,h),R(1,3),R(4,9)); } x.globalAlpha=1; },
     s_emperor:(x,w,h)=>{ const g=x.createLinearGradient(0,0,w,h); g.addColorStop(0,"#3a0a5a"); g.addColorStop(.5,"#5a1a8a"); g.addColorStop(1,"#2a0a4a"); x.fillStyle=g; x.fillRect(0,0,w,h);
       x.strokeStyle="#ffd24a"; x.lineWidth=5; x.strokeRect(8,8,240,240); x.lineWidth=2; x.strokeRect(18,18,220,220); x.fillStyle="#ffd24a";
       x.beginPath(); x.moveTo(78,170); x.lineTo(78,110); x.lineTo(103,140); x.lineTo(128,92); x.lineTo(153,140); x.lineTo(178,110); x.lineTo(178,170); x.closePath(); x.fill(); x.fillRect(74,174,108,14);
@@ -6129,10 +6157,55 @@ function skinTex(id){ if(SKIN_TEX[id]) return SKIN_TEX[id]; const R=(a,b)=>a+Mat
   }[id]; if(!draw) return null; const t=canvasTex(256,256,draw,1,1); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1.5,1.5); return SKIN_TEX[id]=t; }
 function skinProj(m,on){ if(!!m.userData.skProj===on) return; m.userData.skProj=on;
   if(on){ m.onBeforeCompile=sh=>{ sh.vertexShader="varying vec3 vSkP; varying vec3 vSkN;\n"+sh.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\n vSkP=position; vSkN=normal;");
-      sh.fragmentShader="varying vec3 vSkP; varying vec3 vSkN;\n"+sh.fragmentShader.replace("#include <map_fragment>","#ifdef USE_MAP\n vec3 skA=abs(vSkN); vec2 skUv=(skA.x>skA.y&&skA.x>skA.z)?vSkP.zy:((skA.y>skA.z)?vSkP.xz:vSkP.xy); vec4 texelColor=texture2D(map,skUv*0.42+0.5); texelColor=mapTexelToLinear(texelColor); diffuseColor*=texelColor;\n#endif"); };
-    m.customProgramCacheKey=()=>"skproj"; }
+      sh.fragmentShader="#define SK_TOPV "+(m.map&&m.map.rlTopV!=null?m.map.rlTopV.toFixed(3):"-1.0")+"\nvarying vec3 vSkP; varying vec3 vSkN;\n"+sh.fragmentShader.replace("#include <map_fragment>","#ifdef USE_MAP\n vec3 skA=abs(vSkN); vec2 skUv=(skA.x>skA.y&&skA.x>skA.z)?vec2(-vSkP.z*sign(vSkN.x),vSkP.y):((skA.y>skA.z)?vSkP.xz:vec2(vSkP.x*sign(vSkN.z),vSkP.y)); vec2 skT=skUv*0.42+0.5; if(SK_TOPV>=0.0&&skA.y>=skA.x&&skA.y>=skA.z) skT=vec2(skT.x,SK_TOPV); vec4 texelColor=texture2D(map,skT); texelColor=mapTexelToLinear(texelColor); diffuseColor*=texelColor;\n#endif"); };
+    m.customProgramCacheKey=()=>"skproj"+(m.map&&m.map.rlTopV!=null?"t":""); }
   else { m.onBeforeCompile=()=>{}; m.customProgramCacheKey=()=>""; } m.needsUpdate=true; }
-function skinApply(mats,sk){ (mats||[]).forEach((m,i)=>{ if(!m) return; const want=sk?skinTex(sk):null; if(want){ m.map=want; m.color.setHex(0xffffff); skinProj(m,true); m.needsUpdate=true; } else if(m.map&&m.userData.skinned!==false&&SKIN_TEX_VAL(m.map)){ m.map=null; skinProj(m,false); m.needsUpdate=true; } }); }
+function skinApply(mats,sk){ (mats||[]).forEach((m,i)=>{ if(!m) return; const want=sk?skinTex(sk):null; if(want&&sk==="s_amb") want.rlTopV=.12; if(want){ m.map=want; m.color.setHex(0xffffff); skinProj(m,true); m.needsUpdate=true; } else if(m.map&&m.userData.skinned!==false&&SKIN_TEX_VAL(m.map)){ m.map=null; skinProj(m,false); m.needsUpdate=true; } }); try{ if(typeof CAR!=="undefined"&&CAR&&mats===CAR.paint) RLSkinWhole(CAR.root,sk||null,CAR.rider,CAR.paint); }catch(_){} }
+const SKORIG=new WeakMap();
+function RLSkinWhole(root,sk,rider,skip){ if(!root) return; const skipS=new Set(skip||[]), tex=sk?skinTex(sk):null;
+  const walk=o=>{ if(o===rider||o.userData.isWheel||o.userData.isRider) return;
+    if(o.isMesh&&o.material&&!Array.isArray(o.material)&&!skipS.has(o.material)){ const base=SKORIG.get(o.material)||o.material;
+      if(base.type!=="MeshBasicMaterial"&&base.type!=="SpriteMaterial"&&!base.transparent&&base.color){
+        if(tex){ if(sk==="s_amb") tex.rlTopV=.12; const m=base.clone(); SKORIG.set(m,base); const lum=base.color.r*.3+base.color.g*.55+base.color.b*.15; m.map=tex; m.color.setScalar(lum<.2?.5:1); if(m.emissive) m.emissive.setHex(0); skinProj(m,true); if(SKORIG.has(o.material)&&o.material!==base) try{ o.material.dispose(); }catch(_){} o.material=m; }
+        else if(o.material!==base){ try{ o.material.dispose(); }catch(_){} o.material=base; } } }
+    for(const c of o.children) walk(c); };
+  walk(root);
+  RLSkinDeco(root,sk,rider); }
+function RLSkinDeco(root,sk,rider){ for(const nm of ["rlAmbBar","rlCatParts"]){ const o=root.children.find(c=>c.name===nm); if(o) root.remove(o); }
+  if(sk!=="s_amb"&&sk!=="s_cat") return;
+  root.updateMatrixWorld(true); const inv=root.matrixWorld.clone().invert(), bb=new THREE.Box3(), tb=new THREE.Box3(), meshes=[];
+  const w2=o=>{ if(o===rider||o.userData.isWheel||o.userData.isRider||/^rl(AmbBar|CatParts)$/.test(o.name)) return; if(o.isMesh&&o.geometry&&o.visible&&!(o.material&&o.material.transparent)){ meshes.push(o); if(!o.geometry.boundingBox) o.geometry.computeBoundingBox(); tb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).applyMatrix4(inv); bb.union(tb); } for(const c of o.children) w2(c); }; w2(root);
+  if(bb.isEmpty()) return; const sx=bb.max.x-bb.min.x, sy=bb.max.y-bb.min.y, sz=bb.max.z-bb.min.z, cx=(bb.min.x+bb.max.x)/2, cz=(bb.min.z+bb.max.z)/2;
+  const rc=new THREE.Raycaster(), L=v=>v.clone().applyMatrix4(root.matrixWorld), Lin=v=>v.clone().applyMatrix4(inv);
+  const topAt=(x,z)=>{ rc.set(L(new THREE.Vector3(x,bb.max.y+5,z)),new THREE.Vector3(0,-1,0).transformDirection(root.matrixWorld)); const h=rc.intersectObjects(meshes,false)[0]; return h?Lin(h.point).y:bb.max.y; };
+  const frontAt=(x,y)=>{ rc.set(L(new THREE.Vector3(x,y,bb.max.z+5)),new THREE.Vector3(0,0,-1).transformDirection(root.matrixWorld)); const h=rc.intersectObjects(meshes,false)[0]; return h?Lin(h.point).z:bb.max.z; };
+  if(sk==="s_amb"){ const g=new THREE.Group(); g.name="rlAmbBar"; const W=Math.max(.5,sx*.55), D=Math.max(.18,Math.min(.35,sz*.07));
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(W,.08,D),new THREE.MeshLambertMaterial({color:0x2a2a2a})));
+    const l1=new THREE.Mesh(new THREE.BoxGeometry(W*.46,.12,D*.85),AMB.mats[0]); l1.position.set(-W*.25,.1,0); g.add(l1); const l2=new THREE.Mesh(new THREE.BoxGeometry(W*.46,.12,D*.85),AMB.mats[1]); l2.position.set(W*.25,.1,0); g.add(l2);
+    const z=cz+sz*.08; g.position.set(cx,topAt(cx,z)+.04,z); root.add(g); return; }
+  /* 고양이: 앞=머리(귀·멍청한 얼굴), 뒤=꼬리·뒷발 */
+  const g=new THREE.Group(); g.name="rlCatParts"; const fur=new THREE.MeshLambertMaterial({color:0xf2a24a}), furD=new THREE.MeshLambertMaterial({color:0xd97a26}), pink=new THREE.MeshLambertMaterial({color:0xffa6b8}), white=new THREE.MeshLambertMaterial({color:0xfff4e6});
+  const S=Math.max(.6,Math.min(sx,sy*1.6)), zEar=bb.max.z-sz*.16;
+  for(const sd of [-1,1]){ const ex=cx+sd*sx*.28, ey=topAt(ex,zEar); const ear=new THREE.Mesh(new THREE.ConeGeometry(S*.17,S*.34,4),fur); ear.position.set(ex,ey+S*.15,zEar); ear.rotation.set(-.15,Math.PI/4,sd*-.28); g.add(ear);
+    const inn=new THREE.Mesh(new THREE.ConeGeometry(S*.1,S*.24,4),pink); inn.position.set(ex,ey+S*.14,zEar+S*.05); inn.rotation.copy(ear.rotation); g.add(inn); }
+  { const c=document.createElement("canvas"); c.width=256; c.height=192; const x=c.getContext("2d");
+    const eye=(ex,ey,r,px,py)=>{ x.fillStyle="#fff"; x.beginPath(); x.ellipse(ex,ey,r,r*1.15,0,0,7); x.fill(); x.lineWidth=5; x.strokeStyle="#2a1a10"; x.stroke(); x.fillStyle="#111"; x.beginPath(); x.arc(ex+px,ey+py,r*.38,0,7); x.fill(); x.fillStyle="#fff"; x.beginPath(); x.arc(ex+px-4,ey+py-5,4,0,7); x.fill(); };
+    eye(78,70,34,14,10); eye(170,62,40,-18,-12); /* 사팔눈: 서로 다른 데를 봄 */
+    x.fillStyle="#ff7a9a"; x.beginPath(); x.moveTo(116,104); x.lineTo(138,104); x.lineTo(127,118); x.fill();
+    x.strokeStyle="#2a1a10"; x.lineWidth=5; x.beginPath(); x.moveTo(127,118); x.quadraticCurveTo(110,140,92,128); x.moveTo(127,118); x.quadraticCurveTo(146,142,164,126); x.stroke();
+    x.fillStyle="#ff6a8a"; x.beginPath(); x.ellipse(138,146,14,20,.3,0,7); x.fill(); x.strokeStyle="#c8405a"; x.lineWidth=2; x.beginPath(); x.moveTo(136,134); x.lineTo(140,158); x.stroke(); /* 혀 메롱 */
+    x.fillStyle="#fff"; x.fillRect(112,124,10,13); x.strokeStyle="#2a1a10"; x.lineWidth=2; x.strokeRect(112,124,10,13); /* 뻐드렁니 */
+    x.strokeStyle="#2a1a10"; x.lineWidth=3; for(const [a,b2,c2,d] of [[60,112,4,104],[60,122,2,128],[194,112,252,100],[194,122,254,130]]){ x.beginPath(); x.moveTo(a,b2); x.lineTo(c2,d); x.stroke(); }
+    const t=new THREE.CanvasTexture(c); const fy=bb.min.y+sy*.42, fz=frontAt(cx,fy); const pl=new THREE.Mesh(new THREE.PlaneGeometry(sx*.92,sx*.92*.75),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false})); pl.position.set(cx,fy,fz+.03); pl.renderOrder=2; g.add(pl); }
+  { const tz=bb.min.z+sz*.04, ty=topAt(cx,tz+sz*.06), base=new THREE.Vector3(cx,ty-.05,tz); const crv=new THREE.CatmullRomCurve3([base,base.clone().add(new THREE.Vector3(0,S*.25,-S*.25)),base.clone().add(new THREE.Vector3(0,S*.8,-S*.3)),base.clone().add(new THREE.Vector3(S*.1,S*1.05,-S*.05)),base.clone().add(new THREE.Vector3(S*.25,S*.95,S*.12))]);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(crv,24,S*.07,8,false),furD)); const tip=new THREE.Mesh(new THREE.SphereGeometry(S*.08,10,8),white); tip.position.copy(crv.getPoint(1)); g.add(tip); }
+  for(const [zf,sc] of [[.97,.13],[.06,.16]]) for(const sd of [-1,1]){ const p=new THREE.Mesh(new THREE.SphereGeometry(S*sc,12,8),white); p.scale.set(1,.55,1.3); p.position.set(cx+sd*(sx*.5-S*sc*.6),bb.min.y+S*sc*.4+.05,bb.min.z+sz*zf); g.add(p);
+    for(let t2=-1;t2<=1;t2++){ const toe=new THREE.Mesh(new THREE.SphereGeometry(S*sc*.32,8,6),pink); toe.position.set(p.position.x+t2*S*sc*.45,p.position.y+S*sc*.12,p.position.z+(zf>.5?1:-1)*S*sc*1.1); g.add(toe); } }
+  root.add(g); }
+const AMB={mats:[new THREE.MeshBasicMaterial({color:0xff1010}),new THREE.MeshBasicMaterial({color:0x1040ff})]};
+setInterval(()=>{ const t=Math.floor(performance.now()/110)%8, a=t<4?(t%2?.25:1):.25, b=t>=4?(t%2?.25:1):.25; AMB.mats[0].color.setRGB(a,.06*a,.06*a); AMB.mats[1].color.setRGB(.06*b,.25*b,b); },55);
+window.RLSkinWhole=RLSkinWhole;
+for(const id in CARS){ try{ (CARS[id].wheels||[]).forEach(w=>w.traverse(o=>{ o.userData.isWheel=true; })); }catch(_){} }
 function SKIN_TEX_VAL(t){ for(const k in SKIN_TEX) if(SKIN_TEX[k]===t) return true; return false; }
 /* ---------- 모자 · 액세서리 ---------- */
 var HAT_TEX={};
@@ -6158,7 +6231,7 @@ function hatOnRider(rd,id){ if(!rd) return; (rd.userData.hatObj&&rd.userData.hat
 function shopPreview(it){ const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
   if(it.t==="char"){ const c=CHARS.find(x=>x.id===it.id); return c?`<img alt="" src="${safeThumb(()=>charThumb(c))}" style="width:100%;height:72px;object-fit:contain">`:""; }
   if(it.t==="kart"){ const k=KARTS.find(x=>x.id===it.id); return k?`<img alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]||CHARS[0],0))}" style="width:100%;height:72px;object-fit:contain">`:""; }
-  if(it.t==="cos") return `<div style="font-size:42px;line-height:72px">${{aura:"🌟",tattoo:"🔥",wings:"🪽"}[it.id]}</div>`;
+  if(it.t==="cos") return `<div style="font-size:42px;line-height:72px">${{aura:"🌟",tattoo:"🔥",wings:"🪽",bighead:"🎭"}[it.id]}</div>`;
   if(it.t==="hat") return `<div style="font-size:42px;line-height:72px">${it.e}</div>`;
   if(it.t==="skin"){ const t=skinTex(it.id); return `<div style="height:72px;border-radius:10px;background:url(${t.image.toDataURL()}) center/80px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)"></div>`; } return ""; }
 function shopName(it){ if(it.n) return it.n; if(it.t==="char"){ const c=CHARS.find(x=>x.id===it.id); return c?c.name:it.id; } if(it.t==="kart"){ const k=KARTS.find(x=>x.id===it.id); return k?k.name+" 카트":it.id; } const c=COSM.find(x=>x.id===it.id); return c?c.name:it.id; }
@@ -6238,8 +6311,8 @@ function rouletteRun(target,done){ if(ROUL.busy) return; ROUL.busy=true; try{ in
   requestAnimationFrame(step); setTimeout(land,D+900); }
 function trackGroups(){ const used=new Set(), out=[]; for(const c of TRACK_CATS){ const L=[]; for(const id of c.ids){ const i=TRACKS.findIndex(t=>t.id===id); if(i>=0&&!used.has(i)){ used.add(i); L.push(i); } } if(L.length) out.push({n:c.n,d:c.d,L}); }
   const rest=TRACKS.map((t,i)=>i).filter(i=>!used.has(i)); if(rest.length) out.push({n:"🏁 기타",d:"",L:rest}); return out; }
-(function(){ const F=CONFIG.maxSpeed*CONFIG.kmh; for(const k of KARTS){ if(["gt","volt","ruby","storm"].includes(k.id)) continue; const base=k.speed*F, bst=base*(k.boost||CONFIG.boostRatio); k.speed=(base+10)/F; k.boost=(bst+(k.id==="bike"?0:10))/(base+10); } /* 슈퍼바이크는 기본속도만 +10 */ })(); /* +10km/h */
-const KART_CATS=[{n:"🚗 자동차",ids:["blue","gold","kart","panther","truck"]},{n:"🏁 서킷 전용",ids:["gt","volt","ruby","storm"]},{n:"🏍️ 오토바이",ids:["scoot","bike","ringbike","trike"]},{n:"🐾 동물",ids:["roach","snake","horse","trex"]},{n:"🛠️ 특수카",ids:["dump","dozer","rearcart","chair","sushi","stroller"]},{n:"⚡ 능력카",ids:["tank","giant","trex","jet","nova"]}];
+(function(){ const F=CONFIG.maxSpeed*CONFIG.kmh; for(const k of KARTS){ if(["gt","volt","ruby","storm","apex"].includes(k.id)) continue; const base=k.speed*F, bst=base*(k.boost||CONFIG.boostRatio); k.speed=(base+10)/F; k.boost=(bst+(k.id==="bike"?0:10))/(base+10); } /* 슈퍼바이크는 기본속도만 +10 */ })(); /* +10km/h */
+const KART_CATS=[{n:"🚗 자동차",ids:["blue","gold","kart","panther","truck"]},{n:"🏁 서킷 전용",ids:["gt","volt","ruby","storm","apex"]},{n:"🏍️ 오토바이",ids:["scoot","bike","ringbike","trike"]},{n:"🐾 동물",ids:["roach","snake","horse","trex"]},{n:"🛠️ 특수카",ids:["dump","dozer","rearcart","chair","sushi","stroller"]},{n:"⚡ 능력카",ids:["tank","giant","trex","jet","nova"]}];
 const KTAB={menu:"전체",mp:"전체"};
 KART_CATS.push({n:"👑 전설",ids:["tiger","dragon","griffin"]});
 function kInTab(k,w){ const t=KTAB[w]; if(t==="전체") return true; const c=KART_CATS.find(c=>c.n===t); return !c||c.ids.includes(k.id); }
@@ -6250,8 +6323,8 @@ function renderOptions(){ const _ks=keepScroll(KEEP_SC); try{ renderOptions0(); 
 function renderOptions0(){ setTimeout(rankRenderAll,0); gmRenderMenu();
   { const grps=trackGroups(), tab=thTab("menu",grps,selTrack); $("trackOpts").innerHTML=`<button class="opt rnd-card" type="button" id="trk-random" aria-pressed="${selRandom}"><span class="rnd-ico">🎲</span><span style="display:flex;flex-direction:column;gap:2px"><b>랜덤 맵</b><span>출발하면 룰렛이 돌아가서 ${TRACKS.length}개 맵 중 하나를 뽑아요</span></span></button>`+`<div class="th-wrap"><div class="th-tabs">${grps.map(g=>`<button type="button" data-th="${g.n}" aria-pressed="${g.n===tab}">${g.n}${!selRandom&&g.L.includes(selTrack)?'<span class="dot"></span>':""}</button>`).join("")}</div><div class="th-maps">`+(grps.find(g=>g.n===tab)||grps[0]).L.map(i=>{ const t=TRACKS[i]; return `<button class="opt" type="button" id="trk-${t.id}" aria-pressed="${!selRandom&&i===selTrack}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>trackThumb(t))}"><b>${t.name}</b><i class="diff">난이도 ${"●".repeat(t.diff||2)}${"○".repeat(5-(t.diff||2))}</i><span>${t.desc}</span>${t.records?`<span class="stat">랭킹 1위 ${t.records[0].name} ${fmtT(t.records[0].t)}</span>`:""}</button>`; }).join("")+`</div></div>`; { const tg=$("trackOpts").querySelector(".th-tabs [aria-pressed=true]"); if(tg&&tg.parentNode) tg.parentNode.scrollTop=Math.max(0,tg.offsetTop-tg.parentNode.offsetTop-90); } thCue($("trackOpts")); }
   $("kartOpts").innerHTML=ktabHTML("menu")+KARTS.map((k,i)=>{ if(!kInTab(k,"menu")) return ""; if(kartLocked(k)) return `<button class="opt" type="button" id="krt-${k.id}" aria-pressed="false" data-i="${i}"><img class="thumb" alt="" src="${qThumb()}"><b>?</b><span>?</span></button>`; const top=Math.round(CONFIG.maxSpeed*k.speed*CONFIG.kmh), bst=Math.round(CONFIG.maxSpeed*k.speed*(k.boost||CONFIG.boostRatio)*CONFIG.kmh);
-    return `<button class="opt" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span>${["gt","volt","ruby","storm"].includes(k.id)?`<span class="stat" style="color:#5ad8ff">🏁 서킷 전용 · 서킷 최고 ${F1STAT[k.id].top} km/h · ${F1STAT[k.id].t} · 수동 ${F1STAT[k.id].gears||8}단 기어</span>`:`<span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>`}${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
-  $("charOpts").innerHTML=CHARS.map((c,i)=>charLocked(c)?`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="false" data-i="${i}"><img class="thumb" alt="" src="${qThumb()}"><b>?</b><span>?</span></button>`:`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="${i===selChar}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>charThumb(c))}"><b><span class="dot" style="background:#${c.helmet.toString(16).padStart(6,"0")}"></span>${c.name}</b><span>${c.desc}</span>${SYN[KARTS[selKart].id]===c.id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}</button>`).join("");
+    return `<button class="opt" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span>${["gt","volt","ruby","storm","apex"].includes(k.id)?`<span class="stat" style="color:#5ad8ff">🏁 서킷 전용 · 서킷 최고 ${F1STAT[k.id].top} km/h · ${F1STAT[k.id].t} · 수동 ${F1STAT[k.id].gears||8}단 기어</span>`:`<span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>`}${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
+  $("charOpts").innerHTML=CHARS.map((c,i)=>charLocked(c)?`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="false" data-i="${i}"><img class="thumb" alt="" src="${qThumb()}"><b>?</b><span>?</span></button>`:`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="${i===selChar}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>charThumb(c))}"><b><span class="dot" style="background:#${c.helmet.toString(16).padStart(6,"0")}"></span>${c.name}</b><span>${c.desc}</span><span class="stat" style="color:${(c.xpm||1)>1?"#7ae86a":"#9fb0d0"}">⭐ 경험치 ${Math.round((c.xpm||1)*100)}%${(c.xpm||1)>1?" (+"+Math.round(((c.xpm||1)-1)*100)+"%)":""}</span>${SYN[KARTS[selKart].id]===c.id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}</button>`).join("");
   $("colorOpts").innerHTML=swatchesHTML()+cosHTML(); $("colorOpts").querySelectorAll(".sw").forEach(b=>b.addEventListener("click",()=>{ setColor(+b.dataset.i); renderOptions(); })); cosBind($("colorOpts"),renderOptions);
   $("charOpts").querySelectorAll("button.opt").forEach(b=>b.addEventListener("click",()=>{ if(charLocked(CHARS[+b.dataset.i])){ toast(lockMsg(),"#9fb0d0"); return; } selChar=+b.dataset.i; try{localStorage.setItem("kartrebuild.char",String(selChar));}catch(_){} renderOptions();}));
   $("trackOpts").querySelectorAll(".th-tabs [data-th]").forEach(h=>h.addEventListener("click",()=>{ THT.menu=h.dataset.th; renderOptions(); })); /* 테마만 바꿈 (선택 맵은 그대로) */
@@ -6751,7 +6824,7 @@ function loadBest(){ bestEver=null; try{const v=localStorage.getItem(bestKey());
 
 function startRace(){ autoBackStop(); if(charLocked(CHARS[selChar])) selChar=0; if(kartLocked(KARTS[selKart])) selKart=0;
   initAudio(); unlockSpeech(); endCeremony(); if(TR) resetDestruction();
-  loadTrack(selTrack); resetDestruction(); if(["gt","volt","ruby","storm"].includes(KARTS[selKart].id)&&!TRACKS[selTrack].circuit){ selKart=KARTS.findIndex(k=>k.id==="blue"); setTimeout(()=>toast("서킷 전용 차량은 서킷 테마에서만 탈 수 있어요 · 러스티 세단으로 출발","#5ad8ff"),300); } KART=effKart(KARTS[selKart],CHARS[selChar]); if(FCAR()) setTimeout(()=>toast(touchMode?"서킷 전용차 · 기어 ▲ 버튼으로 변속":"서킷 전용차 · Ctrl로 기어 올리기","#5ad8ff"),INTRO*1000+300); if(KART.syn) setTimeout(()=>toast("시너지! 성능 +4%","#ffcf2e"),INTRO*1000); paintKart(KART); attachRider(CHARS[selChar]); loadBest(); bestLap=null;
+  loadTrack(selTrack); resetDestruction(); if(["gt","volt","ruby","storm","apex"].includes(KARTS[selKart].id)&&!TRACKS[selTrack].circuit){ selKart=KARTS.findIndex(k=>k.id==="blue"); setTimeout(()=>toast("서킷 전용 차량은 서킷 테마에서만 탈 수 있어요 · 러스티 세단으로 출발","#5ad8ff"),300); } KART=effKart(KARTS[selKart],CHARS[selChar]); if(FCAR()) setTimeout(()=>toast(touchMode?"서킷 전용차 · 기어 ▲ 버튼으로 변속":"서킷 전용차 · Ctrl로 기어 올리기","#5ad8ff"),INTRO*1000+300); if(KART.syn) setTimeout(()=>toast("시너지! 성능 +4%","#ffcf2e"),INTRO*1000); paintKart(KART); attachRider(CHARS[selChar]); loadBest(); bestLap=null;
   const fb=document.getElementById("fireBtn"); if(fb){ fb.hidden=!(KART.id==="tank"||KART.id==="trex"||KART.hover); fb.textContent=KART.id==="trex"?"꼬리치기":KART.hover?"비행":"포탄"; }
   resetKart(); resetMissions(); kart.visible=true; updUpg(); rankHud(); state="countdown"; countT=3.2+INTRO; if(FCAR()){ countT+=10; f1Help(10); } raceT=0; lapStart=0; lap=1; laps=[]; cp1=cp2=false; prevIdx=S.prog;
   clearSkids();
@@ -6901,7 +6974,7 @@ const CARVO={
   bike:["부릉부릉~ 1등은 내 자리!","헬멧 끈 꽉 매라!","이 맛에 두 바퀴 탄다!"],
   giant:["쿵! 쿵! 쿵! 1등이다!","돌은 굴러가면 못 멈춘다!","산도 내 뒤에 있다!"],
   rearcart:["리어카 나가신다~ 비켜라!","이 할애비 아직 쌩쌩해!","배추 떨어진다, 조심혀!"],
-  volt:["소리 없이 빠르게~","충전 완료! 출발!","전기의 힘을 보여주마!"], ruby:["바람 맞으며 달린다~","지붕 열고 한 바퀴!","빨간 차가 제일 빨라!"], storm:["윙 펼치고 간다!","폭풍처럼 지나간다!","다운포스 최고!"], panther:["어둠 속의 파란 눈빛!","으르렁! 비켜라!","검은 표범 출격!"], dozer:["삽날 내려간다~ 비켜!","공사 중! 길 막지 마라!","다 밀어버린다!"], ringbike:["빛의 속도로!","링이 빛난다~","네온 길을 남기고 간다!"], horse:["이랴! 달려라!","히이잉~ 비켜라!","말발굽 소리 들리지?"], stroller:["응애! 비켜라~","유모차도 빠르다!","까꿍! 1등이다!"], sushi:["신선한 연어 배달이요~","와사비 맛 좀 볼래?","초밥은 속도가 생명!"],
+  volt:["소리 없이 빠르게~","충전 완료! 출발!","전기의 힘을 보여주마!"], ruby:["바람 맞으며 달린다~","지붕 열고 한 바퀴!","빨간 차가 제일 빨라!"], storm:["윙 펼치고 간다!","폭풍처럼 지나간다!","다운포스 최고!"], apex:["레드라인까지 밟는다!","이게 최고의 머신이다!","한계는 없어!"], panther:["어둠 속의 파란 눈빛!","으르렁! 비켜라!","검은 표범 출격!"], dozer:["삽날 내려간다~ 비켜!","공사 중! 길 막지 마라!","다 밀어버린다!"], ringbike:["빛의 속도로!","링이 빛난다~","네온 길을 남기고 간다!"], horse:["이랴! 달려라!","히이잉~ 비켜라!","말발굽 소리 들리지?"], stroller:["응애! 비켜라~","유모차도 빠르다!","까꿍! 1등이다!"], sushi:["신선한 연어 배달이요~","와사비 맛 좀 볼래?","초밥은 속도가 생명!"],
   trike:["따릉따릉~ 비켜주세요!","페달 밟는 다리가 안 보이지?","작다고 무시하지 마!"],
   gt:["썬더 GT 출격! 비켜비켜~","코너는 이렇게 도는 거야!","노란 번개 지나간다!"],
   nova:["미래에서 왔다! 슈웅~","날개 펴고 간다!","중력? 잠깐 꺼둘게!"],
@@ -7255,13 +7328,13 @@ function updateMyTag(){ if(typeof MP==="undefined"||!MP||typeof kart==="undefine
   const nm=cleanName(MP.nick); if(!nm) return; myTag=mpTag(nm,hexCol(CHAR.helmet)); myTag.position.y=(CAR.tagY||(CAR.giant?9.6:CAR.id==="tank"?4.4:3.1))+(CHAR.big&&!CAR.giant?2.6:0); if(touchMode||innerWidth<=760) myTag.scale.multiplyScalar(.45); kart.add(myTag); }
 // 차량 설명 말풍선: 썸네일 오른쪽 위 ⓘ 에 마우스를 올리거나(폰은 누르면) 표시
 const KTIP={blue:"균형형 · 모든 능력이 무난함",gold:"최고속도형 · 가속·조향은 조금 둔함",kart:"가벼움 · 부스터 중 한 번 더 = 2단 부스터 400km",scoot:"가속·조향 최고 · 가장 가벼움",tank:"무거움 · 포물선 포탄 (약 40m)",
-  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",rearcart:"최고 311km · 무겁지만 엄청 빠름",volt:"서킷 전용 · 가속 최고 · 충돌에 약함",ruby:"서킷 전용 · 코너 감속 최소 · 튼튼함",storm:"서킷 전용 · 최고속도 최강 · 차체 약함",panther:"부스터 강함 · 조금 묵직함",dozer:"아주 무거움 · 삽날로 밀어냄 · 긴 부스터",ringbike:"빠르고 가벼움 · 조금 미끄러움",horse:"빠르고 코너 좋음 · 다리로 달림",sushi:"균형형 · 코너 조금 좋음 · 스모와 시너지",stroller:"가볍고 코너 좋음 · 자이언트 베이비와 시너지",trike:"휠체어급 성능 · 작고 민첩",gt:"서킷 전용 · 가장 튼튼함 · 균형형",nova:"부스터 = 4초 폭격 비행 500km · 포탄 8발 자동 투하",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"Space 꾹 = 비행 · 달린 시간의 절반만큼 날 수 있음 (최대 5초)",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
+  giant:"부스터 쓰면 몸이 달아오르며 4초 만에 800km 돌진",dump:"가장 무거움 · 가장 빠르고 긴 부스터",truck:"묵직함 · 빠르고 긴 부스터",rearcart:"최고 311km · 무겁지만 엄청 빠름",volt:"서킷 전용 · 가속 최고 · 충돌에 약함",ruby:"서킷 전용 · 코너 감속 최소 · 튼튼함",storm:"서킷 전용 · 최고속도 최강 · 차체 약함",apex:"서킷 전용 · Lv50 · 모든 성능 최고",panther:"부스터 강함 · 조금 묵직함",dozer:"아주 무거움 · 삽날로 밀어냄 · 긴 부스터",ringbike:"빠르고 가벼움 · 조금 미끄러움",horse:"빠르고 코너 좋음 · 다리로 달림",sushi:"균형형 · 코너 조금 좋음 · 스모와 시너지",stroller:"가볍고 코너 좋음 · 자이언트 베이비와 시너지",trike:"휠체어급 성능 · 작고 민첩",gt:"서킷 전용 · 가장 튼튼함 · 균형형",nova:"부스터 = 4초 폭격 비행 500km · 포탄 8발 자동 투하",titan:"10배 크기 · 부스터 = 불꽃 돌진 · 아무도 못 밀어냄",jet:"Space 꾹 = 비행 · 달린 시간의 절반만큼 날 수 있음 (최대 5초)",snake:"코너링 최고 · 구불구불 기어감",roach:"빠르고 민첩 · 가벼워서 잘 날아감",trex:"꼬리치기로 뒤 차를 가드레일로",chair:"가속·조향 좋음 · 조금 가벼움",bike:"가장 빠름 · 세게 부딪히면 사람이 날아감"};
 function kInfoIcon(k){ const s=document.createElement("span"); s.className="kinfo"; s.textContent="i"; s.setAttribute("aria-label",k.name+" 설명");
   const show=()=>{ let t=document.getElementById("kTip"); if(!t){ t=document.createElement("div"); t.id="kTip"; document.body.appendChild(t); }
     t.innerHTML=""; const b=document.createElement("b"); b.textContent=k.name; const d=document.createElement("div"); d.className="one"; d.textContent=KTIP[k.id]||k.desc||""; t.append(b,d);
     const KM=CONFIG.maxSpeed*CONFIG.kmh, base=q=>q.speed*KM, top=q=>q.superBoost?800:q.nova?500:q.dual?400:q.speed*(q.boost||CONFIG.boostRatio)*KM;
     const stats=[["기본속도","#ffb36b",base,v=>Math.round(v)+"km"],["최고속도","#ff4d3a",top,v=>Math.round(v)+"km"],["가속",'#ffcf2e',q=>q.accel],["조향","#46e08a",q=>q.turn],["게이지 충전","#3ee6ff",q=>q.gaugeMul||1,v=>v===1?"보통":"×"+v],["부스터 시간","#7fd8ff",q=>q.superBoost?SUPER_T:(q.boostTime||CONFIG.boostTime),v=>v+"초"],["무게","#b98cff",q=>q.mass||1,v=>String(v)]];
-    if(F1STAT[k.id]){ const S1=id=>F1STAT[id], W=(o)=>v=>o[k.id]; stats.length=0; stats.push(["최고속도","#ff4d3a",q=>S1(q.id)?S1(q.id).top:NaN,v=>v+"km"],["가속","#ffcf2e",q=>S1(q.id)?S1(q.id).acc:NaN,v=>"×"+v],["튼튼함","#46e08a",q=>S1(q.id)?1/S1(q.id).dur:NaN,W({gt:"아주 튼튼",ruby:"튼튼",volt:"약함",storm:"가장 약함"})],["코너","#3ee6ff",q=>S1(q.id)?1/S1(q.id).steer:NaN,W({ruby:"최고",gt:"보통",volt:"보통",storm:"아쉬움"})],["감속","#7fd8ff",q=>S1(q.id)?1/S1(q.id).dec:NaN,W({ruby:"적음",gt:"보통",volt:"보통",storm:"많음"})],["기어","#b98cff",q=>S1(q.id)?(S1(q.id).gears||8):NaN,v=>"수동 "+v+"단"]); }
+    if(F1STAT[k.id]){ const S1=id=>F1STAT[id], W=(o)=>v=>o[k.id]; stats.length=0; stats.push(["최고속도","#ff4d3a",q=>S1(q.id)?S1(q.id).top:NaN,v=>v+"km"],["가속","#ffcf2e",q=>S1(q.id)?S1(q.id).acc:NaN,v=>"×"+v],["튼튼함","#46e08a",q=>S1(q.id)?1/S1(q.id).dur:NaN,W({gt:"아주 튼튼",ruby:"튼튼",volt:"약함",storm:"가장 약함",apex:"가장 튼튼"})],["코너","#3ee6ff",q=>S1(q.id)?1/S1(q.id).steer:NaN,W({ruby:"최고",gt:"보통",volt:"보통",storm:"아쉬움",apex:"최고+"})],["감속","#7fd8ff",q=>S1(q.id)?1/S1(q.id).dec:NaN,W({ruby:"적음",gt:"보통",volt:"보통",storm:"많음",apex:"가장 적음"})],["기어","#b98cff",q=>S1(q.id)?(S1(q.id).gears||8):NaN,v=>"수동 "+v+"단"]); }
     for(const [lab,col,fn,fmtv] of stats){ const vals=KARTS.map(fn).filter(v=>v<900), lo=Math.min(...vals), hi=Math.max(...vals), v=fn(k), p=v>=900?1:.15+.85*(v-lo)/((hi-lo)||1);
       const row=document.createElement("div"); row.className="bar"; const l=document.createElement("span"); l.textContent=lab; const tr=document.createElement("i"), fl=document.createElement("em"); fl.style.width=Math.round(Math.min(1,p)*100)+"%"; fl.style.background=col; tr.appendChild(fl); row.append(l,tr);
       if(fmtv){ const nv=document.createElement("b"); nv.className="nv"; nv.textContent=fmtv(v); row.appendChild(nv); } t.appendChild(row); }
@@ -7692,7 +7765,7 @@ function mpGhost(peer,pr,map){ map=map||MP.ghosts;
   const mine=c.rider, mp=mine&&mine.parent; if(mp) mp.remove(mine);
   const root=c.root.clone(true); if(mp) mp.add(mine);
   if(kid==="giant") root.traverse(o=>{ if(o.isMesh&&o.material&&!Array.isArray(o.material)){ o.material=o.material.clone(); delete o.material.userData.baseE; } });
-  if(c.paint){ const pm=c.paint.map(m=>m.clone()); paintMats(pm,c.paintDef,cl,(typeof shopItem==="function"&&pr.sk&&shopItem(pr.sk))?pr.sk:null); root.traverse(o=>{ if(o.isMesh){ const i=c.paint.indexOf(o.material); if(i>=0) o.material=pm[i]; } }); }
+  if(c.paint){ const pm=c.paint.map(m=>m.clone()); paintMats(pm,c.paintDef,cl,(typeof shopItem==="function"&&pr.sk&&shopItem(pr.sk))?pr.sk:null); root.traverse(o=>{ if(o.isMesh){ const i=c.paint.indexOf(o.material); if(i>=0) o.material=pm[i]; } }); try{ RLSkinWhole(root,(typeof shopItem==="function"&&pr.sk&&shopItem(pr.sk))?pr.sk:null,null,pm); }catch(_){} }
   // 좌석에 상대 캐릭터 앉히기
   const st=c.seat; let seatPar=root; if(st.parent){ root.traverse(o=>{ if(o.userData.seatPar) seatPar=o; }); } else { root.traverse(o=>{ if(o.userData.isBody) seatPar=o; }); }
   const rk=kid+"."+ch.id, src_=(ghostRiderCache[rk]||(ghostRiderCache[rk]=buildRider(ch,st.pose))); if(src_.userData.head) src_.userData.head.userData.isHead=true; const rd=src_.clone(true); try{ if(pr.ht&&shopItem(pr.ht)) hatOnRider(rd,pr.ht); }catch(_){} rd.position.set(...st.pos); rd.scale.setScalar(st.scale); seatPar.add(rd);
