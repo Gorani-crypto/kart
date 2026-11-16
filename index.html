@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1435</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1445</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6066,20 +6066,20 @@ requestAnimationFrame(auraTick);
 /* 돈: 경주마다 받은 경험치만큼 원(₩)을 받음 · 계정(kart/users/uid)의 money · own(산 물건) */
 var SHOP=[
   /* 캐릭터(레벨 해금 후 구매) · 경험치 능력 캐릭터 */
-  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:500},{id:"clown",t:"char",p:500},{id:"sumo",t:"char",p:500},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:2000},
+  {id:"zero",t:"char",p:500},{id:"foal",t:"char",p:250},{id:"lizard",t:"char",p:250},{id:"baby",t:"char",p:250},{id:"clown",t:"char",p:250},{id:"sumo",t:"char",p:250},{id:"granny",t:"char",p:250},{id:"grandpa",t:"char",p:250},{id:"bigma",t:"char",p:1000},
   /* 전설 카트 */
-  {id:"tiger",t:"kart",p:10000},{id:"dragon",t:"kart",p:15000},{id:"griffin",t:"kart",p:20000},
+  {id:"tiger",t:"kart",p:5000},{id:"dragon",t:"kart",p:7500},{id:"griffin",t:"kart",p:10000},
   /* 특수 치장(레벨 해금) */
-  {id:"aura",t:"cos",p:3000},{id:"tattoo",t:"cos",p:5000},{id:"wings",t:"cos",p:8000},
+  {id:"aura",t:"cos",p:1500},{id:"tattoo",t:"cos",p:2500},{id:"wings",t:"cos",p:4000},
   /* 모자 · 액세서리 (한 개 착용) */
-  {id:"h_cap",t:"hat",p:1000,n:"야구모자",e:"🧢"},{id:"h_beanie",t:"hat",p:1000,n:"비니",e:"🧶"},{id:"h_ribbon",t:"hat",p:1000,n:"리본",e:"🎀"},{id:"h_flower",t:"hat",p:1200,n:"꽃핀",e:"🌸"},
-  {id:"h_shades",t:"hat",p:1200,n:"선글라스",e:"🕶️"},{id:"h_goggle",t:"hat",p:1500,n:"레이싱 고글",e:"🥽"},{id:"h_phones",t:"hat",p:1500,n:"헤드폰",e:"🎧"},{id:"h_santa",t:"hat",p:1500,n:"산타 모자",e:"🎅"},
-  {id:"h_scarf",t:"hat",p:1800,n:"빨간 목도리",e:"🧣"},{id:"h_top",t:"hat",p:2000,n:"마술사 모자",e:"🎩"},
-  {id:"h_tiger",t:"hat",p:3000,n:"호랑이 모자",e:"🐯"},{id:"h_chick",t:"hat",p:3000,n:"닭 모자",e:"🐔"},
+  {id:"h_cap",t:"hat",p:500,n:"야구모자",e:"🧢"},{id:"h_beanie",t:"hat",p:500,n:"비니",e:"🧶"},{id:"h_ribbon",t:"hat",p:500,n:"리본",e:"🎀"},{id:"h_flower",t:"hat",p:600,n:"꽃핀",e:"🌸"},
+  {id:"h_shades",t:"hat",p:600,n:"선글라스",e:"🕶️"},{id:"h_goggle",t:"hat",p:750,n:"레이싱 고글",e:"🥽"},{id:"h_phones",t:"hat",p:750,n:"헤드폰",e:"🎧"},{id:"h_santa",t:"hat",p:750,n:"산타 모자",e:"🎅"},
+  {id:"h_scarf",t:"hat",p:900,n:"빨간 목도리",e:"🧣"},{id:"h_top",t:"hat",p:1000,n:"마술사 모자",e:"🎩"},
+  {id:"h_tiger",t:"hat",p:1500,n:"호랑이 모자",e:"🐯"},{id:"h_chick",t:"hat",p:1500,n:"닭 모자",e:"🐔"},
   /* 카트 스킨(무늬 · 한 개 착용) */
-  {id:"s_flame",t:"skin",p:3000,n:"불꽃 무늬"},{id:"s_bolt",t:"skin",p:3000,n:"번개 무늬"},{id:"s_check",t:"skin",p:3000,n:"체커 무늬"},{id:"s_heart",t:"skin",p:3000,n:"하트 무늬"},
-  {id:"s_camo",t:"skin",p:3500,n:"위장 무늬"},{id:"s_star",t:"skin",p:3500,n:"별빛 무늬"},{id:"s_splash",t:"skin",p:4000,n:"페인트 스플래시"},{id:"s_drip",t:"skin",p:4000,n:"페인트 흘림"},
-  {id:"s_chick",t:"skin",p:5000,n:"닭 무늬"},{id:"s_tiger",t:"skin",p:6000,n:"호랑이 무늬"},{id:"s_zebra",t:"skin",p:10000,n:"얼룩말 무늬"},{id:"s_emperor",t:"skin",p:10000,n:"황제 무늬"}
+  {id:"s_flame",t:"skin",p:1500,n:"불꽃 무늬"},{id:"s_bolt",t:"skin",p:1500,n:"번개 무늬"},{id:"s_check",t:"skin",p:1500,n:"체커 무늬"},{id:"s_heart",t:"skin",p:1500,n:"하트 무늬"},
+  {id:"s_camo",t:"skin",p:1750,n:"위장 무늬"},{id:"s_star",t:"skin",p:1750,n:"별빛 무늬"},{id:"s_splash",t:"skin",p:2000,n:"페인트 스플래시"},{id:"s_drip",t:"skin",p:2000,n:"페인트 흘림"},
+  {id:"s_chick",t:"skin",p:2500,n:"닭 무늬"},{id:"s_tiger",t:"skin",p:3000,n:"호랑이 무늬"},{id:"s_zebra",t:"skin",p:5000,n:"얼룩말 무늬"},{id:"s_emperor",t:"skin",p:5000,n:"황제 무늬"}
 ];
 function shopItem(id){ return SHOP.find(x=>x.id===id); }
 function shopOwned(id){ const it=shopItem(id); if(!it) return true; return !!(typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof&&ACCT.prof.own&&ACCT.prof.own[id]); }
