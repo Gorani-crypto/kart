@@ -259,7 +259,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 
 <div class="hud" id="hud-tl">
   <div class="panel"><div class="lap">LAP <span id="lap">1</span><small id="lapTotal">/2</small></div></div>
-  <div class="hud-row"><button class="panel" id="sndBtn" type="button">소리 켜짐</button><button class="panel" id="hudMenuBtn" type="button">메뉴</button><button class="panel" id="chatBtn" type="button" hidden>💬</button></div>
+  <div class="hud-row"><button class="panel" id="sndBtn" type="button">소리 켜짐</button><button class="panel" id="hudMenuBtn" type="button">나가기</button><button class="panel" id="chatBtn" type="button" hidden>💬</button></div>
   <div class="panel"><div class="time" id="time">0:00.00</div><div class="best" id="best">BEST —</div></div>
   <div class="panel rankbox" hidden><div id="mpRank"></div></div>
   <div class="panel" hidden><div class="best" id="upg" style="color:var(--helmet)"></div></div>
@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1630</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1645</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8036,6 +8036,44 @@ function verCheck(auto){ try{ fetch("version.json?t="+Date.now(),{cache:"no-stor
 verCheck(true); setInterval(()=>{ try{ if(state==="menu") verCheck(false); }catch(_){} },180000);
 try{ const _pb=mpPresBase; mpPresBase=function(){ return Object.assign(_pb(),{vr:RLV()}); }; }catch(_){}
 setInterval(()=>{ try{ if(MP.joined) mpSend(); }catch(_){} },3000);
+
+/* ---------- 설정: 키 설정 (방 목록 화면의 ⚙️ 설정) ---------- */
+const KACT=[["accel","⬆️ 가속"],["brake","⬇️ 브레이크·후진"],["left","⬅️ 왼쪽"],["right","➡️ 오른쪽"],["drift","🌀 드리프트 (서킷: 브레이크)"],["boost","🚀 부스터 (서킷: 기어 올리기)"],["fire","💥 아이템·포탄"],["lock","🎯 조준 고정"]];
+const KDEF={}; try{ for(const c in keymap){ const a=keymap[c]; (KDEF[a]=KDEF[a]||[]).push(c); } }catch(_){}
+const kName=c=>{ if(!c) return "—"; const M={ArrowUp:"↑",ArrowDown:"↓",ArrowLeft:"←",ArrowRight:"→",Space:"스페이스",ShiftLeft:"왼쪽 Shift",ShiftRight:"오른쪽 Shift",ControlLeft:"왼쪽 Ctrl",ControlRight:"오른쪽 Ctrl",AltLeft:"왼쪽 Alt",AltRight:"오른쪽 Alt",Tab:"Tab",CapsLock:"CapsLock",Backquote:"`",Minus:"-",Equal:"=",BracketLeft:"[",BracketRight:"]",Semicolon:";",Quote:"'",Comma:",",Period:".",Slash:"/",Backslash:"\\"};
+  if(M[c]) return M[c]; if(/^Key[A-Z]$/.test(c)) return c.slice(3); if(/^Digit\d$/.test(c)) return c.slice(5); if(/^Numpad/.test(c)) return "숫자패드 "+c.slice(6); return c; };
+function kLoad(){ let b=null; try{ b=JSON.parse(localStorage.getItem("rl.keys")||"null"); }catch(_){} const o={}; for(const [a] of KACT) o[a]=(b&&Array.isArray(b[a])?b[a]:(KDEF[a]||[])).slice(0,3); return o; }
+function kApply(b){ try{ for(const c in keymap) delete keymap[c]; for(const a in b) for(const c of b[a]) if(c) keymap[c]=a; for(const k in input) input[k]=false; }catch(_){} }
+let KB=kLoad(); kApply(KB);
+function kSave(){ try{ localStorage.setItem("rl.keys",JSON.stringify(KB)); }catch(_){} kApply(KB); }
+function setPanel(){ let m=document.getElementById("rlSet"); if(m){ m.hidden=false; kRender(); return; }
+  m=document.createElement("div"); m.id="rlSet"; m.style.cssText="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center";
+  m.innerHTML=`<div style="width:min(94vw,520px);max-height:90vh;overflow:auto;background:#141824;color:#fff;border:1px solid rgba(255,255,255,.14);border-top:3px solid #e8231b;border-radius:18px;padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.6);font:600 14px system-ui,sans-serif">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="font:900 20px system-ui,sans-serif">⚙️ 설정</div><div style="flex:1"></div><button type="button" data-a="close" style="padding:8px 14px;border:0;border-radius:10px;background:linear-gradient(135deg,#ff3b2f,#c4070d);color:#fff;font:900 14px system-ui,sans-serif;cursor:pointer">닫기</button></div>
+    <div style="font:900 16px system-ui,sans-serif;margin:12px 0 4px">⌨️ 키 설정</div>
+    <div style="font-size:12px;color:#9aa1b3;margin-bottom:10px">칸을 누르고 원하는 키를 누르세요 · 한 동작에 키 3개까지 · Backspace는 지우기, Esc는 취소</div>
+    <div class="krows"></div>
+    <div style="display:flex;gap:8px;margin-top:14px"><button type="button" data-a="reset" style="flex:1;padding:11px;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:transparent;color:#fff;font:800 14px system-ui,sans-serif;cursor:pointer">↺ 기본값으로</button></div>
+    <div class="kmsg" style="min-height:18px;margin-top:8px;font-size:12px;color:#ffcf2e"></div></div>`;
+  document.body.appendChild(m);
+  m.addEventListener("click",e=>{ if(e.target===m) m.hidden=true; });
+  m.querySelector('[data-a="close"]').onclick=()=>{ m.hidden=true; };
+  m.querySelector('[data-a="reset"]').onclick=()=>{ KB={}; for(const [a] of KACT) KB[a]=(KDEF[a]||[]).slice(0,3); kSave(); kRender(); m.querySelector(".kmsg").textContent="기본 키로 되돌렸어요"; };
+  kRender(); }
+let kWait=null;
+function kRender(){ const m=document.getElementById("rlSet"); if(!m) return; const box=m.querySelector(".krows");
+  const btn=(a,i)=>{ const c=(KB[a]||[])[i], w=kWait&&kWait[0]===a&&kWait[1]===i; return `<button type="button" class="kb" data-a="${a}" data-i="${i}" style="flex:1;min-width:0;padding:9px 6px;border-radius:10px;border:2px solid ${w?"#ff3b2f":"rgba(255,255,255,.18)"};background:${w?"rgba(255,59,47,.15)":"rgba(255,255,255,.06)"};color:${c||w?"#fff":"#6c7488"};font:800 14px system-ui,sans-serif;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w?"키를 누르세요…":kName(c)}</button>`; };
+  box.innerHTML=KACT.map(([a,n])=>`<div style="display:flex;align-items:center;gap:8px;margin:7px 0"><span style="flex:0 0 150px;font-weight:800;font-size:13px">${n}</span>${btn(a,0)}${btn(a,1)}${btn(a,2)}</div>`).join("");
+  box.querySelectorAll(".kb").forEach(b=>b.onclick=()=>{ kWait=[b.dataset.a,+b.dataset.i]; kRender(); }); }
+window.addEventListener("keydown",e=>{ if(!kWait) return; const m=document.getElementById("rlSet"); if(!m||m.hidden){ kWait=null; return; }
+  e.preventDefault(); e.stopImmediatePropagation(); const [a,i]=kWait; kWait=null; const msg=m.querySelector(".kmsg");
+  if(e.code==="Escape"){ kRender(); return; }
+  if(e.code==="Backspace"||e.code==="Delete"){ KB[a]=(KB[a]||[]).slice(); KB[a].splice(i,1); kSave(); kRender(); msg.textContent="지웠어요"; return; }
+  if(["Enter","KeyT","KeyR"].includes(e.code)) msg.textContent="⚠ "+kName(e.code)+" 키는 채팅·다시 시작에도 쓰여요"; else msg.textContent="";
+  for(const [b] of KACT){ if(b===a) continue; const ix=(KB[b]||[]).indexOf(e.code); if(ix>=0){ KB[b].splice(ix,1); msg.textContent=(KACT.find(x=>x[0]===b)||[,""])[1]+"에서 빠지고 여기로 옮겼어요"; } }
+  const arr=(KB[a]||[]).slice(); const dup=arr.indexOf(e.code); if(dup>=0) arr.splice(dup,1); arr[Math.min(i,arr.length)]=e.code; KB[a]=arr.filter(Boolean).slice(0,3); kSave(); kRender(); },true);
+window.addEventListener("keyup",e=>{ const m=document.getElementById("rlSet"); if(m&&!m.hidden) e.stopImmediatePropagation(); },true);
+{ const rb=document.getElementById("rBack"); if(rb&&!document.getElementById("rSettings")){ const b=document.createElement("button"); b.className="btn ghost"; b.id="rSettings"; b.type="button"; b.textContent="⚙️ 설정 (키 설정)"; b.addEventListener("click",setPanel); rb.parentNode.insertBefore(b,rb); } }
 /* ---------- BGM: 메뉴곡(인트로·로그인·메인·방 목록) / 대기방곡(방 안·싱글 준비) ---------- */
 const mk=u=>{ const a=new Audio(); a.loop=true; a.preload="none"; a.volume=0; a.dataset.src=u; return a; };
 const TR2=[{a:mk(BGM_URL),v:0},{a:mk(BGM2_URL),v:0},{a:mk(BGM3_URL),v:0},{a:mk(BGM4_URL),v:0},{a:mk(BGM5_URL),v:0},{a:mk(BGM6_URL),v:0},{a:mk(BGM7_URL),v:0},{a:mk(BGM8_URL),v:0},{a:mk(BGM9_URL),v:0},{a:mk(BGM10_URL),v:0},{a:mk(BGM11_URL),v:0},{a:mk(BGM12_URL),v:0},{a:mk(BGM13_URL),v:0}];
