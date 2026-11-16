@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1620</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1116-1630</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6759,7 +6759,7 @@ function soloRender(){ const G=document.getElementById("soList"); if(!G) return;
     const ch=CHARS[p.ch]||CHARS[0], kt=KARTS[p.k]||KARTS[0]; cell.className="mp-slot"+(p.me?" me":" ok bot");
     const img=document.createElement("img"); img.alt=""; img.src=safeThumb(()=>carThumb(kt,ch,+p.cl||0));
     const tag=document.createElement("span"); tag.className="tag"+(p.me?" host":" ok"); tag.textContent=p.me?"나":"AI";
-    const b=document.createElement("b"); b.textContent=p.me?"나 · 라이더":p.bot.n; const sm=document.createElement("small"); sm.textContent=(SYN[kt.id]===ch.id?"★ ":"")+kt.name+" · "+ch.name;
+    const b=document.createElement("b"); b.textContent=p.me?"나 · 라이더":p.bot.n; const sm=document.createElement("small"); sm.textContent=(SYN[kt.id]===ch.id?"★ ":"")+kt.name+" · "+ch.name; if(!me&&!p.bot&&(pr.vr||"")!==(window.RLV?RLV():"")){ sm.textContent+=" · ⚠ 버전 다름(새로고침 필요)"; sm.style.color="#ff8a5a"; }
     cell.append(img,tag,b,sm); cell.appendChild(kInfoIcon(kt));
     if(p.bot){ cell.lastChild.style.right="32px"; const x=document.createElement("button"); x.type="button"; x.className="bot-x"; x.textContent="✕"; x.title="AI 빼기"; x.onclick=()=>{ botRemove(p.bot.id); botInfoUpd(); }; cell.appendChild(x); }
     else { cell.style.cursor="pointer"; cell.onclick=e=>{ if(e.target.closest("button")) return; soOpen("kart"); }; }
@@ -7555,7 +7555,7 @@ function mpRender(){ const _ks=keepScroll(KEEP_SC); try{ mpRender0(); } finally{
 function mpRender0(){ rankRenderAll(); try{ if(MP.joined) requestAnimationFrame(mpSums); }catch(_){}
   $m("mpJoinBox").hidden=MP.joined; $m("mpRoomBox").hidden=!MP.joined; if(!MP.joined) return;
   const L=mpList(), host=mpHost(), amHost=mpIsHost();
-  const sig=JSON.stringify([BOT.cfg.length,MP.code,MP.myPeer,MP.ready,selKart,selChar,selColor,selTrack,selRandom,THT.mp,GM.sel.mode,GM.sel.team,host&&host.peer,L.map(p=>[p.peer,p.presence.n,p.presence.k,p.presence.ch,p.presence.cl,p.presence.rd,p.presence.st,p.presence.tr,p.presence.rnd,p.presence.gm,p.presence.gt,p.presence.jt])]);
+  const sig=JSON.stringify([BOT.cfg.length,MP.code,MP.myPeer,MP.ready,selKart,selChar,selColor,selTrack,selRandom,THT.mp,GM.sel.mode,GM.sel.team,host&&host.peer,L.map(p=>[p.peer,p.presence.n,p.presence.k,p.presence.ch,p.presence.cl,p.presence.rd,p.presence.st,p.presence.tr,p.presence.rnd,p.presence.gm,p.presence.gt,p.presence.jt,p.presence.lv,p.presence.au,p.presence.ht,p.presence.sk,p.presence.vr])]);
   if(sig===MP.lobbySig) return; MP.lobbySig=sig; // 바뀐 게 없으면 다시 그리지 않음 (버튼 누르는 중 깜빡임 방지)
   $m("mpRoomTitle").textContent=(MP.roomTitle||("방 "+MP.code))+(MP.roomPw?" 🔒":"")+" · 참가자 "+L.length+"명";
   const G=$m("mpList"); G.innerHTML="";
@@ -7568,7 +7568,7 @@ function mpRender0(){ rankRenderAll(); try{ if(MP.joined) requestAnimationFrame(
     const img=document.createElement("img"); img.alt=""; img.src=safeThumb(()=>carThumb(kt,ch,+pr.cl||0));
     const tag=document.createElement("span"); tag.className="tag"+(isH?" host":pr.rd?" ok":""); tag.textContent=racing?"주행 중":p.bot?"AI":isH?"방장":pr.rd?"준비 완료":"대기 중";
     const b=document.createElement("b"); if(pr.au){ b.style.textShadow="0 0 8px #ffd24a,0 0 14px #ffb020"; b.style.color="#fff3b0"; } b.innerHTML=(pr.lv>0?lvBadge(Math.min(100,pr.lv|0)):"")+(me?"나 · ":"")+(cleanName(pr.n)||"라이더").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
-    const sm=document.createElement("small"); sm.textContent=(SYN[kt.id]===ch.id?"★ ":"")+kt.name+" · "+ch.name;
+    const sm=document.createElement("small"); sm.textContent=(SYN[kt.id]===ch.id?"★ ":"")+kt.name+" · "+ch.name; if(!me&&!p.bot&&(pr.vr||"")!==(window.RLV?RLV():"")){ sm.textContent+=" · ⚠ 버전 다름(새로고침 필요)"; sm.style.color="#ff8a5a"; }
     cell.append(img,tag,b,sm); cell.appendChild(kInfoIcon(kt)); if(p.bot&&p.owner===MP.myPeer&&!MP.racing) cell.lastChild.style.right="32px";
     if(p.bot&&p.owner===MP.myPeer&&!MP.racing){ const x=document.createElement("button"); x.type="button"; x.className="bot-x"; x.textContent="✕"; x.title="AI 빼기"; x.onclick=()=>{ botRemove(+String(p.peer).split("#ai")[1]); mpSend(); MP.lobbySig=null; mpRender(); }; cell.appendChild(x); }
     G.appendChild(cell); }
@@ -8024,6 +8024,18 @@ try{ if(typeof loadTrack==="function"&&typeof builtTracks!=="undefined"){
     if(fresh&&TR&&TR.group){ const big=[]; TR.group.traverse(o=>{ if(o.isInstancedMesh&&o.count>=300&&!o.userData.rlChunk) big.push([o,o.instanceMatrix.version]); });
       const tr=TR; setTimeout(()=>{ for(const [o,v] of big){ if(o.instanceMatrix.version!==v||!o.parent) continue; try{ chunkIM(o); }catch(e){ console.warn("chunk",e); } } tr.rlChunked=true; },2500); } };
 } }catch(e){ console.warn("opt",e); }
+
+/* ---------- 버전 확인: 옛 버전이 캐시에 남아 있으면 새로 불러오기 ---------- */
+const RLV=()=>{ const e=document.querySelector("#menu .eyebrow"); const m=e&&e.textContent.match(/\d{4}-\d{4}/); return m?m[0]:""; };
+window.RLV=RLV;
+function verCheck(auto){ try{ fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===RLV()) return;
+    const k="rl.vre."+j.v; let tried=false; try{ tried=sessionStorage.getItem(k)==="1"; }catch(_){}
+    const go=()=>{ try{ sessionStorage.setItem(k,"1"); }catch(_){} location.replace(location.pathname+"?v="+j.v+location.hash); };
+    if(auto&&!tried){ go(); return; }
+    if(!document.getElementById("rlNewVer")){ const b=document.createElement("button"); b.id="rlNewVer"; b.type="button"; b.textContent="🆕 새 버전이 나왔어요 · 눌러서 새로고침"; b.style.cssText="position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:6000;padding:12px 18px;border:0;border-radius:999px;background:linear-gradient(135deg,#ff3b2f,#c4070d);color:#fff;font:900 15px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.4);cursor:pointer"; b.onclick=go; document.body.appendChild(b); } }).catch(()=>{}); }catch(_){} }
+verCheck(true); setInterval(()=>{ try{ if(state==="menu") verCheck(false); }catch(_){} },180000);
+try{ const _pb=mpPresBase; mpPresBase=function(){ return Object.assign(_pb(),{vr:RLV()}); }; }catch(_){}
+setInterval(()=>{ try{ if(MP.joined) mpSend(); }catch(_){} },3000);
 /* ---------- BGM: 메뉴곡(인트로·로그인·메인·방 목록) / 대기방곡(방 안·싱글 준비) ---------- */
 const mk=u=>{ const a=new Audio(); a.loop=true; a.preload="none"; a.volume=0; a.dataset.src=u; return a; };
 const TR2=[{a:mk(BGM_URL),v:0},{a:mk(BGM2_URL),v:0},{a:mk(BGM3_URL),v:0},{a:mk(BGM4_URL),v:0},{a:mk(BGM5_URL),v:0},{a:mk(BGM6_URL),v:0},{a:mk(BGM7_URL),v:0},{a:mk(BGM8_URL),v:0},{a:mk(BGM9_URL),v:0},{a:mk(BGM10_URL),v:0},{a:mk(BGM11_URL),v:0},{a:mk(BGM12_URL),v:0},{a:mk(BGM13_URL),v:0}];
