@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1117-1510</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1117-1530</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7206,7 +7206,7 @@ const NETA=(()=>{
           cb(out); },()=>cb(null)); }); },
     rankLv(lv){ init().then(ok=>{ const u=firebase.auth().currentUser; if(!ok||!u||u.isAnonymous) return; const me=u.uid; db.ref("kart/rooms/__rank/peers").orderByKey().startAt(me+"_").endAt(me+"_\uf8ff").once("value").then(s=>{ s.forEach(c=>{ const v=c.val(); if(v&&v.lv!==lv) c.ref.update({lv}).catch(()=>{}); }); }).catch(()=>{}); }); },
     rankPut(tr,n,t){ init().then(ok=>{ if(!ok) return; const key=uid+"_rank_"+String(tr).replace(/[^a-z0-9]/g,"")+"_"+Array.from(String(n)).map(c=>c.codePointAt(0).toString(36)).join("").slice(0,40), r=db.ref("kart/rooms/__rank/peers/"+key);
-        r.once("value").then(s=>{ const o=s.val(); if(o&&+o.t<=t) return; return r.set({tr:String(tr),n:String(n).slice(0,10),lv:((typeof ACCT!=="undefined"&&ACCT)&&ACCT.lv)||0,t:Math.round(t*100)/100,at:firebase.database.ServerValue.TIMESTAMP,hb:firebase.database.ServerValue.TIMESTAMP}); }).catch(e=>console.warn(e)); }); }
+        r.once("value").then(s=>{ const o=s.val(); if(o&&+o.t<=t&&!(RANK_RESET_IDS.has(String(tr))&&!((+o.at||0)>RANK_RESET_AT))) return; return r.set({tr:String(tr),n:String(n).slice(0,10),lv:((typeof ACCT!=="undefined"&&ACCT)&&ACCT.lv)||0,t:Math.round(t*100)/100,at:firebase.database.ServerValue.TIMESTAMP,hb:firebase.database.ServerValue.TIMESTAMP}); }).catch(e=>console.warn(e)); }); }
   };
 })();
 NETA.hello();
