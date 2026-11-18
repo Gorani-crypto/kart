@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1118-1355</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1118-1425</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6044,7 +6044,7 @@ const safeThumb=f=>{ if(!TQ.armed){ TQ.armed=true; TQ.used=0; Promise.resolve().
 const $=id=>document.getElementById(id);
 let selTrack=0, selKart=0, selChar=0, selColor=0;
 try{ selColor=Math.min(PAINTS.length-1,parseInt(localStorage.getItem("kartrebuild.color")||"0",10)||0); }catch(_){}
-function setColor(i){ selColor=i; try{localStorage.setItem("kartrebuild.color",String(i));}catch(_){} paintMats(CAR.paint,CAR.paintDef,selColor); }
+function setColor(i){ if(i===9) i=0; selColor=i; try{localStorage.setItem("kartrebuild.color",String(i));}catch(_){} paintMats(CAR.paint,CAR.paintDef,selColor); }
 var COSM=[{id:"aura",lv:30,name:"오라",d:"대기실과 출발 전까지 몸 주위에 빛나는 오라 · 달릴 땐 사라짐",xp:1.3},{id:"tattoo",lv:50,name:"문신",d:"모든 캐릭터 얼굴에 새기는 불꽃 문신",xp:1.5},{id:"wings",lv:85,name:"날개",d:"등에 다는 금빛 날개"},{id:"bighead",lv:30,name:"왕머리 가면",d:"얼굴에 쓰는 엄청엄청 큰 머리 가면"}];
 var COSEQ={}; try{ COSEQ=JSON.parse(localStorage.getItem("kartrebuild.cos")||"{}")||{}; }catch(_){}
 function cosLocked(c){ return !((typeof ACCT!=="undefined"&&ACCT)&&ACCT.user&&ACCT.lv>=c.lv); }
@@ -6105,7 +6105,7 @@ var SHOP=[
   {id:"h_scarf",t:"hat",p:900,n:"빨간 목도리",e:"🧣"},{id:"h_top",t:"hat",p:1000,n:"마술사 모자",e:"🎩"},
   {id:"h_tiger",t:"hat",p:1500,n:"호랑이 모자",e:"🐯"},{id:"h_chick",t:"hat",p:1500,n:"닭 모자",e:"🐔"},
   /* 카트 스킨(무늬 · 한 개 착용) */
-  {id:"s_flame",t:"skin",p:1500,n:"불꽃 무늬"},{id:"s_bolt",t:"skin",p:1500,n:"번개 무늬"},{id:"s_check",t:"skin",p:1500,n:"체커 무늬"},{id:"s_heart",t:"skin",p:1500,n:"하트 무늬"},
+  {id:"s_black",t:"skin",p:500,n:"⚫ 검정 페인트"},{id:"s_flame",t:"skin",p:1500,n:"불꽃 무늬"},{id:"s_bolt",t:"skin",p:1500,n:"번개 무늬"},{id:"s_check",t:"skin",p:1500,n:"체커 무늬"},{id:"s_heart",t:"skin",p:1500,n:"하트 무늬"},
   {id:"s_camo",t:"skin",p:1750,n:"위장 무늬"},{id:"s_star",t:"skin",p:1750,n:"별빛 무늬"},{id:"s_splash",t:"skin",p:2000,n:"페인트 스플래시"},{id:"s_drip",t:"skin",p:2000,n:"페인트 흘림"},
   {id:"s_chick",t:"skin",p:2500,n:"닭 무늬"},{id:"s_tiger",t:"skin",p:3000,n:"호랑이 무늬"},{id:"s_zebra",t:"skin",p:5000,n:"얼룩말 무늬"},{id:"s_emperor",t:"skin",p:5000,n:"황제 무늬"},{id:"s_amb",t:"skin",p:5000,n:"🚑 구급차"},{id:"s_cat",t:"skin",p:5000,n:"🐱 멍청한 고양이"}
 ];
@@ -6156,6 +6156,7 @@ function skinTex(id){ if(SKIN_TEX[id]) return SKIN_TEX[id]; const R=(a,b)=>a+Mat
     s_cat:(x,w,h)=>{ /* 주황 줄무늬 고양이 털 */ x.fillStyle="#f6a84c"; x.fillRect(0,0,w,h); x.fillStyle="#b8561a";
       for(let k=0;k<7;k++){ const y=k*37+R(-5,5); x.beginPath(); x.moveTo(0,y); x.bezierCurveTo(70,y+R(-14,14),150,y+R(-14,14),256,y+R(-4,4)); x.lineTo(256,y+R(9,14)); x.bezierCurveTo(150,y+R(8,22),70,y+R(4,20),0,y+12); x.fill(); }
       x.globalAlpha=.25; x.fillStyle="#fff2dc"; for(let k=0;k<60;k++){ x.fillRect(R(0,w),R(0,h),R(1,3),R(4,9)); } x.globalAlpha=1; },
+    s_black:(x,w,h)=>{ x.fillStyle="#24272f"; x.fillRect(0,0,w,h); },
     s_emperor:(x,w,h)=>{ const g=x.createLinearGradient(0,0,w,h); g.addColorStop(0,"#3a0a5a"); g.addColorStop(.5,"#5a1a8a"); g.addColorStop(1,"#2a0a4a"); x.fillStyle=g; x.fillRect(0,0,w,h);
       x.strokeStyle="#ffd24a"; x.lineWidth=5; x.strokeRect(8,8,240,240); x.lineWidth=2; x.strokeRect(18,18,220,220); x.fillStyle="#ffd24a";
       x.beginPath(); x.moveTo(78,170); x.lineTo(78,110); x.lineTo(103,140); x.lineTo(128,92); x.lineTo(153,140); x.lineTo(178,110); x.lineTo(178,170); x.closePath(); x.fill(); x.fillRect(74,174,108,14);
@@ -6268,10 +6269,11 @@ function shopBuy(id){ const it=shopItem(id); if(!it||!ACCT.user) return; if(shop
     .catch(e=>{ console.warn(e); toast("구매 실패 · 잠시 뒤 다시 해 주세요","#ff9a8a"); }); }
 document.addEventListener("click",e=>{ const t=e.target&&e.target.closest&&e.target.closest("#titleShop,#shopBtn,#shopBtn2"); if(t){ e.preventDefault(); e.stopPropagation(); shopOpen(); } },true);
 
-function swatchesHTML(){ return PAINTS.map((h,i)=>`<button type="button" class="sw" data-i="${i}" aria-pressed="${i===selColor}" title="${PAINT_NAMES[i]}" style="background:${h==null?"conic-gradient(#e8344a,#ffd21f,#3cc46a,#3ec6ff,#9b5de5,#e8344a)":"#"+h.toString(16).padStart(6,"0")}"></button>`).join(""); }
+function swatchesHTML(){ return PAINTS.map((h,i)=>i===9?"":`<button type="button" class="sw" data-i="${i}" aria-pressed="${i===selColor}" title="${PAINT_NAMES[i]}" style="background:${h==null?"conic-gradient(#e8344a,#ffd21f,#3cc46a,#3ec6ff,#9b5de5,#e8344a)":"#"+h.toString(16).padStart(6,"0")}"></button>`).join(""); }
 try{ selTrack=Math.min(TRACKS.length-1,parseInt(localStorage.getItem("kartrebuild.track")||"0",10)||0); selKart=Math.min(KARTS.length-1,parseInt(localStorage.getItem("kartrebuild.kart")||"0",10)||0); selChar=Math.min(CHARS.length-1,parseInt(localStorage.getItem("kartrebuild.char")||"0",10)||0);}catch(_){}
 /* 트랙 선택 화면: 테마별 묶음 (TRACKS 순서·번호는 그대로, 보여주는 순서만 묶음) */
 const TRACK_CATS=[
+  {n:"🏁 서킷",d:"13개 맵",ids:["silver","monaco","spa","baku","korea","abu","monza","sepang","shanghai","suzuka","austria","bok","autobahn"]},
   {n:"🏘️ 빌리지",d:"5개 맵",ids:["harbor", "hill", "village", "sky", "boom"]},
   {n:"🏮 차이나",d:"2개 맵",ids:["street", "terra"]},
   {n:"🏰 대저택",d:"2개 맵",ids:["mansion", "toybox"]},
@@ -6287,8 +6289,7 @@ const TRACK_CATS=[
   {n:"🏜️ 사막",d:"2개 맵",ids:["arena", "desert"]},
   {n:"🚀 스페이스",d:"1개 맵",ids:["orbit"]},
   {n:"🐠 해저",d:"1개 맵",ids:["coral"]},
-  {n:"🎡 놀이공원",d:"1개 맵",ids:["funpark"]},
-  {n:"🏁 서킷",d:"13개 맵",ids:["silver","monaco","spa","baku","korea","abu","monza","sepang","shanghai","suzuka","austria","bok","autobahn"]}];
+  {n:"🎡 놀이공원",d:"1개 맵",ids:["funpark"]}];
 let selRandom=false; try{ selRandom=localStorage.getItem("kartrebuild.rnd")==="1"; }catch(_){}
 function setRandom(v){ selRandom=!!v; try{ localStorage.setItem("kartrebuild.rnd",selRandom?"1":"0"); }catch(_){} }
 const CAT_OPEN={menu:new Set(),mp:new Set()};
@@ -6319,8 +6320,12 @@ function rouletteRun(target,done){ if(ROUL.busy) return; ROUL.busy=true; try{ in
 function trackGroups(){ const used=new Set(), out=[]; for(const c of TRACK_CATS){ const L=[]; for(const id of c.ids){ const i=TRACKS.findIndex(t=>t.id===id); if(i>=0&&!used.has(i)){ used.add(i); L.push(i); } } if(L.length) out.push({n:c.n,d:c.d,L}); }
   const rest=TRACKS.map((t,i)=>i).filter(i=>!used.has(i)); if(rest.length) out.push({n:"🏁 기타",d:"",L:rest}); return out; }
 (function(){ const F=CONFIG.maxSpeed*CONFIG.kmh; for(const k of KARTS){ if(["gt","volt","ruby","storm","apex","tgp","dgp","ggp"].includes(k.id)) continue; const base=k.speed*F, bst=base*(k.boost||CONFIG.boostRatio); k.speed=(base+10)/F; k.boost=(bst+(k.id==="bike"?0:10))/(base+10); } /* 슈퍼바이크는 기본속도만 +10 */ })(); /* +10km/h */
-const KART_CATS=[{n:"🚗 자동차",ids:["blue","gold","kart","panther","truck"]},{n:"🏁 서킷 전용",ids:["gt","volt","ruby","storm","apex","tgp","dgp","ggp"]},{n:"🏍️ 오토바이",ids:["scoot","bike","ringbike","trike"]},{n:"🐾 동물",ids:["roach","snake","horse","trex"]},{n:"🛠️ 특수카",ids:["dump","dozer","rearcart","chair","sushi","stroller"]},{n:"⚡ 능력카",ids:["tank","giant","trex","jet","nova"]}];
+const KART_CATS=[{n:"🏁 서킷 전용",ids:["gt","volt","ruby","storm","apex","tgp","dgp","ggp"]},{n:"🚗 자동차",ids:["blue","gold","kart","panther","truck"]},{n:"🏍️ 오토바이",ids:["scoot","bike","ringbike","trike"]},{n:"🐾 동물",ids:["roach","snake","horse","trex"]},{n:"🛠️ 특수카",ids:["dump","dozer","rearcart","chair","sushi","stroller"]},{n:"⚡ 능력카",ids:["tank","giant","trex","jet","nova"]}];
 const KTAB={menu:"전체",mp:"전체"};
+const CIRC_KARTS=["gt","volt","ruby","storm","apex","tgp","dgp","ggp"];
+function kOrd(){ const a=[],b=[]; KARTS.forEach((k,i)=>(CIRC_KARTS.includes(k.id)?a:b).push(i)); return a.concat(b); }
+function circBan(k){ return !!k&&CIRC_KARTS.includes(k.id)&&!(typeof selRandom!=="undefined"&&!selRandom&&TRACKS[selTrack]&&TRACKS[selTrack].circuit); }
+const BAN_MSG="🚫 서킷 전용 차량은 서킷 맵에서만 탈 수 있어요";
 KART_CATS.push({n:"👑 전설",ids:["tiger","dragon","griffin"]});
 function kInTab(k,w){ const t=KTAB[w]; if(t==="전체") return true; const c=KART_CATS.find(c=>c.n===t); return !c||c.ids.includes(k.id); }
 function ktabHTML(w){ const cur=KARTS[selKart]&&KARTS[selKart].id; return '<div class="kt-tabs">'+[{n:"전체",ids:KARTS.map(k=>k.id)}].concat(KART_CATS).map(c=>`<button type="button" data-kt="${c.n}" aria-pressed="${KTAB[w]===c.n}">${c.n}<small>${c.ids.filter(id=>KARTS.some(k=>k.id===id)).length}</small>${c.n!=="전체"&&c.ids.includes(cur)?'<span class="dot"></span>':''}</button>`).join("")+'</div>'; }
@@ -6329,8 +6334,8 @@ const KEEP_SC=["#trackOpts .th-maps","#trackOpts .th-tabs","#kartOpts","#charOpt
 function renderOptions(){ const _ks=keepScroll(KEEP_SC); try{ renderOptions0(); } finally{ _ks(); requestAnimationFrame(_ks); try{ soloRender(); }catch(_){} } }
 function renderOptions0(){ setTimeout(rankRenderAll,0); gmRenderMenu();
   { const grps=trackGroups(), tab=thTab("menu",grps,selTrack); $("trackOpts").innerHTML=`<button class="opt rnd-card" type="button" id="trk-random" aria-pressed="${selRandom}"><span class="rnd-ico">🎲</span><span style="display:flex;flex-direction:column;gap:2px"><b>랜덤 맵</b><span>출발하면 룰렛이 돌아가서 ${TRACKS.length}개 맵 중 하나를 뽑아요</span></span></button>`+`<div class="th-wrap"><div class="th-tabs">${grps.map(g=>`<button type="button" data-th="${g.n}" aria-pressed="${g.n===tab}">${g.n}${!selRandom&&g.L.includes(selTrack)?'<span class="dot"></span>':""}</button>`).join("")}</div><div class="th-maps">`+(grps.find(g=>g.n===tab)||grps[0]).L.map(i=>{ const t=TRACKS[i]; return `<button class="opt" type="button" id="trk-${t.id}" aria-pressed="${!selRandom&&i===selTrack}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>trackThumb(t))}"><b>${t.name}</b><i class="diff">난이도 ${"●".repeat(t.diff||2)}${"○".repeat(5-(t.diff||2))}</i><span>${t.desc}</span>${t.records?`<span class="stat">랭킹 1위 ${t.records[0].name} ${fmtT(t.records[0].t)}</span>`:""}</button>`; }).join("")+`</div></div>`; { const tg=$("trackOpts").querySelector(".th-tabs [aria-pressed=true]"); if(tg&&tg.parentNode) tg.parentNode.scrollTop=Math.max(0,tg.offsetTop-tg.parentNode.offsetTop-90); } thCue($("trackOpts")); }
-  $("kartOpts").innerHTML=ktabHTML("menu")+KARTS.map((k,i)=>{ if(!kInTab(k,"menu")) return ""; if(kartLocked(k)) return `<button class="opt" type="button" id="krt-${k.id}" aria-pressed="false" data-i="${i}"><img class="thumb" alt="" src="${qThumb()}"><b>?</b><span>?</span></button>`; const top=Math.round(CONFIG.maxSpeed*k.speed*CONFIG.kmh), bst=Math.round(CONFIG.maxSpeed*k.speed*(k.boost||CONFIG.boostRatio)*CONFIG.kmh);
-    return `<button class="opt" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}"><b>${k.name}</b><span>${k.desc}</span>${["gt","volt","ruby","storm","apex","tgp","dgp","ggp"].includes(k.id)?`<span class="stat" style="color:#5ad8ff">🏁 서킷 전용 · 서킷 최고 ${F1STAT[k.id].top} km/h · ${F1STAT[k.id].t} · 수동 ${F1STAT[k.id].gears||8}단 기어</span>`:`<span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>`}${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
+  $("kartOpts").innerHTML=ktabHTML("menu")+kOrd().map(i=>{ const k=KARTS[i]; if(!kInTab(k,"menu")) return ""; if(kartLocked(k)) return `<button class="opt" type="button" id="krt-${k.id}" aria-pressed="false" data-i="${i}"><img class="thumb" alt="" src="${qThumb()}"><b>?</b><span>?</span></button>`; const top=Math.round(CONFIG.maxSpeed*k.speed*CONFIG.kmh), bst=Math.round(CONFIG.maxSpeed*k.speed*(k.boost||CONFIG.boostRatio)*CONFIG.kmh);
+    return `<button class="opt${circBan(k)?" rl-ban":""}" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"${circBan(k)?' data-ban="1"':""}><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}">${circBan(k)?'<span class="rl-banb">🚫 서킷 맵 전용</span>':""}<b>${k.name}</b><span>${k.desc}</span>${["gt","volt","ruby","storm","apex","tgp","dgp","ggp"].includes(k.id)?`<span class="stat" style="color:#5ad8ff">🏁 서킷 전용 · 서킷 최고 ${F1STAT[k.id].top} km/h · ${F1STAT[k.id].t} · 수동 ${F1STAT[k.id].gears||8}단 기어</span>`:`<span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>`}${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
   $("charOpts").innerHTML=CHARS.map((c,i)=>charLocked(c)?`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="false" data-i="${i}"><img class="thumb" alt="" src="${qThumb()}"><b>?</b><span>?</span></button>`:`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="${i===selChar}" data-i="${i}"><img class="thumb" alt="" src="${safeThumb(()=>charThumb(c))}"><b><span class="dot" style="background:#${c.helmet.toString(16).padStart(6,"0")}"></span>${c.name}</b><span>${c.desc}</span><span class="stat" style="color:${(c.xpm||1)>1?"#7ae86a":"#9fb0d0"}">⭐ 경험치 ${Math.round((c.xpm||1)*100)}%${(c.xpm||1)>1?" (+"+Math.round(((c.xpm||1)-1)*100)+"%)":""}</span>${SYN[KARTS[selKart].id]===c.id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}</button>`).join("");
   $("colorOpts").innerHTML=swatchesHTML()+cosHTML(); $("colorOpts").querySelectorAll(".sw").forEach(b=>b.addEventListener("click",()=>{ setColor(+b.dataset.i); renderOptions(); })); cosBind($("colorOpts"),renderOptions);
   $("charOpts").querySelectorAll("button.opt").forEach(b=>b.addEventListener("click",()=>{ if(charLocked(CHARS[+b.dataset.i])){ toast(lockMsg(),"#9fb0d0"); return; } selChar=+b.dataset.i; try{localStorage.setItem("kartrebuild.char",String(selChar));}catch(_){} renderOptions();}));
@@ -7672,9 +7677,9 @@ function mpRender0(){ rankRenderAll(); try{ if(MP.joined) requestAnimationFrame(
   { const tb=document.createElement("div"); tb.className="th-tabs"; for(const g of grpsM){ const bb=document.createElement("button"); bb.type="button"; bb.innerHTML=g.n+(!hrnd&&g.L.includes(curT)?'<span class="dot"></span>':""); bb.setAttribute("aria-pressed",String(g.n===tabM)); bb.onclick=()=>{ THT.mp=g.n; MP.lobbySig=null; mpRender(); }; tb.appendChild(bb); } thW.append(tb,thM); }
   for(const grp of grpsM){ if(grp.n!==tabM) continue; grp.L.forEach(i=>{ const t=TRACKS[i]; const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=trackThumb(t); const sp=document.createElement("span"); sp.textContent=t.name+((t.laps||CONFIG.laps)===1?" · 1바퀴":""); const df=document.createElement("i"); df.className="diff"; df.textContent="●".repeat(t.diff||2)+"○".repeat(5-(t.diff||2)); df.style.cssText="font-style:normal;font-size:10px;color:#ff6b6b"; b.append(im,sp,df); b.setAttribute("aria-pressed",String(!hrnd&&i===curT)); b.disabled=!amHost;
     b.onclick=()=>{ selTrack=i; setRandom(false); try{localStorage.setItem("kartrebuild.track",String(i));}catch(_){} mpSend(); mpRender(); }; thM.appendChild(b); }); thCue($m("mpTracks")); }
-  $m("mpKarts").innerHTML=ktabHTML("mp"); $m("mpKarts").querySelectorAll("[data-kt]").forEach(b=>b.onclick=()=>{ KTAB.mp=b.dataset.kt; MP.lobbySig=null; mpRender(); }); KARTS.forEach((k,i)=>{ if(!kInTab(k,"mp")) return; const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; const lk=kartLocked(k); im.src=lk?qThumb():safeThumb(()=>carThumb(k,CHARS[selChar],i===selKart?selColor:0)); const t=document.createElement("span"); t.textContent=lk?"?":k.name; b.append(im,t); b.setAttribute("aria-pressed",String(i===selKart));
-    b.style.position="relative"; if(!lk) b.appendChild(kInfoIcon(k));
-    b.onclick=()=>{ if(kartLocked(k)){ toast(lockMsg(),"#9fb0d0"); return; } selKart=i; try{localStorage.setItem("kartrebuild.kart",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpKarts").appendChild(b); });
+  $m("mpKarts").innerHTML=ktabHTML("mp"); $m("mpKarts").querySelectorAll("[data-kt]").forEach(b=>b.onclick=()=>{ KTAB.mp=b.dataset.kt; MP.lobbySig=null; mpRender(); }); kOrd().forEach(i=>{ const k=KARTS[i]; if(!kInTab(k,"mp")) return; const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; const lk=kartLocked(k); im.src=lk?qThumb():safeThumb(()=>carThumb(k,CHARS[selChar],i===selKart?selColor:0)); const t=document.createElement("span"); t.textContent=lk?"?":k.name; b.append(im,t); b.setAttribute("aria-pressed",String(i===selKart));
+    b.style.position="relative"; if(!lk) b.appendChild(kInfoIcon(k)); if(!lk&&circBan(k)){ b.classList.add("rl-ban"); const bn=document.createElement("span"); bn.className="rl-banb"; bn.textContent="🚫 서킷 맵 전용"; b.appendChild(bn); }
+    b.onclick=()=>{ if(kartLocked(k)){ toast(lockMsg(),"#9fb0d0"); return; } if(circBan(k)){ toast(BAN_MSG,"#ff8a7a"); return; } selKart=i; try{localStorage.setItem("kartrebuild.kart",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpKarts").appendChild(b); });
   $m("mpChars").innerHTML=""; CHARS.forEach((c,i)=>{ const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=safeThumb(()=>charThumb(c)); const t=document.createElement("span"); t.textContent=c.name; b.append(im,t); b.setAttribute("aria-pressed",String(i===selChar));
     if(charLocked(c)){ im.src=qThumb(); t.textContent="?"; } b.onclick=()=>{ if(charLocked(c)){ toast(lockMsg(),"#9fb0d0"); return; } selChar=i; try{localStorage.setItem("kartrebuild.char",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpChars").appendChild(b); });
   $m("mpColors").innerHTML=swatchesHTML()+cosHTML(); $m("mpColors").querySelectorAll(".sw").forEach(b=>b.onclick=()=>{ setColor(+b.dataset.i); mpSend(); mpRender(); }); cosBind($m("mpColors"),()=>{ MP.lobbySig=null; mpSend(); mpRender(); });
@@ -7838,7 +7843,7 @@ function frame(now){
     if(state==="countdown"&&MP.racing&&!MP.cgo&&countT<=3.2){ countT=3.2; if(!MP.waitT) mpSend({wt:MP.raceId}); MP.waitT=(MP.waitT||0)+STEP; if(MP.waitT>25) MP.cgo=true; }
     else if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(edge(touchMode?"boost":"accel")&&countT<=.5) S.startTap=true;
       if(countT<=0){state="race"; $("count").hidden=true; toast("GO!","#ffcf2e"); beep(1320,.35); S.shieldT=5; if(S.startTap) startBoost(); botsGo(); }}
-    if(FCAR()){ const k=!!(touchMode?(input.accel||input.boost):input.accel), dn=k&&!S._lk; S._lk=k;
+    if(state==="countdown"&&countT>1){ S.f1Done=false; S.f1Tap=undefined; } if(FCAR()){ const k=!!(touchMode?(input.accel||input.boost):input.accel), dn=k&&!S._lk; S._lk=k;
       if(state==="countdown"&&countT<=.5&&countT>0&&dn&&!S.f1Done){ S.f1Tap=countT; } /* 일반 차량처럼: 출발 직전(GO 0.5초 전) ↑ */
       if(state==="race"&&!S.f1Done){ if(S.f1Tap!==undefined) f1Launch("perfect",-S.f1Tap); else if(dn&&raceT<.5) f1Launch(raceT<=.25?"perfect":"good",raceT); else if(raceT>=.5) S.f1Done=true; } }
     if(state==="race"&&!S.startUsed&&raceT<.5&&edge(touchMode?"boost":"accel")) startBoost(); /* 컴퓨터는 ↑ 키, 폰은 부스터 버튼 */
@@ -8053,6 +8058,9 @@ const css=`
 #roomScr #rCreate,#rModal #rmGo,#rModal .btn:not(.ghost){background:linear-gradient(135deg,#ff3b2f,#c4070d);color:#fff}
 #roomScr .vrow input{accent-color:#ff3b2f}
 #mpLobby .card,#menu .card{border-top:3px solid #e8231b}
+.rl-ban{position:relative}
+.rl-ban>*:not(.rl-banb){opacity:.42;filter:grayscale(.8)}
+.rl-banb{position:absolute;left:50%;top:34px;transform:translateX(-50%) rotate(-6deg);z-index:3;padding:5px 10px;border-radius:9px;background:#d61a1a;color:#fff;font:900 13px system-ui,sans-serif;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.4);filter:none;opacity:1}
 #rList .tg.race{background:#e8231b!important;color:#fff!important;font-weight:900;animation:rlBlink 1.2s ease-in-out infinite}
 @keyframes rlBlink{50%{opacity:.55}}
 #rlInGame{margin:0 0 10px;padding:11px 14px;border-radius:12px;background:linear-gradient(135deg,#e8231b,#b30d12);color:#fff;font:700 14px/1.45 system-ui,sans-serif;box-shadow:0 4px 14px rgba(232,35,27,.35)}
@@ -8142,6 +8150,7 @@ const kName=c=>{ if(!c) return "—"; const M={ArrowUp:"↑",ArrowDown:"↓",Arr
 function kLoad(){ let b=null; try{ b=JSON.parse(localStorage.getItem("rl.keys")||"null"); }catch(_){} const o={}; for(const [a] of KACT) o[a]=(b&&Array.isArray(b[a])?b[a]:(KDEF[a]||[])).slice(0,3); return o; }
 function kApply(b){ try{ for(const c in keymap) delete keymap[c]; for(const a in b) for(const c of b[a]) if(c) keymap[c]=a; for(const k in input) input[k]=false; }catch(_){} }
 let KB=kLoad(); kApply(KB);
+try{ if(selColor===9){ selColor=0; localStorage.setItem("kartrebuild.color","0"); } }catch(_){}
 function kSave(){ try{ localStorage.setItem("rl.keys",JSON.stringify(KB)); }catch(_){} kApply(KB); }
 function setPanel(){ let m=document.getElementById("rlSet"); if(m){ m.hidden=false; kRender(); return; }
   m=document.createElement("div"); m.id="rlSet"; m.style.cssText="position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center";
@@ -8191,6 +8200,9 @@ setInterval(()=>{ try{ if(!MP.joined) return; const h=mpHost(); if(!h||h.peer===
     const lv=document.getElementById("mpLeave"); if(state!=="menu"){ try{ openMenu(); }catch(_){} } if(lv) lv.click();
     setTimeout(()=>{ try{ alertNote("🚫 방장이 강퇴했어요. 이 방에는 10분 동안 다시 들어갈 수 없어요."); }catch(_){ toast("🚫 방장이 강퇴했어요","#ff8a7a"); } },300); } }catch(_){} },700);
 try{ const _er=enterRoom; enterRoom=function(code,title,pwh){ let t=0; try{ t=+localStorage.getItem(kickedKey(code))||0; }catch(_){} if(Date.now()-t<600000){ try{ toastNote("🚫 강퇴당한 방이라 "+Math.ceil((600000-(Date.now()-t))/60000)+"분 뒤에 들어갈 수 있어요"); }catch(_){} return; } return _er(code,title,pwh); }; }catch(_){}
+
+/* 서킷이 아닌 맵에서 서킷 차량 카드 누르면 막기 */
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest('#kartOpts button[data-ban="1"]'); if(!b) return; e.preventDefault(); e.stopImmediatePropagation(); try{ toast(BAN_MSG,"#ff8a7a"); }catch(_){} },true);
 /* ---------- BGM: 메뉴곡(인트로·로그인·메인·방 목록) / 대기방곡(방 안·싱글 준비) ---------- */
 const mk=u=>{ const a=new Audio(); a.loop=true; a.preload="none"; a.volume=0; a.dataset.src=u; return a; };
 const TR2=[{a:mk(BGM_URL),v:0},{a:mk(BGM2_URL),v:0},{a:mk(BGM3_URL),v:0},{a:mk(BGM4_URL),v:0},{a:mk(BGM5_URL),v:0},{a:mk(BGM6_URL),v:0},{a:mk(BGM7_URL),v:0},{a:mk(BGM8_URL),v:0},{a:mk(BGM9_URL),v:0},{a:mk(BGM10_URL),v:0},{a:mk(BGM11_URL),v:0},{a:mk(BGM12_URL),v:0},{a:mk(BGM13_URL),v:0},{a:mk(BGM14_URL),v:0},{a:mk(BGM15_URL),v:0},{a:mk(BGM16_URL),v:0}];
