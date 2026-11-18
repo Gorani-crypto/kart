@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1118-1500</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1118-1502</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6936,7 +6936,7 @@ function f1Launch(kind,rt){ S.f1Done=true; const ms=Math.round(rt*1000), top=f1T
   else if(kind==="normal"){ S.f1L={t:1.4,mul:1.15}; toast("출발 부스터 ("+rt.toFixed(2)+"초)","#c8f0ff"); }
   else if(kind==="jump"){ S.f1L={t:1.6,mul:.25}; S.shake=Math.max(S.shake||0,.35); toast("점프 스타트! 휠스핀…","#ff7a1a"); voice&&voice("bad"); }
   else toast("늦은 출발 · 반응 "+ms+"ms","#c8d4ec"); }
-function startBoost(){ if(S.startUsed||FCAR()) return; if(KART.noBoost){ S.startUsed=true; return; } S.startUsed=true; const off=typeof arguments[0]==="number"?arguments[0]:0, tier=off<=.02?3:off<=.05?2:0; if(!tier) return; const C=CONFIG, base=C.maxSpeed*KART.speed, P=[0,0,[.315,1.4],[.45,2]][tier]; S.boostT=Math.max(S.boostT,C.instTime*P[1]);
+function startBoost(){ if(S.startUsed||FCAR()) return; if(KART.noBoost){ S.startUsed=true; return; } S.startUsed=true; const off=typeof arguments[0]==="number"?arguments[0]:0, tier=off<=.02?3:off<=.08?2:0; if(!tier) return; const C=CONFIG, base=C.maxSpeed*KART.speed, P=[0,0,[.315,1.4],[.45,2]][tier]; S.boostT=Math.max(S.boostT,C.instTime*P[1]);
   const sp=Math.hypot(S.vx,S.vz), add=Math.max(0,base*P[0]-sp); S.vx+=Math.sin(S.h)*add; S.vz+=Math.cos(S.h)*add; const ms=(off).toFixed(2);
   if(tier===3){ toast("퍼펙트 출발 부스터! ("+ms+"초)","#ffcf2e"); warp(true); } else if(tier===2){ toast("굿 출발 부스터! ("+ms+"초)","#3ee6ff"); warp(true); } else toast("출발 부스터 ("+ms+"초)","#c8f0ff"); }
 function ejectRider(nx,nz,power){
@@ -7879,12 +7879,12 @@ function frame(now){
   while(acc>=STEP){
     const controls=state==="race";
     if(state==="countdown"&&MP.racing&&!MP.cgo&&countT<=3.2){ countT=3.2; if(!MP.waitT) mpSend({wt:MP.raceId}); MP.waitT=(MP.waitT||0)+STEP; if(MP.waitT>25) MP.cgo=true; }
-    else if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(edge(touchMode?"boost":"accel")&&countT<=.05&&!S.startTap) S.startTap=Math.max(.0001,countT);
+    else if(state==="countdown"){const before=Math.ceil(countT-0.2); countT-=STEP; const after=Math.ceil(countT-0.2); if(after!==before&&after>=1&&after<=3) beep(660,.18); $("count").hidden=countT>3.2; if(edge(touchMode?"boost":"accel")&&countT<=.08&&!S.startTap) S.startTap=Math.max(.0001,countT);
       if(countT<=0){state="race"; $("count").hidden=true; toast("GO!","#ffcf2e"); beep(1320,.35); S.shieldT=5; if(S.startTap) startBoost(S.startTap); botsGo(); }}
     if(state==="countdown"&&countT>1){ S.f1Done=false; S.f1Tap=undefined; } if(FCAR()){ const k=!!(touchMode?(input.accel||input.boost):input.accel), dn=k&&!S._lk; S._lk=k;
-      if(state==="countdown"&&countT<=.05&&countT>0&&dn&&!S.f1Done&&S.f1Tap===undefined){ S.f1Tap=countT; } /* 일반 차량처럼: 출발 직전(GO 0.5초 전) ↑ */
-      if(state==="race"&&!S.f1Done){ const f1T=o=>o<=.02?"perfect":"good"; if(S.f1Tap!==undefined) f1Launch(f1T(S.f1Tap),S.f1Tap); else if(dn&&raceT<=.05) f1Launch(f1T(raceT),raceT); else if(raceT>.05) S.f1Done=true; } }
-    if(state==="race"&&!S.startUsed&&raceT<=.05&&edge(touchMode?"boost":"accel")) startBoost(raceT); /* 컴퓨터는 ↑ 키, 폰은 부스터 버튼 */
+      if(state==="countdown"&&countT<=.08&&countT>0&&dn&&!S.f1Done&&S.f1Tap===undefined){ S.f1Tap=countT; } /* 일반 차량처럼: 출발 직전(GO 0.5초 전) ↑ */
+      if(state==="race"&&!S.f1Done){ const f1T=o=>o<=.02?"perfect":"good"; if(S.f1Tap!==undefined) f1Launch(f1T(S.f1Tap),S.f1Tap); else if(dn&&raceT<=.08) f1Launch(f1T(raceT),raceT); else if(raceT>.08) S.f1Done=true; } }
+    if(state==="race"&&!S.startUsed&&raceT<=.08&&edge(touchMode?"boost":"accel")) startBoost(raceT); /* 컴퓨터는 ↑ 키, 폰은 부스터 버튼 */
     if(S.shieldT>0) S.shieldT=Math.max(0,S.shieldT-STEP);
     { const hd=state==="countdown"?((input.left?1:0)-(input.right?1:0)):0; S.headT=lerp(S.headT||0,hd*.5,1-Math.exp(-STEP*14)); const hr=CAR&&CAR.rider&&CAR.rider.userData.head; if(hr) hr.rotation.z=S.headT; }
     if(S.hitT>0) S.hitT-=STEP; if(S.barrelT>0){ S.barrelT=Math.max(0,S.barrelT-STEP); S.barrel=S.barrelT>0?jetRollAng(1-S.barrelT/(S.barrelD||.7)):0; }
