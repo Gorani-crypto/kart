@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2200</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2230</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6421,7 +6421,7 @@ function shopInfo(it){ const esc=x=>String(x||"").replace(/[<>&"]/g,""); let t="
   if(!t) return "";
   return `<span class="rl-inf" tabindex="0">!<span class="tip">${t}</span></span>`; }
 /* ===== 상점 화면: REDLINE 인트로 분위기(검정 · 레드 · 사선 스트릭 · 모노 HUD 글씨) ===== */
-var SHOP_TABS=[["box","🎁","랜덤 박스","운을 시험해 보세요 · 박스에서만 나오는 물건"],["craft","🔨","쿠폰·조합대","쿠폰을 쓰고, 모아서 더 좋은 쿠폰으로"],["aura","🌟","오라","대기실과 출발 전까지 빛나요 · 하나만 착용"],["hat","🎩","모자·액세서리","머리에 쓰는 치장 · 하나만 착용"],["skin","🎨","카트 스킨","카트 무늬 · 하나만 착용"],["cos","✨","특수 치장","레벨로 열리는 특별한 치장"],["char","🧑","캐릭터","경험치 능력 캐릭터"],["kart","👑","전설 카트","일반 맵에서 타는 전설 카트"],["circ","🏁","서킷카","서킷 맵 전용 F1 차량"],["nick","🏷️","닉네임 변경","새 닉네임으로 바꾸기 · 로그인 아이디도 함께 바뀌어요"]];
+var SHOP_TABS=[["box","🎁","랜덤 박스","운을 시험해 보세요 · 박스에서만 나오는 물건"],["craft","🔨","쿠폰·조합대","쿠폰을 쓰고, 모아서 더 좋은 쿠폰으로"],["aura","🌟","오라","대기실과 출발 전까지 빛나요 · 하나만 착용"],["hat","🎩","모자·액세서리","머리에 쓰는 치장 · 하나만 착용"],["skin","🎨","카트 스킨","카트 무늬 · 하나만 착용"],["cos","✨","특수 치장","레벨로 열리는 특별한 치장"],["char","🧑","캐릭터","경험치 능력 캐릭터"],["kart","👑","전설 카트","일반 맵에서 타는 전설 카트"],["circ","🏁","서킷카","서킷 맵 전용 F1 차량"],["nick","🏷️","닉네임 변경","보이는 닉네임 바꾸기 · 로그인 아이디는 그대로예요"]];
 function shopCss(){ if(document.getElementById("rsCss")) return; const st=document.createElement("style"); st.id="rsCss"; st.textContent=`
 #shopModal{background:rgba(0,0,0,.8)!important;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .rs{position:relative;width:min(96vw,1040px);height:min(90vh,780px);display:grid;grid-template-columns:210px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;border-radius:18px;overflow:hidden;background:linear-gradient(160deg,#17181f 0,#0b0c10 55%,#14070a 100%);border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 120px rgba(0,0,0,.75),0 0 0 1px rgba(255,42,42,.14),inset 0 1px 0 rgba(255,255,255,.06);color:#e8ebf2;font:600 14px "Pretendard","Noto Sans KR",system-ui,sans-serif;animation:rsIn .35s cubic-bezier(.2,1.2,.3,1)}
@@ -6845,12 +6845,12 @@ var NICK_P=10000;
 function loginIdOf(email){ try{ const m=/^u(.*)@kartrebuild\.app$/.exec(email||""); if(!m) return ""; return m[1].split("-").map(x=>String.fromCodePoint(parseInt(x,36))).join(""); }catch(_){ return ""; } }
 function nickPanelHTML(logged){ if(!logged) return `<div style="padding:20px;text-align:center;color:#8d94a8">로그인해야 닉네임을 바꿀 수 있어요</div>`; const esc=s=>String(s||"").replace(/[<>&"]/g,""); let lid=""; try{ lid=loginIdOf(firebase.auth().currentUser.email); }catch(_){} const can=shopMoney()>=NICK_P;
   return `<div style="max-width:520px;padding:18px;border-radius:16px;background:linear-gradient(165deg,#1c1e27,#101117);border:1px solid rgba(255,255,255,.08)">
-    <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px"><span style="width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,#ff3b2f,#c4070d);box-shadow:0 6px 16px rgba(230,20,20,.4)">🏷️</span><div><div style="font:700 10.5px ui-monospace,Menlo,monospace;letter-spacing:.18em;color:#ff4a3a">NOW</div><div style="font:900 20px sans-serif;color:#fff">${esc(MP.nick)}</div>${lid&&lid!==MP.nick?`<div style="font-size:12px;color:#8d94a8">로그인 아이디: ${esc(lid)}</div>`:""}</div></div>
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px"><span style="width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,#ff3b2f,#c4070d);box-shadow:0 6px 16px rgba(230,20,20,.4)">🏷️</span><div><div style="font:700 10.5px ui-monospace,Menlo,monospace;letter-spacing:.18em;color:#ff4a3a">NOW</div><div style="font:900 20px sans-serif;color:#fff">${esc(MP.nick)}</div>${lid?`<div style="font-size:12px;color:#8d94a8">로그인 아이디: ${esc(lid)}</div>`:""}</div></div>
     <label style="display:block;font:700 12px sans-serif;color:#8d94a8;margin-bottom:4px" for="nkNew">새 닉네임 (10자까지)</label><input id="nkNew" maxlength="10" autocomplete="off" placeholder="새 닉네임" style="width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:700 16px sans-serif;margin-bottom:10px">
     <label style="display:block;font:700 12px sans-serif;color:#8d94a8;margin-bottom:4px" for="nkPw">비밀번호 확인</label><input id="nkPw" type="password" autocomplete="current-password" placeholder="지금 비밀번호" style="width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:700 16px sans-serif">
     <div id="nkMsg" style="min-height:20px;margin:8px 0;font:700 13px sans-serif;color:#ff8a7a"></div>
     <button type="button" id="nkGo" class="rs-btn ${can?"buy":"off"}" ${can?"":"disabled"} style="padding:12px;font-size:15px">${can?"💰 "+wonFmt(NICK_P)+"으로 닉네임 바꾸기":"돈 부족 · "+wonFmt(NICK_P)}</button>
-    <div style="margin-top:12px;font:600 12px/1.6 sans-serif;color:#8d94a8">· 같은 닉네임은 쓸 수 없어요<br>· 바꾸면 로그인 아이디도 새 닉네임으로 바뀌어요<br>· 랭킹 기록은 이전 닉네임 이름으로 남아요</div></div>`; }
+    <div style="margin-top:12px;font:600 12px/1.6 sans-serif;color:#8d94a8">· 같은 닉네임은 쓸 수 없어요<br>· <b style="color:#ff8a7a">닉네임을 바꿔도 로그인은 처음 가입한 아이디로 해야 해요</b><br>· 랭킹 기록은 이전 닉네임 이름으로 남아요</div></div>`; }
 function nickConfirm(title,body,ok,cancel){ return new Promise(res=>{ const o=document.createElement("div"); o.style.cssText="position:fixed;inset:0;z-index:260;display:grid;place-items:center;background:rgba(0,0,0,.72);backdrop-filter:blur(4px)";
   o.innerHTML=`<div style="width:min(92vw,420px);padding:22px;border-radius:18px;background:linear-gradient(165deg,#1c1e27,#0c0d12);border:1px solid rgba(255,255,255,.12);border-top:3px solid #e8231b;color:#e8ebf2;font:600 14px/1.6 sans-serif;box-shadow:0 30px 80px rgba(0,0,0,.6)"><div style="font:400 24px 'Black Han Sans',sans-serif;font-style:italic;color:#fff;margin-bottom:10px">${title}</div><div style="color:#c8cdd9">${body}</div><div style="display:flex;gap:8px;margin-top:18px"><button type="button" data-v="1" class="rs-btn buy" style="padding:12px">${ok}</button><button type="button" data-v="0" class="rs-btn eq" style="padding:12px">${cancel||"취소"}</button></div></div>`;
   document.body.appendChild(o); o.querySelectorAll("button").forEach(b=>b.onclick=()=>{ o.remove(); res(b.dataset.v==="1"); }); }); }
@@ -6858,19 +6858,17 @@ async function nickChange(){ const m=document.getElementById("shopModal"), msg=t
   const u=firebase.auth().currentUser; if(!u||!ACCT.user) return msg("로그인이 필요해요");
   const n=cleanName(m.querySelector("#nkNew").value), pw=m.querySelector("#nkPw").value;
   if(!n) return msg("새 닉네임을 입력해 주세요"); if(n===MP.nick) return msg("지금 닉네임과 같아요"); if(/^guest\s/i.test(n)) return msg("guest로 시작하는 이름은 쓸 수 없어요"); if(!pw) return msg("비밀번호를 입력해 주세요"); if(shopMoney()<NICK_P) return msg("돈이 부족해요");
-  if(!(await nickConfirm("닉네임 변경",`<b style="color:#fff">${esc(MP.nick)}</b> → <b style="color:#ff4a3a">${esc(n)}</b><br>${wonFmt(NICK_P)}이 빠지고, <b style="color:#fff">로그인 아이디도 '${esc(n)}'(으)로 바뀝니다.</b><br>바꾸시겠습니까?`,"바꾸기"))) return;
+  if(!(await nickConfirm("닉네임 변경",`<b style="color:#fff">${esc(MP.nick)}</b> → <b style="color:#ff4a3a">${esc(n)}</b><br>${wonFmt(NICK_P)}이 빠져요.<br><br><b style="color:#ff4a3a">⚠ 주의: 닉네임을 바꾸더라도 로그인은 처음 가입한 아이디 '${esc(loginIdOf(u.email)||MP.nick)}'(으)로 해야 해요.</b><br><br>바꾸시겠습니까?`,"바꾸기"))) return;
   msg("확인 중…");
   try{ await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,pw)); }catch(e){ return msg(/wrong-password|invalid-credential|invalid-login/.test(e.code||"")?"비밀번호가 맞지 않아요":"확인 실패 · "+(e.code||e)); }
-  let idOk=false; const oldId=loginIdOf(u.email)||MP.nick;
-  try{ await u.updateEmail(acctEmail(n)); idOk=true; }
-  catch(e){ const c=e.code||""; if(/email-already-in-use/.test(c)) return msg("이미 있는 닉네임이에요. 다른 이름을 골라 주세요");
-    if(!(await nickConfirm("⚠ 주의",`서버 설정 때문에 <b style="color:#fff">로그인 아이디는 바꿀 수 없어요.</b><br>닉네임은 '${esc(n)}'(으)로 바뀌지만, <b style="color:#ff4a3a">로그인은 처음 가입한 아이디 '${esc(oldId)}'(으)로 해야 해요.</b><br>계속할까요?`,"그래도 바꾸기"))) return msg("");
-    try{ const q=await firebase.database().ref("kart/users").orderByChild("n").equalTo(n).limitToFirst(1).once("value"); if(q.exists()) return msg("이미 있는 닉네임이에요. 다른 이름을 골라 주세요"); }catch(_){} }
+  /* 이메일 열거 보호가 켜진 프로젝트라 로그인 아이디(이메일)는 바꾸지 않음 → 보이는 닉네임만 바뀜 */
+  const idOk=false, oldId=loginIdOf(u.email)||MP.nick;
+  try{ const q=await firebase.database().ref("kart/users").orderByChild("n").equalTo(n).limitToFirst(1).once("value"); if(q.exists()) return msg("이미 있는 닉네임이에요. 다른 이름을 골라 주세요"); }catch(_){}
   try{ const r=await firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; if((p.money|0)<NICK_P) return; p.money=(p.money|0)-NICK_P; p.n=n; if(!idOk) p.lid=p.lid||oldId; else p.lid=null; return p; });
     if(!r.committed){ return msg("돈이 부족해요"); } ACCT.prof=r.snapshot.val()||ACCT.prof; }catch(e){ return msg("저장 실패 · 잠시 뒤 다시 해 주세요"); }
   try{ await u.updateProfile({displayName:n}); }catch(_){}
   MP.nick=n; MP.nickSet=true; try{ updateMyTag(); localStorage.setItem("kartrebuild.nick",n); localStorage.setItem("kartrebuild.nickset","1"); acctBox(); lbProfRender(); MP.lobbySig=null; mpSend(); }catch(_){}
-  try{ chime(); }catch(_){} toast(idOk?"🏷️ 닉네임 변경 완료! 다음부터 '"+n+"'(으)로 로그인하세요":"🏷️ 닉네임 변경 완료! 로그인은 '"+oldId+"'(으)로 하세요","#46e08a"); try{ shopRender(); }catch(_){} }
+  try{ chime(); }catch(_){} toast("🏷️ 닉네임 변경 완료! 로그인은 계속 '"+oldId+"'(으)로 하세요","#46e08a"); try{ shopRender(); }catch(_){} }
 function nickBind(m){ const b=m.querySelector("#nkGo"); if(b) b.onclick=()=>nickChange(); m.querySelectorAll("#nkNew,#nkPw").forEach(i=>i.onkeydown=e=>{ e.stopPropagation(); if(e.key==="Enter"&&b) b.click(); }); }
 /* ---------- 마이페이지 ---------- */
 function myPageOpen(){ shopCss(); let o=document.getElementById("myPage"); if(!o){ o=document.createElement("div"); o.id="myPage"; document.body.appendChild(o); o.addEventListener("click",e=>{ if(e.target===o) o.remove(); }); }
@@ -9038,16 +9036,16 @@ function loginOpen(){
       body.querySelector("#rlGo").onclick=close;
       body.querySelector("#rlOut").onclick=()=>{ try{ firebase.auth().signOut(); }catch(_){} mode=null; setTimeout(render,300); };
     } else {
-      body.innerHTML=`<h2>LOGIN</h2><input id="rlN" maxlength="10" placeholder="닉네임 (10자까지)" autocomplete="username"><input id="rlP" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"><div class="msg" id="rlMsg"></div>
+      body.innerHTML=`<h2>LOGIN</h2><input id="rlN" maxlength="10" placeholder="아이디 (가입할 때 정한 닉네임)" autocomplete="username"><input id="rlP" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"><div class="msg" id="rlMsg"></div>
         <div class="row"><button class="pri" id="rlIn" type="button">로그인</button><button class="sec" id="rlJoin" type="button">가입</button></div>
         <div class="or">OR</div><button class="gst" id="rlGuest" type="button">게스트로 시작</button>
-        <div class="note">* 로그인 해야 랭킹이 가능하고 레벨업이 가능합니다.<br>비밀번호를 잊으면 찾을 수 없어요.</div>`;
+        <div class="note">* 로그인 해야 랭킹이 가능하고 레벨업이 가능합니다.<br>닉네임을 바꿨어도 로그인은 처음 가입한 아이디로 해요.<br>비밀번호를 잊으면 찾을 수 없어요.</div>`;
       const $=id=>body.querySelector("#"+id), msg=t=>$("rlMsg").textContent=t;
       const go=async join=>{ let n=$("rlN").value; try{ n=cleanName(n); }catch(_){ n=n.trim(); } const p=$("rlP").value;
         if(!n) return msg("닉네임을 입력해 주세요"); if(p.length<6) return msg("비밀번호는 6자 이상이어야 해요");
         if(!window.firebase||!firebase.auth) return msg("서버에 연결 중이에요. 잠시 후 다시 해 주세요"); msg("잠시만요…");
         try{ const au=firebase.auth(); let u;
-          if(join){ u=(await au.createUserWithEmailAndPassword(acctEmail(n),p)).user; await u.updateProfile({displayName:n}); await firebase.database().ref("kart/users/"+u.uid).set({n,xp:0,races:0,wins:0,at:firebase.database.ServerValue.TIMESTAMP}); }
+          if(join){ try{ const q=await firebase.database().ref("kart/users").orderByChild("n").equalTo(n).limitToFirst(1).once("value"); if(q.exists()) return msg("이미 있는 닉네임이에요"); }catch(_){} u=(await au.createUserWithEmailAndPassword(acctEmail(n),p)).user; await u.updateProfile({displayName:n}); await firebase.database().ref("kart/users/"+u.uid).set({n,xp:0,races:0,wins:0,at:firebase.database.ServerValue.TIMESTAMP}); }
           else u=(await au.signInWithEmailAndPassword(acctEmail(n),p)).user;
           try{ localStorage.setItem("kartrebuild.nick",n); localStorage.setItem("kartrebuild.nickset","1"); sessionStorage.setItem("rl.after","main"); }catch(_){}
           location.reload(); }catch(e){ try{ msg(acctErr(e)); }catch(_){ msg("로그인 실패"); } } };
