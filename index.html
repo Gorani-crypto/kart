@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2125</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2135</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8288,11 +8288,13 @@ function shellHitMe(s){ if(meHigh()) return; if(S.shieldT>0){ toast("보호막�
 function bumpFx(x,y,z){ const p=new THREE.Vector3(x,y,z); for(let k=0;k<7;k++){ const a=Math.random()*Math.PI*2; puff(p.clone(),.9+Math.random()*.8,.45,new THREE.MeshBasicMaterial({color:k%2?0xffe066:0xffffff,transparent:true,opacity:1,depthWrite:false}),new THREE.Vector3(Math.cos(a)*7,3+Math.random()*4,Math.sin(a)*7)); }
   puff(p.clone(),2.2,.35,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.7,depthWrite:false})); }
 let mpRankT=0;
+function netNow(){ return Date.now()+(MP.toff||0); }
 function mpUpdate(dt){
   if(!MP.joined) return;
+  if(!MP.toffOn){ try{ if(typeof firebase!=="undefined"&&firebase.apps&&firebase.apps.length){ MP.toffOn=1; firebase.database().ref(".info/serverTimeOffset").on("value",s=>{ MP.toff=+s.val()||0; }); } }catch(_){ MP.toffOn=1; } }
   const now=performance.now();
-  if(MP.racing&&now-MP.lastSend>100){ const meOn=!MP.finished&&(state==="race"||state==="countdown");
-    if(meOn||BOT.list.length){ MP.lastSend=now; const r=v=>Math.round(v*100)/100; mpSend(meOn?{st:"race",rid:MP.raceId,hd:state==="countdown"?r(S.headT||0):0,x:r(S.x),y:r(S.y),z:r(S.z),h:r(S.h),vx:r(S.vx),vz:r(S.vz),ro:r((S.roll||0)+(S.barrel||0)),sc:r(GM.me.scale||1),pg:Math.round(mpProgress()*1000)/1000,bt:S.boostT>0||S.instT>0?1:0,sd:(S.shieldT>0||GM.me.shieldT>0||GM.me.angelT>0)?1:0,gb:S.superT>0?1:0}:{}); } }
+  if(MP.racing&&now-MP.lastSend>80){ const meOn=!MP.finished&&(state==="race"||state==="countdown");
+    if(meOn||BOT.list.length){ MP.lastSend=now; const r=v=>Math.round(v*100)/100; mpSend(meOn?{st:"race",ts:netNow(),rid:MP.raceId,hd:state==="countdown"?r(S.headT||0):0,x:r(S.x),y:r(S.y),z:r(S.z),h:r(S.h),vx:r(S.vx),vz:r(S.vz),ro:r((S.roll||0)+(S.barrel||0)),sc:r(GM.me.scale||1),pg:Math.round(mpProgress()*1000)/1000,bt:S.boostT>0||S.instT>0?1:0,sd:(S.shieldT>0||GM.me.shieldT>0||GM.me.angelT>0)?1:0,gb:S.superT>0?1:0}:{}); } }
   if(!MP.racing) return;
   if(!MP.cgo){ const h=mpHost(); if(mpIsHost()){ const st=mpLoadState(); if(state==="countdown"&&countT<=3.2&&st.ok>=st.all){ MP.cgo=true; mpSend({cg:MP.raceId}); } }
     else if(h&&h.presence.cg===MP.raceId) MP.cgo=true; }
@@ -8310,10 +8312,10 @@ function mpUpdate(dt){
     if(g.key.startsWith("snake.")) snakeRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0)); if(g.key.startsWith("horse.")) horseRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0)); if(g.key.startsWith("titan.")){ const gsp=Math.hypot(+pr.vx||0,+pr.vz||0); titanRun(g.obj,dt,gsp); if(pr.gb&&!g.meteor){ g.meteor=makeMeteor(); g.meteor.scale.setScalar(7); g.obj.add(g.meteor); } heatTick(g.heatSt||(g.heatSt={heat:0}),g.obj,!!pr.gb,dt,g.x,g.y,g.z); if(g.meteor) meteorUpd(g.meteor,pr.gb?Math.max(.08,clamp((gsp*5.8-200)/600,0,1)):0,dt); } if(g.key.startsWith("roach.")) roachRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0));
     const SS=MP.shotSeen||(MP.shotSeen={}); if(SS[p.peer]===undefined) SS[p.peer]=Array.isArray(pr.fs)?pr.fs[0]:0; // 이전 판 포탄은 무시
     if(Array.isArray(pr.fs)&&pr.fs.length===7){ const seen=SS[p.peer]; if(pr.fs[0]!==seen){ MP.shotSeen[p.peer]=pr.fs[0];
-      const f=pr.fs.map(Number); const sm=new THREE.Mesh(shellG,shellM); sm.position.set(f[1],f[2],f[3]); scene.add(sm); FX.shells.push({m:sm,v:new THREE.Vector3(f[4],f[5],f[6]),t:0,life:3,power:0,remote:true}); cannonSnd&&boomSnd(Math.hypot(f[1]-S.x,f[3]-S.z)); } } const age=Math.min(.3,Math.max(0,(wallNow-(p.at||wallNow))/1000));
-    const tx=(+pr.x)+(+pr.vx||0)*age, tz=(+pr.z)+(+pr.vz||0)*age, ty=+pr.y||0, th=+pr.h||0;
+      const f=pr.fs.map(Number); const sm=new THREE.Mesh(shellG,shellM); sm.position.set(f[1],f[2],f[3]); scene.add(sm); FX.shells.push({m:sm,v:new THREE.Vector3(f[4],f[5],f[6]),t:0,life:3,power:0,remote:true}); cannonSnd&&boomSnd(Math.hypot(f[1]-S.x,f[3]-S.z)); } } const live=pr.st==="race", age=!live?0:pr.ts?clamp((netNow()-(+pr.ts))/1000,0,.6):Math.min(.3,Math.max(0,(wallNow-(p.at||wallNow))/1000));
+    const fvx=live?(+pr.vx||0):0, fvz=live?(+pr.vz||0):0, tx=(+pr.x)+fvx*age, tz=(+pr.z)+fvz*age, ty=+pr.y||0, th=+pr.h||0;
     if(!g.init||Math.hypot(tx-g.x,tz-g.z)>40){ g.x=tx; g.z=tz; g.y=ty; g.h=th; g.init=true; }
-    const k=1-Math.exp(-14*dt); g.x+=(tx-g.x)*k; g.z+=(tz-g.z)*k; g.y+=(ty-g.y)*k; let dh=th-g.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; g.h+=dh*k;
+    const k=1-Math.exp(-14*dt), kc=1-Math.exp(-9*dt); g.x+=fvx*dt; g.z+=fvz*dt; g.x+=(tx-g.x)*kc; g.z+=(tz-g.z)*kc; g.y+=(ty-g.y)*k; let dh=th-g.h; while(dh>Math.PI) dh-=Math.PI*2; while(dh<-Math.PI) dh+=Math.PI*2; g.h+=dh*k;
     g.obj.position.set(g.x,g.y+(g.key.startsWith("jet.")?1.5*(1-Math.cos(+pr.ro||0)):0),g.z); g.obj.rotation.set(0,g.h,-(+pr.ro||0)); if(g.head===undefined) g.head=g.obj.getObjectByName("riderHead")||null; if(g.head) g.head.rotation.z=lerp(g.head.rotation.z,+pr.hd||0,.3); if(g.key.startsWith("giant.")){ const gsp=Math.hypot(+pr.vx||0,+pr.vz||0); giantRun(g.obj,dt,gsp,0); if(pr.gb&&!g.meteor){ g.meteor=makeMeteor(); g.obj.add(g.meteor); } heatTick(g.heatSt||(g.heatSt={heat:0}),g.obj,!!pr.gb,dt,g.x,g.y,g.z); if(g.meteor){ const pp=pr.gb?Math.max(.08,clamp((gsp*5.8-200)/600,0,1)):0; meteorUpd(g.meteor,pp,dt); if(pp>.1&&Math.hypot(g.x-S.x,g.z-S.z)<150) meteorEmbers(g.x,g.y,g.z,g.h,pp); } } if(g.key.startsWith("roach.")) roachRun(g.obj,dt,Math.hypot(+pr.vx||0,+pr.vz||0));
     // 부딪힘: 서로 밀어냄 (각자 자기 카트만 움직임)
     { const ok=KARTS[+pr.k]||KARTS[0], lat=.08, ex=g.x+(+pr.vx||0)*lat, ez=g.z+(+pr.vz||0)*lat; bumpMe({id:p.peer,x:ex,y:g.y,z:ez,px:g.cpx,pz:g.cpz,vx:+pr.vx||0,vz:+pr.vz||0,mass:ok.mass||1,rad:ok.rad||1.15,gb:!!pr.gb,ram:ok.ram||0,h:g.h,kid:ok.id,remote:true,g},now); g.cpx=ex; g.cpz=ez; } /* 지연 보정: 상대 속도로 조금 앞을 예측해서 판정 */
