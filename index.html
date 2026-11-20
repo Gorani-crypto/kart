@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2715</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2720</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6302,10 +6302,10 @@ var SHOP=[
   /* 오라 (하나만 착용) */
   {id:"aura",t:"aura",p:3000,lv:30,n:"기본 오라"},
   /* 모자 · 액세서리 (한 개 착용) */
-  {id:"h_cap",t:"hat",p:500,n:"야구모자",e:"🧢"},{id:"h_beanie",t:"hat",p:500,n:"비니",e:"🧶"},{id:"h_ribbon",t:"hat",p:500,n:"리본",e:"🎀"},{id:"h_flower",t:"hat",p:600,n:"꽃핀",e:"🌸"},
-  {id:"h_shades",t:"hat",p:600,n:"선글라스",e:"🕶️"},{id:"h_goggle",t:"hat",p:750,n:"레이싱 고글",e:"🥽"},{id:"h_phones",t:"hat",p:750,n:"헤드폰",e:"🎧"},{id:"h_santa",t:"hat",p:750,n:"산타 모자",e:"🎅"},
-  {id:"h_scarf",t:"hat",p:900,n:"빨간 목도리",e:"🧣"},{id:"h_top",t:"hat",p:1000,n:"마술사 모자",e:"🎩"},
-  {id:"h_tiger",t:"hat",p:1500,n:"호랑이 모자",e:"🐯"},{id:"h_chick",t:"hat",p:1500,n:"닭 모자",e:"🐔"},{id:"bighead",t:"hat",p:2000,lv:30,n:"왕머리 가면",e:"🎭"},
+  {id:"h_cap",t:"hat",p:250,n:"야구모자",e:"🧢"},{id:"h_beanie",t:"hat",p:250,n:"비니",e:"🧶"},{id:"h_ribbon",t:"hat",p:250,n:"리본",e:"🎀"},{id:"h_flower",t:"hat",p:300,n:"꽃핀",e:"🌸"},
+  {id:"h_shades",t:"hat",p:300,n:"선글라스",e:"🕶️"},{id:"h_goggle",t:"hat",p:375,n:"레이싱 고글",e:"🥽"},{id:"h_phones",t:"hat",p:375,n:"헤드폰",e:"🎧"},{id:"h_santa",t:"hat",p:375,n:"산타 모자",e:"🎅"},
+  {id:"h_scarf",t:"hat",p:450,n:"빨간 목도리",e:"🧣"},{id:"h_top",t:"hat",p:500,n:"마술사 모자",e:"🎩"},
+  {id:"h_tiger",t:"hat",p:750,n:"호랑이 모자",e:"🐯"},{id:"h_chick",t:"hat",p:750,n:"닭 모자",e:"🐔"},{id:"bighead",t:"hat",p:1000,lv:30,n:"왕머리 가면",e:"🎭"},
   /* 카트 스킨(무늬 · 한 개 착용) */
   {id:"s_black",t:"skin",p:500,n:"⚫ 검정 페인트"},{id:"s_flame",t:"skin",p:1500,n:"불꽃 무늬"},{id:"s_bolt",t:"skin",p:1500,n:"번개 무늬"},{id:"s_check",t:"skin",p:1500,n:"체커 무늬"},{id:"s_heart",t:"skin",p:1500,n:"하트 무늬"},
   {id:"s_camo",t:"skin",p:1750,n:"위장 무늬"},{id:"s_star",t:"skin",p:1750,n:"별빛 무늬"},{id:"s_splash",t:"skin",p:2000,n:"페인트 스플래시"},{id:"s_drip",t:"skin",p:2000,n:"페인트 흘림"},
@@ -6670,7 +6670,7 @@ var SKIN_DRAW2={
 };
 
 /* ---------- 랜덤 박스 ---------- */
-var GBOX_P=700, GCP_MIN=10; /* 쿠폰 1장 = 10분 동안 경험치 ×1.1 (여러 장이면 시간이 이어 붙음) */
+var GBOX_P=500, GCP_MIN=10; /* 쿠폰 1장 = 10분 동안 경험치 ×1.1 (여러 장이면 시간이 이어 붙음) */
 /* 경험치 쿠폰: 가방에 쌓이고(cp.a/b/c), "사용하기"를 누르면 10분 동안 켜짐(cpu.a/b/c = 끝나는 시각) · 여러 등급이 켜져 있으면 가장 높은 배율만 적용 */
 var CPG={a:{n:"경험치 쿠폰",x:1.2,c:"#7ae86a",e:"🎟️"},b:{n:"중급 경험치 쿠폰",x:1.5,c:"#5ad8ff",e:"🎫"},c:{n:"고급 경험치 쿠폰",x:2,c:"#ffb020",e:"🏅"}};
 var CPR=[["a","b"],["b","c"]], CP_IN=20, CP_OUT=10;
