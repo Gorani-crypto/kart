@@ -293,7 +293,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
   <div class="card rcard">
     <div class="eyebrow">ONLINE · 방 목록</div>
     <h1>온라인 대전</h1>
-    <div style="display:flex;gap:8px;align-self:flex-start"><button type="button" id="myBtn2" style="font:900 16px sans-serif;padding:9px 16px;border-radius:12px;border:0;cursor:pointer;margin:4px 0 10px">👤 마이페이지</button><button type="button" id="shopBtn2" style="font:900 16px sans-serif;padding:9px 16px;border-radius:12px;border:0;background:linear-gradient(135deg,#ffe27a,#ffb21a);color:#1a1a1a;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);margin:4px 0 10px">🛒 상점</button></div>
+    <div style="display:flex;gap:8px;align-self:flex-start"><button type="button" id="myBtn2" style="font:900 16px sans-serif;padding:9px 16px;border-radius:12px;border:0;cursor:pointer;margin:4px 0 10px">🏁 마이페이지</button><button type="button" id="infoBtn2" style="font:900 16px sans-serif;padding:9px 16px;border-radius:12px;border:0;cursor:pointer;margin:4px 0 10px">📋 기본정보</button><button type="button" id="shopBtn2" style="font:900 16px sans-serif;padding:9px 16px;border-radius:12px;border:0;background:linear-gradient(135deg,#ffe27a,#ffb21a);color:#1a1a1a;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);margin:4px 0 10px">🛒 상점</button></div>
     <div class="rwrap">
       <div class="rleft">
         <div class="mp-field"><label for="rNick">닉네임</label><input id="rNick" maxlength="10" placeholder="닉네임을 정해 주세요" autocomplete="off"></div>
@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2230</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2255</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6621,7 +6621,7 @@ function cpOnNow(){ return cpMul()>1; }
 function cpTxt(ms){ if(ms<=0) return "꺼짐"; const m=Math.floor(ms/60000), sec=Math.floor(ms/1000)%60; return m+"분 "+String(sec).padStart(2,"0")+"초"; }
 function cpLeftTxt(){ const now=Date.now(); let best=null; for(const g in CPG) if(cpUntilG(g)>now&&(!best||CPG[g].x>CPG[best].x)) best=g; return best?CPG[best].n+" ×"+CPG[best].x+" · "+cpTxt(cpUntilG(best)-now):"꺼짐"; }
 function cpTx(f,ok){ if(!cpProf()){ toast("로그인이 필요해요","#ff9a8a"); return; } firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; p.cp=Object.assign({a:0,b:0,c:0},p.cp||{}); p.cpu=Object.assign({},p.cpu||{}); if(+p.cpU){ p.cpu.a=Math.max(+p.cpu.a||0,+p.cpU); p.cpU=null; } return f(p)?p:undefined; })
-  .then(r=>{ if(r.committed){ ACCT.prof=r.snapshot.val()||ACCT.prof; ok&&ok(); } else toast("쿠폰이 부족해요","#ff9a8a"); try{ shopRender(); }catch(_){} }).catch(e=>{ console.warn(e); toast("실패 · 잠시 뒤 다시 해 주세요","#ff9a8a"); }); }
+  .then(r=>{ if(r.committed){ ACCT.prof=r.snapshot.val()||ACCT.prof; ok&&ok(); } else toast("쿠폰이 부족해요","#ff9a8a"); try{ shopRender(); }catch(_){} try{ if(document.getElementById("garage")) garageRender(); }catch(_){} }).catch(e=>{ console.warn(e); toast("실패 · 잠시 뒤 다시 해 주세요","#ff9a8a"); }); }
 function cpUse(g,n){ n=Math.max(1,Math.floor(+n||1)); if(cpN(g)<n){ toast("쿠폰이 "+cpN(g)+"장뿐이에요","#ff9a8a"); return; } cpTx(p=>{ if((p.cp[g]|0)<n) return false; p.cp[g]-=n; p.cpu[g]=Math.max(Date.now(),+p.cpu[g]||0)+GCP_MIN*60000*n; return true; },()=>{ toast(CPG[g].e+" "+CPG[g].n+" "+n+"장 사용! "+(GCP_MIN*n)+"분 더 · 경험치 ×"+CPG[g].x,CPG[g].c); try{ chime(); }catch(_){} cpHud(); }); }
 function cpCraft(from,to,all){ let k=0; cpTx(p=>{ k=all?Math.floor((p.cp[from]|0)/CP_IN):((p.cp[from]|0)>=CP_IN?1:0); if(k<1) return false; p.cp[from]-=CP_IN*k; p.cp[to]=(p.cp[to]|0)+CP_OUT*k; return true; },()=>craftFx(from,to,k)); }
 function cpBadge(g,sz){ const c=CPG[g]; return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${sz}px;height:${sz}px;border-radius:${sz/4}px;background:linear-gradient(150deg,${c.c},#16171f 140%);box-shadow:0 0 ${sz/4}px ${c.c};font-size:${sz*.55}px">${c.e}</span>`; }
@@ -6786,8 +6786,8 @@ ${S}#roomScr .btn.ghost small,${S}#mpLobby .btn.ghost small{color:#8d94a8!import
 ${S}#shopBtn,${S}#shopBtn2{background:rgba(255,207,46,.08)!important;color:#ffcf2e!important;border:1px solid rgba(255,207,46,.45)!important;box-shadow:none!important;font:900 14px "Pretendard","Noto Sans KR",system-ui,sans-serif!important;letter-spacing:.04em}
 ${S}#shopBtn:hover,${S}#shopBtn2:hover{background:rgba(255,207,46,.18)!important}
 ${S}#shopMoneyTag{color:#ffcf2e!important}
-${S}#myBtn2{background:rgba(255,255,255,.05)!important;color:#fff!important;border:1px solid rgba(255,255,255,.25)!important;font:900 14px "Pretendard","Noto Sans KR",system-ui,sans-serif!important}
-${S}#myBtn2:hover{border-color:#ff3b2f!important;background:rgba(255,42,42,.1)!important}
+${S}#myBtn2,${S}#infoBtn2{background:rgba(255,255,255,.05)!important;color:#fff!important;border:1px solid rgba(255,255,255,.25)!important;font:900 14px "Pretendard","Noto Sans KR",system-ui,sans-serif!important}
+${S}#myBtn2:hover,${S}#infoBtn2:hover{border-color:#ff3b2f!important;background:rgba(255,42,42,.1)!important}
 ${S}#roomScr .room{background:linear-gradient(165deg,#1c1e27,#101117)!important;border:1px solid rgba(255,255,255,.08)!important;color:#e8ebf2!important;border-radius:14px!important;transition:transform .15s,border-color .15s,box-shadow .15s}
 ${S}#roomScr .room:hover{transform:translateY(-2px);border-color:rgba(255,59,47,.65)!important;box-shadow:0 10px 26px rgba(0,0,0,.45),0 0 20px rgba(255,42,42,.18)}
 ${S}#roomScr .room small{color:#8d94a8!important}
@@ -6863,15 +6863,17 @@ async function nickChange(){ const m=document.getElementById("shopModal"), msg=t
   try{ await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,pw)); }catch(e){ return msg(/wrong-password|invalid-credential|invalid-login/.test(e.code||"")?"비밀번호가 맞지 않아요":"확인 실패 · "+(e.code||e)); }
   /* 이메일 열거 보호가 켜진 프로젝트라 로그인 아이디(이메일)는 바꾸지 않음 → 보이는 닉네임만 바뀜 */
   const idOk=false, oldId=loginIdOf(u.email)||MP.nick;
-  try{ const q=await firebase.database().ref("kart/users").orderByChild("n").equalTo(n).limitToFirst(1).once("value"); if(q.exists()) return msg("이미 있는 닉네임이에요. 다른 이름을 골라 주세요"); }catch(_){}
-  try{ const r=await firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; if((p.money|0)<NICK_P) return; p.money=(p.money|0)-NICK_P; p.n=n; if(!idOk) p.lid=p.lid||oldId; else p.lid=null; return p; });
+  /* 닉네임 중복 금지: 다른 사람의 닉네임(n)과 다른 사람의 처음 로그인 아이디(lid) 모두와 겹치면 안 됨 */
+  try{ for(const f of ["n","lid"]){ const q=await firebase.database().ref("kart/users").orderByChild(f).equalTo(n).limitToFirst(2).once("value"); let other=false; q.forEach(c=>{ if(c.key!==ACCT.user.uid) other=true; }); if(other) return msg("이미 있는 닉네임이에요. 다른 이름을 골라 주세요"); } }
+  catch(e){ return msg("닉네임 중복을 확인하지 못했어요. 잠시 뒤 다시 해 주세요"); }
+  try{ const r=await firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; if((p.money|0)<NICK_P) return; p.money=(p.money|0)-NICK_P; p.n=n; p.lid=p.lid||oldId; return p; });
     if(!r.committed){ return msg("돈이 부족해요"); } ACCT.prof=r.snapshot.val()||ACCT.prof; }catch(e){ return msg("저장 실패 · 잠시 뒤 다시 해 주세요"); }
   try{ await u.updateProfile({displayName:n}); }catch(_){}
   MP.nick=n; MP.nickSet=true; try{ updateMyTag(); localStorage.setItem("kartrebuild.nick",n); localStorage.setItem("kartrebuild.nickset","1"); acctBox(); lbProfRender(); MP.lobbySig=null; mpSend(); }catch(_){}
   try{ chime(); }catch(_){} toast("🏷️ 닉네임 변경 완료! 로그인은 계속 '"+oldId+"'(으)로 하세요","#46e08a"); try{ shopRender(); }catch(_){} }
 function nickBind(m){ const b=m.querySelector("#nkGo"); if(b) b.onclick=()=>nickChange(); m.querySelectorAll("#nkNew,#nkPw").forEach(i=>i.onkeydown=e=>{ e.stopPropagation(); if(e.key==="Enter"&&b) b.click(); }); }
-/* ---------- 마이페이지 ---------- */
-function myPageOpen(){ shopCss(); let o=document.getElementById("myPage"); if(!o){ o=document.createElement("div"); o.id="myPage"; document.body.appendChild(o); o.addEventListener("click",e=>{ if(e.target===o) o.remove(); }); }
+/* ---------- 기본정보 (기록·통계) ---------- */
+function infoOpen(){ shopCss(); let o=document.getElementById("myPage"); if(!o){ o=document.createElement("div"); o.id="myPage"; document.body.appendChild(o); o.addEventListener("click",e=>{ if(e.target===o) o.remove(); }); }
   o.style.cssText="position:fixed;inset:0;z-index:215;display:grid;place-items:center;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
   const esc=s=>String(s||"").replace(/[<>&"]/g,""), lg=typeof ACCT!=="undefined"&&ACCT&&ACCT.user, P=(lg&&ACCT.prof)||{};
   const stat=(k,v,c)=>`<div class="mpS"><small>${k}</small><b style="${c?"color:"+c:""}">${v}</b></div>`;
@@ -6886,21 +6888,94 @@ function myPageOpen(){ shopCss(); let o=document.getElementById("myPage"); if(!o
       <div class="mpGrid">${stat("돈",wonFmt(P.money||0),"#ffcf2e")}${stat("경주",races+"판")}${stat("1등",wins+"번","#ff4a3a")}${stat("승률",races?Math.round(wins/races*100)+"%":"—")}${stat("지금 경험치 배율","×"+xpM,"#46e08a")}${stat("쿠폰",`${cpN("a")} · ${cpN("b")} · ${cpN("c")}장`)}</div>
       <div class="mpSec">착용 중</div><div class="mpGrid">${eq.map(([k,v])=>stat(k,esc(v))).join("")}</div>
       <div class="mpSec">컬렉션</div><div class="mpGrid">${stat("랜덤 박스 도감",boxOwn+" / "+boxN)}${stat("오라",aur+" / "+Object.keys(AURA_DEF).length)}${stat("쿠폰 효과",esc(cpLeftTxt()))}</div>
-      <div class="mpBtns"><button type="button" class="rs-btn buy" id="mpShop">🛒 상점</button><button type="button" class="rs-btn eq" id="mpNick">🏷️ 닉네임 변경</button><button type="button" class="rs-btn eq" id="mpOut">로그아웃</button></div>`; }
+      <div class="mpBtns"><button type="button" class="rs-btn buy" id="mpGar">🏁 마이페이지</button><button type="button" class="rs-btn eq" id="mpShop">🛒 상점</button><button type="button" class="rs-btn eq" id="mpNick">🏷️ 닉네임 변경</button><button type="button" class="rs-btn eq" id="mpOut">로그아웃</button></div>`; }
   else main=`<div class="mpHero"><div class="mpEm" style="font-size:54px;display:grid;place-items:center">👤</div><div><div class="mpLb">GUEST</div><div class="mpNm">${esc(MP.nick)}</div><div class="mpLv" style="color:#8d94a8">게스트로 플레이 중</div></div></div>
       <div style="display:grid;gap:7px;margin:14px 0;font:700 13.5px/1.4 sans-serif">${["랭킹 기록이 등록되지 않아요","경험치를 받지 않고 레벨업이 없어요","돈을 벌 수 없어서 상점을 못 써요"].map(t=>`<div style="padding:9px 12px;border-radius:10px;background:rgba(255,42,42,.1);border:1px solid rgba(255,59,47,.3)">🚫 ${t}</div>`).join("")}</div>
       <div class="mpBtns"><button type="button" class="rs-btn buy" id="mpLogin">로그인 · 가입하기</button></div>`;
-  o.innerHTML=`<div class="rs mp" role="dialog" aria-label="마이페이지" style="grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);width:min(94vw,640px);height:auto;max-height:90vh"><div class="rs-streaks"><i></i><i></i><i></i></div>
-    <header class="rs-hd"><div class="rs-ttl"><b>MY PAGE</b><span>// DRIVER PROFILE</span></div><div class="rs-sp"></div><button type="button" class="rs-x" id="mpX" aria-label="닫기">✕</button></header>
+  o.innerHTML=`<div class="rs mp" role="dialog" aria-label="기본정보" style="grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);width:min(94vw,640px);height:auto;max-height:90vh"><div class="rs-streaks"><i></i><i></i><i></i></div>
+    <header class="rs-hd"><div class="rs-ttl"><b>기본정보</b><span>// DRIVER PROFILE</span></div><div class="rs-sp"></div><button type="button" class="rs-x" id="mpX" aria-label="닫기">✕</button></header>
     <main class="rs-body">${main}</main></div>
   <style>#myPage .mpHero{display:flex;gap:18px;align-items:center;padding:16px;border-radius:16px;background:linear-gradient(135deg,rgba(255,42,42,.16),rgba(255,255,255,.02));border:1px solid rgba(255,59,47,.3)}#myPage .mpEm{flex:none;width:92px;height:92px}#myPage .mpLb{font:700 10px ui-monospace,Menlo,monospace;letter-spacing:.24em;color:#ff4a3a}#myPage .mpNm{font:400 30px/1.1 "Black Han Sans",sans-serif;font-style:italic;color:#fff;word-break:break-all}#myPage .mpLv{font:800 14px sans-serif;color:#ffcf2e;margin-top:2px}#myPage .mpId{font:700 11px ui-monospace,Menlo,monospace;color:#8d94a8;margin-top:3px}#myPage .mpBar{height:8px;border-radius:5px;background:#0a0b0f;overflow:hidden;margin-top:8px;max-width:320px}#myPage .mpBar i{display:block;height:100%;background:linear-gradient(90deg,#ff3b2f,#ffb020)}#myPage .mpSec{font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.2em;color:#8d94a8;margin:16px 0 8px}#myPage .mpGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}#myPage .mpSec+.mpGrid{margin-top:0}#myPage .mpS{padding:10px 12px;border-radius:12px;background:linear-gradient(165deg,#1c1e27,#101117);border:1px solid rgba(255,255,255,.08)}#myPage .mpS small{display:block;font:700 11px sans-serif;color:#8d94a8}#myPage .mpS b{display:block;font:800 15px "Pretendard",sans-serif;color:#fff;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#myPage .mpBtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}#myPage .mpBtns .rs-btn{flex:1;min-width:140px;padding:12px}@media(max-width:560px){#myPage .mpGrid{grid-template-columns:repeat(2,minmax(0,1fr))}#myPage .mpHero{flex-direction:column;text-align:center}#myPage .mpBar{margin:8px auto 0}}</style>`;
   const q=s=>o.querySelector(s); q("#mpX").onclick=()=>o.remove();
   if(q("#mpShop")) q("#mpShop").onclick=()=>{ o.remove(); SHOP_TAB="box"; shopOpen(); };
-  if(q("#mpNick")) q("#mpNick").onclick=()=>{ o.remove(); SHOP_TAB="nick"; shopOpen(); };
+  if(q("#mpNick")) q("#mpNick").onclick=()=>{ o.remove(); SHOP_TAB="nick"; shopOpen(); }; if(q("#mpGar")) q("#mpGar").onclick=()=>{ o.remove(); garageOpen(); };
   if(q("#mpOut")) q("#mpOut").onclick=()=>{ firebase.auth().signOut().then(()=>location.reload()); };
   if(q("#mpLogin")) q("#mpLogin").onclick=()=>{ o.remove(); try{ sessionStorage.removeItem("rl.after"); }catch(_){} location.reload(); }; }
 
-document.addEventListener("click",e=>{ const mb=e.target&&e.target.closest&&e.target.closest("#myBtn2"); if(mb){ e.preventDefault(); myPageOpen(); return; } const t=e.target&&e.target.closest&&e.target.closest("#titleShop,#shopBtn,#shopBtn2"); if(t){ e.preventDefault(); e.stopPropagation(); shopOpen(); } },true);
+/* ---------- 마이페이지 = 내 차고: 가진 카트·캐릭터·치장을 직접 착용해 보고, 쿠폰도 사용 ---------- */
+var GARAGE={on:false,a:0,last:0,drag:null,tab:"kart"};
+function garageCam(){ if(!GARAGE.on||typeof kart==="undefined"||!kart) return; const now=performance.now()/1000, dt=Math.min(.1,now-(GARAGE.last||now)); GARAGE.last=now; if(!GARAGE.drag) GARAGE.a+=dt*.35;
+  if(GARAGE.key!==CAR.id+"|"+selChar){ GARAGE.key=CAR.id+"|"+selChar; try{ CAR.root.updateMatrixWorld(true); const bb=new THREE.Box3().setFromObject(CAR.root), sz=bb.getSize(new THREE.Vector3()), c=bb.getCenter(new THREE.Vector3()); GARAGE.R=Math.max(1,sz.length()); GARAGE.cy=c.y; }catch(_){ GARAGE.R=4; GARAGE.cy=null; } }
+  kart.traverse(o=>{ if(o.isSprite&&o.visible){ o.visible=false; (GARAGE.spr||(GARAGE.spr=new Set())).add(o); } });
+  const p=new THREE.Vector3(); kart.getWorldPosition(p); const R=GARAGE.R||4, D=R*1.95, a=GARAGE.a+kart.rotation.y, cy=GARAGE.cy!=null?GARAGE.cy:p.y+R*.2;
+  camera.position.set(p.x+Math.sin(a)*D,cy+R*.42,p.z+Math.cos(a)*D); camera.lookAt(p.x,cy,p.z); camera.fov=40;
+  const W=innerWidth, Hh=innerHeight; if(W>=760) camera.setViewOffset(W,Hh,W*.23,0,W,Hh); else camera.setViewOffset(W,Hh,0,Hh*.24,W,Hh); camera.updateProjectionMatrix(); }
+function garageClose(){ GARAGE.on=false; if(GARAGE.spr){ GARAGE.spr.forEach(o=>o.visible=true); GARAGE.spr=null; } GARAGE.key=null; const o=document.getElementById("garage"); if(o) o.remove(); document.body.classList.remove("garageOn"); document.querySelectorAll("[data-g-hide]").forEach(e=>{ e.style.visibility=""; delete e.dataset.gHide; }); try{ camera.clearViewOffset(); camera.updateProjectionMatrix(); }catch(_){} try{ renderOptions(); }catch(_){} try{ MP.lobbySig=null; mpSend(); mpRender(); }catch(_){} }
+function garageOpen(){ shopCss(); document.body.classList.add("garageOn"); document.querySelectorAll(".overlay").forEach(e=>{ if(!e.hidden&&e.style.visibility!=="hidden"){ e.dataset.gHide="1"; e.style.visibility="hidden"; } }); let o=document.getElementById("garage"); if(!o){ o=document.createElement("div"); o.id="garage"; document.body.appendChild(o); } GARAGE.on=true; GARAGE.last=0; garageRender();
+  const st=o.querySelector(".gStage"); st.onpointerdown=e=>{ GARAGE.drag={x:e.clientX,a:GARAGE.a}; st.setPointerCapture(e.pointerId); }; st.onpointermove=e=>{ if(GARAGE.drag) GARAGE.a=GARAGE.drag.a-(e.clientX-GARAGE.drag.x)*.01; }; st.onpointerup=st.onpointercancel=()=>{ GARAGE.drag=null; }; }
+function garageApply(){ try{ shopRefreshLook(); }catch(_){} garageRender(); }
+function garageRender(){ const o=document.getElementById("garage"); if(!o) return; const esc=s=>String(s||"").replace(/[<>&"]/g,""), lg=typeof ACCT!=="undefined"&&ACCT&&ACCT.user, own=id=>shopOwned(id);
+  const k=KARTS[selKart]||KARTS[0], ch=CHARS[selChar]||CHARS[0];
+  const tabs=[["kart","🏎️","카트"],["char","🧑","캐릭터"],["paint","🎨","색상"],["aura","🌟","오라"],["hat","🎩","모자"],["skin","🖌️","스킨"],["cos","✨","치장"],["cp","🎟️","쿠폰"]];
+  const T=GARAGE.tab; const tile=(on,inner,attrs,lock)=>`<button type="button" class="gT ${on?"on":""} ${lock?"lk":""}" ${attrs}>${inner}</button>`;
+  let body="";
+  if(T==="kart"){ body=`<div class="gGrid">${kOrd().map(i=>{ const kk=KARTS[i]; if(kartLocked(kk)) return ""; return tile(i===selKart,`<img alt="" src="${safeThumb(()=>carThumb(kk,ch,i===selKart?selColor:0))}"><span>${esc(kk.name)}</span>${CIRC_KARTS.includes(kk.id)?'<em>서킷 전용</em>':""}`,`data-k="${i}"`); }).join("")}</div>`; }
+  else if(T==="char"){ body=`<div class="gGrid">${CHARS.map((c,i)=>charLocked(c)?"":tile(i===selChar,`<img alt="" src="${safeThumb(()=>charThumb(c))}"><span>${esc(c.name)}</span>${(c.xpm||1)>1?`<em>⭐ ×${c.xpm}</em>`:""}`,`data-c="${i}"`)).join("")}</div>`; }
+  else if(T==="paint"){ body=`<div class="gSw">${PAINTS.map((pp,i)=>i===9?"":`<button type="button" class="gP ${i===selColor?"on":""}" data-p="${i}" style="background:${pp==null?"linear-gradient(135deg,#d8dce4,#6a7080)":"#"+(pp>>>0).toString(16).padStart(6,"0")}"></button>`).join("")}</div>`; }
+  else if(T==="aura"){ const L=Object.keys(AURA_DEF).filter(a=>own(a)&&!(a==="aura"&&lvLock({lv:30}))); body=L.length?`<div class="gGrid">${L.map(a=>tile(auraCur()===a,auraPrev(a,46)+`<span>${esc(AURA_DEF[a].n)}</span><em>⭐ ×${AURA_DEF[a].xp}</em>`,`data-a="${a}"`)).join("")}</div>`:gEmpty("가진 오라가 없어요","상점에서 기본 오라를 사거나 랜덤 박스에서 얻어요"); }
+  else if(T==="hat"||T==="skin"){ const L=SHOP.filter(it=>it.t===T&&own(it.id)&&(!it.lv||!lvLock({lv:it.lv}))), cur=T==="hat"?COSEQ.hat:COSEQ.skin; body=L.length?`<div class="gGrid">${L.map(it=>tile(cur===it.id,`<div class="pv">${shopPreview(it)}</div><span>${esc(shopName(it))}</span>${it.xp?`<em>⭐ ×${it.xp}</em>`:""}`,`data-${T}="${it.id}"`)).join("")}</div>`:gEmpty(T==="hat"?"가진 모자·액세서리가 없어요":"가진 스킨이 없어요","상점이나 랜덤 박스에서 얻을 수 있어요"); }
+  else if(T==="cos"){ const L=COSM.filter(c=>!cosLocked(c)); body=L.length?`<div class="gGrid">${L.map(c=>tile(!!COSEQ[c.id],`<div style="font-size:34px;line-height:60px">${{tattoo:"🔥",wings:"🪽"}[c.id]||"✨"}</div><span>${esc(c.name)}</span>${c.xp?`<em>⭐ ×${c.xp}</em>`:""}`,`data-cos="${c.id}"`)).join("")}</div>`:gEmpty("가진 특수 치장이 없어요","레벨을 올린 뒤 상점에서 살 수 있어요"); }
+  else if(T==="cp"){ body=lg?craftPanelHTML(true):gEmpty("게스트는 쿠폰을 쓸 수 없어요","로그인하면 랜덤 박스에서 쿠폰을 얻을 수 있어요"); }
+  const L=lg?lvOf(ACCT.prof&&ACCT.prof.xp||0):null, xpM=Math.round(auraXp()*rareXp()*(cosOn("tattoo")?1.5:1)*cpMul()*((ch.xpm)||1)*100)/100;
+  o.innerHTML=`<div class="gStage"><div class="gVig"></div><div class="gCap"><div class="gLb">MY GARAGE</div><div class="gNm">${esc(k.name)}</div><div class="gSub">${esc(ch.name)}${auraCur()?" · "+esc(AURA_DEF[auraCur()].n):""}${myHat()?" · "+esc(shopName(shopItem(myHat()))):""}${mySkin()?" · "+esc(shopName(shopItem(mySkin()))):""}</div><div class="gXp">⭐ 지금 경험치 배율 ×${xpM}</div><div class="gHint">⟲ 드래그해서 돌려 보기</div></div></div>
+  <aside class="gPan rs"><div class="rs-streaks"><i></i><i></i><i></i></div><header class="rs-hd" style="grid-column:auto"><div class="rs-ttl"><b>MY PAGE</b><span>// ${esc(MP.nick)}${L?" · LV "+L.lv:" · GUEST"}</span></div><div class="rs-sp"></div><div class="rs-money"><small>BALANCE</small><b class="${lg?"":"off"}">${lg?wonFmt(shopMoney()):"게스트"}</b></div><button type="button" class="rs-x" id="gX" aria-label="닫기">✕</button></header>
+    <nav class="gTabs">${tabs.map(([id,ic,n])=>`<button type="button" class="gTab ${id===T?"on":""}" data-t="${id}"><span>${ic}</span>${n}</button>`).join("")}</nav>
+    <main class="rs-body gBody">${body}</main>
+    <footer class="rs-ft" style="grid-column:auto"><span>고른 것은 바로 내 카트에 적용돼요</span><span><a href="#" id="gInfo" style="color:#ff8a7a">📋 기본정보</a> · <a href="#" id="gShop" style="color:#ffcf2e">🛒 상점</a></span></footer></aside>
+  <style>body.garageOn .hud,body.garageOn #cpHud,body.garageOn #acctBox{visibility:hidden}#garage{position:fixed;inset:0;z-index:215;display:grid;grid-template-columns:minmax(0,1fr) min(48vw,600px);pointer-events:none}
+  #garage .gStage{position:relative;pointer-events:auto;cursor:grab;touch-action:none}#garage .gStage:active{cursor:grabbing}
+  #garage .gVig{position:absolute;inset:0;background:radial-gradient(ellipse 45% 55% at 50% 52%,transparent 40%,rgba(0,0,0,.78) 100%),linear-gradient(90deg,rgba(0,0,0,.55),transparent 30%);pointer-events:none}
+  #garage .gVig:after{content:"";position:absolute;left:12%;right:12%;bottom:16%;height:2px;background:linear-gradient(90deg,transparent,#ff2a2a,transparent);box-shadow:0 0 16px #ff2a2a;opacity:.7}
+  #garage .gCap{position:absolute;left:28px;bottom:26px;right:20px;color:#fff;pointer-events:none}
+  #garage .gLb{font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.28em;color:#ff4a3a}
+  #garage .gNm{font:400 42px/1.05 "Black Han Sans",system-ui,sans-serif;font-style:italic;text-shadow:0 4px 24px rgba(0,0,0,.8)}
+  #garage .gSub{font:800 14px "Pretendard","Noto Sans KR",sans-serif;color:#d8dce8;margin-top:4px;text-shadow:0 2px 8px #000}
+  #garage .gXp{display:inline-block;margin-top:8px;padding:4px 10px;border-radius:999px;background:rgba(70,224,138,.14);border:1px solid rgba(70,224,138,.45);font:800 12.5px sans-serif;color:#7af0a8}
+  #garage .gHint{margin-top:8px;font:700 10.5px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#8d94a8}
+  #garage .gPan{pointer-events:auto;width:auto;height:100vh;max-height:none;border-radius:0;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;animation:gIn .35s cubic-bezier(.2,1.1,.3,1);border-width:0 0 0 1px}
+  @keyframes gIn{from{transform:translateX(40px);opacity:0}}
+  #garage .gTabs{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:6px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+  #garage .gTab{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:#b8bfd0;font:800 13px "Pretendard","Noto Sans KR",sans-serif;cursor:pointer}
+  #garage .gTab:hover{color:#fff;border-color:rgba(255,59,47,.5)}
+  #garage .gTab.on{background:linear-gradient(135deg,#ff3b2f,#c4070d);color:#fff;border-color:#ff3b2f;box-shadow:0 4px 14px rgba(230,20,20,.4)}
+  #garage .gGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+  #garage .gT{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(165deg,#1c1e27,#101117);color:#fff;cursor:pointer;transition:transform .12s,border-color .12s}
+  #garage .gT:hover{transform:translateY(-2px);border-color:rgba(255,59,47,.6)}
+  #garage .gT.on{border-color:#ff3b2f;box-shadow:0 0 0 1px #ff3b2f,0 0 20px rgba(255,42,42,.3);background:linear-gradient(165deg,#3a1216,#16171f)}
+  #garage .gT.on:before{content:"✔";position:absolute;right:7px;top:5px;width:20px;height:20px;border-radius:50%;background:#ff2a2a;font:900 12px/20px sans-serif}
+  #garage .gT img{width:100%;height:70px;object-fit:contain}#garage .gT .pv{width:100%;height:70px;display:flex;align-items:center;justify-content:center;overflow:hidden}#garage .gT .pv>*{width:100%}
+  #garage .gT span{font:800 12.5px "Pretendard","Noto Sans KR",sans-serif;text-align:center;word-break:keep-all}
+  #garage .gT em{font:800 10.5px sans-serif;font-style:normal;color:#7af0a8}
+  #garage .gSw{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:10px}
+  #garage .gP{aspect-ratio:1;border-radius:14px;border:2px solid rgba(255,255,255,.15);cursor:pointer;box-shadow:inset 0 -8px 14px rgba(0,0,0,.3)}
+  #garage .gP.on{border-color:#fff;box-shadow:0 0 0 3px #ff2a2a,inset 0 -8px 14px rgba(0,0,0,.3)}
+  #garage .gE{padding:34px 16px;text-align:center;border-radius:14px;border:1px dashed rgba(255,255,255,.14);color:#8d94a8}#garage .gE b{display:block;color:#e8ebf2;font-size:15px;margin-bottom:6px}
+  @media(max-width:759px){#garage{grid-template-columns:minmax(0,1fr);grid-template-rows:42vh minmax(0,1fr)}#garage .gPan{height:auto;border-width:1px 0 0}#garage .gNm{font-size:28px}#garage .gCap{left:16px;bottom:12px}}
+  </style>`;
+  const q=s=>o.querySelector(s); q("#gX").onclick=garageClose; q("#gShop").onclick=e=>{ e.preventDefault(); garageClose(); shopOpen(); }; q("#gInfo").onclick=e=>{ e.preventDefault(); garageClose(); infoOpen(); };
+  o.querySelectorAll(".gTab").forEach(b=>b.onclick=()=>{ GARAGE.tab=b.dataset.t; garageRender(); });
+  o.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.k; selKart=i; try{ localStorage.setItem("kartrebuild.kart",String(i)); }catch(_){} try{ paintKart(KARTS[i]); }catch(_){} garageApply(); });
+  o.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.c; selChar=i; try{ localStorage.setItem("kartrebuild.char",String(i)); }catch(_){} garageApply(); });
+  o.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ try{ setColor(+b.dataset.p); }catch(_){} garageApply(); });
+  o.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a; COSEQ.aura=auraCur()===a?null:a; cosSave(); garageApply(); });
+  o.querySelectorAll("[data-hat]").forEach(b=>b.onclick=()=>{ const h=b.dataset.hat; COSEQ.hat=COSEQ.hat===h?null:h; cosSave(); garageApply(); });
+  o.querySelectorAll("[data-skin]").forEach(b=>b.onclick=()=>{ const h=b.dataset.skin; COSEQ.skin=COSEQ.skin===h?null:h; cosSave(); garageApply(); });
+  o.querySelectorAll("[data-cos]").forEach(b=>b.onclick=()=>{ const c=b.dataset.cos; COSEQ[c]=!COSEQ[c]; cosSave(); garageApply(); });
+  if(T==="cp") try{ craftBind(o); }catch(_){}
+  if(!o.querySelector(".gStage").onpointerdown){ const st=o.querySelector(".gStage"); st.onpointerdown=e=>{ GARAGE.drag={x:e.clientX,a:GARAGE.a}; try{ st.setPointerCapture(e.pointerId); }catch(_){} }; st.onpointermove=e=>{ if(GARAGE.drag) GARAGE.a=GARAGE.drag.a-(e.clientX-GARAGE.drag.x)*.01; }; st.onpointerup=st.onpointercancel=()=>{ GARAGE.drag=null; }; } }
+function gEmpty(a,b){ return `<div class="gE"><b>${a}</b>${b}</div>`; }
+
+document.addEventListener("click",e=>{ const mb=e.target&&e.target.closest&&e.target.closest("#myBtn2,#infoBtn2"); if(mb){ e.preventDefault(); if(mb.id==="myBtn2") garageOpen(); else infoOpen(); return; } const t=e.target&&e.target.closest&&e.target.closest("#titleShop,#shopBtn,#shopBtn2"); if(t){ e.preventDefault(); e.stopPropagation(); shopOpen(); } },true);
 
 function swatchesHTML(){ return PAINTS.map((h,i)=>i===9?"":`<button type="button" class="sw" data-i="${i}" aria-pressed="${i===selColor}" title="${PAINT_NAMES[i]}" style="background:${h==null?"conic-gradient(#e8344a,#ffd21f,#3cc46a,#3ec6ff,#9b5de5,#e8344a)":"#"+h.toString(16).padStart(6,"0")}"></button>`).join(""); }
 try{ selTrack=Math.min(TRACKS.length-1,parseInt(localStorage.getItem("kartrebuild.track")||"0",10)||0); selKart=Math.min(KARTS.length-1,parseInt(localStorage.getItem("kartrebuild.kart")||"0",10)||0); selChar=Math.min(CHARS.length-1,parseInt(localStorage.getItem("kartrebuild.char")||"0",10)||0);}catch(_){}
@@ -8580,7 +8655,7 @@ function render(dt){
   if(myMeteor.parent!==kart) kart.add(myMeteor); meteorUpd(myMeteor,S.superT>0?Math.max(.08,sprog):0,dt); if(sprog>0) meteorEmbers(S.x,S.y,S.z,S.h,sprog,S.vx,S.vz);
   if(sprog>0) S.shake=Math.max(S.shake,.04+.3*sprog*sprog);
   const targetFov=70+(S.rail?16:S.superT>0?4+16*sprog*sprog:S.novaT>0?8:S.boostT>0?5:S.instT>0?2:0)+12*(S.kick||0)+(DCAM.on?DCAM.fov||0:0);
-  camera.fov=lerp(camera.fov,targetFov,.08); camera.updateProjectionMatrix();
+  camera.fov=lerp(camera.fov,targetFov,.08); camera.updateProjectionMatrix(); if(GARAGE.on) garageCam();
   skyDome.position.set(camera.position.x,0,camera.position.z); if(NIGHT) NIGHT.position.copy(skyDome.position);
   renderer.render(scene,camera);
   { if(state==="race"&&S.novaT>0) S.mirT=1.5; else if(ckMirror()) S.mirT=Math.max(S.mirT||0,.9); else S.mirT=Math.max(0,(S.mirT||0)-dt); let mf=document.getElementById("sideMirror"); const on=S.mirT>0&&(state==="race"||state==="finish");
@@ -9045,7 +9120,10 @@ function loginOpen(){
         if(!n) return msg("닉네임을 입력해 주세요"); if(p.length<6) return msg("비밀번호는 6자 이상이어야 해요");
         if(!window.firebase||!firebase.auth) return msg("서버에 연결 중이에요. 잠시 후 다시 해 주세요"); msg("잠시만요…");
         try{ const au=firebase.auth(); let u;
-          if(join){ try{ const q=await firebase.database().ref("kart/users").orderByChild("n").equalTo(n).limitToFirst(1).once("value"); if(q.exists()) return msg("이미 있는 닉네임이에요"); }catch(_){} u=(await au.createUserWithEmailAndPassword(acctEmail(n),p)).user; await u.updateProfile({displayName:n}); await firebase.database().ref("kart/users/"+u.uid).set({n,xp:0,races:0,wins:0,at:firebase.database.ServerValue.TIMESTAMP}); }
+          if(join){ u=(await au.createUserWithEmailAndPassword(acctEmail(n),p)).user;
+            /* 다른 사람이 닉네임을 바꿔서 이미 쓰고 있는 이름이면 방금 만든 계정을 지우고 막음 */
+            let taken=false; try{ for(const f of ["n","lid"]){ const q=await firebase.database().ref("kart/users").orderByChild(f).equalTo(n).limitToFirst(2).once("value"); q.forEach(c=>{ if(c.key!==u.uid) taken=true; }); } }catch(_){}
+            if(taken){ try{ await u.delete(); }catch(_){ try{ await au.signOut(); }catch(__){} } return msg("이미 있는 닉네임이에요"); } await u.updateProfile({displayName:n}); await firebase.database().ref("kart/users/"+u.uid).set({n,xp:0,races:0,wins:0,at:firebase.database.ServerValue.TIMESTAMP}); }
           else u=(await au.signInWithEmailAndPassword(acctEmail(n),p)).user;
           try{ localStorage.setItem("kartrebuild.nick",n); localStorage.setItem("kartrebuild.nickset","1"); sessionStorage.setItem("rl.after","main"); }catch(_){}
           location.reload(); }catch(e){ try{ msg(acctErr(e)); }catch(_){ msg("로그인 실패"); } } };
