@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2455</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2500</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7045,6 +7045,35 @@ function garageDraw(){ const G=garageScene(); if(CAR&&CAR.root&&CAR.root.parent!
 function garageZoom(dy){ const o=document.getElementById("garage"); if(!o) return; GARAGE.zoom=Math.max(.32,Math.min(1.5,(GARAGE.zoom||1)*(1+dy*.0012))); const f=GARAGE.zoom<.97; if(f!==GARAGE.full){ GARAGE.full=f; o.classList.toggle("full",f); } }
 addEventListener("wheel",e=>{ if(!GARAGE.on) return; const st=e.target&&e.target.closest&&e.target.closest("#garage .gStage"); if(!st) return; e.preventDefault(); garageZoom(e.deltaY); },{passive:false});
 addEventListener("keydown",e=>{ if(!GARAGE.on) return; const t=e.target; if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA")) return; if(e.code==="Space"||e.key===" "){ e.preventDefault(); e.stopPropagation(); if(!e.repeat) GARAGE.paused=!GARAGE.paused; } else if(e.key==="Escape"){ e.preventDefault(); e.stopPropagation(); if(GARAGE.full){ GARAGE.zoom=1; GARAGE.full=false; const o=document.getElementById("garage"); if(o) o.classList.remove("full"); } else garageClose(); } },true);
+/* ---------- 이벤트 · 공지사항 ---------- */
+var SRV_OFF=0; (function srvOff(){ try{ if(typeof firebase!=="undefined"&&firebase.apps&&firebase.apps.length){ firebase.database().ref(".info/serverTimeOffset").on("value",s=>{ SRV_OFF=+s.val()||0; }); return; } }catch(_){} setTimeout(srvOff,800); })();
+var EVENTS=[{id:"suneung2026",mul:2,from:Date.parse("2026-11-20T21:40:00+09:00"),to:Date.parse("2026-11-27T23:59:59+09:00"),
+  title:"🎓 수능을 축하합니다!",short:"🎓 수능 축하 경험치 2배",
+  body:`수험생 여러분, 정말 고생 많으셨어요! 🎉<br>수능을 축하하는 의미로 <b style="color:#ffcf2e">일주일 동안 모든 경주 경험치가 2배</b>예요.`,
+  list:["기간: 11월 20일(금) ~ 11월 27일(금) 23:59","경험치만큼 받는 돈도 2배로 받아요","오라·쿠폰·캐릭터 경험치 배율과 곱해져요","로그인한 플레이어만 받을 수 있어요 (게스트는 경험치 없음)"]}];
+function evNow(){ return Date.now()+(SRV_OFF||0); }
+function xpEvent(){ const t=evNow(); return EVENTS.find(e=>t>=e.from&&t<=e.to)||null; }
+function xpEventMul(){ const e=xpEvent(); return e?e.mul:1; }
+function noticeOpen(){ const e=xpEvent()||EVENTS[EVENTS.length-1]; shopCss(); let o=document.getElementById("rlNotice"); if(o) o.remove(); o=document.createElement("div"); o.id="rlNotice"; document.body.appendChild(o);
+  const left=e.to-evNow(), dd=Math.max(0,Math.floor(left/864e5)), hh=Math.max(0,Math.floor(left/36e5)%24), on=!!xpEvent();
+  o.style.cssText="position:fixed;inset:0;z-index:5100;display:grid;place-items:center;background:rgba(0,0,0,.78)";
+  o.innerHTML=`<div class="rs" role="dialog" aria-label="공지사항" style="grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);width:min(92vw,520px);height:auto;max-height:90vh"><div class="rs-streaks"><i></i><i></i><i></i></div>
+    <header class="rs-hd"><div class="rs-ttl"><b>NOTICE</b><span>// 공지사항</span></div><div class="rs-sp"></div><button type="button" class="rs-x" id="ntX" aria-label="닫기">✕</button></header>
+    <main class="rs-body"><div style="padding:18px;border-radius:16px;background:linear-gradient(135deg,rgba(255,42,42,.2),rgba(255,207,46,.08));border:1px solid rgba(255,59,47,.4);text-align:center">
+      <div style="font:400 30px/1.15 'Black Han Sans',sans-serif;font-style:italic;color:#fff">${e.title}</div>
+      <div style="display:inline-block;margin:12px 0 4px;padding:8px 18px;border-radius:999px;background:linear-gradient(135deg,#ff3b2f,#ffb020);font:400 26px 'Black Han Sans',sans-serif;color:#fff;box-shadow:0 6px 20px rgba(255,80,40,.45)">EXP ×${e.mul}</div>
+      <div style="font:700 12px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:${on?"#7af0a8":"#8d94a8"};margin-top:6px">${on?`● 진행 중 · ${dd}일 ${hh}시간 남음`:"● 이벤트가 끝났어요"}</div></div>
+      <p style="font:600 14.5px/1.7 sans-serif;color:#e8ebf2;margin:16px 2px 10px">${e.body}</p>
+      <div style="display:grid;gap:6px">${e.list.map(t=>`<div style="padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font:600 13px sans-serif;color:#c8cdd9">· ${t}</div>`).join("")}</div>
+      <div style="display:flex;gap:8px;margin-top:16px"><button type="button" class="rs-btn buy" id="ntOk" style="padding:12px">확인</button><button type="button" class="rs-btn eq" id="ntToday" style="padding:12px">오늘 그만 보기</button></div></main></div>`;
+  const close=()=>o.remove(); o.onclick=ev=>{ if(ev.target===o) close(); }; o.querySelector("#ntX").onclick=close; o.querySelector("#ntOk").onclick=close;
+  o.querySelector("#ntToday").onclick=()=>{ try{ localStorage.setItem("rl.notice."+e.id,new Date().toDateString()); }catch(_){} close(); }; }
+function noticeAuto(){ const e=xpEvent(); if(!e) return; try{ if(sessionStorage.getItem("rl.ntShown")==="1") return; if(localStorage.getItem("rl.notice."+e.id)===new Date().toDateString()) return; }catch(_){}
+  const wait=()=>{ if(document.getElementById("rlIntro")||document.getElementById("rlLogin")){ setTimeout(wait,600); return; } try{ sessionStorage.setItem("rl.ntShown","1"); }catch(_){} setTimeout(noticeOpen,500); }; wait(); }
+function evBanner(){ const t=document.getElementById("titleScr"); if(!t) return; let b=document.getElementById("evBanner"); const e=xpEvent(); if(!e){ if(b) b.remove(); return; }
+  if(!b){ b=document.createElement("button"); b.type="button"; b.id="evBanner"; b.onclick=noticeOpen; const card=t.querySelector(".card")||t; card.insertBefore(b,card.querySelector(".tbtns")); const st=document.createElement("style"); st.textContent="#evBanner{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:2px 0 12px;padding:10px 14px;border:1px solid rgba(255,59,47,.5);border-radius:12px;background:linear-gradient(90deg,rgba(255,42,42,.22),rgba(255,176,32,.14));color:#fff;font:800 14px 'Pretendard','Noto Sans KR',sans-serif;cursor:pointer;animation:evPulse 2.4s ease-in-out infinite}#evBanner b{font:400 18px 'Black Han Sans',sans-serif;color:#ffcf2e}#evBanner small{color:#ffb8b0;font-weight:700}@keyframes evPulse{50%{box-shadow:0 0 22px rgba(255,60,40,.45)}}"; document.head.appendChild(st); }
+  const left=e.to-evNow(), dd=Math.floor(left/864e5); b.innerHTML=`<span>${e.short}</span><b>EXP ×${e.mul}</b><small>${dd>0?"D-"+dd:"오늘 마감"} · 📢 공지 보기</small>`; }
+setInterval(()=>{ try{ evBanner(); }catch(_){} },30000); setTimeout(()=>{ try{ evBanner(); }catch(_){} },1500);
 
 document.addEventListener("click",e=>{ const mb=e.target&&e.target.closest&&e.target.closest("#myBtn2,#infoBtn2"); if(mb){ e.preventDefault(); if(mb.id==="myBtn2") garageOpen(); else infoOpen(); return; } const t=e.target&&e.target.closest&&e.target.closest("#titleShop,#shopBtn,#shopBtn2"); if(t){ e.preventDefault(); e.stopPropagation(); shopOpen(); } },true);
 
@@ -8054,7 +8083,7 @@ function acctModal(){ let m=document.getElementById("acctModal"); if(m){ m.hidde
       try{ localStorage.setItem("kartrebuild.nick",n); localStorage.setItem("kartrebuild.nickset","1"); }catch(_){} location.reload(); }catch(e){ msg(acctErr(e)); } };
   $a("acLogin").onclick=()=>go(false); $a("acJoin").onclick=()=>go(true); $a("acX").onclick=()=>{ m.hidden=true; }; $a("acP").onkeydown=e=>{ if(e.key==="Enter") go(false); }; }
 function acctStart(){ if(!window.firebase||!firebase.apps||!firebase.apps.length){ setTimeout(acctStart,400); return; } acctBox();
-  firebase.auth().onAuthStateChanged(u=>{ if(!u||u.isAnonymous){ ACCT.user=null; try{ guestEnsure(); }catch(_){} acctBox(); return; } ACCT.user=u; const n=u.displayName||MP.nick; MP.nick=n; MP.nickSet=true; try{ updateMyTag(); localStorage.setItem("kartrebuild.nick",n); localStorage.setItem("kartrebuild.nickset","1"); }catch(_){}
+  firebase.auth().onAuthStateChanged(u=>{ try{ noticeAuto(); }catch(_){} if(!u||u.isAnonymous){ ACCT.user=null; try{ guestEnsure(); }catch(_){} acctBox(); return; } ACCT.user=u; const n=u.displayName||MP.nick; MP.nick=n; MP.nickSet=true; try{ updateMyTag(); localStorage.setItem("kartrebuild.nick",n); localStorage.setItem("kartrebuild.nickset","1"); }catch(_){}
     try{ const rn=document.getElementById("rNick"); if(rn){ rn.value=n; rn.disabled=true; } }catch(_){}
     firebase.database().ref("kart/users/"+u.uid).on("value",s=>{ ACCT.prof=s.val()||{n,xp:0}; const nl=lvOf(ACCT.prof.xp||0).lv; const ch=nl!==ACCT.lv; ACCT.lv=nl; acctBox(); try{ const t=document.getElementById("shopMoneyTag"); if(t) t.textContent=ACCT.user?"· 💰 "+wonFmt(shopMoney()):""; shopRender(); }catch(_){} try{ if(NETA.rankLv) NETA.rankLv(nl); RANK.sig=""; rankRenderAll(); }catch(_){} if(ch) try{ mpSend(); }catch(_){} }); }); }
 setTimeout(acctStart,300);
@@ -8065,7 +8094,7 @@ function acctRaceXP(dnf){ if(!ACCT.user){ if(!dnf) $("finLaps").innerHTML+=`<spa
   if(MP.racing){ let rows=[]; try{ rows=gmStandingsIds(); }catch(_){} const hasAI=mpList().some(p=>p.bot), n=rows.length, pl=rows.findIndex(r=>r.me)+1;
     if(hasAI) why="AI 포함"; else if(n<=1) why="혼자"; else if(pl>0){ xp=Math.max(5,XP_TAB[Math.min(7,pl-1)]-5*(8-Math.min(8,n))); why=`${n}명 중 ${pl}등`; } }
   else why=BOT.list.length?"AI 포함":"혼자";
-  const dif=+TR.def.diff||0, vis=(TR.def.circuit?3:1)*(dif>=5?1.2:dif>=3?1.1:1), mul=vis*((CHARS[selChar]&&CHARS[selChar].xpm)||1); const cpOn=cpOnNow(), cm=auraXp()*rareXp()*(cosOn("tattoo")?1.5:1)*cpMul(); xp=Math.round(xp*mul*cm); if(vis!==1) why+=(why?" · ":"")+"×"+(Math.round(vis*100)/100); if(cm!==1) why+=(why?" · ":"")+(cpOn?"치장·쿠폰 ×":"치장 ×")+(Math.round(cm*100)/100); /* 캐릭터 배율은 표시하지 않음 */
+  const dif=+TR.def.diff||0, vis=(TR.def.circuit?3:1)*(dif>=5?1.2:dif>=3?1.1:1), mul=vis*((CHARS[selChar]&&CHARS[selChar].xpm)||1); const cpOn=cpOnNow(), cm=auraXp()*rareXp()*(cosOn("tattoo")?1.5:1)*cpMul(), evm=xpEventMul(); xp=Math.round(xp*mul*cm*evm); if(evm!==1) why+=(why?" · ":"")+"🎉 이벤트 ×"+evm; if(vis!==1) why+=(why?" · ":"")+"×"+(Math.round(vis*100)/100); if(cm!==1) why+=(why?" · ":"")+(cpOn?"치장·쿠폰 ×":"치장 ×")+(Math.round(cm*100)/100); /* 캐릭터 배율은 표시하지 않음 */
   const old=lvOf(ACCT.prof&&ACCT.prof.xp||0).lv;
   firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ p=p||{n:MP.nick,xp:0,races:0,wins:0}; p.xp=(p.xp|0)+xp; p.money=(p.money|0)+xp; p.races=(p.races|0)+1; if(why.endsWith(" 1등")) p.wins=(p.wins|0)+1; p.n=MP.nick; return p; })
     .then(r=>{ const v=r.snapshot.val()||{}, L=lvOf(v.xp||0); if(L.lv>old){ toast("🎉 레벨 업! Lv."+L.lv+" · "+lvTitle(L.lv),"#ffcf2e"); try{ chime(); }catch(_){} } }).catch(e=>console.warn(e));
@@ -8334,7 +8363,7 @@ function roomsRender(){ const L=$m("rList"); const fb=!NETA.watchRooms; if(fb) L
     const sm=document.createElement("small"); sm.textContent="맵: "+tr.name+(r.h?" · 방장 "+cleanName(r.h):""); ri.append(t,sm);
     const rn=document.createElement("div"); rn.className="rn"; rn.textContent=n+(ai?"+"+ai:"")+"/8"; rn.title=ai?("사람 "+n+"명 + AI "+ai+"대"):("사람 "+n+"명");
     b.append(im,ri,rn); b.onclick=()=>{ if(full){ toastNote("방이 꽉 찼어요"); return; } tryJoin(r); }; L.appendChild(b); } }
-function toastNote(t){ $m("rNickNote").textContent=t; $m("rNickNote").style.color="#ffcf2e"; }
+function toastNote(t){ try{ toast(t,"#ffcf2e"); }catch(_){} $m("rNickNote").textContent=t; $m("rNickNote").style.color="#ffcf2e"; }
 function openRooms(){ showScr("roomScr"); try{ if(!ACCT.user) guestEnsure(); lobbyDeco(); }catch(_){} $m("rNick").value=MP.nickSet?MP.nick:""; nickUI(); ROOMS.loaded=false; ROOMS.list=[]; ROOMS.sig=null; roomsRender();
   if(NETA.watchRooms&&!ROOMS.unsub){ NETA.avail().then(ok=>{ if(!ok){ $m("rList").innerHTML='<div class="rempty">온라인 서버에 연결할 수 없어요. 인터넷 연결을 확인해 주세요.</div>'; return; }
     ROOMS.unsub=NETA.watchRooms((list)=>{ ROOMS.loaded=true; ROOMS.list=list||[]; if(!$m("roomScr").hidden) roomsRender(); }); }); } }
