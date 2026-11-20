@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2045</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2050</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6538,32 +6538,35 @@ var SKIN_DRAW2={
 };
 
 /* ---------- 랜덤 박스 ---------- */
-var GBOX_P=700, GCP_N=3; /* 쿠폰 1장 = 다음 3판 경험치 ×1.1 */
-function cpLeft(){ return (typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof&&(ACCT.prof.cp|0))||0; }
+var GBOX_P=700, GCP_MIN=10; /* 쿠폰 1장 = 10분 동안 경험치 ×1.1 (여러 장이면 시간이 이어 붙음) */
+function cpUntil(){ return (typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof&&(+ACCT.prof.cpU||0))||0; }
+function cpOnNow(){ return cpUntil()>Date.now(); }
+function cpLeftTxt(){ const ms=cpUntil()-Date.now(); if(ms<=0) return "없음"; const m=Math.floor(ms/60000), sec=Math.floor(ms/1000)%60; return m+"분 "+String(sec).padStart(2,"0")+"초"; }
+function rareXp(){ let x=1; for(const id of [myHat(),mySkin()]){ const it=id&&shopItem(id); if(it&&it.xp) x*=it.xp; } return x; }
 var GTIER=[null,{n:"일반",c:"#b8c4dc",ref:100},{n:"희귀",c:"#5ad8ff",ref:300},{n:"영웅",c:"#c08aff",ref:600},{n:"전설",c:"#ffb020",ref:2000},{n:"신화",c:"#ff5ad8",ref:7000}];
 var GBOX=[
   {id:"omega",t:"kart",w:.1,tier:5},{id:"nova",t:"kart",w:.5,tier:4},{id:"a_galaxy",t:"aura",w:1,tier:4},
-  {id:"a_frost",t:"aura",w:.6,tier:3},{id:"a_flame",t:"aura",w:.6,tier:3},{id:"a_sakura",t:"aura",w:.6,tier:3},{id:"a_thunder",t:"aura",w:.6,tier:3},{id:"a_ocean",t:"aura",w:.6,tier:3},
-  {id:"r_crown",t:"hat",w:1,tier:2,n:"황금 왕관",e:"👑"},{id:"r_halo",t:"hat",w:1,tier:2,n:"천사 고리",e:"😇"},{id:"r_horns",t:"hat",w:1,tier:2,n:"악마 뿔",e:"😈"},{id:"r_holo",t:"skin",w:1,tier:2,n:"✨ 홀로그램"},{id:"r_gold",t:"skin",w:1,tier:2,n:"🏆 황금 크롬"},
+  {id:"a_frost",t:"aura",w:1.5,tier:3},{id:"a_flame",t:"aura",w:1.5,tier:3},{id:"a_sakura",t:"aura",w:1.5,tier:3},{id:"a_thunder",t:"aura",w:1.5,tier:3},{id:"a_ocean",t:"aura",w:1.5,tier:3},
+  {id:"r_crown",t:"hat",w:3,xp:1.05,tier:2,n:"황금 왕관",e:"👑"},{id:"r_halo",t:"hat",w:3,xp:1.05,tier:2,n:"천사 고리",e:"😇"},{id:"r_horns",t:"hat",w:3,xp:1.05,tier:2,n:"악마 뿔",e:"😈"},{id:"r_holo",t:"skin",w:3,xp:1.05,tier:2,n:"✨ 홀로그램"},{id:"r_gold",t:"skin",w:3,xp:1.05,tier:2,n:"🏆 황금 크롬"},
   {id:"c_xp",t:"coupon",w:30,tier:1,n:"경험치 1.1배 쿠폰",e:"🎟️"},
   {id:"b_frog",t:"hat",w:11.3,tier:1,n:"개구리 모자",e:"🐸"},{id:"b_bunny",t:"hat",w:11.3,tier:1,n:"토끼 귀",e:"🐰"},{id:"b_glasses",t:"hat",w:11.3,tier:1,n:"동그란 안경",e:"👓"},{id:"b_party",t:"hat",w:11.3,tier:1,n:"고깔모자",e:"🥳"},
   {id:"b_dots",t:"skin",w:11.3,tier:1,n:"물방울 무늬"},{id:"b_stripe",t:"skin",w:11.3,tier:1,n:"줄무늬"},{id:"b_zigzag",t:"skin",w:11.3,tier:1,n:"지그재그 무늬"},{id:"b_cloud",t:"skin",w:11.3,tier:1,n:"구름 무늬"}];
-GBOX.forEach(b=>{ if(b.w===11.3) b.w=7.55; if(b.t==="coupon") return; if(b.t==="aura") b.n=AURA_DEF[b.id].n; SHOP.push({id:b.id,t:b.t,p:0,box:1,tier:b.tier,n:b.n,e:b.e}); });
+GBOX.forEach(b=>{ if(b.w===11.3) b.w=5.7375; if(b.t==="coupon") return; if(b.t==="aura") b.n=AURA_DEF[b.id].n; SHOP.push({id:b.id,t:b.t,p:0,box:1,tier:b.tier,n:b.n,e:b.e,xp:b.xp}); });
 function gTierTag(it){ const T=GTIER[it.tier||1]; return `<div style="font:900 12px sans-serif;margin-bottom:6px;${it.tier===5?"background:linear-gradient(90deg,#ff5a5a,#ffd25a,#5aff9a,#5ad8ff,#c85aff);-webkit-background-clip:text;background-clip:text;color:transparent":"color:"+T.c}">${T.n} · 🎁 박스</div>`; }
 function gInfo(it){ const esc=x=>String(x||"").replace(/[<>&"]/g,""); if(it.t==="aura"){ const a=AURA_DEF[it.id]; if(!a) return ""; return `<b>${esc(a.n)}</b><br><span style="color:#7ae86a">⭐ 경험치 ×${a.xp}</span>${it.lv?`<br><span style="color:#ffcf2e">🔓 Lv.${it.lv}부터</span>`:""}<br>${esc(a.d)}${it.box?"<br>🎁 랜덤 박스에서만 나와요":"<br>오라는 하나만 착용할 수 있어요"}`; }
-  if(it.box) return `<b>${esc(shopName(it))}</b><br>${GTIER[it.tier].n} 등급<br>🎁 랜덤 박스에서만 나와요`; return ""; }
+  if(it.box) return `<b>${esc(shopName(it))}</b><br>${GTIER[it.tier].n} 등급${it.xp?`<br><span style="color:#7ae86a">⭐ 착용 시 경험치 ×${it.xp}</span>`:""}<br>🎁 랜덤 박스에서만 나와요`; return ""; }
 function gRoll(){ let r=Math.random()*100; for(const b of GBOX){ r-=b.w; if(r<0) return b; } return GBOX[GBOX.length-1]; }
 function gPct(w){ return (Math.round(w*100)/100)+"%"; }
 function boxPanelHTML(logged,money){ const btn=(n)=>{ const c=GBOX_P*n, ok=logged&&money>=c; return `<button type="button" class="gBuy" data-n="${n}" ${ok?"":"disabled"} style="flex:1;min-width:150px;font:900 15px sans-serif;padding:12px;border-radius:14px;border:0;cursor:${ok?"pointer":"default"};background:${ok?(n>1?"linear-gradient(90deg,#ff5ad8,#ffcf2e)":"#ffcf2e"):"#3a4058"};color:${ok?"#1a1a1a":"#8a94b0"}">${!logged?"로그인 필요":(n>1?"🎁×10 ":"🎁 ")+n+"개 열기 · "+wonFmt(c)}</button>`; };
   const tiers=[5,4,3,2,1].map(t=>{ const L=GBOX.filter(b=>b.tier===t), sum=L.reduce((a,b)=>a+b.w,0), T=GTIER[t]; return `<div style="padding:8px 10px;border-radius:12px;background:#141c33;border-left:4px solid ${T.c}"><div style="display:flex;justify-content:space-between;font:900 13px sans-serif"><span style="color:${T.c}">${T.n}</span><span>${gPct(sum)}</span></div><div style="font-size:12px;color:#c8d4ec;margin-top:3px;line-height:1.5">${L.map(b=>`${gName(b)} <span style="color:#9fb0d0">${gPct(b.w)}</span>`).join(" · ")}</div></div>`; }).join("");
-  return `<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:14px;margin-bottom:6px" class="gPanel"><div style="text-align:center;padding:14px;border-radius:16px;background:radial-gradient(circle at 50% 40%,#3a2a6a,#141c33 70%)"><div class="gIdle" style="font-size:92px;line-height:120px">🎁</div><div style="font:900 18px sans-serif">REDLINE 랜덤 박스</div><div style="font-size:12px;color:#c8d4ec;margin:6px 0 12px">박스에서 나오는 물건은 상점에서 팔지 않아요<br>이미 가진 물건이 나오면 등급에 맞춰 돈으로 돌려받아요</div><div style="display:flex;flex-wrap:wrap;gap:8px">${btn(1)}${btn(10)}</div>${logged?`<div style="margin-top:10px;font:800 13px sans-serif;color:#ffcf2e">🎟️ 경험치 ×1.1 쿠폰 남은 판: ${cpLeft()}판</div>`:""}</div><div style="display:grid;gap:6px;align-content:start"><div style="font:900 14px sans-serif">📊 확률 (한 개 열 때)</div>${tiers}<div style="font-size:11px;color:#9fb0d0">🎟️ 경험치 쿠폰 1장 = 다음 경주 ${GCP_N}판 동안 경험치·돈 ×1.1 (모이면 판 수가 쌓여요)</div><div style="font-size:11px;color:#9fb0d0">중복 보상: ${[1,2,3,4,5].map(t=>GTIER[t].n+" "+wonFmt(GTIER[t].ref)).join(" · ")}</div></div></div>
+  return `<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:14px;margin-bottom:6px" class="gPanel"><div style="text-align:center;padding:14px;border-radius:16px;background:radial-gradient(circle at 50% 40%,#3a2a6a,#141c33 70%)"><div class="gIdle" style="font-size:92px;line-height:120px">🎁</div><div style="font:900 18px sans-serif">REDLINE 랜덤 박스</div><div style="font-size:12px;color:#c8d4ec;margin:6px 0 12px">박스에서 나오는 물건은 상점에서 팔지 않아요<br>이미 가진 물건이 나오면 등급에 맞춰 돈으로 돌려받아요</div><div style="display:flex;flex-wrap:wrap;gap:8px">${btn(1)}${btn(10)}</div>${logged?`<div style="margin-top:10px;font:800 13px sans-serif;color:#ffcf2e">🎟️ 경험치 ×1.1 쿠폰 남은 시간: ${cpLeftTxt()}</div>`:""}</div><div style="display:grid;gap:6px;align-content:start"><div style="font:900 14px sans-serif">📊 확률 (한 개 열 때)</div>${tiers}<div style="font-size:11px;color:#9fb0d0">🎟️ 경험치 쿠폰 1장 = 10분 동안 경험치·돈 ×1.1 (여러 장이면 시간이 이어 붙어요) · 희귀 아이템은 착용하면 경험치 ×1.05</div><div style="font-size:11px;color:#9fb0d0">중복 보상: ${[1,2,3,4,5].map(t=>GTIER[t].n+" "+wonFmt(GTIER[t].ref)).join(" · ")}</div></div></div>
   <style>@keyframes gIdle{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-4deg)}}.gIdle{animation:gIdle 1.6s ease-in-out infinite}@media(max-width:600px){.gPanel{grid-template-columns:1fr!important}}</style>`; }
 function gName(b){ const it=shopItem(b.id)||b; return shopName(it); }
 function boxBind(m){ m.querySelectorAll(".gBuy").forEach(b=>b.onclick=()=>gBuy(+b.dataset.n)); }
 var GB={busy:false,res:[],i:0,ph:"",tm:null,n:1};
 function gBuy(n){ if(GB.busy) return; if(typeof ACCT==="undefined"||!ACCT||!ACCT.user){ toast("로그인해야 열 수 있어요","#ff9a8a"); return; } const cost=GBOX_P*n; if(shopMoney()<cost){ toast("돈이 부족해요 · "+wonFmt(cost)+" 필요","#ff9a8a"); return; }
   GB.busy=true; const rolls=[]; for(let k=0;k<n;k++) rolls.push(gRoll()); let out=null;
-  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; if((p.money|0)<cost) return; const own=Object.assign({},p.own||{}); let m=(p.money|0)-cost; out=rolls.map(b=>{ if(b.t==="coupon"){ p.cp=(p.cp|0)+GCP_N; return {b,dup:false}; } const dup=!!own[b.id]; if(dup) m+=GTIER[b.tier].ref; else own[b.id]=true; return {b,dup}; }); p.money=m; p.own=own; return p; })
+  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; if((p.money|0)<cost) return; const own=Object.assign({},p.own||{}); let m=(p.money|0)-cost; out=rolls.map(b=>{ if(b.t==="coupon"){ p.cpU=Math.max(Date.now(),+p.cpU||0)+GCP_MIN*60000; return {b,dup:false}; } const dup=!!own[b.id]; if(dup) m+=GTIER[b.tier].ref; else own[b.id]=true; return {b,dup}; }); p.money=m; p.own=own; return p; })
     .then(r=>{ GB.busy=false; if(r.committed&&out){ ACCT.prof=r.snapshot.val()||ACCT.prof; try{ shopRender(); }catch(_){} gRun(out); } else toast("돈이 부족해요","#ff9a8a"); })
     .catch(e=>{ GB.busy=false; console.warn(e); toast("박스 열기 실패 · 잠시 뒤 다시 해 주세요","#ff9a8a"); }); }
 function gCss(){ if(document.getElementById("gCss")) return; const st=document.createElement("style"); st.id="gCss"; st.textContent=`
@@ -6640,14 +6643,14 @@ function gBurst(){ if(GB.ph!=="shake") return; GB.ph="burst"; const m=document.g
 function gReveal(){ clearTimeout(GB.tm); GB.ph="reveal"; const m=document.getElementById("gModal"); if(!m.querySelector(".card")) gStage();
   const r=GB.res[GB.i], b=r.b, t=b.tier, T=GTIER[t], col=gTierCol(t), box=m.querySelector(".box"); box.classList.remove("shake","hard"); box.classList.add("open"); m.querySelector(".rays").style.opacity=t>=2?".8":".35";
   const it=shopItem(b.id)||b, kind={kart:"서킷카",aura:"오라",hat:"모자·액세서리",skin:"카트 스킨",coupon:"쿠폰"}[b.t]||"";
-  const xp=b.t==="aura"?` · ⭐ 경험치 ×${AURA_DEF[b.id].xp}`:"";
-  const card=m.querySelector(".card"); card.innerHTML=`<div class="tg ${t===5?"rb":""}" style="${t===5?"-webkit-background-clip:text;background-clip:text;color:transparent":""}">${T.n} ${kind}</div>${gPrev(b,true)}<div class="nm">${shopName(it)}</div><div class="sub">${b.t==="coupon"?`<b style="color:#46e08a">+${GCP_N}판</b> 동안 경험치 ×1.1<br>남은 쿠폰 ${cpLeft()}판`:r.dup?`이미 가진 물건 → <b style="color:#ffcf2e">+${wonFmt(T.ref)}</b>`:`<b style="color:#46e08a">NEW!</b>${xp}`}</div>`;
+  const xp=b.t==="aura"?` · ⭐ 경험치 ×${AURA_DEF[b.id].xp}`:b.xp?` · ⭐ 착용 시 경험치 ×${b.xp}`:"";
+  const card=m.querySelector(".card"); card.innerHTML=`<div class="tg ${t===5?"rb":""}" style="${t===5?"-webkit-background-clip:text;background-clip:text;color:transparent":""}">${T.n} ${kind}</div>${gPrev(b,true)}<div class="nm">${shopName(it)}</div><div class="sub">${b.t==="coupon"?`<b style="color:#46e08a">+${GCP_MIN}분</b> 동안 경험치 ×1.1<br>남은 시간 ${cpLeftTxt()}`:r.dup?`이미 가진 물건 → <b style="color:#ffcf2e">+${wonFmt(T.ref)}</b>`:`<b style="color:#46e08a">NEW!</b>${xp}`}</div>`;
   card.classList.add("on"); m.querySelector(".tada").classList.add("on");
   try{ chime(); if(t>=4){ [880,1100,1320,1760].forEach((f,k)=>setTimeout(()=>beep(f,.18,.16),160+k*110)); } }catch(_){}
   m.querySelector(".bar").innerHTML=gBar(false); m.querySelector("#gNext").onclick=gAdvance; m.querySelector(".hint").textContent="스페이스바: 다음";
   if(GB.n===1) gDone(); }
 function gDone(){ GB.ph="done"; const m=document.getElementById("gModal");
-  if(GB.n>1){ gFrame(`<div class="tada on" style="position:static;margin-bottom:12px">🎉 ${GB.n}개 결과</div><div class="sum">${GB.res.map((r,k)=>{ const it=shopItem(r.b.id)||r.b, T=GTIER[r.b.tier]; return `<div style="--gc:${gTierCol(r.b.tier)};animation-delay:${k*.05}s"><div style="color:${gTierCol(r.b.tier)};font-weight:900">${T.n}</div>${gPrev(r.b,false)}<div>${shopName(it)}</div><div style="color:${r.dup?"#ffcf2e":"#46e08a"}">${r.b.t==="coupon"?"+"+GCP_N+"판":r.dup?"+"+wonFmt(T.ref):"NEW!"}</div></div>`; }).join("")}</div>`,true); }
+  if(GB.n>1){ gFrame(`<div class="tada on" style="position:static;margin-bottom:12px">🎉 ${GB.n}개 결과</div><div class="sum">${GB.res.map((r,k)=>{ const it=shopItem(r.b.id)||r.b, T=GTIER[r.b.tier]; return `<div style="--gc:${gTierCol(r.b.tier)};animation-delay:${k*.05}s"><div style="color:${gTierCol(r.b.tier)};font-weight:900">${T.n}</div>${gPrev(r.b,false)}<div>${shopName(it)}</div><div style="color:${r.dup?"#ffcf2e":"#46e08a"}">${r.b.t==="coupon"?"+"+GCP_MIN+"분":r.dup?"+"+wonFmt(T.ref):"NEW!"}</div></div>`; }).join("")}</div>`,true); }
   else { m.querySelector(".bar").innerHTML=gBar(true); const q=s=>m.querySelector(s); q("#gOne").onclick=()=>gAgain(1); q("#gTen").onclick=()=>gAgain(10); q("#gStop").onclick=gClose; m.querySelector(".hint").textContent=""; m.querySelector(".cnt").textContent="💰 "+wonFmt(shopMoney()); } }
 function gAdvance(){ if(GB.ph==="shake"||GB.ph==="burst"){ gReveal(); return; } if(GB.ph==="reveal"){ if(GB.i<GB.n-1){ GB.i++; gPlay(); } else gDone(); } }
 document.addEventListener("keydown",e=>{ const m=document.getElementById("gModal"); if(!m||m.hidden||m.style.display==="none") return; if(e.code==="Space"||e.key===" "){ e.preventDefault(); e.stopPropagation(); if(!e.repeat||GB.ph!=="done") gAdvance(); } else if(e.key==="Escape"&&GB.ph==="done"){ gClose(); } },true);
@@ -7671,9 +7674,9 @@ function acctRaceXP(dnf){ if(!ACCT.user){ if(!dnf) $("finLaps").innerHTML+=`<spa
   if(MP.racing){ let rows=[]; try{ rows=gmStandingsIds(); }catch(_){} const hasAI=mpList().some(p=>p.bot), n=rows.length, pl=rows.findIndex(r=>r.me)+1;
     if(hasAI) why="AI 포함"; else if(n<=1) why="혼자"; else if(pl>0){ xp=Math.max(5,XP_TAB[Math.min(7,pl-1)]-5*(8-Math.min(8,n))); why=`${n}명 중 ${pl}등`; } }
   else why=BOT.list.length?"AI 포함":"혼자";
-  const dif=+TR.def.diff||0, vis=(TR.def.circuit?3:1)*(dif>=5?1.2:dif>=3?1.1:1), mul=vis*((CHARS[selChar]&&CHARS[selChar].xpm)||1); const cpOn=cpLeft()>0, cm=auraXp()*(cosOn("tattoo")?1.5:1)*(cpOn?1.1:1); xp=Math.round(xp*mul*cm); if(vis!==1) why+=(why?" · ":"")+"×"+(Math.round(vis*100)/100); if(cm!==1) why+=(why?" · ":"")+(cpOn?"치장·쿠폰 ×":"치장 ×")+(Math.round(cm*100)/100); /* 캐릭터 배율은 표시하지 않음 */
+  const dif=+TR.def.diff||0, vis=(TR.def.circuit?3:1)*(dif>=5?1.2:dif>=3?1.1:1), mul=vis*((CHARS[selChar]&&CHARS[selChar].xpm)||1); const cpOn=cpOnNow(), cm=auraXp()*rareXp()*(cosOn("tattoo")?1.5:1)*(cpOn?1.1:1); xp=Math.round(xp*mul*cm); if(vis!==1) why+=(why?" · ":"")+"×"+(Math.round(vis*100)/100); if(cm!==1) why+=(why?" · ":"")+(cpOn?"치장·쿠폰 ×":"치장 ×")+(Math.round(cm*100)/100); /* 캐릭터 배율은 표시하지 않음 */
   const old=lvOf(ACCT.prof&&ACCT.prof.xp||0).lv;
-  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ p=p||{n:MP.nick,xp:0,races:0,wins:0}; p.xp=(p.xp|0)+xp; p.money=(p.money|0)+xp; p.races=(p.races|0)+1; if(cpOn&&(p.cp|0)>0) p.cp=(p.cp|0)-1; if(why.endsWith(" 1등")) p.wins=(p.wins|0)+1; p.n=MP.nick; return p; })
+  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ p=p||{n:MP.nick,xp:0,races:0,wins:0}; p.xp=(p.xp|0)+xp; p.money=(p.money|0)+xp; p.races=(p.races|0)+1; if(why.endsWith(" 1등")) p.wins=(p.wins|0)+1; p.n=MP.nick; return p; })
     .then(r=>{ const v=r.snapshot.val()||{}, L=lvOf(v.xp||0); if(L.lv>old){ toast("🎉 레벨 업! Lv."+L.lv+" · "+lvTitle(L.lv),"#ffcf2e"); try{ chime(); }catch(_){} } }).catch(e=>console.warn(e));
   ACCT.last={xp,why,old:(ACCT.prof&&ACCT.prof.xp)||0,t:Date.now()};
   if(!dnf) $("finLaps").innerHTML+=`<span>⭐ 경험치</span><span class="hl">+${xp} XP${why?" ("+why+")":""}</span><span>💰 돈</span><span class="hl">+${wonFmt(xp)}</span>`; }
