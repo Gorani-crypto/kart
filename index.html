@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2630</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2640</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6047,7 +6047,7 @@ function physics0(dt, controls){
     fx=Math.sin(S.h); fz=Math.cos(S.h); rx=Math.cos(S.h); rz=-Math.sin(S.h); fs=S.vx*fx+S.vz*fz; ls=S.vx*rx+S.vz*rz;
     const ang=Math.atan2(ls,Math.max(1,Math.abs(fs))); if(Math.abs(ang)>CF.assistAng){ const rot=Math.sign(ang)*Math.min(Math.abs(ang)-CF.assistAng,CF.assist*(1-.6*(S.brkA||0))*dt), v=Math.hypot(fs,ls), na=ang-rot; fs=v*Math.cos(na)*(fs>=0?1:-1); ls=v*Math.sin(na); } /* 자동 안정화: 이동 방향을 차체 쪽으로 부드럽게 */ }
   let grip=EZ()?(F1EZ.grip+(F1EZ.slipGrip-F1EZ.grip)*(S.ezSlip||0))*(1-F1BRK.slideHi*(S.brkA||0)*clamp((Math.abs(fs)/(f1Top()||1)-F1BRK.slideFrom)/(1-F1BRK.slideFrom),0,1)):S.drifting?C.gripDrift:lerp(C.gripDrift*1.1,C.gripNormal,S.gripRamp*S.gripRamp);
-  grip*=EZ()?1:(K.grip||1)*(S.drifting?1:INR); if(!ground) grip=.3;
+  grip*=EZ()?1:(K.grip||1)*(S.drifting?1:(K.slipLess?.85:INR)); if(!ground) grip=.3;
   const keep=Math.exp(-grip*(TR.bank&&ground?1+Math.abs(TR.bank[S.idx]||0)*3:1)*dt), ls2=ls*keep, eff=EZ()?F1EZ.slideKeep:S.drifting?(K.driftEff!==undefined?K.driftEff:C.driftEff):INR_EFF;
   fs=(fs>=0?1:-1)*Math.sqrt(fs*fs+(ls*ls-ls2*ls2)*eff); ls=ls2; if(S.drifting&&K.driftDrag) fs*=Math.exp(-K.driftDrag*dt);
 
@@ -7213,6 +7213,7 @@ function trackGroups(){ const used=new Set(), out=[]; for(const c of TRACK_CATS)
   const rest=TRACKS.map((t,i)=>i).filter(i=>!used.has(i)); if(rest.length) out.push({n:"🏁 기타",d:"",L:rest}); return out; }
 (function(){ const F=CONFIG.maxSpeed*CONFIG.kmh; for(const k of KARTS){ if(["gt","volt","ruby","storm","apex","grn","wgp","egt","tgp","dgp","ggp","novax","omega"].includes(k.id)) continue; const base=k.speed*F, bst=base*(k.boost||CONFIG.boostRatio); k.speed=(base+10)/F; k.boost=(bst+(k.id==="bike"?0:10))/(base+10); } /* 슈퍼바이크는 기본속도만 +10 */ })(); /* +10km/h */
 (function(){ const F=CONFIG.maxSpeed*CONFIG.kmh; for(const k of KARTS){ if(["gt","volt","ruby","storm","apex","grn","wgp","egt","tgp","dgp","ggp","novax","omega"].includes(k.id)||k.id==="bike") continue; const base=k.speed*F, bst=base*(k.boost||CONFIG.boostRatio); k.boost=(bst+20)/base; } })(); /* 부스터 +20km/h (2026-11-20) */
+(function(){ for(const k of KARTS){ if(["gt","volt","ruby","storm","apex","grn","wgp","egt","tgp","dgp","ggp","novax","omega"].includes(k.id)||k.id==="bike") continue; k.slipLess=true; } })();
 const KART_CATS=[{n:"🏁 서킷 전용",ids:["gt","volt","ruby","storm","apex","grn","wgp","egt","tgp","dgp","ggp","novax","omega"]},{n:"🚗 자동차",ids:["blue","gold","kart","panther","truck"]},{n:"🏍️ 오토바이",ids:["scoot","bike","ringbike","trike"]},{n:"🐾 동물",ids:["roach","snake","horse","trex"]},{n:"🛠️ 특수카",ids:["dump","dozer","rearcart","chair","sushi","stroller"]},{n:"⚡ 능력카",ids:["tank","giant","trex","jet","nova"]}];
 const KTAB={menu:"전체",mp:"전체"};
 const CIRC_KARTS=["gt","volt","ruby","storm","apex","grn","wgp","egt","tgp","dgp","ggp","novax","omega"];
