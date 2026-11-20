@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2135</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2145</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6421,7 +6421,7 @@ function shopInfo(it){ const esc=x=>String(x||"").replace(/[<>&"]/g,""); let t="
   if(!t) return "";
   return `<span class="rl-inf" tabindex="0">!<span class="tip">${t}</span></span>`; }
 /* ===== 상점 화면: REDLINE 인트로 분위기(검정 · 레드 · 사선 스트릭 · 모노 HUD 글씨) ===== */
-var SHOP_TABS=[["box","🎁","랜덤 박스","운을 시험해 보세요 · 박스에서만 나오는 물건"],["craft","🔨","쿠폰·조합대","쿠폰을 쓰고, 모아서 더 좋은 쿠폰으로"],["aura","🌟","오라","대기실과 출발 전까지 빛나요 · 하나만 착용"],["hat","🎩","모자·액세서리","머리에 쓰는 치장 · 하나만 착용"],["skin","🎨","카트 스킨","카트 무늬 · 하나만 착용"],["cos","✨","특수 치장","레벨로 열리는 특별한 치장"],["char","🧑","캐릭터","경험치 능력 캐릭터"],["kart","👑","전설 카트","전설 카트와 서킷카"]];
+var SHOP_TABS=[["box","🎁","랜덤 박스","운을 시험해 보세요 · 박스에서만 나오는 물건"],["craft","🔨","쿠폰·조합대","쿠폰을 쓰고, 모아서 더 좋은 쿠폰으로"],["aura","🌟","오라","대기실과 출발 전까지 빛나요 · 하나만 착용"],["hat","🎩","모자·액세서리","머리에 쓰는 치장 · 하나만 착용"],["skin","🎨","카트 스킨","카트 무늬 · 하나만 착용"],["cos","✨","특수 치장","레벨로 열리는 특별한 치장"],["char","🧑","캐릭터","경험치 능력 캐릭터"],["kart","👑","전설 카트","일반 맵에서 타는 전설 카트"],["circ","🏁","서킷카","서킷 맵 전용 F1 차량"]];
 function shopCss(){ if(document.getElementById("rsCss")) return; const st=document.createElement("style"); st.id="rsCss"; st.textContent=`
 #shopModal{background:rgba(0,0,0,.8)!important;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .rs{position:relative;width:min(96vw,1040px);height:min(90vh,780px);display:grid;grid-template-columns:210px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;border-radius:18px;overflow:hidden;background:linear-gradient(160deg,#17181f 0,#0b0c10 55%,#14070a 100%);border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 120px rgba(0,0,0,.75),0 0 0 1px rgba(255,42,42,.14),inset 0 1px 0 rgba(255,255,255,.06);color:#e8ebf2;font:600 14px "Pretendard","Noto Sans KR",system-ui,sans-serif;animation:rsIn .35s cubic-bezier(.2,1.2,.3,1)}
@@ -6485,7 +6485,7 @@ function shopCss(){ if(document.getElementById("rsCss")) return; const st=docume
 function shopRender(){ const m=document.getElementById("shopModal"); if(!m||m.hidden) return; shopCss();
   const logged=typeof ACCT!=="undefined"&&ACCT&&ACCT.user, money=shopMoney(), lv=logged?ACCT.lv:0;
   const old=m.querySelector(".rs-body"), keep=old&&old.dataset.k===SHOP_TAB?old.scrollTop:0;
-  const cur=SHOP_TABS.find(t=>t[0]===SHOP_TAB)||SHOP_TABS[0], items=SHOP.filter(x=>x.t===SHOP_TAB);
+  const cur=SHOP_TABS.find(t=>t[0]===SHOP_TAB)||SHOP_TABS[0], items=SHOP.filter(x=>SHOP_TAB==="circ"?(x.t==="kart"&&CIRC_KARTS.includes(x.id)):SHOP_TAB==="kart"?(x.t==="kart"&&!CIRC_KARTS.includes(x.id)):x.t===SHOP_TAB);
   const card=it=>{ const need=shopLv(it), lvOk=!need||lv>=need, own=shopOwned(it.id), worn=(it.t==="hat"&&COSEQ.hat===it.id)||(it.t==="skin"&&COSEQ.skin===it.id)||(it.t==="cos"&&COSEQ[it.id])||(it.t==="aura"&&auraCur()===it.id);
     if(!lvOk) return `<div class="rs-card lk"><div class="pv"><span class="q">?</span></div><div class="nm">Lv.${need} 달성 시</div><div class="pr">${wonFmt(it.p)}</div></div>`;
     if(it.box&&!own) return `<div class="rs-card lk bx"><div class="pv"><span class="q">?</span></div><div class="nm">???</div>${gTierTag(it)}<div class="rs-boxonly">🎁 랜덤 박스에서 얻으면 공개</div></div>`;
@@ -6501,6 +6501,7 @@ function shopRender(){ const m=document.getElementById("shopModal"); if(!m||m.hi
       ${items.length?`<div class="rs-grid">${items.map(card).join("")}</div>`:""}</main>
     <footer class="rs-ft"><span>경주를 마치면 받은 경험치만큼 <b>돈</b>을 받아요</span><span>LV ${lv||"—"} · 레벨이 모자란 물건은 ? 로 보여요</span></footer></div>`;
   const body=m.querySelector(".rs-body"); if(keep) body.scrollTop=keep;
+  try{ const ids=new Set([...m.querySelectorAll("img")].map(i=>(i.getAttribute("src")||"").split("#").pop())); if(typeof TQ!=="undefined"&&TQ.q.length) TQ.q.sort((x,y)=>(ids.has(y[0])?1:0)-(ids.has(x[0])?1:0)); }catch(_){} /* 상점 썸네일 먼저 그림 */
   m.querySelector("#shopX").onclick=()=>{ m.hidden=true; m.style.display="none"; };
   m.querySelectorAll(".shopTab").forEach(b=>b.onclick=()=>{ SHOP_TAB=b.dataset.k; shopRender(); });
   m.querySelectorAll(".shopBuy").forEach(b=>b.onclick=()=>shopBuy(b.dataset.id)); boxBind(m); craftBind(m);
