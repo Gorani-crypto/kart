@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2255</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2315</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -527,7 +527,7 @@ if (isTouch){
 /* ===== 렌더러 / 씬 ===== */
 const canvas = document.getElementById("game");
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-const PR={max:Math.min(window.devicePixelRatio||1,2),cur:0,acc:0,n:0,slow:0,fast:0};
+const PR={max:Math.min(window.devicePixelRatio||1,1.5),cur:0,acc:0,n:0,slow:0,fast:0};
 PR.cur=Math.min(PR.max,(window.devicePixelRatio||1)>1.5&&matchMedia("(pointer: coarse)").matches?1.5:PR.max); renderer.setPixelRatio(PR.cur);
 function perfTick(dt){ PR.acc+=dt; PR.n++; if(PR.acc<1) return; const ft=PR.acc/PR.n; PR.acc=0; PR.n=0; /* 1초 평균 프레임 시간 */
   if(ft>1/45){ PR.slow++; PR.fast=0; } else if(ft<1/58){ PR.fast++; PR.slow=0; } else { PR.slow=0; PR.fast=0; }
@@ -3245,7 +3245,7 @@ function propUnmerge(p){ if(!p.mrg||p.out) return; for(const r of p.mrg){ const 
 function propRemerge(p){ if(!p.mrg||!p.out) return; for(const r of p.mrg){ const a=r.mesh.geometry.attributes.position; for(let i=0;i<r.n;i++) a.setXYZ(r.st+i,r.orig[i*3],r.orig[i*3+1],r.orig[i*3+2]); a.needsUpdate=true; } TR.group.remove(p.obj); p.out=false; }
 // 멀리 있는 소품은 숨김 (안개 속이라 안 보이는 것들)
 let cullT=0;
-function cullTick(dt){ if(!TR||!TR.props) return; cullT-=dt; if(cullT>0) return; cullT=.25;
+function cullTick(dt){ if(!TR||!TR.props) return; if(!TR._pw) prewarmTrack(); cullT-=dt; if(cullT>0) return; cullT=.25;
   const D=TR.def.cull||(scene.fog.far*.92), D2=D*D, cx=camera.position.x, cz=camera.position.z;
   for(const p of TR.props){ if(p.broken) continue; const dx=p.center.x-cx, dz=p.center.z-cz; p.obj.visible=dx*dx+dz*dz<D2+p.r*p.r*4; }
   for(const c of TR.chunks||[]){ const dx=c.center.x-cx, dz=c.center.z-cz, R=D+c.r; c.obj.visible=dx*dx+dz*dz<R*R; } }
@@ -6421,9 +6421,9 @@ function shopInfo(it){ const esc=x=>String(x||"").replace(/[<>&"]/g,""); let t="
   if(!t) return "";
   return `<span class="rl-inf" tabindex="0">!<span class="tip">${t}</span></span>`; }
 /* ===== 상점 화면: REDLINE 인트로 분위기(검정 · 레드 · 사선 스트릭 · 모노 HUD 글씨) ===== */
-var SHOP_TABS=[["box","🎁","랜덤 박스","운을 시험해 보세요 · 박스에서만 나오는 물건"],["craft","🔨","쿠폰·조합대","쿠폰을 쓰고, 모아서 더 좋은 쿠폰으로"],["aura","🌟","오라","대기실과 출발 전까지 빛나요 · 하나만 착용"],["hat","🎩","모자·액세서리","머리에 쓰는 치장 · 하나만 착용"],["skin","🎨","카트 스킨","카트 무늬 · 하나만 착용"],["cos","✨","특수 치장","레벨로 열리는 특별한 치장"],["char","🧑","캐릭터","경험치 능력 캐릭터"],["kart","👑","전설 카트","일반 맵에서 타는 전설 카트"],["circ","🏁","서킷카","서킷 맵 전용 F1 차량"],["nick","🏷️","닉네임 변경","보이는 닉네임 바꾸기 · 로그인 아이디는 그대로예요"]];
+var SHOP_TABS=[["box","🎁","랜덤 박스","운을 시험해 보세요 · 박스에서만 나오는 물건"],["aura","🌟","오라","대기실과 출발 전까지 빛나요 · 하나만 착용"],["hat","🎩","모자·액세서리","머리에 쓰는 치장 · 하나만 착용"],["skin","🎨","카트 스킨","카트 무늬 · 하나만 착용"],["cos","✨","특수 치장","레벨로 열리는 특별한 치장"],["char","🧑","캐릭터","경험치 능력 캐릭터"],["kart","👑","전설 카트","일반 맵에서 타는 전설 카트"],["circ","🏁","서킷카","서킷 맵 전용 F1 차량"],["nick","🏷️","닉네임 변경","보이는 닉네임 바꾸기 · 로그인 아이디는 그대로예요"]];
 function shopCss(){ if(document.getElementById("rsCss")) return; const st=document.createElement("style"); st.id="rsCss"; st.textContent=`
-#shopModal{background:rgba(0,0,0,.8)!important;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#shopModal{background:rgba(0,0,0,.8)!important;}
 .rs{position:relative;width:min(96vw,1040px);height:min(90vh,780px);display:grid;grid-template-columns:210px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;border-radius:18px;overflow:hidden;background:linear-gradient(160deg,#17181f 0,#0b0c10 55%,#14070a 100%);border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 120px rgba(0,0,0,.75),0 0 0 1px rgba(255,42,42,.14),inset 0 1px 0 rgba(255,255,255,.06);color:#e8ebf2;font:600 14px "Pretendard","Noto Sans KR",system-ui,sans-serif;animation:rsIn .35s cubic-bezier(.2,1.2,.3,1)}
 @keyframes rsIn{from{opacity:0;transform:translateY(18px) scale(.97)}}
 .rs:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px);pointer-events:none;z-index:0}
@@ -6485,7 +6485,7 @@ function shopCss(){ if(document.getElementById("rsCss")) return; const st=docume
 function shopRender(){ const m=document.getElementById("shopModal"); if(!m||m.hidden) return; shopCss();
   const logged=typeof ACCT!=="undefined"&&ACCT&&ACCT.user, money=shopMoney(), lv=logged?ACCT.lv:0;
   const old=m.querySelector(".rs-body"), keep=old&&old.dataset.k===SHOP_TAB?old.scrollTop:0;
-  const cur=SHOP_TABS.find(t=>t[0]===SHOP_TAB)||SHOP_TABS[0], items=SHOP.filter(x=>SHOP_TAB==="circ"?(x.t==="kart"&&CIRC_KARTS.includes(x.id)):SHOP_TAB==="kart"?(x.t==="kart"&&!CIRC_KARTS.includes(x.id)):x.t===SHOP_TAB);
+  if(!SHOP_TABS.some(t=>t[0]===SHOP_TAB)) SHOP_TAB="box"; const cur=SHOP_TABS.find(t=>t[0]===SHOP_TAB)||SHOP_TABS[0], items=SHOP.filter(x=>SHOP_TAB==="circ"?(x.t==="kart"&&CIRC_KARTS.includes(x.id)):SHOP_TAB==="kart"?(x.t==="kart"&&!CIRC_KARTS.includes(x.id)):x.t===SHOP_TAB);
   const card=it=>{ const need=shopLv(it), lvOk=!need||lv>=need, own=shopOwned(it.id), worn=(it.t==="hat"&&COSEQ.hat===it.id)||(it.t==="skin"&&COSEQ.skin===it.id)||(it.t==="cos"&&COSEQ[it.id])||(it.t==="aura"&&auraCur()===it.id);
     if(!lvOk) return `<div class="rs-card lk"><div class="pv"><span class="q">?</span></div><div class="nm">Lv.${need} 달성 시</div><div class="pr">${wonFmt(it.p)}</div></div>`;
     if(it.box&&!own) return `<div class="rs-card lk bx"><div class="pv"><span class="q">?</span></div><div class="nm">???</div>${gTierTag(it)}<div class="rs-boxonly">🎁 랜덤 박스에서 얻으면 공개</div></div>`;
@@ -6497,7 +6497,7 @@ function shopRender(){ const m=document.getElementById("shopModal"); if(!m||m.hi
     <header class="rs-hd">${(()=>{ const im=document.querySelector(".rlttl img"); return im&&im.src?`<img class="rs-logo" src="${im.src}" alt="REDLINE">`:`<b style="font:400 28px \"Black Han Sans\",sans-serif;font-style:italic;color:#ff2a2a">REDLINE</b>`; })()}<div class="rs-ttl"><b>SHOP</b><span>// GARAGE STORE — ${cur[2]}</span></div><div class="rs-sp"></div><div class="rs-money">${logged?`<small>BALANCE</small><b>${wonFmt(money)}</b>`:`<small>BALANCE</small><b class="off">로그인 필요</b>`}</div><button id="shopX" type="button" class="rs-x" aria-label="닫기">✕</button></header>
     <nav class="rs-tabs">${SHOP_TABS.map(([k,ic,n])=>`<button type="button" class="shopTab rs-tab ${k===SHOP_TAB?"on":""} ${k==="box"?"hot":""}" data-k="${k}"><span class="ic">${ic}</span><span>${n}</span></button>`).join("")}</nav>
     <main class="rs-body" data-k="${SHOP_TAB}"><div class="rs-sec"><h3>${cur[1]} ${cur[2]}</h3><p>${cur[3]}</p></div>
-      ${SHOP_TAB==="box"?boxPanelHTML(logged,money):SHOP_TAB==="craft"?craftPanelHTML(logged):SHOP_TAB==="nick"?nickPanelHTML(logged):""}
+      ${SHOP_TAB==="box"?boxPanelHTML(logged,money):SHOP_TAB==="nick"?nickPanelHTML(logged):""}
       ${items.length?`<div class="rs-grid">${items.map(card).join("")}</div>`:""}</main>
     <footer class="rs-ft"><span>경주를 마치면 받은 경험치만큼 <b>돈</b>을 받아요</span><span>LV ${lv||"—"} · 레벨이 모자란 물건은 ? 로 보여요</span></footer></div>`;
   const body=m.querySelector(".rs-body"); if(keep) body.scrollTop=keep;
@@ -6633,7 +6633,7 @@ function craftPanelHTML(logged){ if(!logged) return `<div style="padding:20px;te
   <style>@media(max-width:600px){.cpGrid{grid-template-columns:1fr!important}}@keyframes cpHit{0%,100%{transform:none}25%{transform:translateY(4px) scale(.97)}50%{transform:translateY(-3px) scale(1.03)}}.cpRec.hit{animation:cpHit .18s 3}</style>`; }
 var CP_TICK=null;
 function craftBind(m){ m.querySelectorAll(".cpUse").forEach(b=>b.onclick=()=>cpUse(b.dataset.g,1)); m.querySelectorAll(".cpUseN").forEach(b=>b.onclick=()=>{ const inp=m.querySelector(`.cpNum[data-g="${b.dataset.g}"]`); const n=Math.floor(+inp.value||0); if(n<1){ toast("1장 이상 입력해 주세요","#ff9a8a"); return; } cpUse(b.dataset.g,n); }); m.querySelectorAll(".cpNum").forEach(i=>i.onkeydown=e=>{ e.stopPropagation(); if(e.key==="Enter") m.querySelector(`.cpUseN[data-g="${i.dataset.g}"]`).click(); }); m.querySelectorAll(".cpCr").forEach(b=>b.onclick=()=>{ b.closest(".cpRec").classList.add("hit"); cpCraft(b.dataset.f,b.dataset.t,!!b.dataset.all); });
-  clearInterval(CP_TICK); if(SHOP_TAB==="craft") CP_TICK=setInterval(()=>{ const mm=document.getElementById("shopModal"); if(!mm||mm.hidden||SHOP_TAB!=="craft"){ clearInterval(CP_TICK); return; } const now=Date.now(); mm.querySelectorAll(".cpT").forEach(el=>{ const u=cpUntilG(el.dataset.g); el.textContent=u>now?"⏱ "+cpTxt(u-now):"꺼짐"; el.style.color=u>now?"#46e08a":"#6c7286"; }); const cn=mm.querySelector("#cpNow"); if(cn) cn.textContent=cpLeftTxt(); },1000); }
+  clearInterval(CP_TICK); if(typeof GARAGE!=="undefined"&&GARAGE.tab==="cp"&&document.getElementById("garage")) CP_TICK=setInterval(()=>{ const mm=document.getElementById("garage"); if(!mm||GARAGE.tab!=="cp"){ clearInterval(CP_TICK); return; } const now=Date.now(); mm.querySelectorAll(".cpT").forEach(el=>{ const u=cpUntilG(el.dataset.g); el.textContent=u>now?"⏱ "+cpTxt(u-now):"꺼짐"; el.style.color=u>now?"#46e08a":"#6c7286"; }); const cn=mm.querySelector("#cpNow"); if(cn) cn.textContent=cpLeftTxt(); },1000); }
 function craftFx(f,t,k){ gCss(); let o=document.getElementById("cpFx"); if(!o){ o=document.createElement("div"); o.id="cpFx"; document.body.appendChild(o); }
   o.style.cssText="position:fixed;inset:0;z-index:240;display:flex;align-items:center;justify-content:center;background:rgba(6,8,20,.75);pointer-events:none";
   o.innerHTML=`<div style="text-align:center;color:#fff;font:900 20px sans-serif"><div style="font-size:70px;animation:gShake .2s 4">🔨</div><div style="margin:8px 0;opacity:0;animation:gTada .4s .7s forwards">${cpBadge(t,72)}</div><div style="opacity:0;animation:gTada .4s .8s forwards">조합 성공! <span style="color:${CPG[t].c}">${CPG[t].n} +${CP_OUT*k}장</span></div></div>`;
@@ -6657,7 +6657,7 @@ function gRoll(){ let r=Math.random()*100; for(const b of GBOX){ r-=b.w; if(r<0)
 function gPct(w){ return (Math.round(w*100)/100)+"%"; }
 function boxPanelHTML(logged,money){ const btn=(n)=>{ const c=GBOX_P*n, ok=logged&&money>=c; return `<button type="button" class="gBuy" data-n="${n}" ${ok?"":"disabled"} style="flex:1;min-width:150px;font:900 15px sans-serif;padding:12px;border-radius:14px;border:0;cursor:${ok?"pointer":"default"};background:${ok?(n>1?"linear-gradient(90deg,#ff3b2f,#ffb020)":"linear-gradient(135deg,#ff3b2f,#c4070d)"):"#22242c"};color:${ok?"#fff":"#6c7286"};box-shadow:${ok?"0 6px 18px rgba(230,20,20,.4)":"none"}">${!logged?"로그인 필요":(n>1?"🎁×10 ":"🎁 ")+n+"개 열기 · "+wonFmt(c)}</button>`; };
   const tiers=[5,4,3,2,1].map(t=>{ const L=GBOX.filter(b=>b.tier===t), sum=L.reduce((a,b)=>a+b.w,0), T=GTIER[t]; return `<div style="padding:8px 10px;border-radius:12px;background:#16171f;border-left:4px solid ${T.c}"><div style="display:flex;justify-content:space-between;font:900 13px sans-serif"><span style="color:${T.c}">${T.n}</span><span>${gPct(sum)}</span></div><div style="font-size:12px;color:#b8bfd0;margin-top:3px;line-height:1.5">${L.map(b=>`${gName(b)} <span style="color:#8d94a8">${gPct(b.w)}</span>`).join(" · ")}</div></div>`; }).join("");
-  return `<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:14px;margin-bottom:6px" class="gPanel"><div style="text-align:center;padding:14px;border-radius:16px;background:radial-gradient(circle at 50% 35%,#4a0a10,#121318 72%);border:1px solid rgba(255,59,47,.25)"><div class="gIdle gMini"><i class="b"></i><i class="rv"></i><i class="rh"></i><i class="l"></i><i class="bw">🎀</i></div><div style="font:400 24px \"Black Han Sans\",sans-serif;letter-spacing:.04em;font-style:italic">REDLINE 랜덤 박스</div><div style="font-size:12px;color:#b8bfd0;margin:6px 0 12px">박스에서 나오는 물건은 상점에서 팔지 않아요<br>이미 가진 물건이 나오면 경험치 쿠폰으로 돌려받아요</div><div style="display:flex;flex-wrap:wrap;gap:8px">${btn(1)}${btn(10)}</div>${logged?`<div style="margin-top:10px;font:800 13px sans-serif;color:#ffcf2e">🎟️ 가진 쿠폰 ${cpN("a")}·${cpN("b")}·${cpN("c")}장 · 지금 ${cpLeftTxt()}</div>`:""}</div><div style="display:grid;gap:6px;align-content:start"><div style="font:900 14px sans-serif">📊 확률 (한 개 열 때)</div>${tiers}<div style="font-size:11px;color:#8d94a8">🎟️ 경험치 쿠폰은 가방에 쌓이고, 🔨 쿠폰·조합대에서 사용(10분 ×1.1)하거나 20장으로 중급 쿠폰 10장을 만들 수 있어요 · 희귀 아이템은 착용하면 경험치 ×1.05</div><div style="font-size:11px;color:#8d94a8">중복 보상(경험치 쿠폰): ${[1,2,3,4,5].map(t=>GTIER[t].n+" "+GTIER[t].ref+"장").join(" · ")}</div></div></div>
+  return `<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:14px;margin-bottom:6px" class="gPanel"><div style="text-align:center;padding:14px;border-radius:16px;background:radial-gradient(circle at 50% 35%,#4a0a10,#121318 72%);border:1px solid rgba(255,59,47,.25)"><div class="gIdle gMini"><i class="b"></i><i class="rv"></i><i class="rh"></i><i class="l"></i><i class="bw">🎀</i></div><div style="font:400 24px \"Black Han Sans\",sans-serif;letter-spacing:.04em;font-style:italic">REDLINE 랜덤 박스</div><div style="font-size:12px;color:#b8bfd0;margin:6px 0 12px">박스에서 나오는 물건은 상점에서 팔지 않아요<br>이미 가진 물건이 나오면 경험치 쿠폰으로 돌려받아요</div><div style="display:flex;flex-wrap:wrap;gap:8px">${btn(1)}${btn(10)}</div>${logged?`<div style="margin-top:10px;font:800 13px sans-serif;color:#ffcf2e">🎟️ 가진 쿠폰 ${cpN("a")}·${cpN("b")}·${cpN("c")}장 · 지금 ${cpLeftTxt()}</div>`:""}</div><div style="display:grid;gap:6px;align-content:start"><div style="font:900 14px sans-serif">📊 확률 (한 개 열 때)</div>${tiers}<div style="font-size:11px;color:#8d94a8">🎟️ 경험치 쿠폰은 가방에 쌓이고, 마이페이지 → 🎟️ 쿠폰에서 사용(10분 ×1.1)하거나 20장으로 중급 쿠폰 10장을 만들 수 있어요 · 희귀 아이템은 착용하면 경험치 ×1.05</div><div style="font-size:11px;color:#8d94a8">중복 보상(경험치 쿠폰): ${[1,2,3,4,5].map(t=>GTIER[t].n+" "+GTIER[t].ref+"장").join(" · ")}</div></div></div>
   <style>@keyframes gIdle{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-4deg)}}.gIdle{animation:gIdle 1.6s ease-in-out infinite}.gMini{position:relative;width:120px;height:110px;margin:10px auto 14px}.gMini i{position:absolute;display:block}.gMini .b{left:0;right:0;bottom:0;height:78px;border-radius:10px;background:linear-gradient(160deg,#e8231b,#6a0408);box-shadow:0 10px 30px rgba(230,20,20,.35),inset 0 -6px 0 rgba(0,0,0,.25)}.gMini .l{left:-7px;right:-7px;top:12px;height:24px;border-radius:8px;background:linear-gradient(160deg,#ff4a3a,#a80a0e);box-shadow:0 3px 0 rgba(0,0,0,.25)}.gMini .rv{left:49px;width:22px;top:24px;bottom:0;background:#ffcf2e}.gMini .rh{left:0;right:0;top:62px;height:18px;background:#ffcf2e}.gMini .bw{left:50%;top:-8px;margin-left:-24px;width:48px;font-size:34px;line-height:30px;text-align:center;font-style:normal}@media(max-width:600px){.gPanel{grid-template-columns:1fr!important}}</style>`; }
 function gName(b){ const it=shopItem(b.id)||b; return shopName(it); }
 function boxBind(m){ m.querySelectorAll(".gBuy").forEach(b=>b.onclick=()=>gBuy(+b.dataset.n)); }
@@ -6742,7 +6742,7 @@ function gReveal(){ clearTimeout(GB.tm); GB.ph="reveal"; const m=document.getEle
   const r=GB.res[GB.i], b=r.b, t=b.tier, T=GTIER[t], col=gTierCol(t), box=m.querySelector(".box"); box.classList.remove("shake","hard"); box.classList.add("open"); m.querySelector(".rays").style.opacity=t>=2?".8":".35";
   const it=shopItem(b.id)||b, kind={kart:"서킷카",aura:"오라",hat:"모자·액세서리",skin:"카트 스킨",coupon:"쿠폰"}[b.t]||"";
   const xp=b.t==="aura"?` · ⭐ 경험치 ×${AURA_DEF[b.id].xp}`:b.xp?` · ⭐ 착용 시 경험치 ×${b.xp}`:"";
-  const card=m.querySelector(".card"); card.innerHTML=`<div class="tg ${t===5?"rb":""}" style="${t===5?"-webkit-background-clip:text;background-clip:text;color:transparent":""}">${T.n} ${kind}</div>${gPrev(b,true)}<div class="nm">${shopName(it)}</div><div class="sub">${b.t==="coupon"?`<b style="color:#46e08a">+1장</b> · 가진 쿠폰 ${cpN("a")}장<br><small>상점 → 🔨 쿠폰·조합대에서 사용</small>`:r.dup?`이미 가진 물건 → <b style="color:#ffcf2e">🎟️ 쿠폰 +${T.ref}장</b>`:`<b style="color:#46e08a">NEW!</b>${xp}`}</div>`;
+  const card=m.querySelector(".card"); card.innerHTML=`<div class="tg ${t===5?"rb":""}" style="${t===5?"-webkit-background-clip:text;background-clip:text;color:transparent":""}">${T.n} ${kind}</div>${gPrev(b,true)}<div class="nm">${shopName(it)}</div><div class="sub">${b.t==="coupon"?`<b style="color:#46e08a">+1장</b> · 가진 쿠폰 ${cpN("a")}장<br><small>마이페이지 → 🎟️ 쿠폰에서 사용·조합</small>`:r.dup?`이미 가진 물건 → <b style="color:#ffcf2e">🎟️ 쿠폰 +${T.ref}장</b>`:`<b style="color:#46e08a">NEW!</b>${xp}`}</div>`;
   card.classList.add("on"); m.querySelector(".tada").classList.add("on");
   try{ chime(); if(t>=4){ [880,1100,1320,1760].forEach((f,k)=>setTimeout(()=>beep(f,.18,.16),160+k*110)); } }catch(_){}
   m.querySelector(".bar").innerHTML=gBar(false); m.querySelector("#gNext").onclick=gAdvance; m.querySelector(".hint").textContent="스페이스바: 다음";
@@ -6756,14 +6756,14 @@ document.addEventListener("keydown",e=>{ const m=document.getElementById("gModal
 /* 화면 오른쪽: 경험치 쿠폰 남은 시간 */
 function cpHud(){ let el=document.getElementById("cpHud"); const now=Date.now(), act=Object.keys(CPG).filter(g=>cpUntilG(g)>now).sort((a,b)=>CPG[b].x-CPG[a].x);
   if(!act.length){ if(el) el.style.display="none"; return; }
-  if(!el){ el=document.createElement("div"); el.id="cpHud"; el.title="경험치 쿠폰 남은 시간"; document.body.appendChild(el); const st=document.createElement("style"); st.textContent=`#cpHud{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:60;display:flex;flex-direction:column;gap:6px;pointer-events:none;font:800 12px "Pretendard","Noto Sans KR",system-ui,sans-serif}#cpHud .r{display:flex;align-items:center;gap:8px;padding:7px 10px 7px 8px;border-radius:12px;background:rgba(10,11,16,.82);border:1px solid var(--c);box-shadow:0 0 14px color-mix(in srgb,var(--c) 45%,transparent);color:#fff;backdrop-filter:blur(4px)}#cpHud .r.dim{opacity:.55;transform:scale(.92);transform-origin:right}#cpHud .e{font-size:18px}#cpHud small{display:block;font:800 9.5px ui-monospace,Menlo,monospace;letter-spacing:.12em;color:var(--c)}#cpHud b{font:800 15px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}#cpHud .r.low b{color:#ff6a5a;animation:cpBl 1s steps(2) infinite}@keyframes cpBl{50%{opacity:.35}}@media(max-width:600px){#cpHud{right:6px}#cpHud .r{padding:5px 8px}#cpHud b{font-size:13px}}`; document.head.appendChild(st); }
+  if(!el){ el=document.createElement("div"); el.id="cpHud"; el.title="경험치 쿠폰 남은 시간"; document.body.appendChild(el); const st=document.createElement("style"); st.textContent=`#cpHud{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:60;display:flex;flex-direction:column;gap:6px;pointer-events:none;font:800 12px "Pretendard","Noto Sans KR",system-ui,sans-serif}#cpHud .r{display:flex;align-items:center;gap:8px;padding:7px 10px 7px 8px;border-radius:12px;background:rgba(10,11,16,.82);border:1px solid var(--c);box-shadow:0 0 14px color-mix(in srgb,var(--c) 45%,transparent);color:#fff;}#cpHud .r.dim{opacity:.55;transform:scale(.92);transform-origin:right}#cpHud .e{font-size:18px}#cpHud small{display:block;font:800 9.5px ui-monospace,Menlo,monospace;letter-spacing:.12em;color:var(--c)}#cpHud b{font:800 15px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}#cpHud .r.low b{color:#ff6a5a;animation:cpBl 1s steps(2) infinite}@keyframes cpBl{50%{opacity:.35}}@media(max-width:600px){#cpHud{right:6px}#cpHud .r{padding:5px 8px}#cpHud b{font-size:13px}}`; document.head.appendChild(st); }
   el.style.display="flex"; el.innerHTML=act.map((g,i)=>{ const ms=cpUntilG(g)-now, mm=Math.floor(ms/60000), ss=Math.floor(ms/1000)%60; return `<div class="r ${i?"dim":""} ${ms<60000?"low":""}" style="--c:${CPG[g].c}"><span class="e">${CPG[g].e}</span><span><small>XP ×${CPG[g].x}</small><b>${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}</b></span></div>`; }).join(""); }
 setInterval(()=>{ try{ cpHud(); }catch(_){} },1000);
 
 /* ===== 온라인 방 목록 · 대기방: REDLINE 인트로/로그인 분위기 · 게스트 이름 · 닉네임 변경권 ===== */
 function lobbyCss(){ if(document.getElementById("rlDarkLobby")) return; const st=document.createElement("style"); st.id="rlDarkLobby"; const S="html body ";
   st.textContent=`
-${S}#roomScr,${S}#mpLobby,${S}#rModal{background:radial-gradient(ellipse at 50% 30%,rgba(60,6,10,.55),rgba(0,0,0,.9) 70%)!important;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);overflow:hidden}
+${S}#roomScr,${S}#mpLobby,${S}#rModal{background:radial-gradient(ellipse at 50% 30%,rgba(60,6,10,.55),rgba(0,0,0,.9) 70%)!important;overflow:hidden}
 ${S}#roomScr .lbStreak,${S}#mpLobby .lbStreak{position:absolute;height:2px;left:-40%;width:40%;background:linear-gradient(90deg,transparent,#ff2a2a,#fff);opacity:.55;transform:rotate(-12deg);animation:lbStreak linear infinite;pointer-events:none;z-index:0}
 @keyframes lbStreak{to{left:140%}}
 ${S}#roomScr>.card,${S}#mpLobby>.card,${S}#rModal>.card{position:relative;z-index:1;background:linear-gradient(165deg,rgba(24,25,33,.94),rgba(11,12,16,.96) 60%,rgba(28,8,10,.95))!important;color:#e8ebf2!important;border:1px solid rgba(255,255,255,.1)!important;border-top:3px solid #e8231b!important;border-radius:20px!important;box-shadow:0 40px 120px rgba(0,0,0,.7),0 0 0 1px rgba(255,42,42,.12),inset 0 1px 0 rgba(255,255,255,.06)!important;--ink:#e8ebf2;--ink-dim:#8d94a8;--panel-line:rgba(255,255,255,.1);--panel:#14161d}
@@ -6822,7 +6822,7 @@ ${S}#mpLobby .log{background:#0b0c11!important;color:#e8ebf2!important;border:1p
 ${S}#mpLobby .log *{color:#d8dce8!important}
 ${S}#mpLobby .rankBox{background:#0e0f14!important;color:#e8ebf2!important;border:1px solid rgba(255,255,255,.08)}
 ${S}#mpLobby .rankBox *{color:#d8dce8!important}
-${S}#mpLobby .mp-sheet{background:rgba(0,0,0,.6)!important;backdrop-filter:blur(4px)}
+${S}#mpLobby .mp-sheet{background:rgba(0,0,0,.6)!important;}
 ${S}#mpLobby .mp-sheet-card{background:linear-gradient(165deg,#191a22,#0c0d12)!important;color:#e8ebf2!important;border:1px solid rgba(255,255,255,.1);border-top:3px solid #e8231b;box-shadow:0 30px 80px rgba(0,0,0,.6)}
 ${S}#mpLobby .mp-sheet-hd b{font:400 22px "Black Han Sans",system-ui,sans-serif;font-style:italic;color:#fff}
 ${S}#mpLobby .swatches .sw{box-shadow:0 0 0 1.5px rgba(255,255,255,.25)!important}
@@ -6851,7 +6851,7 @@ function nickPanelHTML(logged){ if(!logged) return `<div style="padding:20px;tex
     <div id="nkMsg" style="min-height:20px;margin:8px 0;font:700 13px sans-serif;color:#ff8a7a"></div>
     <button type="button" id="nkGo" class="rs-btn ${can?"buy":"off"}" ${can?"":"disabled"} style="padding:12px;font-size:15px">${can?"💰 "+wonFmt(NICK_P)+"으로 닉네임 바꾸기":"돈 부족 · "+wonFmt(NICK_P)}</button>
     <div style="margin-top:12px;font:600 12px/1.6 sans-serif;color:#8d94a8">· 같은 닉네임은 쓸 수 없어요<br>· <b style="color:#ff8a7a">닉네임을 바꿔도 로그인은 처음 가입한 아이디로 해야 해요</b><br>· 랭킹 기록은 이전 닉네임 이름으로 남아요</div></div>`; }
-function nickConfirm(title,body,ok,cancel){ return new Promise(res=>{ const o=document.createElement("div"); o.style.cssText="position:fixed;inset:0;z-index:260;display:grid;place-items:center;background:rgba(0,0,0,.72);backdrop-filter:blur(4px)";
+function nickConfirm(title,body,ok,cancel){ return new Promise(res=>{ const o=document.createElement("div"); o.style.cssText="position:fixed;inset:0;z-index:260;display:grid;place-items:center;background:rgba(0,0,0,.72);";
   o.innerHTML=`<div style="width:min(92vw,420px);padding:22px;border-radius:18px;background:linear-gradient(165deg,#1c1e27,#0c0d12);border:1px solid rgba(255,255,255,.12);border-top:3px solid #e8231b;color:#e8ebf2;font:600 14px/1.6 sans-serif;box-shadow:0 30px 80px rgba(0,0,0,.6)"><div style="font:400 24px 'Black Han Sans',sans-serif;font-style:italic;color:#fff;margin-bottom:10px">${title}</div><div style="color:#c8cdd9">${body}</div><div style="display:flex;gap:8px;margin-top:18px"><button type="button" data-v="1" class="rs-btn buy" style="padding:12px">${ok}</button><button type="button" data-v="0" class="rs-btn eq" style="padding:12px">${cancel||"취소"}</button></div></div>`;
   document.body.appendChild(o); o.querySelectorAll("button").forEach(b=>b.onclick=()=>{ o.remove(); res(b.dataset.v==="1"); }); }); }
 async function nickChange(){ const m=document.getElementById("shopModal"), msg=t=>{ const e=m&&m.querySelector("#nkMsg"); if(e) e.textContent=t; }, esc=s=>String(s||"").replace(/[<>&"]/g,"");
@@ -6874,7 +6874,7 @@ async function nickChange(){ const m=document.getElementById("shopModal"), msg=t
 function nickBind(m){ const b=m.querySelector("#nkGo"); if(b) b.onclick=()=>nickChange(); m.querySelectorAll("#nkNew,#nkPw").forEach(i=>i.onkeydown=e=>{ e.stopPropagation(); if(e.key==="Enter"&&b) b.click(); }); }
 /* ---------- 기본정보 (기록·통계) ---------- */
 function infoOpen(){ shopCss(); let o=document.getElementById("myPage"); if(!o){ o=document.createElement("div"); o.id="myPage"; document.body.appendChild(o); o.addEventListener("click",e=>{ if(e.target===o) o.remove(); }); }
-  o.style.cssText="position:fixed;inset:0;z-index:215;display:grid;place-items:center;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)";
+  o.style.cssText="position:fixed;inset:0;z-index:215;display:grid;place-items:center;background:rgba(0,0,0,.8);";
   const esc=s=>String(s||"").replace(/[<>&"]/g,""), lg=typeof ACCT!=="undefined"&&ACCT&&ACCT.user, P=(lg&&ACCT.prof)||{};
   const stat=(k,v,c)=>`<div class="mpS"><small>${k}</small><b style="${c?"color:"+c:""}">${v}</b></div>`;
   let main="";
@@ -6974,6 +6974,18 @@ function garageRender(){ const o=document.getElementById("garage"); if(!o) retur
   if(T==="cp") try{ craftBind(o); }catch(_){}
   if(!o.querySelector(".gStage").onpointerdown){ const st=o.querySelector(".gStage"); st.onpointerdown=e=>{ GARAGE.drag={x:e.clientX,a:GARAGE.a}; try{ st.setPointerCapture(e.pointerId); }catch(_){} }; st.onpointermove=e=>{ if(GARAGE.drag) GARAGE.a=GARAGE.drag.a-(e.clientX-GARAGE.drag.x)*.01; }; st.onpointerup=st.onpointercancel=()=>{ GARAGE.drag=null; }; } }
 function gEmpty(a,b){ return `<div class="gE"><b>${a}</b>${b}</div>`; }
+/* ---------- 상대 오라: 출발 전(카운트다운)에 상대 카트에도 보임 ---------- */
+function ghostAura(g,pr){ const id=(typeof pr.au==="string"&&AURA_DEF[pr.au])?pr.au:null, show=!!id&&state==="countdown";
+  if(g.aura&&g.auraId!==id){ g.obj.remove(g.aura.g); g.aura=null; }
+  if(show&&!g.aura){ g.aura=auraBuild(id); g.auraId=id; g.obj.add(g.aura.g); }
+  if(g.aura){ g.aura.g.visible=show; if(show){ const t=performance.now()/1000; for(const f of g.aura.T) f(t); } } }
+/* ---------- 최적화: 트랙마다 처음 한 번 모든 재질의 셰이더를 미리 만들어 둠 (처음 보이는 순간 끊김 방지) ---------- */
+function prewarmTrack(){ if(!TR||TR._pw) return; TR._pw=1; const hid=[]; try{ for(const c of TR.chunks||[]) if(!c.obj.visible){ c.obj.visible=true; hid.push(c.obj); } for(const p of TR.props||[]) if(!p.obj.visible){ p.obj.visible=true; hid.push(p.obj); } renderer.compile(scene,camera); }catch(_){} for(const o of hid) o.visible=false; }
+
+/* ---------- 최적화: 방 목록·대기방·상점·기본정보처럼 화면을 덮는 창이 열려 있으면 뒤의 3D는 절반만 그림 ---------- */
+var UIC={n:0,on:false,f:0};
+function uiCoverSkip(){ if(++UIC.n>=20){ UIC.n=0; const vis=id=>{ const e=document.getElementById(id); return !!e&&!e.hidden&&e.style.display!=="none"&&e.style.visibility!=="hidden"; }; UIC.on=(typeof GARAGE==="undefined"||!GARAGE.on)&&(vis("roomScr")||vis("mpLobby")||vis("shopModal")||vis("myPage")||vis("gModal")); }
+  if(!UIC.on) return false; UIC.f^=1; return UIC.f===1; }
 
 document.addEventListener("click",e=>{ const mb=e.target&&e.target.closest&&e.target.closest("#myBtn2,#infoBtn2"); if(mb){ e.preventDefault(); if(mb.id==="myBtn2") garageOpen(); else infoOpen(); return; } const t=e.target&&e.target.closest&&e.target.closest("#titleShop,#shopBtn,#shopBtn2"); if(t){ e.preventDefault(); e.stopPropagation(); shopOpen(); } },true);
 
@@ -8517,7 +8529,7 @@ function mpUpdate(dt){
   else if(mpIsHost()&&MP.sent&&MP.sent.cg!==MP.raceId) mpSend({cg:MP.raceId});
   const wallNow=Date.now();
   for(const p of mpList()){ if(p.peer===MP.myPeer||(p.bot&&p.owner===MP.myPeer)) continue; const pr=p.presence; if(pr.rid!==MP.raceId||!(pr.st==="race"||pr.st==="done")||pr.x===undefined){ const g0=MP.ghosts.get(p.peer); if(g0) g0.obj.visible=false; continue; }
-    const g=mpGhost(p.peer,pr); g.obj.visible=true; g.pr=pr;
+    const g=mpGhost(p.peer,pr); g.obj.visible=true; g.pr=pr; try{ ghostAura(g,pr); }catch(_){}
     if(Array.isArray(pr.vo)){ if(g.voSeq===undefined) g.voSeq=pr.vo[0]; else if(pr.vo[0]!==g.voSeq){ g.voSeq=pr.vo[0]; voiceOther(pr.ch,pr.k,+pr.vo[1],pr.vo[2],Math.hypot(g.x-S.x,g.z-S.z)); } }
     const BS=MP.biteSeen||(MP.biteSeen={}); if(BS[p.peer]===undefined) BS[p.peer]=Array.isArray(pr.bi)?pr.bi[0]:0;
     const TW=MP.twSeen||(MP.twSeen={}); if(TW[p.peer]===undefined) TW[p.peer]=Array.isArray(pr.tw)?pr.tw[0]:0;
@@ -8657,7 +8669,7 @@ function render(dt){
   const targetFov=70+(S.rail?16:S.superT>0?4+16*sprog*sprog:S.novaT>0?8:S.boostT>0?5:S.instT>0?2:0)+12*(S.kick||0)+(DCAM.on?DCAM.fov||0:0);
   camera.fov=lerp(camera.fov,targetFov,.08); camera.updateProjectionMatrix(); if(GARAGE.on) garageCam();
   skyDome.position.set(camera.position.x,0,camera.position.z); if(NIGHT) NIGHT.position.copy(skyDome.position);
-  renderer.render(scene,camera);
+  if(!uiCoverSkip()) renderer.render(scene,camera);
   { if(state==="race"&&S.novaT>0) S.mirT=1.5; else if(ckMirror()) S.mirT=Math.max(S.mirT||0,.9); else S.mirT=Math.max(0,(S.mirT||0)-dt); let mf=document.getElementById("sideMirror"); const on=S.mirT>0&&(state==="race"||state==="finish");
     if(on){ if(!window.MIRCAM) window.MIRCAM=new THREE.PerspectiveCamera(58,1.8,.5,4000); const mc=MIRCAM, sz=renderer.getSize(new THREE.Vector2()), W=sz.x, H=sz.y, w=Math.round(Math.min(W*.34,340)), h=Math.round(w/1.8), x=(FCAR()&&S.mirSide===1)?12:W-w-12, top=Math.max(230,Math.round(H*.4)), y=H-top-h;
       const fx=Math.sin(S.h), fz=Math.cos(S.h); mc.aspect=w/h; mc.updateProjectionMatrix(); if(FCAR()&&S.novaT<=0){ const sg=S.mirSide||-1, lx=fz*sg, lz=-fx*sg; mc.position.set(S.x+lx*.75+fx*.3,S.y+1.15,S.z+lz*.75+fz*.3); mc.lookAt(S.x-fx*40+lx*3,S.y+.2,S.z-fz*40+lz*3); } else { mc.position.set(S.x+fx*1.5,S.y+3.2,S.z+fz*1.5); mc.lookAt(S.x-fx*40,S.y-4,S.z-fz*40); }
