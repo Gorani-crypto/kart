@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2500</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2505</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7074,6 +7074,16 @@ function evBanner(){ const t=document.getElementById("titleScr"); if(!t) return;
   if(!b){ b=document.createElement("button"); b.type="button"; b.id="evBanner"; b.onclick=noticeOpen; const card=t.querySelector(".card")||t; card.insertBefore(b,card.querySelector(".tbtns")); const st=document.createElement("style"); st.textContent="#evBanner{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:2px 0 12px;padding:10px 14px;border:1px solid rgba(255,59,47,.5);border-radius:12px;background:linear-gradient(90deg,rgba(255,42,42,.22),rgba(255,176,32,.14));color:#fff;font:800 14px 'Pretendard','Noto Sans KR',sans-serif;cursor:pointer;animation:evPulse 2.4s ease-in-out infinite}#evBanner b{font:400 18px 'Black Han Sans',sans-serif;color:#ffcf2e}#evBanner small{color:#ffb8b0;font-weight:700}@keyframes evPulse{50%{box-shadow:0 0 22px rgba(255,60,40,.45)}}"; document.head.appendChild(st); }
   const left=e.to-evNow(), dd=Math.floor(left/864e5); b.innerHTML=`<span>${e.short}</span><b>EXP ×${e.mul}</b><small>${dd>0?"D-"+dd:"오늘 마감"} · 📢 공지 보기</small>`; }
 setInterval(()=>{ try{ evBanner(); }catch(_){} },30000); setTimeout(()=>{ try{ evBanner(); }catch(_){} },1500);
+/* ---------- "!" 설명 말풍선: 카드 밖(화면 맨 위층)에 띄워서 잘리지 않게, 화면 안쪽으로 자동 위치 ---------- */
+(function(){ const st=document.createElement("style"); st.textContent=".rl-inf .tip{display:none!important}#rlTip{position:fixed;z-index:99999;width:max-content;max-width:min(240px,calc(100vw - 16px));padding:10px 12px;border-radius:12px;background:#0b0c11;border:1px solid #ff3b2f;color:#e8ecf6;font:600 12.5px/1.5 'Pretendard','Noto Sans KR',system-ui,sans-serif;text-align:left;box-shadow:0 12px 32px rgba(0,0,0,.65),0 0 18px rgba(255,42,42,.2);pointer-events:none;display:none}#rlTip b{font-size:14px;color:#fff}"; document.head.appendChild(st);
+  let tip=null, cur=null;
+  const show=el=>{ const src=el.querySelector(".tip"); if(!src) return; if(!tip){ tip=document.createElement("div"); tip.id="rlTip"; document.body.appendChild(tip); } cur=el; tip.innerHTML=src.innerHTML; tip.style.display="block"; tip.style.left="0px"; tip.style.top="0px";
+    const r=el.getBoundingClientRect(), w=tip.offsetWidth, h=tip.offsetHeight; let x=r.right-w; x=Math.max(8,Math.min(innerWidth-w-8,x)); let y=r.bottom+6; if(y+h>innerHeight-8) y=Math.max(8,r.top-h-6); tip.style.left=x+"px"; tip.style.top=y+"px"; };
+  const hide=()=>{ cur=null; if(tip) tip.style.display="none"; };
+  document.addEventListener("mouseover",e=>{ const el=e.target&&e.target.closest&&e.target.closest(".rl-inf"); if(el){ if(el!==cur) show(el); } else if(cur&&!cur.classList.contains("on")) hide(); },true);
+  document.addEventListener("focusin",e=>{ const el=e.target&&e.target.closest&&e.target.closest(".rl-inf"); if(el) show(el); },true);
+  document.addEventListener("click",e=>{ const el=e.target&&e.target.closest&&e.target.closest(".rl-inf"); setTimeout(()=>{ if(el&&el.classList.contains("on")) show(el); else if(!el) hide(); },0); },true);
+  addEventListener("scroll",hide,true); addEventListener("resize",hide); })();
 
 document.addEventListener("click",e=>{ const mb=e.target&&e.target.closest&&e.target.closest("#myBtn2,#infoBtn2"); if(mb){ e.preventDefault(); if(mb.id==="myBtn2") garageOpen(); else infoOpen(); return; } const t=e.target&&e.target.closest&&e.target.closest("#titleShop,#shopBtn,#shopBtn2"); if(t){ e.preventDefault(); e.stopPropagation(); shopOpen(); } },true);
 
