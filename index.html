@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2710</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2715</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7080,10 +7080,10 @@ addEventListener("wheel",e=>{ if(!GARAGE.on) return; const st=e.target&&e.target
 addEventListener("keydown",e=>{ if(!GARAGE.on) return; const t=e.target; if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA")) return; if(e.code==="Space"||e.key===" "){ e.preventDefault(); e.stopPropagation(); if(!e.repeat) GARAGE.paused=!GARAGE.paused; } else if(e.key==="Escape"){ e.preventDefault(); e.stopPropagation(); if(GARAGE.full){ GARAGE.zoom=1; GARAGE.full=false; const o=document.getElementById("garage"); if(o) o.classList.remove("full"); } else garageClose(); } },true);
 /* ---------- 이벤트 · 공지사항 ---------- */
 var SRV_OFF=0; (function srvOff(){ try{ if(typeof firebase!=="undefined"&&firebase.apps&&firebase.apps.length){ firebase.database().ref(".info/serverTimeOffset").on("value",s=>{ SRV_OFF=+s.val()||0; }); return; } }catch(_){} setTimeout(srvOff,800); })();
-var EVENTS=[{id:"suneung2026",mul:3,from:Date.parse("2026-11-20T21:40:00+09:00"),to:Date.parse("2026-11-27T23:59:59+09:00"),
+var EVENTS=[{id:"suneung2026",mul:3,from:Date.parse("2026-11-20T21:40:00+09:00"),to:Date.parse("2026-11-30T23:59:59+09:00"),
   title:"🎓 수능을 축하합니다!",short:"🎓 수능 축하 경험치 3배",
-  body:`수험생 여러분, 정말 고생 많으셨어요! 🎉<br>수능을 축하하는 의미로 <b style="color:#ffcf2e">일주일 동안 모든 경주 경험치가 3배</b>예요.`,
-  list:["기간: 11월 20일(금) ~ 11월 27일(금) 23:59","경험치만큼 받는 돈도 3배로 받아요","오라·쿠폰·캐릭터 경험치 배율과 곱해져요","로그인한 플레이어만 받을 수 있어요 (게스트는 경험치 없음)"]}];
+  body:`수험생 여러분, 정말 고생 많으셨어요! 🎉<br>수능을 축하하는 의미로 <b style="color:#ffcf2e">11월 30일까지 모든 경주 경험치가 3배</b>예요.`,
+  list:["기간: 11월 20일(금) ~ 11월 30일(월) 23:59","경험치만큼 받는 돈도 3배로 받아요","오라·쿠폰·캐릭터 경험치 배율과 곱해져요","로그인한 플레이어만 받을 수 있어요 (게스트는 경험치 없음)"]}];
 function evNow(){ return Date.now()+(SRV_OFF||0); }
 function xpEvent(){ const t=evNow(); return EVENTS.find(e=>t>=e.from&&t<=e.to)||null; }
 function xpEventMul(){ const e=xpEvent(); return e?e.mul:1; }
