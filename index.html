@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2600</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2620</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7110,6 +7110,54 @@ setInterval(()=>{ try{ evBanner(); }catch(_){} },30000); setTimeout(()=>{ try{ e
   document.addEventListener("focusin",e=>{ const el=e.target&&e.target.closest&&e.target.closest(".rl-inf"); if(el) show(el); },true);
   document.addEventListener("click",e=>{ const el=e.target&&e.target.closest&&e.target.closest(".rl-inf"); setTimeout(()=>{ if(el&&el.classList.contains("on")) show(el); else if(!el) hide(); },0); },true);
   addEventListener("scroll",hide,true); addEventListener("resize",hide); })();
+/* ---------- 전설·영웅 스킨 주행 이펙트: 차 뒤로 불꽃·연기·별가루·용암 방울이 흩날림 (내 차 · 상대 차 · 마이페이지) ---------- */
+var SKFX_DEF={
+  l_phoenix:{rate:110,life:[.45,.9],size:2.1,cols:[[1,.55,.08],[1,.85,.3],[1,.32,.04],[1,.95,.6]],up:2.4,spread:.55,drag:.88,back:1.0},
+  r_devil:{rate:70,life:[.6,1.1],size:1.9,cols:[[1,.08,.06],[.8,0,.05],[1,.35,.1]],up:1.1,spread:.6,drag:.9,back:1.0},
+  h_nebula:{rate:70,life:[.9,1.5],size:1.15,cols:[[1,1,1],[.72,.5,1],[.5,.82,1],[1,.62,.92]],up:.35,spread:1.0,drag:.94,back:.9,twinkle:1},
+  h_lava:{rate:70,life:[.5,.95],size:1.4,cols:[[1,.45,.05],[1,.72,.2],[.95,.22,0]],up:-.4,spread:.5,drag:.92,back:.9,grav:1}};
+var SKFX={em:new Map(),tex:null,last:0};
+function skfxTex(){ return SKFX.tex||(SKFX.tex=canvasTex(64,64,(x,w,h)=>{ const g=x.createRadialGradient(32,32,0,32,32,32); g.addColorStop(0,"rgba(255,255,255,1)"); g.addColorStop(.35,"rgba(255,255,255,.55)"); g.addColorStop(1,"rgba(255,255,255,0)"); x.fillStyle=g; x.fillRect(0,0,w,h); },1,1)); }
+function skfxMake(id,parent){ const d=SKFX_DEF[id], N=170, geo=new THREE.BufferGeometry(), pos=new Float32Array(N*3).fill(-9999), col=new Float32Array(N*3);
+  geo.setAttribute("position",new THREE.BufferAttribute(pos,3)); geo.setAttribute("color",new THREE.BufferAttribute(col,3));
+  const pts=new THREE.Points(geo,new THREE.PointsMaterial({size:d.size,map:skfxTex(),vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true})); pts.frustumCulled=false; pts.renderOrder=5; parent.add(pts);
+  return {id,d,pts,N,v:new Float32Array(N*3),life:new Float32Array(N),max:new Float32Array(N),ci:new Uint8Array(N),acc:0,next:0,parent}; }
+function skfxStep(E,dt,x,y,z,fx,fz,spd){ const d=E.d, P=E.pts.geometry.attributes.position.array, C=E.pts.geometry.attributes.color.array, t=performance.now()/1000;
+  E.acc+=d.rate*dt*Math.min(1.7,.35+spd/38); const sx=-fz, sz=fx;
+  while(E.acc>=1){ E.acc-=1; const i=E.next; E.next=(E.next+1)%E.N; const r=(Math.random()-.5)*2*d.spread, back=d.back+Math.random()*.6;
+    P[i*3]=x-fx*back+sx*r; P[i*3+1]=y+.45+Math.random()*.7; P[i*3+2]=z-fz*back+sz*r;
+    E.v[i*3]=-fx*spd*.12+(Math.random()-.5)*1.2; E.v[i*3+1]=d.up*(.6+Math.random()*.8); E.v[i*3+2]=-fz*spd*.12+(Math.random()-.5)*1.2;
+    E.max[i]=E.life[i]=d.life[0]+Math.random()*(d.life[1]-d.life[0]); E.ci[i]=(Math.random()*d.cols.length)|0; }
+  const dr=Math.pow(d.drag,dt*60);
+  for(let i=0;i<E.N;i++){ if(E.life[i]<=0){ if(P[i*3+1]>-9000){ P[i*3+1]=-9999; C[i*3]=C[i*3+1]=C[i*3+2]=0; } continue; }
+    E.life[i]-=dt; E.v[i*3]*=dr; E.v[i*3+2]*=dr; if(d.grav) E.v[i*3+1]-=9*dt; else E.v[i*3+1]*=dr;
+    P[i*3]+=E.v[i*3]*dt; P[i*3+1]+=E.v[i*3+1]*dt; P[i*3+2]+=E.v[i*3+2]*dt; if(d.grav&&P[i*3+1]<y) { P[i*3+1]=y; E.v[i*3+1]=0; }
+    let k=Math.max(0,E.life[i]/E.max[i]); if(d.twinkle) k*=.45+.55*Math.abs(Math.sin(t*9+i)); const c=d.cols[E.ci[i]]; C[i*3]=c[0]*k; C[i*3+1]=c[1]*k; C[i*3+2]=c[2]*k; }
+  E.pts.geometry.attributes.position.needsUpdate=true; E.pts.geometry.attributes.color.needsUpdate=true; }
+function skfxUse(key,id,parent){ let E=SKFX.em.get(key); if(E&&(E.id!==id||E.parent!==parent)){ E.parent.remove(E.pts); E.pts.geometry.dispose(); SKFX.em.delete(key); E=null; } if(!id||!SKFX_DEF[id]) return null; if(!E){ E=skfxMake(id,parent); SKFX.em.set(key,E); } E.seen=1; return E; }
+function skfxTick(){ requestAnimationFrame(skfxTick); try{ const now=performance.now()/1000, dt=Math.min(.05,now-(SKFX.last||now)); SKFX.last=now; if(typeof kart==="undefined"||!kart) return;
+    for(const E of SKFX.em.values()) E.seen=0;
+    const gar=typeof GARAGE!=="undefined"&&GARAGE.on&&GARAGE.G;
+    if(gar){ const E=skfxUse("garage",mySkin(),GARAGE.G.scene); if(E){ const a=GARAGE.a; skfxStep(E,dt,0,.08,0,Math.sin(a),Math.cos(a),14); } }
+    else if(state==="race"||state==="countdown"||state==="finish"||state==="menu"){ const E=skfxUse("me",mySkin(),scene); if(E){ const p=kart.position, h=(typeof S!=="undefined"&&S&&S.h!==undefined)?S.h:kart.rotation.y, v=(state==="race"||state==="finish")&&S?Math.hypot(S.vx||0,S.vz||0):4; skfxStep(E,dt,p.x,p.y,p.z,Math.sin(h),Math.cos(h),v); }
+      if(typeof MP!=="undefined"&&MP.racing) for(const [peer,g] of MP.ghosts){ if(!g.obj.visible||!g.pr) continue; const sk=g.pr.sk&&shopItem(g.pr.sk)?g.pr.sk:null; const E2=skfxUse("g:"+peer,sk,scene); if(E2) skfxStep(E2,dt,g.x,g.y,g.z,Math.sin(g.h),Math.cos(g.h),Math.hypot(+g.pr.vx||0,+g.pr.vz||0)); } }
+    for(const [k,E] of SKFX.em) if(!E.seen){ E.parent.remove(E.pts); E.pts.geometry.dispose(); SKFX.em.delete(k); }
+  }catch(_){} }
+requestAnimationFrame(skfxTick);
+/* ---------- 노을 하늘: 스즈카 · 바쿠 · 아부다비 ---------- */
+var SUNSET_IDS=["suzuka","baku","abu"], SUNSET={orig:null,disc:null,on:false};
+function applySunset(on){ try{ const geo=skyDome.geometry, ca=geo.attributes.color, pa=geo.attributes.position;
+  if(!SUNSET.orig) SUNSET.orig=ca.array.slice();
+  if(on){ const top=new THREE.Color(0x2a2a6a), mid=new THREE.Color(0xd8607a), low=new THREE.Color(0xff9a5a), hor=new THREE.Color(0xffd08a), c=new THREE.Color();
+    for(let i=0;i<pa.count;i++){ const y=pa.getY(i)/900; if(y>.45) c.copy(mid).lerp(top,(y-.45)/.55); else if(y>.15) c.copy(low).lerp(mid,(y-.15)/.3); else c.copy(hor).lerp(low,Math.max(0,y)/.15); ca.setXYZ(i,c.r,c.g,c.b); }
+    if(!SUNSET.disc){ const g=new THREE.Group(); const core=new THREE.Mesh(new THREE.CircleGeometry(38,40),new THREE.MeshBasicMaterial({color:0xfff0c0,fog:false,depthWrite:false})); g.add(core);
+      const glow=new THREE.Mesh(new THREE.CircleGeometry(140,40),new THREE.MeshBasicMaterial({map:canvasTex(128,128,(x,w,h)=>{ const gr=x.createRadialGradient(64,64,0,64,64,64); gr.addColorStop(0,"rgba(255,200,120,.9)"); gr.addColorStop(.35,"rgba(255,140,80,.35)"); gr.addColorStop(1,"rgba(255,120,80,0)"); x.fillStyle=gr; x.fillRect(0,0,w,h); },1,1),transparent:true,fog:false,depthWrite:false,blending:THREE.AdditiveBlending})); glow.position.z=-1; g.add(glow);
+      g.position.set(-620,95,-560); g.lookAt(0,0,0); g.renderOrder=-1; skyDome.add(g); SUNSET.disc=g; }
+    SUNSET.disc.visible=true;
+    scene.background.setHex(0xf2a878); scene.fog.color.setHex(0xe8a07a);
+    hemi.color.setHex(0xffd2b0); hemi.groundColor.setHex(0x6a4a4a); hemi.intensity=.7; sun.color.setHex(0xffa060); sun.intensity=1.0; sun.position.set(-160,55,-140); }
+  else { ca.array.set(SUNSET.orig); if(SUNSET.disc) SUNSET.disc.visible=false; sun.position.set(80,140,60); }
+  ca.needsUpdate=true; SUNSET.on=on; }catch(_){} }
 
 document.addEventListener("click",e=>{ const mb=e.target&&e.target.closest&&e.target.closest("#myBtn2,#infoBtn2"); if(mb){ e.preventDefault(); if(mb.id==="myBtn2") garageOpen(); else infoOpen(); return; } const t=e.target&&e.target.closest&&e.target.closest("#titleShop,#shopBtn,#shopBtn2"); if(t){ e.preventDefault(); e.stopPropagation(); shopOpen(); } },true);
 
@@ -7201,7 +7249,7 @@ function loadTrack(i){
   const night=!!def.night; scene.background.setHex(night?0x0b1026:0xd6f0ff); scene.fog.color.setHex(night?0x0b1026:0xd6f0ff);
   hemi.intensity=night?(def.nightBright||.42):.75; hemi.color.setHex(night?0x9fb4ff:0xe8f6ff); hemi.groundColor.setHex(night?0x2a2f45:0x8aa070); sun.intensity=night?.38:.9; sun.color.setHex(night?0xb8c6ff:0xfffaf0);
   skyDome.visible=!night; nightSky().visible=night;
-  if(def.fogCol!==undefined){ scene.background.setHex(def.fogCol); scene.fog.color.setHex(def.fogCol); }
+  if(def.fogCol!==undefined){ scene.background.setHex(def.fogCol); scene.fog.color.setHex(def.fogCol); } try{ applySunset(!night&&SUNSET_IDS.includes(def.id)); }catch(_){}
   const fg=def.fog||[260,820]; scene.fog.near=fg[0]; scene.fog.far=fg[1]; camera.far=def.far||(def.city?7000:2000); camera.updateProjectionMatrix();
   setupMinimap();
   clearSkids();
