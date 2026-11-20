@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2530</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2535</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6677,13 +6677,13 @@ function craftFx(f,t,k){ gCss(); let o=document.getElementById("cpFx"); if(!o){ 
 function rareXp(){ let x=1; for(const id of [myHat(),mySkin()]){ const it=id&&shopItem(id); if(it&&it.xp) x*=it.xp; } return x; }
 var GTIER=[null,{n:"일반",c:"#b8c4dc",ref:1},{n:"희귀",c:"#5ad8ff",ref:3},{n:"영웅",c:"#c08aff",ref:6},{n:"전설",c:"#ffb020",ref:20},{n:"신화",c:"#ff5ad8",ref:70}];
 var GBOX=[
-  {id:"omega",t:"kart",w:.1,tier:5},{id:"novax",t:"kart",w:.5,tier:4},{id:"a_galaxy",t:"aura",w:1,tier:4},
-  {id:"a_frost",t:"aura",w:1.5,tier:3},{id:"a_flame",t:"aura",w:1.5,tier:3},{id:"a_sakura",t:"aura",w:1.5,tier:3},{id:"a_thunder",t:"aura",w:1.5,tier:3},{id:"a_ocean",t:"aura",w:1.5,tier:3},
-  {id:"r_crown",t:"hat",w:2,xp:1.05,tier:2,n:"황금 왕관",e:"👑"},{id:"r_halo",t:"hat",w:2,xp:1.05,tier:2,n:"천사 고리",e:"😇"},{id:"r_horns",t:"hat",w:2,xp:1.05,tier:2,n:"악마 뿔",e:"😈"},{id:"r_holo",t:"skin",w:2,xp:1.05,tier:2,n:"✨ 홀로그램"},{id:"r_gold",t:"skin",w:2,xp:1.05,tier:2,n:"🏆 황금 크롬"},{id:"r_devil",t:"skin",w:1.5,xp:1.05,tier:3,n:"😈 악마"},
+  {id:"omega",t:"kart",w:.1,tier:5},{id:"novax",t:"kart",w:.5,tier:4},{id:"a_galaxy",t:"aura",w:.5,tier:4},
+  {id:"a_frost",t:"aura",w:1,tier:3},{id:"a_flame",t:"aura",w:1,tier:3},{id:"a_sakura",t:"aura",w:1,tier:3},{id:"a_thunder",t:"aura",w:1,tier:3},{id:"a_ocean",t:"aura",w:1,tier:3},
+  {id:"r_crown",t:"hat",w:3,xp:1.05,tier:2,n:"황금 왕관",e:"👑"},{id:"r_halo",t:"hat",w:3,xp:1.05,tier:2,n:"천사 고리",e:"😇"},{id:"r_horns",t:"hat",w:3,xp:1.05,tier:2,n:"악마 뿔",e:"😈"},{id:"r_holo",t:"skin",w:3,xp:1.05,tier:2,n:"✨ 홀로그램"},{id:"r_gold",t:"skin",w:3,xp:1.05,tier:2,n:"🏆 황금 크롬"},{id:"r_devil",t:"skin",w:1,xp:1.05,tier:3,n:"😈 악마"},
   {id:"c_xp",t:"coupon",w:20,tier:1,n:"경험치 1.2배 쿠폰",e:"🎟️"},
   {id:"b_frog",t:"hat",w:11.3,tier:1,n:"개구리 모자",e:"🐸"},{id:"b_bunny",t:"hat",w:11.3,tier:1,n:"토끼 귀",e:"🐰"},{id:"b_glasses",t:"hat",w:11.3,tier:1,n:"동그란 안경",e:"👓"},{id:"b_party",t:"hat",w:11.3,tier:1,n:"고깔모자",e:"🥳"},
   {id:"b_dots",t:"skin",w:11.3,tier:1,n:"물방울 무늬"},{id:"b_stripe",t:"skin",w:11.3,tier:1,n:"줄무늬"},{id:"b_zigzag",t:"skin",w:11.3,tier:1,n:"지그재그 무늬"},{id:"b_cloud",t:"skin",w:11.3,tier:1,n:"구름 무늬"}];
-GBOX.forEach(b=>{ if(b.w===11.3) b.w=7.425; if(b.t==="coupon") return; if(b.t==="aura") b.n=AURA_DEF[b.id].n; SHOP.push({id:b.id,t:b.t,p:0,box:1,tier:b.tier,n:b.n,e:b.e,xp:b.xp}); });
+GBOX.forEach(b=>{ if(b.w===11.3) b.w=7.2375; if(b.t==="coupon") return; if(b.t==="aura") b.n=AURA_DEF[b.id].n; SHOP.push({id:b.id,t:b.t,p:0,box:1,tier:b.tier,n:b.n,e:b.e,xp:b.xp}); });
 function gTierTag(it){ const T=GTIER[it.tier||1]; return `<div style="font:900 12px sans-serif;margin-bottom:6px;${it.tier===5?"background:linear-gradient(90deg,#ff5a5a,#ffd25a,#5aff9a,#5ad8ff,#c85aff);-webkit-background-clip:text;background-clip:text;color:transparent":"color:"+T.c}">${T.n} · 🎁 박스</div>`; }
 function gInfo(it){ const esc=x=>String(x||"").replace(/[<>&"]/g,""); if(it.t==="aura"){ const a=AURA_DEF[it.id]; if(!a) return ""; return `<b>${esc(a.n)}</b><br><span style="color:#7ae86a">⭐ 경험치 ×${a.xp}</span>${it.lv?`<br><span style="color:#ffcf2e">🔓 Lv.${it.lv}부터</span>`:""}<br>${esc(a.d)}${it.box?"<br>🎁 랜덤 박스에서만 나와요":"<br>오라는 하나만 착용할 수 있어요"}`; }
   if(!it.box&&it.xp) return `<b>${esc(shopName(it))}</b><br><span style="color:#7ae86a">⭐ 착용 시 경험치 ×${it.xp}</span>`;
