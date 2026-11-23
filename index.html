@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1910</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1915</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5509,7 +5509,7 @@ const CHARS=[
   {id:"lizard", lock:10, xpm:1.05, name:"도마뱀 인간 리자", desc:"초록 비늘, 노란 세로 눈, 등 가시와 꼬리 · 구렁이 뱀과 시너지", helmet:0x4fa84a, stripe:0x2f7a3a, suit:0x4fa84a, glove:0x2f7a3a, acc:"lizard"},
   {id:"baby", lock:10, xpm:1.07, name:"자이언트 베이비", desc:"2배 크기의 아기 · 머리카락 한 가닥, 쪽쪽이, 턱받이, 기저귀 · 유모차와 시너지", helmet:0xffcfa6, stripe:0xffffff, suit:0xffe4ec, glove:0xffcfa6, acc:"baby", big:2},
   {id:"zero", lock:20, xpm:1.1, name:"블랙 나이트 제로", desc:"무광 검은 갑옷 헬멧에 붉게 빛나는 눈 슬릿, 은빛 뿔 장식, 어깨 갑옷, 붉은 망토", helmet:0x15171c, stripe:0xc8ccd6, suit:0x1c1f26, glove:0x2a2e38, acc:"knight"},
-  {id:"clown", lock:10, xpm:1.05, name:"광대 삐에로", desc:"하얀 얼굴에 빨간 코, 무지개 곱슬머리, 고깔모자 · 세발 자전거와 시너지", helmet:0xffffff, stripe:0xff3a3a, suit:0xffcf2e, glove:0xffffff, acc:"clown"},
+  {id:"clown", lock:10, xpm:1.1, name:"광대 삐에로", desc:"하얀 얼굴에 빨간 코, 무지개 곱슬머리, 고깔모자 · 세발 자전거와 시너지", helmet:0xffffff, stripe:0xff3a3a, suit:0xffcf2e, glove:0xffffff, acc:"clown"},
   {id:"rapper", lock:40, xpm:1.15, name:"래퍼 MC 비트", desc:"거꾸로 쓴 빨간 캡, 검은 선글라스, 굵은 금목걸이, 보라색 후드티 · 마이크를 놓지 않는 래퍼", helmet:0xe0a878, stripe:0xe0a878, suit:0x3a2458, glove:0x141414, acc:"rapper"},
   {id:"emperor", lock:50, xpm:1.2, name:"태양 황제 라흐", desc:"사막 왕국의 황제 · 금·청 줄무늬 머리장식, 등 뒤의 빛나는 태양 원반, 금 목장식, 붉은 망토, 태양 홀", helmet:0xb97a4a, stripe:0xb97a4a, suit:0x2a1a12, glove:0xf0c23c, acc:"emperor", big:1.25}
 ];
@@ -6373,7 +6373,7 @@ requestAnimationFrame(auraTick);
 /* 돈: 경주마다 받은 경험치만큼 원(₩)을 받음 · 계정(kart/users/uid)의 money · own(산 물건) */
 var SHOP=[
   /* 캐릭터(레벨 해금 후 구매) · 경험치 능력 캐릭터 */
-  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:2000},{id:"neonr",t:"char",p:1000},{id:"mech",t:"char",p:3000},{id:"boss",t:"char",p:3000},{id:"rapper",t:"char",p:3000},{id:"emperor",t:"char",p:4000},
+  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:1500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:2000},{id:"neonr",t:"char",p:1000},{id:"mech",t:"char",p:3000},{id:"boss",t:"char",p:3000},{id:"rapper",t:"char",p:3000},{id:"emperor",t:"char",p:4000},
   /* 전설 카트 */
   {id:"tiger",t:"kart",p:15000},{id:"dragon",t:"kart",p:22500},{id:"griffin",t:"kart",p:30000},{id:"apex",t:"kart",p:30000},{id:"grn",t:"kart",p:50000},{id:"wgp",t:"kart",p:70000},{id:"egt",t:"kart",p:100000},{id:"tgp",t:"kart",p:15000},{id:"dgp",t:"kart",p:22500},{id:"ggp",t:"kart",p:30000},
   /* 특수 치장(레벨 해금) */
