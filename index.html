@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1455</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1500</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7029,7 +7029,7 @@ function garageRender(){ const o=document.getElementById("garage"); if(!o) retur
   const q=s=>o.querySelector(s); q("#gX").onclick=garageClose; q("#gShop").onclick=e=>{ e.preventDefault(); garageClose(); shopOpen(); }; q("#gInfo").onclick=e=>{ e.preventDefault(); garageClose(); infoOpen(); };
   o.querySelectorAll(".gTab").forEach(b=>b.onclick=()=>{ GARAGE.tab=b.dataset.t; garageRender(); });
   o.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.k; selKart=i; try{ localStorage.setItem("kartrebuild.kart",String(i)); }catch(_){} try{ garageDetach(); paintKart(KARTS[i]); }catch(_){} garageApply(); });
-  o.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.c; selChar=i; try{ localStorage.setItem("kartrebuild.char",String(i)); }catch(_){} garageApply(); });
+  o.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.c; selChar=i; try{ localStorage.setItem("kartrebuild.char",String(i)); }catch(_){} garageApply(); try{ charPickVoice(CHARS[i]); }catch(_){} });
   o.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ try{ setColor(+b.dataset.p); }catch(_){} garageApply(); });
   o.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a; COSEQ.aura=auraCur()===a?null:a; cosSave(); garageApply(); });
   o.querySelectorAll("[data-hat]").forEach(b=>b.onclick=()=>{ const h=b.dataset.hat; COSEQ.hat=COSEQ.hat===h?null:h; cosSave(); garageApply(); });
@@ -8082,7 +8082,7 @@ function speakNow(text,c,vol){ const ss=window.speechSynthesis; if(!ss) return f
   const go=()=>{ try{ ss.resume(); ss.speak(u); }catch(_){} };
   if(ss.speaking||ss.pending){ ss.cancel(); setTimeout(go,90); } else go(); return true; }
 /* 녹음 음성: 대사 글자 → 녹음 파일. 해당 대사는 기계 음성(TTS) 대신 녹음을 재생 */
-const VCLIP={buf:{},ld:{},src:null};
+const VCLIP={buf:{},ld:{},src:null,tok:0};
 (function(){ const P=VCLIP_POOLS, g=P.g, r=P.r;
   VO.granny=Object.assign({},VO.granny,{bad:g.bad.slice(),first:g.first.slice(),start:g.start.slice(),cr:1});
   VO.bigma=Object.assign({},VO.granny,{p:.45,cr:.88}); /* 거대 할머니: 같은 목소리를 조금 낮고 느리게 */
@@ -8096,13 +8096,15 @@ function vclipLoad(t){ if(VCLIP.buf[t]||VCLIP.ld[t]||!SND.ctx||!VCLIP_DATA[t]) r
   VCLIP.ld[t]=new Promise(res=>{ try{ SND.ctx.decodeAudioData(u.buffer,x=>{ VCLIP.buf[t]=x; res(x); },()=>res(null)); }catch(_){ res(null); } });
   return VCLIP.ld[t]; }
 function vclipPreload(id){ const c=VO[id]; if(!c||!SND.ctx) return; for(const t of [].concat(c.start||[],c.first||[],c.bad||[])) if(VCLIP_DATA[t]) vclipLoad(t); }
-function vclipPlay(t,c,vol){ const ctx=SND.ctx; if(!ctx) return false;
-  const go=buf=>{ if(!buf) return; try{ if(ctx.state==="suspended") ctx.resume(); if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} }
+function vclipStop(){ VCLIP.tok++; if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} VCLIP.src=null; } try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){} }
+function vclipPlay(t,c,vol){ const ctx=SND.ctx; if(!ctx) return false; const tok=++VCLIP.tok; if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} VCLIP.src=null; }
+  const go=buf=>{ if(!buf||tok!==VCLIP.tok) return; try{ if(ctx.state==="suspended") ctx.resume(); if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} }
     try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
     const s=ctx.createBufferSource(), gn=ctx.createGain(); s.buffer=buf; s.playbackRate.value=c.cr||1;
     gn.gain.value=Math.min(1.4,(vol==null?1:vol)*SVOL.v*VOL3.voice*1.15); s.connect(gn); gn.connect(ctx.destination); s.start(); VCLIP.src=s; }catch(_){} };
   if(VCLIP.buf[t]) go(VCLIP.buf[t]); else { const p=vclipLoad(t); if(p) p.then(go); } return true; }
 function speakNow(text,c,vol){ if(VCLIP_DATA[text]&&SND.ctx) return vclipPlay(text,c,vol);
+  VCLIP.tok++; if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} VCLIP.src=null; }
   const ss=window.speechSynthesis; if(!ss) return false; loadVoices();
   const u=new SpeechSynthesisUtterance(text.replace(/~/g,"")); u.lang="ko-KR"; const v=pickVoice(c); if(v) u.voice=v; u.pitch=c.p; u.rate=c.r; u.volume=Math.min(1,(vol==null?1:vol)*SVOL.v*VOL3.voice);
   const go=()=>{ try{ ss.resume(); ss.speak(u); }catch(_){} };
@@ -8112,6 +8114,10 @@ function voiceStart(){ try{ const c=VO[CHAR.id]; if(!c||!c.start||!c.start.lengt
   VOICE.t=performance.now(); VOICE.last=t; sayLine(t,c); }catch(_){} }
 /* 녹음 음성이 있는 캐릭터면 경기 전에 미리 풀어 둠 (첫 대사가 늦지 않게) */
 setInterval(()=>{ try{ if(SND.ctx&&CHAR&&VO[CHAR.id]) vclipPreload(CHAR.id); }catch(_){} },3000);
+/* 마이페이지에서 캐릭터를 고르면 그 캐릭터 대사 한 줄 · 하던 대사는 끊고 새로 */
+function charPickVoice(ch){ if(!ch) return; const c=VO[ch.id]; vclipStop(); if(!c) return; try{ initAudio(); }catch(_){} if(typeof SND==="undefined"||!SND.on) return; VOICE.unlocked=true;
+  const pool=[].concat(c.start||[],c.first||[]); if(!pool.length) return; let t=pool[Math.floor(Math.random()*pool.length)]; if(t===charPickVoice.last&&pool.length>1) t=pool[(pool.indexOf(t)+1)%pool.length]; charPickVoice.last=t;
+  try{ if(SND.ctx&&SIG[c.id]&&!VCLIP_DATA[t]) SIG[c.id](); }catch(_){} speakNow(t,c,1); }
 
 // 말풍선 (카트 위)
 const BUBBLES=[];
