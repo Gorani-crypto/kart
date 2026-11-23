@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2820</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1400</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5491,7 +5491,7 @@ const CHARS=[
   {id:"sausage", name:"소세지 인간", desc:"통통한 소세지 몸, 구운 자국, 꼭지 매듭", helmet:0xd0644a, stripe:0x8a3a28, suit:0xd0644a, glove:0xd0644a, acc:"sausage"},
   {id:"granny", xpm:1.05, name:"할머니", desc:"하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny"},
   {id:"bigma", lock:1, xpm:1.07, name:"거대 할머니", desc:"스모 장사 태산만 한 덩치의 할머니 · 하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny", big:3},
-  {id:"mech", lock:40, xpm:1.15, name:"메탈 가디언", desc:"회색 장갑에 주황 포인트, 가로로 빛나는 하늘색 바이저의 강철 로봇 · 덩치가 조금 큼", helmet:0x5a606c, stripe:0xffa020, suit:0x5a606c, glove:0x2a2e36, acc:"mech", big:1.5},
+  {id:"mech", lock:40, xpm:1.18, name:"메탈 가디언", desc:"회색 장갑에 주황 포인트, 가로로 빛나는 하늘색 바이저의 강철 로봇 · 덩치가 조금 큼", helmet:0x5a606c, stripe:0xffa020, suit:0x5a606c, glove:0x2a2e36, acc:"mech", big:1.5},
   {id:"boss", lock:40, xpm:1.18, name:"깡패 두목 철구", desc:"차에 꽉 끼는 거대한 덩치 · 짧게 민 머리, 찌푸린 굵은 눈썹, 뺨의 흉터, 검은 정장에 금목걸이", helmet:0x141414, stripe:0x141414, suit:0x16171b, glove:0xd8a06e, acc:"boss", big:3.4},
   {id:"grandpa", xpm:1.05, name:"할아버지", desc:"회색 납작모자, 하얀 콧수염과 눈썹, 동그란 안경, 갈색 조끼", helmet:0xf2c79a, stripe:0xf4f4f4, suit:0x8a5a34, glove:0xf2c79a, acc:"grandpa"},
   {id:"sumo", lock:10, xpm:1.07, name:"스모 장사 태산", desc:"일반 캐릭터보다 3배 큰 거구의 스모 선수 · 상투머리, 남색 샅바", helmet:0x1a1a1e, stripe:0x1f2f6b, suit:0xf0c49a, glove:0xf0c49a, acc:"sumo", big:3},
@@ -6296,7 +6296,7 @@ requestAnimationFrame(auraTick);
 /* 돈: 경주마다 받은 경험치만큼 원(₩)을 받음 · 계정(kart/users/uid)의 money · own(산 물건) */
 var SHOP=[
   /* 캐릭터(레벨 해금 후 구매) · 경험치 능력 캐릭터 */
-  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:1000},{id:"mech",t:"char",p:3000},{id:"boss",t:"char",p:4000},
+  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:1000},{id:"mech",t:"char",p:3000},{id:"boss",t:"char",p:3000},
   /* 전설 카트 */
   {id:"tiger",t:"kart",p:15000},{id:"dragon",t:"kart",p:22500},{id:"griffin",t:"kart",p:30000},{id:"apex",t:"kart",p:10000},{id:"grn",t:"kart",p:11000},{id:"wgp",t:"kart",p:12500},{id:"egt",t:"kart",p:13750},{id:"tgp",t:"kart",p:15000},{id:"dgp",t:"kart",p:22500},{id:"ggp",t:"kart",p:30000},
   /* 특수 치장(레벨 해금) */
