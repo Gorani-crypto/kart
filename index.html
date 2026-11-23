@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1840</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1850</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5958,7 +5958,7 @@ function physics(dt, controls){ const fc=FCAR(); let dr=false;
 let INR=.6, INR_EFF=.95;
 /* 서킷 전용차 충돌 연기: 살짝 → 바퀴 쪽 연기(1~3초) · 정면/세게 → 앞쪽 짙은 연기로 시야 가림(5~10초) · 연기 나는 동안 살짝 느려짐 */
 function ckDmg(){ const m=S.smk; return m&&m.t>0?m.dmg*Math.min(1,m.t/1.5):0; }
-function ckCrash(imp,fr,dx,dz,car){ try{ dmCrash(imp); }catch(_){} if(!FCAR()||state!=="race") return; const kmh=imp*CONFIG.kmh; if(kmh<14) return;
+function ckCrash(imp,fr,dx,dz,car){ try{ dmCrash(imp); }catch(_){} try{ vcxHit(imp,car); }catch(_){} if(!FCAR()||state!=="race") return; const kmh=imp*CONFIG.kmh; if(kmh<14) return;
   const sev=clamp(clamp((kmh-14)/230,0,1)*(.3+.7*clamp(fr,0,1))*F1S().dur*(car?1.1:1),0,1); if(sev<.03) return;
   const heavy=sev>.4, dur=heavy?10+(sev-.4)/.6*10:10, /* 바퀴 쪽 10초 · 차체 정면 10~20초 */ side=Math.sign(dx*Math.cos(S.h)-dz*Math.sin(S.h))||1, front=(dx*Math.sin(S.h)+dz*Math.cos(S.h))>.5;
   const m=S.smk&&S.smk.t>0?S.smk:(S.smk={t:0,T:1,sev:0,dmg:0,side,front,acc:0});
@@ -6196,7 +6196,7 @@ function physics0(dt, controls){
     S.x-=n.x*sg*push; S.z-=n.z*sg*push;
     const vn=S.vx*n.x+S.vz*n.z;
     if(Math.sign(vn)===sg&&KART.eject&&Math.abs(vn)>10) ejectRider(-n.x*sg,-n.z*sg,Math.abs(vn));
-    else if(Math.sign(vn)===sg&&Math.abs(vn)>17&&state==="race") voice("bad",7000);
+    else if(Math.sign(vn)===sg&&Math.abs(vn)>17&&state==="race") voice("bad",5000);
     if(Math.sign(vn)===sg){ckCrash(Math.abs(vn),Math.abs(vn)/Math.max(.1,Math.hypot(S.vx,S.vz)),n.x*sg,n.z*sg);S.vx-=n.x*vn*1.4;S.vz-=n.z*vn*1.4; S.vx*=.88; S.vz*=.88; S.shake=Math.min(.5,Math.abs(vn)*.04); if(Math.abs(vn)>4) thud(); if(S.drifting){S.drifting=false;S.gripRamp=0;}}
   }
 
@@ -8328,27 +8328,21 @@ setInterval(()=>{ try{ if(typeof MP==="undefined"||!MP.joined) return; const lob
     if(!lobby) continue; const ch=CHARS[+pr.cv[1]]; if(ch) charPickVoice(ch,+pr.cv[2],.9); } }catch(_){} },300);
 /* ===== 상황별 대사: 30초 침묵 · 8/9단 기어 · 역전(추월) · 부딪히지 않고 코너 통과 ===== */
 /* 녹음 대사마다 어울리는 상황 표시: speed(고단 기어) · pass(추월) · corner(깔끔한 코너) · idle(평소) · behind(뒤처졌을 때) */
-var VTAG={
- "내가 왕년엔 말이여, 동네에서 제일 빨랐어":"speed,idle","브레이크는 무슨, 감으로 가는 거여":"corner,speed","젊은 것들이 빠르긴 한데 요령이 없어":"pass,corner","김치 담그듯이 코너를 돌아야지":"corner","이 늙은이 이기면 큰 거 사 준다":"idle","어딜 도망가? 할미 아직 안 끝났어":"behind","아이고, 젊은 놈이 운전 하나는 영…":"behind",
- "더 밟아":"speed","선두 잡는다":"pass","내가 우승으로 끝내겠다":"idle","결승선 넘기자":"idle","바람이 등을 밀어주네":"speed","내가 먼저 들어갈게":"pass","이제부터 시작이야":"behind","마지막 직선에서 승부를 본다":"behind,speed",
- "나 잡을 수 있겠어?":"pass","나 운전 완전 잘하거든?":"corner","아빠보다 내가 더 잘하지?":"pass","와, 나 진짜 천재인가 봐":"corner","엄마, 1등 하면 장난감 사 줘~":"idle","우와! 브레이크가 어디 있더라?":"speed","아직 안 끝났어! 역전할 거야!":"behind",
- "추, 추월하는 건가요?":"pass","저도 열심히 하고 있거든요":"idle,behind","저도 가끔은 용감하다고요":"pass","이번 코너는 자신 있는데":"corner","너무 빨리 달리시는 거 아니에요?":"behind,speed","저, 저기요…":"behind",
- "이 구역은 내가 접수한다":"pass","적 차량 포착, 바짝 따라붙는다":"behind","후퇴는 없다, 전진이다":"speed,behind","후퇴? 그런 건 작전에 없다":"corner,idle",
- "웃으면서 해 주지~":"corner","어라? 벌써 지친 거야?":"pass","오늘 관객은 전부 내 편인데?":"idle","풍선처럼 달려 볼까?":"speed","마지막까지 웃어 보자":"behind","넘어져도 괜찮아, 웃으면 되니까":"behind",
- "어이 거기, 길 좀 비켜 봐":"behind","좋게 말할 때 앞에서 사라져라":"pass","차가 문제가 아니야, 운전자가 문제지":"corner","이 정도 속도론 간에 기별도 안 간다":"speed","뭐야, 나랑 한판 붙자는 거야?":"behind",
- "이 어둠도 전부 내가 정한 길이지":"corner","겁먹을 필요는 없어, 아직 진짜는 아니니까":"speed,pass","그 선택지를 누가 만들었는지는 생각하지 않지":"idle","하지만 그 선택지를 누가 만들었는지는 생각하지 않지":"idle","네가 지키려는 것, 어디까지 버틸 수 있지?":"pass,behind",
- "속도에는 한계가 없어":"speed","너의 반응 속도는 이미 읽혔어":"pass","네온의 빛을 따라올 수 있겠어?":"pass,corner","한계 돌파, 출력 최대치":"speed","예측 경로 수정, 추월을 시작한다":"behind","이 정도 속도론 미래에 도달할 수 없어":"speed,pass","빛보다 빠르게, 한계 너머로":"speed","아직 내 진짜 속도는 보여주지 않았어":"behind,idle",
- "너의 속도로는 내 그림자조차 밟지 못한다.":"pass,speed","무릎 꿇을 시간조차 아깝구나.":"pass","나의 명령은 곧 법이다.":"corner,idle","태양이 떠 있는 한, 나의 질주는 끝나지 않는다.":"speed,idle","어리석은 도전이었구나.":"pass","제국의 영광은 결코 쇠하지 않는다.":"behind,idle","기억하라. 황제는 결코 패배하지 않는다.":"behind"};
+var VTAG={"내가 왕년엔 말이여, 동네에서 제일 빨랐어": "speed,idle", "브레이크는 무슨, 감으로 가는 거여": "corner,speed", "젊은 것들이 빠르긴 한데 요령이 없어": "pass,corner", "김치 담그듯이 코너를 돌아야지": "corner", "이 늙은이 이기면 큰 거 사 준다": "idle", "어딜 도망가? 할미 아직 안 끝났어": "behind", "아이고, 젊은 놈이 운전 하나는 영…": "behind", "더 밟아": "speed,boost", "선두 잡는다": "pass", "내가 우승으로 끝내겠다": "idle", "결승선 넘기자": "idle", "바람이 등을 밀어주네": "speed,corner", "내가 먼저 들어갈게": "pass", "이제부터 시작이야": "behind", "마지막 직선에서 승부를 본다": "behind,speed", "나 잡을 수 있겠어?": "pass", "나 운전 완전 잘하거든?": "corner", "아빠보다 내가 더 잘하지?": "pass", "와, 나 진짜 천재인가 봐": "corner", "엄마, 1등 하면 장난감 사 줘~": "idle", "우와! 브레이크가 어디 있더라?": "speed", "아직 안 끝났어! 역전할 거야!": "behind", "추, 추월하는 건가요?": "pass", "저도 열심히 하고 있거든요": "idle,behind", "저도 가끔은 용감하다고요": "pass", "이번 코너는 자신 있는데": "corner", "너무 빨리 달리시는 거 아니에요?": "behind,speed", "저, 저기요…": "behind", "이 구역은 내가 접수한다": "pass", "적 차량 포착, 바짝 따라붙는다": "behind", "후퇴는 없다, 전진이다": "speed,behind", "후퇴? 그런 건 작전에 없다": "corner,idle", "웃으면서 해 주지~": "corner", "어라? 벌써 지친 거야?": "pass", "오늘 관객은 전부 내 편인데?": "idle", "풍선처럼 달려 볼까?": "speed", "마지막까지 웃어 보자": "behind", "넘어져도 괜찮아, 웃으면 되니까": "behind", "어이 거기, 길 좀 비켜 봐": "behind", "좋게 말할 때 앞에서 사라져라": "pass", "차가 문제가 아니야, 운전자가 문제지": "corner", "이 정도 속도론 간에 기별도 안 간다": "speed", "뭐야, 나랑 한판 붙자는 거야?": "behind", "이 어둠도 전부 내가 정한 길이지": "corner", "겁먹을 필요는 없어, 아직 진짜는 아니니까": "speed,pass", "그 선택지를 누가 만들었는지는 생각하지 않지": "idle", "하지만 그 선택지를 누가 만들었는지는 생각하지 않지": "idle", "네가 지키려는 것, 어디까지 버틸 수 있지?": "pass,behind", "속도에는 한계가 없어": "speed", "너의 반응 속도는 이미 읽혔어": "pass", "네온의 빛을 따라올 수 있겠어?": "pass,corner", "한계 돌파, 출력 최대치": "speed", "예측 경로 수정, 추월을 시작한다": "behind", "이 정도 속도론 미래에 도달할 수 없어": "speed,pass", "빛보다 빠르게, 한계 너머로": "speed", "아직 내 진짜 속도는 보여주지 않았어": "behind,idle", "너의 속도로는 내 그림자조차 밟지 못한다.": "pass,speed", "무릎 꿇을 시간조차 아깝구나.": "pass", "나의 명령은 곧 법이다.": "corner,idle", "태양이 떠 있는 한, 나의 질주는 끝나지 않는다.": "speed,idle", "어리석은 도전이었구나.": "pass", "제국의 영광은 결코 쇠하지 않는다.": "behind,idle", "기억하라. 황제는 결코 패배하지 않는다.": "behind", "그래도 출발은 해야지": "lastlap,boost", "아이고, 어지러워": "wall,hit", "아이고, 내 무릎보다 차가 더 삐걱이네": "wall", "여기서부터 진짜 시작이야": "lastlap", "한번 출발해 볼까": "boost", "비켜 비켜, 내가 먼저 갈 거야": "boost,pass", "어? 방금 반칙 아니야?": "hit", "이거 게임 맞지? 진짜 같아…": "wall", "오늘은 꼭 꼴찌만은 피하고 싶어요": "behind,lastlap", "출발!": "boost", "저 이긴 거 맞죠?": "win", "갑자기 나한테 그러시면 어떡해요": "hit", "칫… 저기, 비켜 주세요": "hit,behind", "야! 심장이 떨어지는 줄 알았어요": "wall", "전 부대, 전투태세 유지한다": "lastlap,idle", "목표 전방, 전진!": "boost,speed", "임무 완수! 경례는 생략한다": "win", "예… 죄송합니다": "wall", "전술적 후퇴다": "wall,behind", "아… 작전 차질이다": "hit", "짜잔! 오늘의 주인공은 바로 나야!": "pass", "자, 자! 쇼는 이제부터 시작이라고": "lastlap", "야호~ 내가 이겼지롱?": "win", "이런 재미없는 레이스는 사양이야": "hit,wall", "이 형님이 직접 나왔다": "pass,boost", "오늘 아주 제대로 달려 보자": "idle,lastlap", "어때? 이 형님이 1등이다": "win", "간이 아주 배 밖으로 나왔네": "hit", "어이쿠, 형님 차에 흠집 내냐?": "hit,wall", "네가 여기까지 올 줄은 알았다": "lastlap", "많이 기다렸다": "boost", "이 도시에선 모두가 선택한다고?": "hit", "진짜 마지막으로 묻겠다": "lastlap", "대답은 천천히": "wall,idle", "시스템 온라인": "boost", "레이스를 시작하지": "lastlap", "레이스 종료. 다음 시대에서 만나자": "win", "고개를 들어라. 황제의 행차다.": "pass,boost", "이 땅의 모든 길은 나를 위해 존재한다.": "corner,lastlap", "감히 황제의 앞길을 막겠다는 것이냐?": "hit"};
 function ctxRank(){ try{ return (typeof MP!=="undefined"&&MP.racing?MP.lastRank:BOT.lastRank)|0; }catch(_){ return 0; } }
-function sayCtx(tag,chance){ try{ if(state!=="race"||!SND.on) return false; const c=VO[CHAR.id]; if(!c) return false; const now=performance.now(); if(now-VOICE.t<10000) return false; if(chance!=null&&Math.random()>chance) return false;
-  const fp=c.first.concat((typeof CARVO!=="undefined"&&CARVO[KART.id])||[]), all=[].concat(c.first||[],c.bad||[]), has=(t,g)=>(VTAG[t]||"").split(",").includes(g);
-  let L=all.filter(t=>has(t,tag)); if(!L.length&&tag==="behind") L=all.filter(t=>has(t,"idle")); if(!L.length) L=tag==="behind"?c.bad:c.first; if(!L.length) return false;
+function sayCtx(tag,chance,force){ try{ if((!force&&state!=="race")||!SND.on) return false; const c=VO[CHAR.id]; if(!c) return false; const now=performance.now(); if(!force&&now-VOICE.t<VGAP) return false; if(chance!=null&&Math.random()>chance) return false;
+  const fp=c.first.concat((typeof CARVO!=="undefined"&&CARVO[KART.id])||[]), all=[].concat(c.start||[],c.first||[],c.bad||[]), has=(t,g)=>(VTAG[t]||"").split(",").includes(g);
+  let L=all.filter(t=>has(t,tag)); if(!L.length&&tag==="behind") L=all.filter(t=>has(t,"idle")); if(!L.length){ if(force) return false; L=(tag==="behind"||tag==="hit"||tag==="wall")?c.bad:c.first; } if(!L.length) return false;
   let t=L[Math.floor(Math.random()*L.length)]; if(t===VOICE.last&&L.length>1) t=L[(L.indexOf(t)+1)%L.length];
   VOICE.t=now; VOICE.last=t; sayLine(t,c);
   if(typeof MP!=="undefined"&&MP&&MP.racing&&typeof mpSend==="function"){ const k=fp.indexOf(t)>=0?1:0, idx=k?fp.indexOf(t):c.bad.indexOf(t); if(idx>=0){ VOICE.seq++; mpSend({vo:[VOICE.seq,k,idx]}); } } return true; }catch(_){ return false; } }
-const VCX={hs:[],lastG:0,ph:null};
+const VCX={hs:[],lastG:0,ph:null,bt:0};
+var VGAP=5000; /* 내 대사 사이 최소 간격 (5초) */
+/* 부딪혔을 때: 다른 차에 받힘(hit) · 벽(wall) */
+function vcxHit(imp,car){ try{ if(state!=="race") return; if(imp*CONFIG.kmh<25) return; sayCtx(car?"hit":"wall",.7); }catch(_){} }
 setInterval(()=>{ try{ if(state!=="race"){ VCX.hs.length=0; VCX.lastG=0; VCX.ph=null; return; } const now=performance.now();
   /* 30초 동안 아무 말도 안 했으면 한마디 (순위가 3등 아래면 뒤처진 대사) */
+  /* 부스터를 켤 때 */ const bo=(S.boostT>0||S.instT>0)?1:0; if(bo&&!VCX.bt) sayCtx("boost",.45); VCX.bt=bo;
   if((typeof raceT==="undefined"||raceT>8)&&now-VOICE.t>30000){ const r=ctxRank(); sayCtx(r>=3?"behind":"idle"); }
   /* 서킷카 8단·9단에 올라갔을 때 */
   const g=S.mg|0; if(FCAR()&&g>VCX.lastG&&(g===8||g===9)) sayCtx("speed",.8); VCX.lastG=g;
@@ -8376,14 +8370,14 @@ function voiceTest(){ const c=VO[(CHARS[selChar]||CHARS[0]).id]||VO.dotori, out=
   if(!window.speechSynthesis){ if(out) out.textContent="이 브라우저는 음성 읽기를 지원하지 않아요. 카카오톡 안에서 열었다면 크롬이나 사파리로 열어 주세요."; return; }
   VOICE.unlocked=true; const line=c.bad[Math.floor(Math.random()*c.bad.length)]; speakNow(line,c);
   setTimeout(()=>{ loadVoices(); if(out) out.textContent=koVoices.length?("한국어 음성 "+koVoices.length+"개 사용 가능 · “"+line+"”"):"기기에 한국어 음성이 안 보여요. 소리가 안 나면 휴대폰 설정 › 텍스트 음성 변환(TTS)에서 한국어를 설치해 주세요. 무음 모드도 확인해 주세요."; },400); }
-function voice(kind,minGap){ const c=VO[CHAR.id]; if(!c||state==="menu") return; const now=performance.now(); if(now-VOICE.t<Math.max(minGap||0,10000)) return; VOICE.t=now; /* 캐릭터 대사는 10초에 한 번 */
+function voice(kind,minGap){ const c=VO[CHAR.id]; if(!c||state==="menu") return; const now=performance.now(); if(now-VOICE.t<Math.max(minGap||0,VGAP)) return; VOICE.t=now; /* 캐릭터 대사는 10초에 한 번 */
   const pool=kind==="first"?c.first.concat(CARVO[KART.id]||[]):c.bad; let text=pool[Math.floor(Math.random()*pool.length)]; if(text===VOICE.last&&pool.length>1) text=pool[(pool.indexOf(text)+1)%pool.length]; VOICE.last=text;
   sayLine(text,c); if(typeof MP!=="undefined"&&MP&&MP.racing&&typeof mpSend==="function"){ VOICE.seq++; mpSend({vo:[VOICE.seq,kind==="first"?1:0,pool.indexOf(text)]}); } }
 const VOICE_NEAR=40; // 이 거리(m) 안에 있는 상대 대사만 들림
 function voiceOther(ch,k,kind,idx,dist){ if(!SND.on||state==="menu"||dist>VOICE_NEAR) return; const now=performance.now(); if(now-VOICE.t<1500||now-(VOICE.ot||0)<1200) return;
   const c=VO[(CHARS[+ch]||CHARS[0]).id]; if(!c) return; const pool=kind?c.first.concat(CARVO[(KARTS[+k]||KARTS[0]).id]||[]):c.bad, text=pool[Math.max(0,Math.min(pool.length-1,+idx||0))]; if(!text) return;
   VOICE.ot=now; try{ if(SND.ctx&&SIG[c.id]&&dist<VOICE_NEAR*.6) SIG[c.id](); speakNow(text,c,clamp(1-dist/VOICE_NEAR,.25,1)); }catch(_){} }
-function botVoice(b,kind){ const now=performance.now(); if(now-(b.voT||0)<10000) return; b.voT=now; const c=VO[(CHARS[b.c.ch]||CHARS[0]).id]; if(!c) return;
+function botVoice(b,kind){ const now=performance.now(); if(now-(b.voT||0)<5000) return; b.voT=now; const c=VO[(CHARS[b.c.ch]||CHARS[0]).id]; if(!c) return;
   const pool=kind?c.first.concat(CARVO[(KARTS[b.c.k]||KARTS[0]).id]||[]):c.bad, idx=Math.floor(Math.random()*pool.length); b.voSeq=(b.voSeq||0)+1; b.vq=[b.voSeq,kind?1:0,idx];
   voiceOther(b.c.ch,b.c.k,kind,idx,Math.hypot(b.x-S.x,b.z-S.z)); }
 
@@ -8435,7 +8429,7 @@ function startCeremony(rows){
     sorted.map((r,i)=>'<div class="cer-row'+(r.me?' me':'')+'"><b>'+(i+1)+'등</b><span>'+esc(r.name)+(r.me?' (나)':'')+'<small>'+esc((KARTS[r.k]||KARTS[0]).name)+' · '+esc((CHARS[r.ch]||CHARS[0]).name)+'</small></span><em>'+(r.ft?fmtT(r.ft):'완주 못 함')+'</em></div>').join("")+
     '</div>'+(typeof cerXPHTML==="function"?cerXPHTML():"")+'<div class="cer-count" id="cerCount">10</div></div>';
   document.querySelectorAll(".hud").forEach(h=>{ h.dataset.cerHide=h.style.visibility||""; h.style.visibility="hidden"; });
-  const mine=sorted.findIndex(r=>r.me); if(mine===0) setTimeout(()=>voice("first",0),600); else if(mine>=3) setTimeout(()=>voice("bad",0),600);
+  const mine=sorted.findIndex(r=>r.me); if(mine===0) setTimeout(()=>{ let ok=false; try{ ok=sayCtx("win",null,true); }catch(_){} if(!ok) voice("first",0); },600); else if(mine>=3) setTimeout(()=>voice("bad",0),600);
   const fin=document.getElementById("finish"); CER.finWas=fin&&!fin.hidden; if(fin) fin.hidden=true;
   CER.timer=setTimeout(endCeremony,10000);
 }
@@ -8469,7 +8463,7 @@ function lapCheck(){
     const lt=raceT-lapStart; laps.push(lt); lapStart=raceT;
     if(bestLap===null||lt<bestLap) bestLap=lt;
     cp1=cp2=false;
-    if(lap>=LAPS()){finishRace();} else {lap++; toast(lap===LAPS()?"마지막 바퀴!":"LAP "+lap,"#ffffff");}
+    if(lap>=LAPS()){finishRace();} else {lap++; toast(lap===LAPS()?"마지막 바퀴!":"LAP "+lap,"#ffffff"); if(lap===LAPS()) setTimeout(()=>{ try{ sayCtx("lastlap",.85); }catch(_){} },500);}
   }
   prevIdx=i;
 }
