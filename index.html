@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1830</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1840</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8016,7 +8016,7 @@ function botsUpdate(dt){
     const sp=Math.abs(b.v); if(g.key.startsWith("trex.")) trexRun(g.obj,dt,sp,b.biteT); else if(g.key.startsWith("giant.")){ giantRun(g.obj,dt,sp,0); if(b.superT>0&&!g.meteor){ g.meteor=makeMeteor(); g.obj.add(g.meteor); } heatTick(g.heatSt||(g.heatSt={heat:0}),g.obj,b.superT>0,dt,b.x,b.wy,b.z); if(g.meteor){ const pp=b.superT>0?Math.max(.08,clamp((sp*5.8-200)/600,0,1)):0; meteorUpd(g.meteor,pp,dt); if(pp>.1&&Math.hypot(b.x-S.x,b.z-S.z)<150) meteorEmbers(b.x,b.wy,b.z,b.h,pp); } } else if(g.key.startsWith("roach.")) roachRun(g.obj,dt,sp); else if(g.key.startsWith("snake.")) snakeRun(g.obj,dt,sp); else if(g.key.startsWith("horse.")) horseRun(g.obj,dt,sp); else if(g.key.startsWith("titan.")){ titanRun(g.obj,dt,sp); if(b.superT>0&&!g.meteor){ g.meteor=makeMeteor(); g.meteor.scale.setScalar(7); g.obj.add(g.meteor); } heatTick(g.heatSt||(g.heatSt={heat:0}),g.obj,b.superT>0,dt,b.x,b.wy,b.z); if(g.meteor) meteorUpd(g.meteor,b.superT>0?Math.max(.08,clamp((sp*5.8-200)/600,0,1)):0,dt); } }
   // 혼자 달리기: 순위판 + 시상식
   if(!MP.racing){ BOT.rankT-=dt; if(BOT.rankT<=0){ BOT.rankT=.25; const rows=soloStandings(), me=rows.findIndex(r=>r.me); rankRender(rows);
-      if(state==="race"){ if(BOT.lastRank>1&&me===0&&raceT>4) voice("first",0); BOT.lastRank=me+1; } }
+      if(state==="race"){ if(BOT.lastRank>1&&me===0&&raceT>4) voice("first",0); else if(BOT.lastRank&&me+1<BOT.lastRank&&raceT>4) sayCtx("pass",.7); BOT.lastRank=me+1; } }
   }
 }
 const RE={t:null,done:false,dnf:false};
@@ -8326,6 +8326,37 @@ setInterval(()=>{ try{ if(typeof MP==="undefined"||!MP.joined) return; const lob
   for(const p of mpList()){ if(p.peer===MP.myPeer||p.bot) continue; const pr=p.presence||{}; if(!Array.isArray(pr.cv)) continue; const k=p.peer;
     if(CV.seen[k]===undefined){ CV.seen[k]=pr.cv[0]; continue; } if(CV.seen[k]===pr.cv[0]) continue; CV.seen[k]=pr.cv[0];
     if(!lobby) continue; const ch=CHARS[+pr.cv[1]]; if(ch) charPickVoice(ch,+pr.cv[2],.9); } }catch(_){} },300);
+/* ===== 상황별 대사: 30초 침묵 · 8/9단 기어 · 역전(추월) · 부딪히지 않고 코너 통과 ===== */
+/* 녹음 대사마다 어울리는 상황 표시: speed(고단 기어) · pass(추월) · corner(깔끔한 코너) · idle(평소) · behind(뒤처졌을 때) */
+var VTAG={
+ "내가 왕년엔 말이여, 동네에서 제일 빨랐어":"speed,idle","브레이크는 무슨, 감으로 가는 거여":"corner,speed","젊은 것들이 빠르긴 한데 요령이 없어":"pass,corner","김치 담그듯이 코너를 돌아야지":"corner","이 늙은이 이기면 큰 거 사 준다":"idle","어딜 도망가? 할미 아직 안 끝났어":"behind","아이고, 젊은 놈이 운전 하나는 영…":"behind",
+ "더 밟아":"speed","선두 잡는다":"pass","내가 우승으로 끝내겠다":"idle","결승선 넘기자":"idle","바람이 등을 밀어주네":"speed","내가 먼저 들어갈게":"pass","이제부터 시작이야":"behind","마지막 직선에서 승부를 본다":"behind,speed",
+ "나 잡을 수 있겠어?":"pass","나 운전 완전 잘하거든?":"corner","아빠보다 내가 더 잘하지?":"pass","와, 나 진짜 천재인가 봐":"corner","엄마, 1등 하면 장난감 사 줘~":"idle","우와! 브레이크가 어디 있더라?":"speed","아직 안 끝났어! 역전할 거야!":"behind",
+ "추, 추월하는 건가요?":"pass","저도 열심히 하고 있거든요":"idle,behind","저도 가끔은 용감하다고요":"pass","이번 코너는 자신 있는데":"corner","너무 빨리 달리시는 거 아니에요?":"behind,speed","저, 저기요…":"behind",
+ "이 구역은 내가 접수한다":"pass","적 차량 포착, 바짝 따라붙는다":"behind","후퇴는 없다, 전진이다":"speed,behind","후퇴? 그런 건 작전에 없다":"corner,idle",
+ "웃으면서 해 주지~":"corner","어라? 벌써 지친 거야?":"pass","오늘 관객은 전부 내 편인데?":"idle","풍선처럼 달려 볼까?":"speed","마지막까지 웃어 보자":"behind","넘어져도 괜찮아, 웃으면 되니까":"behind",
+ "어이 거기, 길 좀 비켜 봐":"behind","좋게 말할 때 앞에서 사라져라":"pass","차가 문제가 아니야, 운전자가 문제지":"corner","이 정도 속도론 간에 기별도 안 간다":"speed","뭐야, 나랑 한판 붙자는 거야?":"behind",
+ "이 어둠도 전부 내가 정한 길이지":"corner","겁먹을 필요는 없어, 아직 진짜는 아니니까":"speed,pass","그 선택지를 누가 만들었는지는 생각하지 않지":"idle","하지만 그 선택지를 누가 만들었는지는 생각하지 않지":"idle","네가 지키려는 것, 어디까지 버틸 수 있지?":"pass,behind",
+ "속도에는 한계가 없어":"speed","너의 반응 속도는 이미 읽혔어":"pass","네온의 빛을 따라올 수 있겠어?":"pass,corner","한계 돌파, 출력 최대치":"speed","예측 경로 수정, 추월을 시작한다":"behind","이 정도 속도론 미래에 도달할 수 없어":"speed,pass","빛보다 빠르게, 한계 너머로":"speed","아직 내 진짜 속도는 보여주지 않았어":"behind,idle",
+ "너의 속도로는 내 그림자조차 밟지 못한다.":"pass,speed","무릎 꿇을 시간조차 아깝구나.":"pass","나의 명령은 곧 법이다.":"corner,idle","태양이 떠 있는 한, 나의 질주는 끝나지 않는다.":"speed,idle","어리석은 도전이었구나.":"pass","제국의 영광은 결코 쇠하지 않는다.":"behind,idle","기억하라. 황제는 결코 패배하지 않는다.":"behind"};
+function ctxRank(){ try{ return (typeof MP!=="undefined"&&MP.racing?MP.lastRank:BOT.lastRank)|0; }catch(_){ return 0; } }
+function sayCtx(tag,chance){ try{ if(state!=="race"||!SND.on) return false; const c=VO[CHAR.id]; if(!c) return false; const now=performance.now(); if(now-VOICE.t<10000) return false; if(chance!=null&&Math.random()>chance) return false;
+  const fp=c.first.concat((typeof CARVO!=="undefined"&&CARVO[KART.id])||[]), all=[].concat(c.first||[],c.bad||[]), has=(t,g)=>(VTAG[t]||"").split(",").includes(g);
+  let L=all.filter(t=>has(t,tag)); if(!L.length&&tag==="behind") L=all.filter(t=>has(t,"idle")); if(!L.length) L=tag==="behind"?c.bad:c.first; if(!L.length) return false;
+  let t=L[Math.floor(Math.random()*L.length)]; if(t===VOICE.last&&L.length>1) t=L[(L.indexOf(t)+1)%L.length];
+  VOICE.t=now; VOICE.last=t; sayLine(t,c);
+  if(typeof MP!=="undefined"&&MP&&MP.racing&&typeof mpSend==="function"){ const k=fp.indexOf(t)>=0?1:0, idx=k?fp.indexOf(t):c.bad.indexOf(t); if(idx>=0){ VOICE.seq++; mpSend({vo:[VOICE.seq,k,idx]}); } } return true; }catch(_){ return false; } }
+const VCX={hs:[],lastG:0,ph:null};
+setInterval(()=>{ try{ if(state!=="race"){ VCX.hs.length=0; VCX.lastG=0; VCX.ph=null; return; } const now=performance.now();
+  /* 30초 동안 아무 말도 안 했으면 한마디 (순위가 3등 아래면 뒤처진 대사) */
+  if((typeof raceT==="undefined"||raceT>8)&&now-VOICE.t>30000){ const r=ctxRank(); sayCtx(r>=3?"behind":"idle"); }
+  /* 서킷카 8단·9단에 올라갔을 때 */
+  const g=S.mg|0; if(FCAR()&&g>VCX.lastG&&(g===8||g===9)) sayCtx("speed",.8); VCX.lastG=g;
+  /* 부딪히지 않고 큰 코너(3.5초 안에 70도 넘게 꺾음)를 시속 60km 넘게 돌았을 때 */
+  const kmh=Math.hypot(S.vx,S.vz)*CONFIG.kmh; if(VCX.ph==null) VCX.ph=S.h; let dh=S.h-VCX.ph; while(dh>Math.PI) dh-=2*Math.PI; while(dh<-Math.PI) dh+=2*Math.PI; VCX.ph=S.h;
+  if(kmh<60){ VCX.hs.length=0; return; } VCX.hs.push([now,dh]); while(VCX.hs.length&&now-VCX.hs[0][0]>3500) VCX.hs.shift();
+  const sum=VCX.hs.reduce((a,x)=>a+x[1],0), t0=VCX.hs.length?VCX.hs[0][0]:now;
+  if(Math.abs(sum)>1.22&&now-t0>1200&&!(typeof DM!=="undefined"&&DM.lastCrash>t0)){ VCX.hs.length=0; sayCtx("corner",.6); } }catch(_){} },100);
 
 // 말풍선 (카트 위)
 const BUBBLES=[];
@@ -9130,7 +9161,7 @@ function mpUpdate(dt){
     { const ok=KARTS[+pr.k]||KARTS[0], lat=.08, ex=g.x+(+pr.vx||0)*lat, ez=g.z+(+pr.vz||0)*lat; bumpMe({id:p.peer,x:ex,y:g.y,z:ez,px:g.cpx,pz:g.cpz,vx:+pr.vx||0,vz:+pr.vz||0,mass:ok.mass||1,rad:ok.rad||1.15,gb:!!pr.gb,ram:ok.ram||0,h:g.h,kid:ok.id,remote:true,g},now); g.cpx=ex; g.cpz=ez; } /* 지연 보정: 상대 속도로 조금 앞을 예측해서 판정 */
     }
   mpRankT-=dt; if(mpRankT<=0){ mpRankT=.25; const rows=mpStandings(), me=rows.findIndex(r=>r.me);
-    if(rows.length>1&&state==="race"&&!MP.finished){ if(MP.lastRank>1&&me===0&&raceT>4) voice("first",0); MP.lastRank=me+1; }
+    if(rows.length>1&&state==="race"&&!MP.finished){ if(MP.lastRank>1&&me===0&&raceT>4) voice("first",0); else if(MP.lastRank&&me+1<MP.lastRank&&raceT>4) sayCtx("pass",.7); MP.lastRank=me+1; }
     const el=$m("mpRank"); el.innerHTML=""; const top=document.createElement("div"); top.className="r1"; top.textContent=(me+1)+"위"; const sm=document.createElement("small"); sm.textContent=" / "+rows.length; top.appendChild(sm); el.appendChild(top);
     const ol=document.createElement("ol"); for(const r of rows.slice(0,8)){ const li=document.createElement("li"); li.textContent=r.name+(r.ft?" ✓":""); if(r.me) li.className="me"; ol.appendChild(li); } el.appendChild(ol); }
 }
