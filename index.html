@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1530</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1540</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8106,15 +8106,26 @@ function vclipLoad(t){ if(VCLIP.buf[t]||VCLIP.ld[t]||!SND.ctx||!VCLIP_DATA[t]) r
   VCLIP.ld[t]=new Promise(res=>{ try{ SND.ctx.decodeAudioData(u.buffer,x=>{ VCLIP.buf[t]=x; res(x); },()=>res(null)); }catch(_){ res(null); } });
   return VCLIP.ld[t]; }
 function vclipPreload(id){ const c=VO[id]; if(!c||!SND.ctx) return; for(const t of [].concat(c.start||[],c.first||[],c.bad||[])) if(VCLIP_DATA[t]) vclipLoad(t); }
-function vclipStop(){ VCLIP.tok++; if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} VCLIP.src=null; } try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){} }
-function vclipPlay(t,c,vol){ const ctx=SND.ctx; if(!ctx) return false; const tok=++VCLIP.tok; if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} VCLIP.src=null; }
-  const go=buf=>{ if(!buf||tok!==VCLIP.tok) return; try{ if(ctx.state==="suspended") ctx.resume(); if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} }
-    try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){}
+function vclipHalt(){ if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} VCLIP.src=null; } }
+function vclipStop(){ VCLIP.tok++; vclipHalt(); try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(_){} }
+/* 녹음은 <audio> 한 개로 재생 (배경음악과 같은 방식 → 폰 무음 모드·웹오디오가 막힌 환경에서도 나옴). 실패하면 웹오디오로 */
+const VCLIP_SIL="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//OEwAAAAAAAAAAAAEluZm8AAAAPAAAACQAABCAARUVFRUVFRUVFRUVdXV1dXV1dXV1dXXR0dHR0dHR0dHR0i4uLi4uLi4uLi4uioqKioqKioqKiorq6urq6urq6urq60dHR0dHR0dHR0dHo6Ojo6Ojo6Ojo6P//////////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQD8AAAAAAAAAQgDeb0IwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//NExAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExFMAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKYAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NExKwAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NExKwAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+function vclipEl(){ if(!VCLIP.el){ const a=new Audio(); a.preload="auto"; a.setAttribute("playsinline",""); VCLIP.el=a; } return VCLIP.el; }
+function vclipUnlock(){ if(VCLIP.unl) return; const el=vclipEl(); if(!el.paused) return; VCLIP.unl=1; try{ el.src=VCLIP_SIL; el.volume=0; const p=el.play(); if(p&&p.then) p.then(()=>{ if(el.src===VCLIP_SIL) el.pause(); }).catch(()=>{ VCLIP.unl=0; }); }catch(_){ VCLIP.unl=0; } }
+["pointerdown","touchend","keydown"].forEach(ev=>window.addEventListener(ev,vclipUnlock,true));
+function vclipPlay(t,c,vol){ const tok=++VCLIP.tok; vclipHalt(); try{ if(window.speechSynthesis&&(speechSynthesis.speaking||speechSynthesis.pending)) speechSynthesis.cancel(); }catch(_){}
+  const v=Math.max(0,Math.min(1,(vol==null?1:vol)*SVOL.v*VOL3.voice*1.15)); if(v<=0) return true;
+  try{ const el=vclipEl(); el.pause(); el.src="data:audio/mpeg;base64,"+VCLIP_DATA[t]; try{ el.preservesPitch=false; el.mozPreservesPitch=false; el.webkitPreservesPitch=false; }catch(_){} el.playbackRate=c.cr||1; el.defaultPlaybackRate=c.cr||1; el.volume=v; VCLIP.unl=1;
+    VCLIP.src={stop:()=>{ try{ el.pause(); }catch(_){} }, el};
+    const p=el.play(); if(p&&p.catch) p.catch(()=>{ if(tok===VCLIP.tok) vclipPlayWA(t,c,vol,tok); }); }
+  catch(_){ vclipPlayWA(t,c,vol,tok); } return true; }
+function vclipPlayWA(t,c,vol,tok){ try{ initAudio(); }catch(_){} const ctx=SND.ctx; if(!ctx) return;
+  const go=buf=>{ if(!buf||tok!==VCLIP.tok) return; try{ if(ctx.state==="suspended") ctx.resume(); vclipHalt();
     const s=ctx.createBufferSource(), gn=ctx.createGain(); s.buffer=buf; s.playbackRate.value=c.cr||1;
     gn.gain.value=Math.min(1.4,(vol==null?1:vol)*SVOL.v*VOL3.voice*1.15); s.connect(gn); gn.connect(ctx.destination); s.start(); VCLIP.src=s; }catch(_){} };
-  if(VCLIP.buf[t]) go(VCLIP.buf[t]); else { const p=vclipLoad(t); if(p) p.then(go); } return true; }
-function speakNow(text,c,vol){ if(VCLIP_DATA[text]&&SND.ctx) return vclipPlay(text,c,vol);
-  VCLIP.tok++; if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} VCLIP.src=null; }
+  if(VCLIP.buf[t]) go(VCLIP.buf[t]); else { const p=vclipLoad(t); if(p) p.then(go); } }
+function speakNow(text,c,vol){ if(VCLIP_DATA[text]) return vclipPlay(text,c,vol);
+  VCLIP.tok++; vclipHalt();
   const ss=window.speechSynthesis; if(!ss) return false; loadVoices();
   const u=new SpeechSynthesisUtterance(text.replace(/~/g,"")); u.lang="ko-KR"; const v=pickVoice(c); if(v) u.voice=v; u.pitch=c.p; u.rate=c.r; u.volume=Math.min(1,(vol==null?1:vol)*SVOL.v*VOL3.voice);
   const go=()=>{ try{ ss.resume(); ss.speak(u); }catch(_){} };
@@ -8122,10 +8133,8 @@ function speakNow(text,c,vol){ if(VCLIP_DATA[text]&&SND.ctx) return vclipPlay(te
 /* 출발 대사 (GO! 순간) */
 function voiceStart(){ try{ const c=VO[CHAR.id]; if(!c||!c.start||!c.start.length||!SND.on) return; const t=c.start[Math.floor(Math.random()*c.start.length)];
   VOICE.t=performance.now(); VOICE.last=t; sayLine(t,c); }catch(_){} }
-/* 녹음 음성이 있는 캐릭터면 경기 전에 미리 풀어 둠 (첫 대사가 늦지 않게) */
-setInterval(()=>{ try{ if(SND.ctx&&CHAR&&VO[CHAR.id]) vclipPreload(CHAR.id); }catch(_){} },3000);
 /* 마이페이지에서 캐릭터를 고르면 그 캐릭터 대사 한 줄 · 하던 대사는 끊고 새로 */
-function charPickVoice(ch){ if(!ch) return; const c=VO[ch.id]; if(!c){ vclipStop(); return; } VCLIP.tok++; if(VCLIP.src){ try{ VCLIP.src.stop(); }catch(_){} VCLIP.src=null; } /* 말소리(TTS) 끊기는 speakNow가 90ms 띄워서 처리 → 크롬에서 cancel 직후 speak가 씹히는 문제 방지 */ try{ initAudio(); }catch(_){} if(typeof SND==="undefined"||!SND.on) return; VOICE.unlocked=true;
+function charPickVoice(ch){ if(!ch) return; const c=VO[ch.id]; if(!c){ vclipStop(); return; } VCLIP.tok++; vclipHalt(); /* 말소리(TTS) 끊기는 speakNow가 90ms 띄워서 처리 → 크롬에서 cancel 직후 speak가 씹히는 문제 방지 */ try{ initAudio(); }catch(_){} if(typeof SND==="undefined"||!SND.on) return; VOICE.unlocked=true;
   const pool=[].concat(c.start||[],c.first||[]); if(!pool.length) return; let t=pool[Math.floor(Math.random()*pool.length)]; if(t===charPickVoice.last&&pool.length>1) t=pool[(pool.indexOf(t)+1)%pool.length]; charPickVoice.last=t;
   try{ if(SND.ctx&&SIG[c.id]&&!VCLIP_DATA[t]) SIG[c.id](); }catch(_){} speakNow(t,c,1); }
 
