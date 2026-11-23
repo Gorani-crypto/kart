@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1625</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1630</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5509,7 +5509,8 @@ const CHARS=[
   {id:"lizard", lock:10, xpm:1.05, name:"도마뱀 인간 리자", desc:"초록 비늘, 노란 세로 눈, 등 가시와 꼬리 · 구렁이 뱀과 시너지", helmet:0x4fa84a, stripe:0x2f7a3a, suit:0x4fa84a, glove:0x2f7a3a, acc:"lizard"},
   {id:"baby", lock:10, xpm:1.07, name:"자이언트 베이비", desc:"2배 크기의 아기 · 머리카락 한 가닥, 쪽쪽이, 턱받이, 기저귀 · 유모차와 시너지", helmet:0xffcfa6, stripe:0xffffff, suit:0xffe4ec, glove:0xffcfa6, acc:"baby", big:2},
   {id:"zero", lock:20, xpm:1.1, name:"블랙 나이트 제로", desc:"무광 검은 갑옷 헬멧에 붉게 빛나는 눈 슬릿, 은빛 뿔 장식, 어깨 갑옷, 붉은 망토", helmet:0x15171c, stripe:0xc8ccd6, suit:0x1c1f26, glove:0x2a2e38, acc:"knight"},
-  {id:"clown", lock:10, xpm:1.05, name:"광대 삐에로", desc:"하얀 얼굴에 빨간 코, 무지개 곱슬머리, 고깔모자 · 세발 자전거와 시너지", helmet:0xffffff, stripe:0xff3a3a, suit:0xffcf2e, glove:0xffffff, acc:"clown"}
+  {id:"clown", lock:10, xpm:1.05, name:"광대 삐에로", desc:"하얀 얼굴에 빨간 코, 무지개 곱슬머리, 고깔모자 · 세발 자전거와 시너지", helmet:0xffffff, stripe:0xff3a3a, suit:0xffcf2e, glove:0xffffff, acc:"clown"},
+  {id:"rapper", lock:40, xpm:1.15, name:"래퍼 MC 비트", desc:"거꾸로 쓴 빨간 캡, 검은 선글라스, 굵은 금목걸이, 보라색 후드티 · 마이크를 놓지 않는 래퍼", helmet:0xe0a878, stripe:0xe0a878, suit:0x3a2458, glove:0x141414, acc:"rapper"}
 ];
 function buildRider(ch,pose){
   const dark=Lam(0x2b2f3a), skin=Lam(0xffd9b3), helmM=Lam(ch.helmet), suitM=Lam(ch.suit), gloveM=Lam(ch.glove), stripeM=Lam(ch.stripe);
@@ -5657,6 +5658,22 @@ function buildRider(ch,pose){
     const stub=new THREE.Mesh(new THREE.SphereGeometry(.5,16,10,0,Math.PI*2,Math.PI*.55,Math.PI*.4),new THREE.MeshLambertMaterial({color:0x2a2420,transparent:true,opacity:.45})); stub.position.set(0,-.05,.12); head.add(stub);
     const mo=new THREE.Mesh(new THREE.BoxGeometry(.24,.04,.03),dark); mo.position.set(0,-.3,.64); mo.rotation.z=.08; head.add(mo);
     const nose=new THREE.Mesh(new THREE.SphereGeometry(.1,10,8),skinB); nose.scale.set(1.1,.8,.9); nose.position.set(0,-.1,.68); head.add(nose); }
+
+    if(ch.acc==="rapper"){ // 래퍼: 오리지널 힙합 캐릭터 (거꾸로 쓴 캡 · 선글라스 · 금목걸이 · 후드티 · 마이크)
+    const capM=Lam(0xd62f3a), blk=Lam(0x111114), gold=new THREE.MeshStandardMaterial({color:0xf2c23a,metalness:.9,roughness:.25});
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(.73,20,12,0,Math.PI*2,0,Math.PI/2.7),capM); cap.position.y=.24; head.add(cap);
+    const brim=new THREE.Mesh(new THREE.BoxGeometry(.66,.06,.4),capM); brim.position.set(0,.36,-.72); brim.rotation.x=-.18; head.add(brim);
+    const btn=new THREE.Mesh(new THREE.SphereGeometry(.07,8,6),capM); btn.position.set(0,.96,0); head.add(btn);
+    for(const sx of [1,-1]){ const g=new THREE.Mesh(new THREE.BoxGeometry(.3,.15,.05),blk); g.position.set(sx*.19,-.01,.67); head.add(g); }
+    const br=new THREE.Mesh(new THREE.BoxGeometry(.14,.03,.04),blk); br.position.set(0,.03,.69); head.add(br);
+    const sm=new THREE.Mesh(new THREE.TorusGeometry(.12,.025,6,14,Math.PI),Lam(0x5a2a1a)); sm.rotation.z=Math.PI; sm.position.set(.04,-.28,.6); head.add(sm);
+    const chain=new THREE.Mesh(new THREE.TorusGeometry(.32,.045,8,28),gold); chain.rotation.x=1.2; chain.position.set(0,.82,.2); rider.add(chain);
+    const pend=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.04,18),gold); pend.rotation.x=Math.PI/2; pend.position.set(0,.6,.5); rider.add(pend);
+    const hood=new THREE.Mesh(new THREE.TorusGeometry(.32,.12,8,18,Math.PI),suitM); hood.position.set(0,.92,-.22); hood.rotation.x=-.5; rider.add(hood);
+    const hp=new THREE.Mesh(new THREE.TorusGeometry(.3,.05,8,20,Math.PI*1.2),blk); hp.rotation.set(1.3,0,-.95); hp.position.set(0,.9,.05); rider.add(hp);
+    for(const sx of [1,-1]){ const cup=new THREE.Mesh(new THREE.CylinderGeometry(.1,.1,.08,12),blk); cup.rotation.z=Math.PI/2; cup.position.set(sx*.3,.86,.12); rider.add(cup); }
+    for(const sx of [1,-1]){ const dr=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.3,5),Lam(0xf2f2f2)); dr.position.set(sx*.1,.6,.46); rider.add(dr); }
+    const mic=new THREE.Group(); const mh=new THREE.Mesh(new THREE.CylinderGeometry(.04,.03,.24,8),blk); mic.add(mh); const mb=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),Lam(0x9aa0aa)); mb.position.y=.15; mic.add(mb); mic.position.set(.22,.62,.68); mic.rotation.z=-.3; rider.add(mic); }
 
   if(ch.acc==="neonr"){ // 네온 라이더: 매끈한 검은 헬멧 + 빛나는 하늘색 바이저 + 몸에 네온 줄
     const glow=new THREE.MeshBasicMaterial({color:0x3ee6ff}); hideFace();
@@ -6305,7 +6322,7 @@ requestAnimationFrame(auraTick);
 /* 돈: 경주마다 받은 경험치만큼 원(₩)을 받음 · 계정(kart/users/uid)의 money · own(산 물건) */
 var SHOP=[
   /* 캐릭터(레벨 해금 후 구매) · 경험치 능력 캐릭터 */
-  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:1000},{id:"mech",t:"char",p:3000},{id:"boss",t:"char",p:3000},
+  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:1000},{id:"mech",t:"char",p:3000},{id:"boss",t:"char",p:3000},{id:"rapper",t:"char",p:3000},
   /* 전설 카트 */
   {id:"tiger",t:"kart",p:15000},{id:"dragon",t:"kart",p:22500},{id:"griffin",t:"kart",p:30000},{id:"apex",t:"kart",p:10000},{id:"grn",t:"kart",p:11000},{id:"wgp",t:"kart",p:12500},{id:"egt",t:"kart",p:13750},{id:"tgp",t:"kart",p:15000},{id:"dgp",t:"kart",p:22500},{id:"ggp",t:"kart",p:30000},
   /* 특수 치장(레벨 해금) */
@@ -8108,6 +8125,7 @@ const VCLIP={buf:{},ld:{},src:null,tok:0};
     sumo:{g:"m",p:.5,r:.8,bad:["밀렸다!","도효 밖으로 나가 버렸다…","배가 너무 무거워…","한 판 더!","크흠, 다리가 미끄러졌다"],first:["돗코이!","밀어내기 승!","이 덩치를 누가 막아!","요코즈나의 질주다!","한 판 승부 끝!"]},
     neonr:{g:"m",p:1,r:1.15,bad:["신호 끊겼다…","네온이 깜빡였어","글리치 발생!","빛이 꺼질 뻔했네","재접속 중…"],first:["빛보다 빠르게!","네온 라인 따라와 봐","오늘 밤은 내가 주인공","번쩍! 지나간다","속도가 곧 빛이야"]},
     foal:{g:"f",p:1.6,r:1.2,bad:["히이잉! 넘어졌어","발굽이 미끄러졌어…","힝, 아파","엄마 말 보고 싶어","다시 달릴래!"],first:["히히힝~ 내가 1등!","콩콩콩 달려간다~","망아지라고 얕보지 마!","갈기 휘날리며~","따그닥 따그닥!"]},
+    rapper:{g:"m",p:1,r:1.25,start:["드랍 더 비트!"],bad:["비트 끊겼잖아!","박자 놓쳤네","노 노 노, 이건 아니지","리듬 다시 탄다","잠깐, 프리스타일 중이었어"],first:["요! 1등은 내 거","플로우 따라와 봐","비트 위를 달린다","마이크 드롭!","박자 맞춰 추월~"]},
     lizard:{g:"f",p:1.2,r:1,bad:["쉬익! 꼬리가 밟혔어","비늘이 긁혔잖아","차가워… 몸이 굳어","쉿, 방심했어","꼬리는 다시 자라니까"],first:["쉬이익~ 내가 먼저야","도마뱀은 빠르다고","햇볕 받고 충전 완료","혀 날름~ 잡아 봐","벽도 기어오를 수 있어"]}};
   for(const k in NV) if(!VO[k]) VO[k]=NV[k];
   VO.neonr=Object.assign({},VO.neonr,{bad:P.n.bad.slice(),first:P.n.first.slice(),start:P.n.start.slice(),cr:1}); /* 네온 라이더 */
