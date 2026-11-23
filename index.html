@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1710</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1730</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7281,11 +7281,15 @@ var EVTAB="att";
 /* 완주 이벤트: 완주할 때마다 캐릭터 강화 카드 1장 (서킷 맵 3장) · 12월 31일까지 (서버 시간) */
 var CARD_EV={from:Date.parse("2026-11-23T00:00:00+09:00"),to:Date.parse("2026-12-31T23:59:59+09:00"),n:1,nc:3};
 function cardEvOn(){ const t=evNow(); return t>=CARD_EV.from&&t<=CARD_EV.to; }
+/* 멀티 10승 이벤트: 사람 2명 이상 · AI 없는 방에서 1등 10번 → 강화 카드 200장 (한 번만) */
+var WIN_EV={from:Date.parse("2026-11-23T16:00:00+09:00"),to:Date.parse("2026-12-31T23:59:59+09:00"),goal:10,reward:200};
+function winEvOn(){ const t=evNow(); return t>=WIN_EV.from&&t<=WIN_EV.to; }
+function winEvState(){ const p=(typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof)||{}; return {n:Math.min(WIN_EV.goal,p.ew|0),done:!!p.ewd}; }
 function cardEvN(){ return cardEvOn()?((typeof TR!=="undefined"&&TR&&TR.def&&TR.def.circuit)?CARD_EV.nc:CARD_EV.n):0; }
 function evOpen(tab,got){ shopCss(); EVTAB=tab||EVTAB; let o=document.getElementById("rlEvent"); if(o) o.remove(); o=document.createElement("div"); o.id="rlEvent"; document.body.appendChild(o);
   o.style.cssText="position:fixed;inset:0;z-index:5100;display:grid;place-items:center;background:rgba(0,0,0,.8)"; o.onclick=e=>{ if(e.target===o) o.remove(); };
   const e=xpEvent(), lg=typeof ACCT!=="undefined"&&ACCT&&ACCT.user, A=attState();
-  const ce=cardEvOn(), tabs=[["att","📅","출석 체크"]].concat(e?[["ev","🎓","수능 축하 EXP ×"+e.mul]]:[]).concat(ce?[["card","🃏","완주 강화 카드"]]:[]); if(EVTAB==="card"&&!ce) EVTAB="att";
+  const ce=cardEvOn(), tabs=[["att","📅","출석 체크"]].concat(e?[["ev","🎓","수능 축하 EXP ×"+e.mul]]:[]).concat(ce?[["card","🃏","완주 강화 카드"]]:[]).concat(winEvOn()?[["win","🏆","멀티 10승"]]:[]); if(EVTAB==="card"&&!ce) EVTAB="att"; if(EVTAB==="win"&&!winEvOn()) EVTAB="att";
   let body="";
   if(EVTAB==="att"){ const cells=ATT.map((r,i)=>{ const d=i+1, done=lg&&d<=A.n&&!(A.n>=28&&false), today=lg&&A.today&&d===A.n, next=lg&&!A.today&&d===(A.n>=28?1:A.n+1);
       return `<div class="atC ${r.big?"big":""} ${done?"done":""} ${today?"today":""} ${next?"next":""}"><span class="d">${d}일</span><span class="i">${attIcon(r)}</span><span class="t">${attTxt(r)}</span>${done?`<span class="st">✔</span>`:""}</div>`; }).join("");
@@ -7293,6 +7297,11 @@ function evOpen(tab,got){ shopCss(); EVTAB=tab||EVTAB; let o=document.getElement
       :got?`<div class="atHd ok"><b>${got.n}일차 출석 완료!</b> ${attIcon(ATT[got.n-1])} ${attTxt(ATT[got.n-1])} 받았어요${got.res==="dup"?" · 이미 가진 보상이라 경험치 쿠폰 10장으로 바꿔 줬어요":""}</div>`
       :`<div class="atHd">${A.today?`오늘 출석 완료 ✔ · 지금 <b>${A.n}일째</b>`:`지금 <b>${A.n}일째</b> · 들어오면 자동 출석`}</div>`;
     body=`${head}<div class="atGrid">${cells}</div><div class="atNote">· 하루에 한 번, 게임에 들어오면 자동으로 출석돼요 (한국 시간 자정 기준)<br>· 7·14·21·28일차는 특별 보상 · 14일 <b>개근 월계관</b>, 21일 <b>개근 오라</b>(경험치 ×1.15), 28일 <b>개근 GT</b>(서킷카)는 출석으로만 얻을 수 있어요<br>· 28일을 다 채우면 1일차부터 다시 시작해요 · 이미 가진 출석 보상은 경험치 쿠폰 10장으로 바뀌어요<br>· 3·10·17·23·26일차엔 🃏 캐릭터 강화 카드도 함께 줘요 (마이페이지 → 🔨 쿠폰·강화)<br>· 랜덤 박스는 상점 → 🎁 랜덤 박스에서 무료로 열 수 있어요</div>`; }
+  else if(EVTAB==="win"){ const W=winEvState(), left=WIN_EV.to-evNow(), dd=Math.max(0,Math.floor(left/864e5)), pc=W.n/WIN_EV.goal*100;
+    const dots=Array.from({length:WIN_EV.goal},(_,i)=>`<span style="flex:1;height:34px;border-radius:9px;display:grid;place-items:center;font:900 15px sans-serif;${i<W.n?"background:linear-gradient(135deg,#ffcf2e,#ff7a1a);color:#1a1000;box-shadow:0 0 12px rgba(255,180,40,.45)":"background:#16171f;border:1px dashed rgba(255,255,255,.2);color:#555b6c"}">${i<W.n?"🏆":i+1}</span>`).join("");
+    body=`<div style="padding:18px;border-radius:16px;background:linear-gradient(135deg,rgba(255,59,47,.22),rgba(255,207,46,.1));border:1px solid rgba(255,59,47,.45);text-align:center"><div style="font-size:50px;line-height:1">🏆</div><div style="font:400 28px/1.15 'Black Han Sans',sans-serif;font-style:italic;color:#fff;margin-top:6px">멀티플레이 10승 도전!</div><div style="display:inline-block;margin:12px 0 4px;padding:8px 18px;border-radius:999px;background:linear-gradient(135deg,#ffcf2e,#ff7a1a);font:400 22px 'Black Han Sans',sans-serif;color:#1a1000">🃏 강화 카드 200장</div><div style="font:700 12px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#7af0a8;margin-top:6px">● 진행 중 · ${dd}일 남음</div></div>
+    ${lg?`<div style="margin-top:14px;padding:14px;border-radius:14px;background:#121318;border:1px solid rgba(255,255,255,.08)"><div style="display:flex;justify-content:space-between;font:900 15px sans-serif;margin-bottom:8px"><span>내 기록</span><span style="color:${W.done?"#46e08a":"#ffcf2e"}">${W.done?"✔ 달성! 200장 받음":W.n+" / "+WIN_EV.goal+"승"}</span></div><div style="display:flex;gap:4px">${dots}</div></div>`:`<div class="atHd gu" style="margin-top:14px">로그인해야 참여할 수 있어요</div>`}
+    <div style="display:grid;gap:6px;margin-top:12px">${["기간: 11월 23일(월) ~ 12월 31일(목) 23:59 · 이벤트 시작 뒤의 1등만 세요","온라인 대전에서 1등을 10번 하면 🃏 캐릭터 강화 카드 200장을 한 번 드려요","사람이 2명 이상인 방만 인정 · 혼자 달리기와 AI가 들어간 방은 세지 않아요","10승을 채우는 순간 자동으로 지급돼요 (결과 화면에 표시)"].map(t=>`<div style="padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font:600 13px sans-serif;color:#c8cdd9">· ${t}</div>`).join("")}</div>`; }
   else if(EVTAB==="card"){ const left=CARD_EV.to-evNow(), dd=Math.max(0,Math.floor(left/864e5)), hh=Math.max(0,Math.floor(left/36e5)%24);
     body=`<div style="padding:18px;border-radius:16px;background:linear-gradient(135deg,rgba(255,207,46,.2),rgba(255,122,26,.08));border:1px solid rgba(255,207,46,.45);text-align:center"><div style="font-size:54px;line-height:1">🃏</div><div style="font:400 28px/1.15 'Black Han Sans',sans-serif;font-style:italic;color:#fff;margin-top:6px">완주하면 강화 카드!</div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0 4px"><span style="padding:8px 16px;border-radius:999px;background:linear-gradient(135deg,#ffcf2e,#ff7a1a);font:400 20px 'Black Han Sans',sans-serif;color:#1a1000">일반 맵 +1장</span><span style="padding:8px 16px;border-radius:999px;background:linear-gradient(135deg,#ff3b2f,#ffb020);font:400 20px 'Black Han Sans',sans-serif;color:#fff">🏁 서킷 맵 +3장</span></div><div style="font:700 12px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#7af0a8;margin-top:6px">● 진행 중 · ${dd}일 ${hh}시간 남음</div></div>
     <div style="display:grid;gap:6px;margin-top:14px">${["기간: 11월 23일(월) ~ 12월 31일(목) 23:59","경주를 끝까지 완주할 때마다 🃏 캐릭터 강화 카드를 줘요 (등수 상관없음)","서킷 맵(F1 서킷)을 완주하면 3장, 그 밖의 맵은 1장","강화 카드는 마이페이지 → 🔨 쿠폰·강화에서 캐릭터 강화에 써요","로그인한 플레이어만 받을 수 있어요 (게스트 제외) · 리타이어·시간 초과는 제외"].map(t=>`<div style="padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font:600 13px sans-serif;color:#c8cdd9">· ${t}</div>`).join("")}</div>`; }
@@ -8499,16 +8508,16 @@ function acctStart(){ if(!window.firebase||!firebase.apps||!firebase.apps.length
     firebase.database().ref("kart/users/"+u.uid).on("value",s=>{ ACCT.prof=s.val()||{n,xp:0}; const nl=lvOf(ACCT.prof.xp||0).lv; const ch=nl!==ACCT.lv; ACCT.lv=nl; acctBox(); try{ const t=document.getElementById("shopMoneyTag"); if(t) t.textContent=ACCT.user?"· 💰 "+wonFmt(shopMoney()):""; shopRender(); }catch(_){} try{ if(NETA.rankLv) NETA.rankLv(nl); RANK.sig=""; rankRenderAll(); }catch(_){} if(ch) try{ mpSend(); }catch(_){} }); }); }
 setTimeout(acctStart,300);
 /* 레이스 끝 경험치: 사람끼리만(AI 없음) 등수별 [80,60,50,40,16,14,12,10] - 5×(8-인원) · 혼자거나 AI가 있으면 20 */
-const XP_TAB=[80,60,50,40,16,14,12,10];
-function acctRaceXP(dnf){ if(!ACCT.user){ if(!dnf) $("finLaps").innerHTML+=`<span>⭐ 경험치</span><span>로그인하면 받아요</span>`; return; }
+const XP_TAB=[80,60,50,40,16,14,12,10]; const WINX={got:0,n:0};
+function acctRaceXP(dnf){ WINX.win=false; if(!ACCT.user){ if(!dnf) $("finLaps").innerHTML+=`<span>⭐ 경험치</span><span>로그인하면 받아요</span>`; return; }
   let xp=20, why="";
   if(MP.racing){ let rows=[]; try{ rows=gmStandingsIds(); }catch(_){} const hasAI=mpList().some(p=>p.bot), n=rows.length, pl=rows.findIndex(r=>r.me)+1;
-    if(hasAI) why="AI 포함"; else if(n<=1) why="혼자"; else if(pl>0){ xp=Math.max(5,XP_TAB[Math.min(7,pl-1)]-5*(8-Math.min(8,n))); why=`${n}명 중 ${pl}등`; } }
+    if(hasAI) why="AI 포함"; else if(n<=1) why="혼자"; else if(pl>0){ xp=Math.max(5,XP_TAB[Math.min(7,pl-1)]-5*(8-Math.min(8,n))); why=`${n}명 중 ${pl}등`; WINX.win=pl===1; } }
   else why=BOT.list.length?"AI 포함":"혼자";
   const dif=+TR.def.diff||0, vis=(TR.def.circuit?3:1)*(dif>=5?1.2:dif>=3?1.1:1), mul=vis*charXpm(CHARS[selChar]); const cpOn=cpOnNow(), cm=auraXp()*rareXp()*(cosOn("tattoo")?1.5:1)*(cosOn("tear")?1.2:1)*cpMul(), evm=xpEventMul(); xp=Math.round(xp*mul*cm*evm); if(evm!==1) why+=(why?" · ":"")+"🎉 이벤트 ×"+evm; if(vis!==1) why+=(why?" · ":"")+"×"+(Math.round(vis*100)/100); if(cm!==1) why+=(why?" · ":"")+(cpOn?"치장·쿠폰 ×":"치장 ×")+(Math.round(cm*100)/100); /* 캐릭터 배율은 표시하지 않음 */
   const old=lvOf(ACCT.prof&&ACCT.prof.xp||0).lv, ceN=dnf?0:(typeof cardEvN==="function"?cardEvN():0);
-  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ p=p||{n:MP.nick,xp:0,races:0,wins:0}; p.xp=(p.xp|0)+xp; p.money=(p.money|0)+xp; p.races=(p.races|0)+1; if(why.endsWith(" 1등")) p.wins=(p.wins|0)+1; if(ceN) p.ce=(p.ce|0)+ceN; p.n=MP.nick; return p; })
-    .then(r=>{ const v=r.snapshot.val()||{}, L=lvOf(v.xp||0); if(L.lv>old){ toast("🎉 레벨 업! Lv."+L.lv+" · "+lvTitle(L.lv),"#ffcf2e"); try{ chime(); }catch(_){} try{ unlockNotify(old,L.lv); }catch(_){} } }).catch(e=>console.warn(e));
+  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ p=p||{n:MP.nick,xp:0,races:0,wins:0}; p.xp=(p.xp|0)+xp; p.money=(p.money|0)+xp; p.races=(p.races|0)+1; if(WINX.win) p.wins=(p.wins|0)+1; /* 이벤트 배율 문구가 붙어도 1등을 세도록 */ if(ceN) p.ce=(p.ce|0)+ceN; WINX.got=0; WINX.n=0; if(!dnf&&WINX.win&&typeof winEvOn==="function"&&winEvOn()&&!p.ewd){ p.ew=(p.ew|0)+1; WINX.n=p.ew; if(p.ew>=WIN_EV.goal){ p.ewd=1; p.ce=(p.ce|0)+WIN_EV.reward; WINX.got=WIN_EV.reward; } } p.n=MP.nick; return p; })
+    .then(r=>{ const v=r.snapshot.val()||{}, L=lvOf(v.xp||0); try{ if(WINX.got){ toast("🏆 멀티 10승 달성! 🃏 강화 카드 "+WINX.got+"장 지급","#ffcf2e"); chime(); const fl=$("finLaps"); if(fl) fl.innerHTML+=`<span>🏆 10승 이벤트</span><span class="hl">달성! 🃏 강화 카드 +${WINX.got}장</span>`; } else if(WINX.n){ const fl=$("finLaps"); if(fl) fl.innerHTML+=`<span>🏆 10승 이벤트</span><span class="hl">${WINX.n} / ${WIN_EV.goal}승</span>`; } }catch(_){} if(L.lv>old){ toast("🎉 레벨 업! Lv."+L.lv+" · "+lvTitle(L.lv),"#ffcf2e"); try{ chime(); }catch(_){} try{ unlockNotify(old,L.lv); }catch(_){} } }).catch(e=>console.warn(e));
   ACCT.last={xp,why,old:(ACCT.prof&&ACCT.prof.xp)||0,t:Date.now()};
   if(!dnf) $("finLaps").innerHTML+=`<span>⭐ 경험치</span><span class="hl">+${xp} XP${why?" ("+why+")":""}</span><span>💰 돈</span><span class="hl">+${wonFmt(xp)}</span>${ceN?`<span>🃏 강화 카드</span><span class="hl">+${ceN}장 (완주 이벤트)</span>`:""}`; }
 function cerXPHTML(){ if(!ACCT.user) return '<div class="cer-xp" style="margin:10px 0 4px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08);font:700 14px sans-serif;color:#c8d4ec">⭐ 로그인하면 경험치를 받아요</div>';
