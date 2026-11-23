@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1850</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1900</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -496,10 +496,10 @@ const KARTS = [ // 서로 장단점이 있도록 차이를 줄임 (speed=최고�
   {id:"ruby", name:"루비 컨버터블", desc:"서킷 전용 포뮬러 · 빨강 레트로, 높은 공기흡입구와 금색 휠 · 코너에서 속도를 가장 덜 잃고 튼튼함 · 최고속도는 가장 낮은 610km/h", speed:1.3, accel:1.38, turn:1.14, boost:1.23, mass:.95},
   {id:"storm", name:"스톰 윙", desc:"서킷 전용 포뮬러 · 흰·파랑, 넓게 휜 앞뒤 날개 · 최고속도 최강 730km/h · 9단 기어 · 차체가 가장 약하고 감속이 큼", speed:1.33818, accel:1.32, turn:1.02, boost:1.24211, mass:1},
   {id:"agt", att:1, name:"개근 GT", desc:"출석 28일 보상 서킷카 · 에메랄드·금색 · 가속 좋음 · 최고속도 655km/h · 8단 기어 · 상점에서 팔지 않음", speed:1.32, accel:1.44, turn:1.04, boost:1.21, mass:1},
-  {id:"apex", lock:50, name:"레드라인 RX", desc:"레벨 50 전용 서킷 포뮬러 · 검정·빨강 · 가속 최강급 · 최고속도 660km/h · 8단 기어", speed:1.322, accel:1.45, turn:1.045, boost:1.212, mass:1},
-  {id:"grn", lock:60, name:"가넷 GT", desc:"레벨 60 서킷카 · 루비 업그레이드 · 짙은 석류빛 빨강과 금색 · 코너링 최강(회전 1.2배) · 감속 적음 · 튼튼 · 최고속도 640km/h", speed:1.3, accel:1.36, turn:1.2, boost:1.2, mass:1.05},
-  {id:"wgp", lock:70, name:"울프 GP", desc:"레벨 70 서킷카 · 은회색·얼음빛 늑대 무늬 · 최고속도 706km/h", speed:1.327, accel:1.465, turn:1.055, boost:1.218, mass:1},
-  {id:"egt", lock:80, name:"엘리펀트 GT", desc:"레벨 80 서킷카 · 썬더 GT 업그레이드 · 회색·상아색 코끼리 · 가장 튼튼하고 최고속도 최강 750km/h · 대신 코너가 둔함", speed:1.328, accel:1.4, turn:1.05, boost:1.22, mass:1.1},
+  {id:"apex", lock:40, name:"레드라인 RX", desc:"레벨 40 전용 서킷 포뮬러 · 검정·빨강 · 가속 최강급 · 최고속도 660km/h · 8단 기어", speed:1.322, accel:1.45, turn:1.045, boost:1.212, mass:1},
+  {id:"grn", lock:40, name:"가넷 GT", desc:"레벨 40 서킷카 · 루비 업그레이드 · 짙은 석류빛 빨강과 금색 · 코너링 최강(회전 1.2배) · 감속 적음 · 튼튼 · 최고속도 640km/h", speed:1.3, accel:1.36, turn:1.2, boost:1.2, mass:1.05},
+  {id:"wgp", lock:40, name:"울프 GP", desc:"레벨 40 서킷카 · 은회색·얼음빛 늑대 무늬 · 최고속도 706km/h", speed:1.327, accel:1.465, turn:1.055, boost:1.218, mass:1},
+  {id:"egt", lock:40, name:"엘리펀트 GT", desc:"레벨 40 서킷카 · 썬더 GT 업그레이드 · 회색·상아색 코끼리 · 가장 튼튼하고 최고속도 최강 750km/h · 대신 코너가 둔함", speed:1.328, accel:1.4, turn:1.05, boost:1.22, mass:1.1},
   {id:"tgp", lock:90, name:"타이거 GP", desc:"레벨 90 전설 서킷카 · 주황·검정 호랑이 줄 · 최고속도 710km/h", speed:1.33, accel:1.47, turn:1.06, boost:1.22, mass:1},
   {id:"dgp", lock:95, name:"드래곤 GP", desc:"레벨 95 전설 서킷카 · 붉은 비늘·금색 · 코너 좋음 · 최고속도 720km/h", speed:1.335, accel:1.52, turn:1.08, boost:1.23, mass:1},
   {id:"ggp", lock:100, name:"그리핀 GP", desc:"레벨 100 전설 서킷카 · 금빛·흰색 날개 · 코너 최고 · 최고속도 726km/h", speed:1.34, accel:1.54, turn:1.09, boost:1.235, mass:1},
@@ -902,7 +902,7 @@ function ckMirror(){ if(!FCAR()||state!=="race") return false; const fx=Math.sin
 /* 서킷 테마: 속도 1.5배 · 시점은 낮고 가깝게 */
 function CIRC(){ return !!(TR&&TR.def&&TR.def.circuit); }
 const F1IDS=["gt","volt","ruby","storm","agt","apex","grn","wgp","egt","tgp","dgp","ggp","novax","omega"]; function FCAR(){ return CIRC()&&!!KART&&F1IDS.includes(KART.id); }
-const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1.1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:610,dur:.8,dec:2,steer:.9,acc:1,turn:1.2,t:"코너링 최강(회전 1.2배) · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},agt:{top:655,gears:8,dur:1.3,dec:2.6,steer:2.15,acc:1.18,t:"출석 28일 보상 서킷카 · 레드라인 RX보다 조금 아래 · 최고 655km/h · 8단 기어"},apex:{top:660,gears:8,dur:1.3,dec:2.58,steer:2.12,acc:1.2,t:"레벨 50 서킷카 · 가속 최강급 · 최고 660km/h · 8단 기어"},grn:{top:640,dur:.8,dec:2,steer:.85,acc:1.05,turn:1.2,t:"레벨 60 서킷카 · 루비 업그레이드 · 코너링 최강(회전 1.2배) · 감속 적음 · 최고 640km/h"},wgp:{top:706,gears:9,dur:1.26,dec:2.52,steer:2.02,acc:1.11,t:"레벨 70 서킷카 · 최고 706km/h · 9단 기어"},egt:{top:750,gears:9,dur:.5,dec:2.45,steer:2.3,acc:1.07,t:"레벨 80 서킷카 · 썬더 GT 업그레이드 · 최고속도 최강 750km/h · 가장 튼튼 · 코너 둔함 · 9단 기어"},tgp:{top:710,gears:9,dur:1.25,dec:2.5,steer:2,acc:1.12,t:"레벨 90 전설 서킷카 · 최고 710km/h · 9단 기어"},dgp:{top:720,gears:9,dur:1.2,dec:2.5,steer:1.6,acc:1.14,turn:1.04,t:"레벨 95 전설 서킷카 · 코너 좋음 · 최고 720km/h · 9단 기어"},ggp:{top:726,gears:9,dur:1.1,dec:2.45,steer:1.4,acc:1.18,turn:1.05,t:"레벨 100 전설 서킷카 · 코너 최고 · 최고 726km/h · 9단 기어"},novax:{top:740,gears:9,dur:1.26,dec:2.52,steer:2.1,acc:1.08,t:"랜덤 박스 전설 서킷카 · 실버볼트 EV 상위호환 · 최고 740km/h · 9단 기어"},omega:{top:720,gears:9,dur:1.25,dec:2.5,steer:1.7,acc:1.14,turn:1.04,t:"랜덤 박스 신화 서킷카 · 코너 좋음 · 최고 720km/h · 9단 기어"},storm:{top:730,gears:9,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 730km/h · 9단 기어 · 차체 약함 · 감속 큼 · V8 엔진음"}};
+const F1STAT={gt:{top:635,dur:.55,dec:2.5,steer:2,acc:1.1,t:"튼튼함 · 부딪혀도 연기·감속 적음"},volt:{top:640,dur:1.25,dec:2.5,steer:2,acc:1.18,t:"가속 빠름 · 충돌에 약함"},ruby:{top:610,dur:.8,dec:2,steer:.9,acc:1,turn:1.2,t:"코너링 최강(회전 1.2배) · 감속 적음 · 최고속도 낮음 · 묵직한 배기음"},agt:{top:655,gears:8,dur:1.3,dec:2.6,steer:2.15,acc:1.18,t:"출석 28일 보상 서킷카 · 레드라인 RX보다 조금 아래 · 최고 655km/h · 8단 기어"},apex:{top:660,gears:8,dur:1.3,dec:2.58,steer:2.12,acc:1.2,t:"레벨 40 서킷카 · 가속 최강급 · 최고 660km/h · 8단 기어"},grn:{top:640,dur:.8,dec:2,steer:.85,acc:1.05,turn:1.2,t:"레벨 40 서킷카 · 루비 업그레이드 · 코너링 최강(회전 1.2배) · 감속 적음 · 최고 640km/h"},wgp:{top:706,gears:9,dur:1.26,dec:2.52,steer:2.02,acc:1.11,t:"레벨 40 서킷카 · 최고 706km/h · 9단 기어"},egt:{top:750,gears:9,dur:.5,dec:2.45,steer:2.3,acc:1.07,t:"레벨 40 서킷카 · 썬더 GT 업그레이드 · 최고속도 최강 750km/h · 가장 튼튼 · 코너 둔함 · 9단 기어"},tgp:{top:710,gears:9,dur:1.25,dec:2.5,steer:2,acc:1.12,t:"레벨 90 전설 서킷카 · 최고 710km/h · 9단 기어"},dgp:{top:720,gears:9,dur:1.2,dec:2.5,steer:1.6,acc:1.14,turn:1.04,t:"레벨 95 전설 서킷카 · 코너 좋음 · 최고 720km/h · 9단 기어"},ggp:{top:726,gears:9,dur:1.1,dec:2.45,steer:1.4,acc:1.18,turn:1.05,t:"레벨 100 전설 서킷카 · 코너 최고 · 최고 726km/h · 9단 기어"},novax:{top:740,gears:9,dur:1.26,dec:2.52,steer:2.1,acc:1.08,t:"랜덤 박스 전설 서킷카 · 실버볼트 EV 상위호환 · 최고 740km/h · 9단 기어"},omega:{top:720,gears:9,dur:1.25,dec:2.5,steer:1.7,acc:1.14,turn:1.04,t:"랜덤 박스 신화 서킷카 · 코너 좋음 · 최고 720km/h · 9단 기어"},storm:{top:730,gears:9,dur:1.3,dec:2.8,steer:2.2,acc:1.05,t:"최고속도 최강 730km/h · 9단 기어 · 차체 약함 · 감속 큼 · V8 엔진음"}};
 function F1S(){ return F1STAT[KART&&KART.id]||F1STAT.gt; }
 function F1KMH(){ return F1S().top; } /* 서킷 전용차 최고속도 625~650km/h (차마다 다름) */
 function CKM(){ return FCAR()?F1KMH()/(CONFIG.maxSpeed*KART.speed*CONFIG.kmh):CIRC()?NCM():1; } /* 서킷 테마에서만: 전용차 1.7배 · 일반차 1.5배 */
@@ -6375,7 +6375,7 @@ var SHOP=[
   /* 캐릭터(레벨 해금 후 구매) · 경험치 능력 캐릭터 */
   {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:1000},{id:"mech",t:"char",p:3000},{id:"boss",t:"char",p:3000},{id:"rapper",t:"char",p:3000},{id:"emperor",t:"char",p:4000},
   /* 전설 카트 */
-  {id:"tiger",t:"kart",p:15000},{id:"dragon",t:"kart",p:22500},{id:"griffin",t:"kart",p:30000},{id:"apex",t:"kart",p:10000},{id:"grn",t:"kart",p:11000},{id:"wgp",t:"kart",p:12500},{id:"egt",t:"kart",p:13750},{id:"tgp",t:"kart",p:15000},{id:"dgp",t:"kart",p:22500},{id:"ggp",t:"kart",p:30000},
+  {id:"tiger",t:"kart",p:15000},{id:"dragon",t:"kart",p:22500},{id:"griffin",t:"kart",p:30000},{id:"apex",t:"kart",p:30000},{id:"grn",t:"kart",p:50000},{id:"wgp",t:"kart",p:70000},{id:"egt",t:"kart",p:100000},{id:"tgp",t:"kart",p:15000},{id:"dgp",t:"kart",p:22500},{id:"ggp",t:"kart",p:30000},
   /* 특수 치장(레벨 해금) */
   {id:"tear",t:"cos",p:1000},{id:"tattoo",t:"cos",p:2500},{id:"wings",t:"cos",p:4000},
   /* 오라 (하나만 착용) */
