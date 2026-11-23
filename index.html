@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1900</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1910</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5499,12 +5499,12 @@ const CHARS=[
   {id:"kkami", name:"까미", desc:"새까만 얼굴에 노란 눈, 뾰족 귀 두 개", helmet:0x0b0b0c, stripe:0x0b0b0c, suit:0x151517, glove:0x0b0b0c, acc:"blackcat"},
   {id:"sausage", name:"소세지 인간", desc:"통통한 소세지 몸, 구운 자국, 꼭지 매듭", helmet:0xd0644a, stripe:0x8a3a28, suit:0xd0644a, glove:0xd0644a, acc:"sausage"},
   {id:"granny", xpm:1.05, name:"할머니", desc:"하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny"},
-  {id:"bigma", lock:1, xpm:1.07, name:"거대 할머니", desc:"스모 장사 태산만 한 덩치의 할머니 · 하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny", big:3},
+  {id:"bigma", lock:1, xpm:1.1, name:"거대 할머니", desc:"스모 장사 태산만 한 덩치의 할머니 · 하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny", big:3},
   {id:"mech", lock:40, xpm:1.18, name:"메탈 가디언", desc:"회색 장갑에 주황 포인트, 가로로 빛나는 하늘색 바이저의 강철 로봇 · 덩치가 조금 큼", helmet:0x5a606c, stripe:0xffa020, suit:0x5a606c, glove:0x2a2e36, acc:"mech", big:1.5},
   {id:"boss", lock:40, xpm:1.18, name:"깡패 두목 철구", desc:"차에 꽉 끼는 거대한 덩치 · 짧게 민 머리, 찌푸린 굵은 눈썹, 뺨의 흉터, 검은 정장에 금목걸이", helmet:0x141414, stripe:0x141414, suit:0x16171b, glove:0xd8a06e, acc:"boss", big:3.4},
   {id:"grandpa", xpm:1.05, name:"할아버지", desc:"회색 납작모자, 하얀 콧수염과 눈썹, 동그란 안경, 갈색 조끼", helmet:0xf2c79a, stripe:0xf4f4f4, suit:0x8a5a34, glove:0xf2c79a, acc:"grandpa"},
   {id:"sumo", lock:10, xpm:1.07, name:"스모 장사 태산", desc:"일반 캐릭터보다 3배 큰 거구의 스모 선수 · 상투머리, 남색 샅바", helmet:0x1a1a1e, stripe:0x1f2f6b, suit:0xf0c49a, glove:0xf0c49a, acc:"sumo", big:3},
-  {id:"neonr", name:"네온 라이더", desc:"빛나는 하늘색 바이저의 검은 헬멧 · 몸에 네온 줄 · 네온 링 바이크와 시너지", helmet:0x14161e, stripe:0x3ee6ff, suit:0x1c1f2a, glove:0x3ee6ff, acc:"neonr"},
+  {id:"neonr", name:"네온 라이더", desc:"빛나는 하늘색 바이저의 검은 헬멧 · 몸에 네온 줄 · 네온 링 바이크와 시너지 · 성장형: 이 캐릭터로 완주할 때마다 경험치 +0.1% (최대 +30%)", helmet:0x14161e, stripe:0x3ee6ff, suit:0x1c1f2a, glove:0x3ee6ff, acc:"neonr"},
   {id:"foal", lock:10, xpm:1.05, name:"망아지 콩콩", desc:"쫑긋 귀에 큰 눈, 갈기 달린 새끼 말 · 질주 말과 시너지", helmet:0xa86a3a, stripe:0xa86a3a, suit:0xa86a3a, glove:0x3a2414, acc:"foal"},
   {id:"lizard", lock:10, xpm:1.05, name:"도마뱀 인간 리자", desc:"초록 비늘, 노란 세로 눈, 등 가시와 꼬리 · 구렁이 뱀과 시너지", helmet:0x4fa84a, stripe:0x2f7a3a, suit:0x4fa84a, glove:0x2f7a3a, acc:"lizard"},
   {id:"baby", lock:10, xpm:1.07, name:"자이언트 베이비", desc:"2배 크기의 아기 · 머리카락 한 가닥, 쪽쪽이, 턱받이, 기저귀 · 유모차와 시너지", helmet:0xffcfa6, stripe:0xffffff, suit:0xffe4ec, glove:0xffcfa6, acc:"baby", big:2},
@@ -6373,7 +6373,7 @@ requestAnimationFrame(auraTick);
 /* 돈: 경주마다 받은 경험치만큼 원(₩)을 받음 · 계정(kart/users/uid)의 money · own(산 물건) */
 var SHOP=[
   /* 캐릭터(레벨 해금 후 구매) · 경험치 능력 캐릭터 */
-  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:1000},{id:"mech",t:"char",p:3000},{id:"boss",t:"char",p:3000},{id:"rapper",t:"char",p:3000},{id:"emperor",t:"char",p:4000},
+  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:2000},{id:"neonr",t:"char",p:1000},{id:"mech",t:"char",p:3000},{id:"boss",t:"char",p:3000},{id:"rapper",t:"char",p:3000},{id:"emperor",t:"char",p:4000},
   /* 전설 카트 */
   {id:"tiger",t:"kart",p:15000},{id:"dragon",t:"kart",p:22500},{id:"griffin",t:"kart",p:30000},{id:"apex",t:"kart",p:30000},{id:"grn",t:"kart",p:50000},{id:"wgp",t:"kart",p:70000},{id:"egt",t:"kart",p:100000},{id:"tgp",t:"kart",p:15000},{id:"dgp",t:"kart",p:22500},{id:"ggp",t:"kart",p:30000},
   /* 특수 치장(레벨 해금) */
@@ -7371,7 +7371,10 @@ var CARD_P=100; /* 상점: 강화 카드 1장 100원 */
 function enhProf(){ return (typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof)||null; }
 function enhLv(id){ const p=enhProf(); return p&&p.cl?Math.max(0,Math.min(ENH_MAX,p.cl[id]|0)):0; }
 function ceN(){ const p=enhProf(); return p?(p.ce|0):0; }
-function charXpm(c){ if(!c) return 1; return Math.round(((c.xpm||1)+ENH_B[enhLv(c.id)])*1000)/1000; }
+/* 네온 라이더: 이 캐릭터로 완주한 판수 × 0.001배 (최대 +0.3배) */
+var NR_STEP=.001, NR_MAX=.3;
+function nrBonus(){ const p=enhProf(); return p?Math.min(NR_MAX,(p.nrc|0)*NR_STEP):0; }
+function charXpm(c){ if(!c) return 1; return Math.round(((c.xpm||1)+ENH_B[enhLv(c.id)]+(c.id==="neonr"?nrBonus():0))*1000)/1000; }
 function enhDo(id){ const p0=enhProf(); if(!p0){ toast("로그인이 필요해요","#ff9a8a"); return; }
   const l0=enhLv(id); if(l0>=ENH_MAX){ toast("이미 최대 강화(+10)예요","#ffcf2e"); return; } const need=enhCost(l0); if(ceN()<need){ toast("강화 카드가 "+(need-ceN())+"장 모자라요","#ff9a8a"); return; }
   let to=0; firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; p.cl=Object.assign({},p.cl||{}); const l=Math.min(ENH_MAX,p.cl[id]|0), n=enhCost(l); if(l>=ENH_MAX||(p.ce|0)<n) return; p.ce=(p.ce|0)-n; p.cl[id]=l+1; to=l+1; return p; })
@@ -8614,7 +8617,7 @@ function acctRaceXP(dnf){ WINX.win=false; if(!ACCT.user){ if(!dnf) $("finLaps").
   else why=BOT.list.length?"AI 포함":"혼자";
   const dif=+TR.def.diff||0, vis=(TR.def.circuit?3:1)*(dif>=5?1.2:dif>=3?1.1:1), mul=vis*charXpm(CHARS[selChar]); const cpOn=cpOnNow(), cm=auraXp()*rareXp()*(cosOn("tattoo")?1.5:1)*(cosOn("tear")?1.2:1)*cpMul(), evm=xpEventMul(); xp=Math.round(xp*mul*cm*evm); if(evm!==1) why+=(why?" · ":"")+"🎉 이벤트 ×"+evm; if(vis!==1) why+=(why?" · ":"")+"×"+(Math.round(vis*100)/100); if(cm!==1) why+=(why?" · ":"")+(cpOn?"치장·쿠폰 ×":"치장 ×")+(Math.round(cm*100)/100); /* 캐릭터 배율은 표시하지 않음 */
   const old=lvOf(ACCT.prof&&ACCT.prof.xp||0).lv, ceN=dnf?0:(typeof cardEvN==="function"?cardEvN():0);
-  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ p=p||{n:MP.nick,xp:0,races:0,wins:0}; p.xp=(p.xp|0)+xp; p.money=(p.money|0)+xp; p.races=(p.races|0)+1; if(WINX.win) p.wins=(p.wins|0)+1; /* 이벤트 배율 문구가 붙어도 1등을 세도록 */ if(ceN) p.ce=(p.ce|0)+ceN; WINX.got=0; WINX.n=0; try{ WINX.dm=dmRace(p,dnf); }catch(_){ WINX.dm=[]; } if(!dnf&&WINX.win&&typeof winEvOn==="function"&&winEvOn()&&!p.ewd){ p.ew=(p.ew|0)+1; WINX.n=p.ew; if(p.ew>=WIN_EV.goal){ p.ewd=1; p.ce=(p.ce|0)+WIN_EV.reward; WINX.got=WIN_EV.reward; } } p.n=MP.nick; return p; })
+  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ p=p||{n:MP.nick,xp:0,races:0,wins:0}; p.xp=(p.xp|0)+xp; p.money=(p.money|0)+xp; p.races=(p.races|0)+1; if(!dnf&&CHARS[selChar]&&CHARS[selChar].id==="neonr") p.nrc=(p.nrc|0)+1; /* 네온 라이더 성장 */ if(WINX.win) p.wins=(p.wins|0)+1; /* 이벤트 배율 문구가 붙어도 1등을 세도록 */ if(ceN) p.ce=(p.ce|0)+ceN; WINX.got=0; WINX.n=0; try{ WINX.dm=dmRace(p,dnf); }catch(_){ WINX.dm=[]; } if(!dnf&&WINX.win&&typeof winEvOn==="function"&&winEvOn()&&!p.ewd){ p.ew=(p.ew|0)+1; WINX.n=p.ew; if(p.ew>=WIN_EV.goal){ p.ewd=1; p.ce=(p.ce|0)+WIN_EV.reward; WINX.got=WIN_EV.reward; } } p.n=MP.nick; return p; })
     .then(r=>{ const v=r.snapshot.val()||{}, L=lvOf(v.xp||0); try{ DM.crash=0; if(WINX.dm&&WINX.dm.length){ toast("✅ 일일 미션 완료: "+WINX.dm.map(m=>m.n).join(", ")+" · 이벤트 → 일일 미션에서 받기","#46e08a"); const fl=$("finLaps"); if(fl) fl.innerHTML+=`<span>✅ 일일 미션</span><span class="hl">${WINX.dm.map(m=>m.e+" "+m.n).join(" · ")} 완료!</span>`; } }catch(_){} try{ if(WINX.got){ toast("🏆 멀티 10승 달성! 🃏 강화 카드 "+WINX.got+"장 지급","#ffcf2e"); chime(); const fl=$("finLaps"); if(fl) fl.innerHTML+=`<span>🏆 10승 이벤트</span><span class="hl">달성! 🃏 강화 카드 +${WINX.got}장</span>`; } else if(WINX.n){ const fl=$("finLaps"); if(fl) fl.innerHTML+=`<span>🏆 10승 이벤트</span><span class="hl">${WINX.n} / ${WIN_EV.goal}승</span>`; } }catch(_){} if(L.lv>old){ toast("🎉 레벨 업! Lv."+L.lv+" · "+lvTitle(L.lv),"#ffcf2e"); try{ chime(); }catch(_){} try{ unlockNotify(old,L.lv); }catch(_){} } }).catch(e=>console.warn(e));
   ACCT.last={xp,why,old:(ACCT.prof&&ACCT.prof.xp)||0,t:Date.now()};
   if(!dnf) $("finLaps").innerHTML+=`<span>⭐ 경험치</span><span class="hl">+${xp} XP${why?" ("+why+")":""}</span><span>💰 돈</span><span class="hl">+${wonFmt(xp)}</span>${ceN?`<span>🃏 강화 카드</span><span class="hl">+${ceN}장 (완주 이벤트)</span>`:""}`; }
