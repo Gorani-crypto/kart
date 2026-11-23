@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1655</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1123-1700</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8219,9 +8219,23 @@ function speakNow(text,c,vol){ if(VCLIP_DATA[text]) return vclipPlay(text,c,vol)
 function voiceStart(){ try{ const c=VO[CHAR.id]; if(!c||!c.start||!c.start.length||!SND.on) return; const t=c.start[Math.floor(Math.random()*c.start.length)];
   VOICE.t=performance.now(); VOICE.last=t; sayLine(t,c); }catch(_){} }
 /* 마이페이지에서 캐릭터를 고르면 그 캐릭터 대사 한 줄 · 하던 대사는 끊고 새로 */
-function charPickVoice(ch){ if(!ch) return; const c=VO[ch.id]; if(!c){ vclipStop(); return; } VCLIP.tok++; vclipHalt(); /* 말소리(TTS) 끊기는 speakNow가 90ms 띄워서 처리 → 크롬에서 cancel 직후 speak가 씹히는 문제 방지 */ try{ initAudio(); }catch(_){} if(typeof SND==="undefined"||!SND.on) return; VOICE.unlocked=true;
-  const pool=[].concat(c.start||[],c.first||[]); if(!pool.length) return; let t=pool[Math.floor(Math.random()*pool.length)]; if(t===charPickVoice.last&&pool.length>1) t=pool[(pool.indexOf(t)+1)%pool.length]; charPickVoice.last=t;
-  try{ if(SND.ctx&&SIG[c.id]&&!VCLIP_DATA[t]) SIG[c.id](); }catch(_){} speakNow(t,c,1); }
+function charLinePool(c){ return [].concat(c.start||[],c.first||[]); }
+function charPickVoice(ch,forceIdx,vol){ if(!ch) return -1; const c=VO[ch.id]; if(!c){ vclipStop(); return -1; } VCLIP.tok++; vclipHalt(); /* 말소리(TTS) 끊기는 speakNow가 90ms 띄워서 처리 → 크롬에서 cancel 직후 speak가 씹히는 문제 방지 */
+  try{ initAudio(); }catch(_){} if(typeof SND==="undefined"||!SND.on) return -1; VOICE.unlocked=true;
+  const pool=charLinePool(c); if(!pool.length) return -1; let i=forceIdx!=null?Math.max(0,Math.min(pool.length-1,forceIdx|0)):Math.floor(Math.random()*pool.length); if(forceIdx==null&&pool[i]===charPickVoice.last&&pool.length>1) i=(i+1)%pool.length; const t=pool[i]; charPickVoice.last=t;
+  try{ if(SND.ctx&&SIG[c.id]&&!VCLIP_DATA[t]) SIG[c.id](); }catch(_){} speakNow(t,c,vol==null?1:vol); return i; }
+
+/* 대기방: 캐릭터를 바꾸고 "확인"을 눌렀을 때만 대사 재생 + 같은 방 사람들에게도 들리게 (presence cv=[순번,캐릭터,대사번호]) */
+const CV={open:undefined,seq:0,seen:{}};
+document.addEventListener("click",e=>{ const t=e.target&&e.target.closest&&e.target.closest(".mp-open,#mpSheetX,#soSheetX"); if(!t) return;
+  if(t.classList.contains("mp-open")){ CV.open=selChar; return; }
+  if(CV.open===undefined||selChar===CV.open) { CV.open=undefined; return; } CV.open=undefined;
+  const i=charPickVoice(CHARS[selChar]);
+  if(t.id==="mpSheetX"&&i>=0){ try{ if(typeof MP!=="undefined"&&MP.joined&&!MP.racing){ CV.seq=(CV.seq+1)%100000; mpSend({cv:[CV.seq,selChar,i]}); } }catch(_){} } },true);
+setInterval(()=>{ try{ if(typeof MP==="undefined"||!MP.joined) return; const lobby=!MP.racing&&state==="menu";
+  for(const p of mpList()){ if(p.peer===MP.myPeer||p.bot) continue; const pr=p.presence||{}; if(!Array.isArray(pr.cv)) continue; const k=p.peer;
+    if(CV.seen[k]===undefined){ CV.seen[k]=pr.cv[0]; continue; } if(CV.seen[k]===pr.cv[0]) continue; CV.seen[k]=pr.cv[0];
+    if(!lobby) continue; const ch=CHARS[+pr.cv[1]]; if(ch) charPickVoice(ch,+pr.cv[2],.9); } }catch(_){} },300);
 
 // 말풍선 (카트 위)
 const BUBBLES=[];
