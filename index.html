@@ -329,7 +329,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2800</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1120-2810</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5492,7 +5492,7 @@ const CHARS=[
   {id:"granny", xpm:1.05, name:"할머니", desc:"하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny"},
   {id:"bigma", lock:1, xpm:1.07, name:"거대 할머니", desc:"스모 장사 태산만 한 덩치의 할머니 · 하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny", big:3},
   {id:"mech", lock:40, xpm:1.15, name:"메탈 가디언", desc:"회색 장갑에 주황 포인트, 가로로 빛나는 하늘색 바이저의 강철 로봇 · 덩치가 조금 큼", helmet:0x5a606c, stripe:0xffa020, suit:0x5a606c, glove:0x2a2e36, acc:"mech", big:1.5},
-  {id:"boss", lock:50, xpm:1.18, name:"깡패 두목 철구", desc:"차에 꽉 끼는 거대한 덩치 · 짧게 민 머리, 찌푸린 굵은 눈썹, 뺨의 흉터, 검은 정장에 금목걸이", helmet:0x141414, stripe:0x141414, suit:0x16171b, glove:0xd8a06e, acc:"boss", big:3.4},
+  {id:"boss", lock:40, xpm:1.18, name:"깡패 두목 철구", desc:"차에 꽉 끼는 거대한 덩치 · 짧게 민 머리, 찌푸린 굵은 눈썹, 뺨의 흉터, 검은 정장에 금목걸이", helmet:0x141414, stripe:0x141414, suit:0x16171b, glove:0xd8a06e, acc:"boss", big:3.4},
   {id:"grandpa", xpm:1.05, name:"할아버지", desc:"회색 납작모자, 하얀 콧수염과 눈썹, 동그란 안경, 갈색 조끼", helmet:0xf2c79a, stripe:0xf4f4f4, suit:0x8a5a34, glove:0xf2c79a, acc:"grandpa"},
   {id:"sumo", lock:10, xpm:1.07, name:"스모 장사 태산", desc:"일반 캐릭터보다 3배 큰 거구의 스모 선수 · 상투머리, 남색 샅바", helmet:0x1a1a1e, stripe:0x1f2f6b, suit:0xf0c49a, glove:0xf0c49a, acc:"sumo", big:3},
   {id:"neonr", name:"네온 라이더", desc:"빛나는 하늘색 바이저의 검은 헬멧 · 몸에 네온 줄 · 네온 링 바이크와 시너지", helmet:0x14161e, stripe:0x3ee6ff, suit:0x1c1f2a, glove:0x3ee6ff, acc:"neonr"},
@@ -6964,7 +6964,6 @@ function infoOpen(){ shopCss(); let o=document.getElementById("myPage"); if(!o){
     <main class="rs-body">${main}</main></div>
   <style>#myPage .mpHero{display:flex;gap:18px;align-items:center;padding:16px;border-radius:16px;background:linear-gradient(135deg,rgba(255,42,42,.16),rgba(255,255,255,.02));border:1px solid rgba(255,59,47,.3)}#myPage .mpEm{flex:none;width:92px;height:92px}#myPage .mpLb{font:700 10px ui-monospace,Menlo,monospace;letter-spacing:.24em;color:#ff4a3a}#myPage .mpNm{font:400 30px/1.1 "Black Han Sans",sans-serif;font-style:italic;color:#fff;word-break:break-all}#myPage .mpLv{font:800 14px sans-serif;color:#ffcf2e;margin-top:2px}#myPage .mpId{font:700 11px ui-monospace,Menlo,monospace;color:#8d94a8;margin-top:3px}#myPage .mpBar{height:8px;border-radius:5px;background:#0a0b0f;overflow:hidden;margin-top:8px;max-width:320px}#myPage .mpBar i{display:block;height:100%;background:linear-gradient(90deg,#ff3b2f,#ffb020)}#myPage .mpSec{font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.2em;color:#8d94a8;margin:16px 0 8px}#myPage .mpGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}#myPage .mpSec+.mpGrid{margin-top:0}#myPage .mpS{padding:10px 12px;border-radius:12px;background:linear-gradient(165deg,#1c1e27,#101117);border:1px solid rgba(255,255,255,.08)}#myPage .mpS small{display:block;font:700 11px sans-serif;color:#8d94a8}#myPage .mpS b{display:block;font:800 15px "Pretendard",sans-serif;color:#fff;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#myPage .mpBtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}#myPage .mpBtns .rs-btn{flex:1;min-width:140px;padding:12px}@media(max-width:560px){#myPage .mpGrid{grid-template-columns:repeat(2,minmax(0,1fr))}#myPage .mpHero{flex-direction:column;text-align:center}#myPage .mpBar{margin:8px auto 0}}</style>`;
   const q=s=>o.querySelector(s); q("#mpX").onclick=()=>o.remove();
-
   if(q("#mpShop")) q("#mpShop").onclick=()=>{ o.remove(); SHOP_TAB="box"; shopOpen(); };
   if(q("#mpNick")) q("#mpNick").onclick=()=>{ o.remove(); SHOP_TAB="nick"; shopOpen(); }; if(q("#mpGar")) q("#mpGar").onclick=()=>{ o.remove(); garageOpen(); };
   if(q("#mpOut")) q("#mpOut").onclick=()=>{ firebase.auth().signOut().then(()=>location.reload()); };
@@ -7029,7 +7028,7 @@ function garageRender(){ const o=document.getElementById("garage"); if(!o) retur
   const q=s=>o.querySelector(s); q("#gX").onclick=garageClose; q("#gShop").onclick=e=>{ e.preventDefault(); garageClose(); shopOpen(); }; q("#gInfo").onclick=e=>{ e.preventDefault(); garageClose(); infoOpen(); };
   o.querySelectorAll(".gTab").forEach(b=>b.onclick=()=>{ GARAGE.tab=b.dataset.t; garageRender(); });
   o.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.k; selKart=i; try{ localStorage.setItem("kartrebuild.kart",String(i)); }catch(_){} try{ garageDetach(); paintKart(KARTS[i]); }catch(_){} garageApply(); });
-  o.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.c; selChar=i; try{ localStorage.setItem("kartrebuild.char",String(i)); }catch(_){} charGreet(CHARS[i].id); garageApply(); });
+  o.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{ const i=+b.dataset.c; selChar=i; try{ localStorage.setItem("kartrebuild.char",String(i)); }catch(_){} garageApply(); });
   o.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ try{ setColor(+b.dataset.p); }catch(_){} garageApply(); });
   o.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a; COSEQ.aura=auraCur()===a?null:a; cosSave(); garageApply(); });
   o.querySelectorAll("[data-hat]").forEach(b=>b.onclick=()=>{ const h=b.dataset.hat; COSEQ.hat=COSEQ.hat===h?null:h; cosSave(); garageApply(); });
@@ -7323,7 +7322,7 @@ function renderOptions0(){ setTimeout(rankRenderAll,0); gmRenderMenu();
     return `<button class="opt${circBan(k)?" rl-ban":""}" type="button" title="${k.name} · ${k.desc}" id="krt-${k.id}" aria-pressed="${i===selKart}" data-i="${i}"${circBan(k)?' data-ban="1"':""}><img class="thumb" alt="" src="${safeThumb(()=>carThumb(k,CHARS[selChar]))}">${circBan(k)?'<span class="rl-banb">🚫 서킷 맵 전용</span>':""}<b>${k.name}</b><span>${k.desc}</span>${["gt","volt","ruby","storm","agt","apex","grn","wgp","egt","tgp","dgp","ggp","novax","omega"].includes(k.id)?`<span class="stat" style="color:#5ad8ff">🏁 서킷 전용 · 서킷 최고 ${F1STAT[k.id].top} km/h · ${F1STAT[k.id].t} · 수동 ${F1STAT[k.id].gears||8}단 기어</span>`:`<span class="stat">최고 ${top} · 부스터 ${bst} km/h</span>`}${SYN[k.id]===CHARS[selChar].id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}<span class="bar"><i style="width:${Math.round(Math.min(1,k.speed/1.9)*100)}%"></i></span></button>`;}).join("");
   $("charOpts").innerHTML=CHARS.map((c,i)=>charLocked(c)?`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="false" data-i="${i}"><img class="thumb" alt="" src="${qThumb()}"><b>?</b><span>?</span></button>`:`<button class="opt" type="button" id="chr-${c.id}" aria-pressed="${i===selChar}" data-i="${i}" style="position:relative">${shopInfo({t:"char",id:c.id})}<img class="thumb" alt="" src="${safeThumb(()=>charThumb(c))}"><b><span class="dot" style="background:#${c.helmet.toString(16).padStart(6,"0")}"></span>${c.name}</b><span>${c.desc}</span><span class="stat" style="color:${(c.xpm||1)>1?"#7ae86a":"#9fb0d0"}">⭐ 경험치 ${Math.round((c.xpm||1)*100)}%${(c.xpm||1)>1?" (+"+Math.round(((c.xpm||1)-1)*100)+"%)":""}</span>${SYN[KARTS[selKart].id]===c.id?'<span class="stat" style="color:#ffcf2e">★ 시너지 +4%</span>':''}</button>`).join("");
   $("colorOpts").innerHTML=swatchesHTML()+cosHTML(); $("colorOpts").querySelectorAll(".sw").forEach(b=>b.addEventListener("click",()=>{ setColor(+b.dataset.i); renderOptions(); })); cosBind($("colorOpts"),renderOptions);
-  $("charOpts").querySelectorAll("button.opt").forEach(b=>b.addEventListener("click",()=>{ if(charLocked(CHARS[+b.dataset.i])){ toast(lockMsg(),"#9fb0d0"); return; } selChar=+b.dataset.i; try{localStorage.setItem("kartrebuild.char",String(selChar));}catch(_){} charGreet(CHARS[selChar].id); renderOptions();}));
+  $("charOpts").querySelectorAll("button.opt").forEach(b=>b.addEventListener("click",()=>{ if(charLocked(CHARS[+b.dataset.i])){ toast(lockMsg(),"#9fb0d0"); return; } selChar=+b.dataset.i; try{localStorage.setItem("kartrebuild.char",String(selChar));}catch(_){} renderOptions();}));
   $("trackOpts").querySelectorAll(".th-tabs [data-th]").forEach(h=>h.addEventListener("click",()=>{ THT.menu=h.dataset.th; renderOptions(); })); /* 테마만 바꿈 (선택 맵은 그대로) */
   { const rb=$("trk-random"); if(rb) rb.addEventListener("click",()=>{ setRandom(!selRandom); renderOptions(); }); }
   $("trackOpts").querySelectorAll(".opt[data-i]").forEach(b=>b.addEventListener("click",()=>{selTrack=+b.dataset.i; setRandom(false); try{localStorage.setItem("kartrebuild.track",String(selTrack));}catch(_){} renderOptions();}));
@@ -7962,28 +7961,6 @@ const VO={
 };
 for(const k in VO) VO[k].id=k;
 // 차마다 붙는 1등 멘트 (차의 직업·성격)
-
-/* ===== v-voice: 캐릭터 음성 (블랙 나이트 제로·깡패 두목 철구는 녹음 클립, 나머지는 한국어 음성 합성) ===== */
-const CLIPS={zero:["voice/zero/01.mp3","voice/zero/02.mp3","voice/zero/03.mp3","voice/zero/04.mp3","voice/zero/05.mp3","voice/zero/06.mp3","voice/zero/07.mp3","voice/zero/08.mp3","voice/zero/09.mp3"],boss:["voice/boss/01.mp3","voice/boss/02.mp3","voice/boss/03.mp3","voice/boss/04.mp3","voice/boss/05.mp3","voice/boss/06.mp3","voice/boss/07.mp3","voice/boss/08.mp3","voice/boss/09.mp3"]};
-const CLIP_AUD=[];
-function playClip(id,vol,idx){ const L=CLIPS[id]; if(!L||!L.length) return; const k=idx!=null?idx:Math.floor(Math.random()*L.length);
-  try{ CLIP_AUD.forEach(a=>{try{a.pause();}catch(_){}}); CLIP_AUD.length=0; const a=new Audio(L[k%L.length]); a.volume=Math.min(1,(vol==null?1:vol)*(typeof SVOL!=="undefined"?SVOL.v*VOL3.voice:1)); CLIP_AUD.push(a); a.play().catch(()=>{}); }catch(_){} }
-/* 캐릭터를 고르면 한마디 */
-function charGreet(id){ try{ if(!SND.on) return; if(CLIPS[id]&&CLIPS[id].length){ playClip(id,.9); return; } const c=VO[id]; if(!c) return; const pool=c.first&&c.first.length?c.first:c.bad; if(!pool||!pool.length) return; sayLine(pool[Math.floor(Math.random()*pool.length)],c); }catch(_){} }
-/* 주행 중 녹음 클립 자동 재생 (12~28초마다) */
-const CLIPAMB={t:8};
-function clipAmbient(dt){ if(state!=="race"||!CLIPS[CHAR.id]||!SND.on) return; CLIPAMB.t-=dt; if(CLIPAMB.t<=0){ CLIPAMB.t=12+Math.random()*16; playClip(CHAR.id,.8); } }
-Object.assign(VO,{
- bigma:{g:"f",p:1.5,r:1.1,first:["호호, 이 덩치 보이지?", "할미가 간다아!"],bad:["아이고 허리야!", "이놈들 비켜!"]},
- mech:{g:"m",p:0.8,r:1.0,first:["전투 준비 완료. 선두 확보.", "목표 확인, 추진 개시."],bad:["경고: 장갑 손상!", "시스템 재부팅 중…"]},
- grandpa:{g:"m",p:1.1,r:0.95,first:["허허, 아직 할아비가 안 늙었구나!", "이런 건 젊은이한테 양보하는 법이지."],bad:["에구구, 허리야…", "요즘 애들은 참…"]},
- sumo:{g:"m",p:0.9,r:1.0,first:["쿵! 길을 비켜라!", "태산이 지나간다!"],bad:["으음… 씨름에 졌다!", "쿵쾅, 넘어졌다!"]},
- neonr:{g:"m",p:1.3,r:1.15,first:["네온 불빛 따라 달린다!", "끝까지 빛나 보자고!"],bad:["빛이 꺼졌어!", "아, 충돌이다!"]},
- foal:{g:"f",p:1.5,r:1.25,first:["히히힝~ 나 먼저 간다!", "콩콩 뛰어간다아~"],bad:["히잉… 부딪혔어!", "아야! 발이 꼬였어!"]},
- lizard:{g:"f",p:1.25,r:1.05,first:["쉬익~ 내가 먼저다!", "스르르, 빠르지?"],bad:["쉬익! 꼬리가 아파!", "으으, 잡혔어!"]},
- baby:{g:"f",p:1.7,r:1.1,first:["까꿍! 내가 1등!", "아기도 잘 달린다구요~"],bad:["응애애애!", "으앙! 엄마아!"]},
- clown:{g:"m",p:1.5,r:1.2,first:["짜잔~ 삐에로 등장!", "웃으면서 달리자아!"],bad:["어머나 큰일이네!", "깜짝이야, 펑!"]}
-});
 const CARVO={
   scoot:["배달 짬밥 10년이여~","30분 안에 도착 보장!","번쩍 배달 왔습니다!","콜 하나 더 받는다!","리뷰 별 다섯 개 부탁드려유~"],
   dump:["내가 공사장 생활을 19살부터 시작했다!","길 비켜! 자재 들어간다!","안전제일! 근데 1등도 제일!","오늘 일당 두 배다!","레미콘보다 빠르다 이거여!"],
@@ -8051,8 +8028,7 @@ function voiceTest(){ const c=VO[(CHARS[selChar]||CHARS[0]).id]||VO.dotori, out=
   if(!window.speechSynthesis){ if(out) out.textContent="이 브라우저는 음성 읽기를 지원하지 않아요. 카카오톡 안에서 열었다면 크롬이나 사파리로 열어 주세요."; return; }
   VOICE.unlocked=true; const line=c.bad[Math.floor(Math.random()*c.bad.length)]; speakNow(line,c);
   setTimeout(()=>{ loadVoices(); if(out) out.textContent=koVoices.length?("한국어 음성 "+koVoices.length+"개 사용 가능 · “"+line+"”"):"기기에 한국어 음성이 안 보여요. 소리가 안 나면 휴대폰 설정 › 텍스트 음성 변환(TTS)에서 한국어를 설치해 주세요. 무음 모드도 확인해 주세요."; },400); }
-function voice(kind,minGap){ if(CLIPS[CHAR.id]){ const nw=performance.now(); if(state!=="menu"&&nw-VOICE.t>=Math.max(minGap||0,10000)){ VOICE.t=nw; playClip(CHAR.id,1); } return; }
-  const c=VO[CHAR.id]; if(!c||state==="menu") return; const now=performance.now(); if(now-VOICE.t<Math.max(minGap||0,10000)) return; VOICE.t=now; /* 캐릭터 대사는 10초에 한 번 */
+function voice(kind,minGap){ const c=VO[CHAR.id]; if(!c||state==="menu") return; const now=performance.now(); if(now-VOICE.t<Math.max(minGap||0,10000)) return; VOICE.t=now; /* 캐릭터 대사는 10초에 한 번 */
   const pool=kind==="first"?c.first.concat(CARVO[KART.id]||[]):c.bad; let text=pool[Math.floor(Math.random()*pool.length)]; if(text===VOICE.last&&pool.length>1) text=pool[(pool.indexOf(text)+1)%pool.length]; VOICE.last=text;
   sayLine(text,c); if(typeof MP!=="undefined"&&MP&&MP.racing&&typeof mpSend==="function"){ VOICE.seq++; mpSend({vo:[VOICE.seq,kind==="first"?1:0,pool.indexOf(text)]}); } }
 const VOICE_NEAR=40; // 이 거리(m) 안에 있는 상대 대사만 들림
@@ -8690,7 +8666,7 @@ function mpRender0(){ rankRenderAll(); try{ if(MP.joined) requestAnimationFrame(
     b.style.position="relative"; if(!lk) b.appendChild(kInfoIcon(k)); if(!lk&&circBan(k)){ b.classList.add("rl-ban"); const bn=document.createElement("span"); bn.className="rl-banb"; bn.textContent="🚫 서킷 맵 전용"; b.appendChild(bn); }
     b.onclick=()=>{ if(kartLocked(k)){ toast(lockMsg(),"#9fb0d0"); return; } if(circBan(k)){ toast(BAN_MSG,"#ff8a7a"); return; } selKart=i; try{localStorage.setItem("kartrebuild.kart",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpKarts").appendChild(b); });
   $m("mpChars").innerHTML=""; CHARS.forEach((c,i)=>{ const b=document.createElement("button"); b.type="button"; const im=document.createElement("img"); im.alt=""; im.src=safeThumb(()=>charThumb(c)); const t=document.createElement("span"); t.textContent=c.name; b.append(im,t); b.setAttribute("aria-pressed",String(i===selChar));
-    b.style.position="relative"; if(!charLocked(c)){ const w=document.createElement("span"); w.innerHTML=shopInfo({t:"char",id:c.id}); if(w.firstChild) b.appendChild(w.firstChild); } if(charLocked(c)){ im.src=qThumb(); t.textContent="?"; } b.onclick=()=>{ if(charLocked(c)){ toast(lockMsg(),"#9fb0d0"); return; } selChar=i; try{localStorage.setItem("kartrebuild.char",String(i));}catch(_){} charGreet(c.id); mpSend(); mpRender(); }; $m("mpChars").appendChild(b); });
+    b.style.position="relative"; if(!charLocked(c)){ const w=document.createElement("span"); w.innerHTML=shopInfo({t:"char",id:c.id}); if(w.firstChild) b.appendChild(w.firstChild); } if(charLocked(c)){ im.src=qThumb(); t.textContent="?"; } b.onclick=()=>{ if(charLocked(c)){ toast(lockMsg(),"#9fb0d0"); return; } selChar=i; try{localStorage.setItem("kartrebuild.char",String(i));}catch(_){} mpSend(); mpRender(); }; $m("mpChars").appendChild(b); });
   $m("mpColors").innerHTML=swatchesHTML()+cosHTML(); $m("mpColors").querySelectorAll(".sw").forEach(b=>b.onclick=()=>{ setColor(+b.dataset.i); mpSend(); mpRender(); }); cosBind($m("mpColors"),()=>{ MP.lobbySig=null; mpSend(); mpRender(); });
   const go=$m("mpGo"), others=L.filter(p=>p.peer!==MP.myPeer&&p.presence.st!=="race"), notReady=others.filter(p=>!p.presence.rd).length, inRace=L.filter(p=>p.presence.st==="race").length;
   if(amHost){ go.textContent=notReady?"준비 기다리는 중 ("+(others.length-notReady)+"/"+others.length+")":"출발!"; go.disabled=notReady>0;
@@ -8875,7 +8851,7 @@ function frame(now){
 }
 
 function render(dt){
-  updBubbles(dt); clipAmbient(dt); if(CER.on){ cerRender(dt); return; }
+  updBubbles(dt); if(CER.on){ cerRender(dt); return; }
   if(S.rail||Math.abs(S.roll)>1e-3){ const R=TR.tube?TR.tube.R:9, rx=-Math.cos(S.h), rz=Math.sin(S.h), sr=Math.sin(S.roll), cr=Math.cos(S.roll);
     kart.position.set(S.x+rx*R*sr, S.y+R-R*cr, S.z+rz*R*sr); }
   else kart.position.set(S.x,S.y+(S.barrel?jetRollLift():0),S.z); /* 옆으로 돌 때 차 중심을 축으로 + 살짝 떠오름: 땅에 박히지 않게 */
