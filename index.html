@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1124-1545</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1124-1600</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2313,19 +2313,19 @@ function decorateAutobahn(tr){ seed=7301; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=
 /* ===== 미국 라스베이거스 스트립 서킷 (야간 시가지) ===== */
 function decorateVegas(tr){ seed=7301; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(tr);
   const near=(x,z)=>trIdxNear(tr,x,z), V3=(x,y,z)=>new THREE.Vector3(x,y,z), anims=[];
-  const glowM=c=>new THREE.MeshBasicMaterial({color:c}), addM=(c,o)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o==null?.6:o,blending:THREE.AdditiveBlending,depthWrite:false});
+  /* 최적화: 같은 색 재질은 하나만 만들어 같이 씀 (재질 수 ↓ → 그리기 전환 ↓) */ const _gmC={}, _amC={}; const glowM=c=>_gmC[c]||(_gmC[c]=new THREE.MeshBasicMaterial({color:c})), addM=(c,o)=>{ const k=c+"|"+(o==null?.6:o); return _amC[k]||(_amC[k]=new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o==null?.6:o,blending:THREE.AdditiveBlending,depthWrite:false})); };
   /* 어두운 도심 바닥(보도·주차장 무늬) */
   nmGround(tr,canvasTex(128,128,(x,w,h)=>{ x.fillStyle="#17181d"; x.fillRect(0,0,w,h); for(let k=0;k<420;k++){ x.fillStyle=["#1d1f26","#121318","#22242c"][k%3]; x.fillRect(Math.random()*w,Math.random()*h,3,2); } x.strokeStyle="#2a2c34"; x.lineWidth=2; for(let k=0;k<=4;k++){ x.beginPath(); x.moveTo(k*32,0); x.lineTo(k*32,h); x.stroke(); x.beginPath(); x.moveTo(0,k*32); x.lineTo(w,k*32); x.stroke(); } },60,60),-.35);
   const K=circKit(tr,{title:"LAS VEGAS STRIP · 2 LAPS",ads:["LAS VEGAS","NIGHT RACE","THE STRIP","JACKPOT","NEON NIGHTS","GRAND PRIX","HIGH ROLLER","SIN CITY SPEED"],adCols:["#d8282a","#1a1a1a","#7a1ad8","#ffb400","#e0128a","#1a3a8a","#0a8a6a","#ff5a00"],signBg:"#1a0a2a",kerb:"#d8282a",standRoof:0x2a2e38,pitCol:0x22252e});
   const W=K.W;
   /* 거리 펜스(방호벽 위 철망) */
-  { const fenceM=new THREE.MeshBasicMaterial({map:canvasTex(64,64,(x,w,h)=>{ x.clearRect(0,0,w,h); x.strokeStyle="rgba(190,200,220,.28)"; x.lineWidth=1.5; for(let k=-64;k<128;k+=12){ x.beginPath(); x.moveTo(k,0); x.lineTo(k+64,h); x.stroke(); x.beginPath(); x.moveTo(k+64,0); x.lineTo(k,h); x.stroke(); } x.fillStyle="rgba(150,160,180,.9)"; x.fillRect(0,0,w,3); },1,1),transparent:true,side:THREE.DoubleSide,depthWrite:false});
+  { const fenceM=new THREE.MeshBasicMaterial({map:canvasTex(64,64,(x,w,h)=>{ x.clearRect(0,0,w,h); x.strokeStyle="rgba(78,84,98,1)"; x.lineWidth=1; for(let k=-64;k<128;k+=12){ x.beginPath(); x.moveTo(k,0); x.lineTo(k+64,h); x.stroke(); x.beginPath(); x.moveTo(k+64,0); x.lineTo(k,h); x.stroke(); } x.fillStyle="rgba(150,160,180,1)"; x.fillRect(0,0,w,3); },1,1),alphaTest:.35,side:THREE.DoubleSide}); /* 반투명 대신 잘라내기 → 겹친 펜스를 매번 섞어 그리지 않음 */
     for(const sd of [1,-1]){ const idx=[]; for(let i=0;i<=N;i++) idx.push(i%N); nmStrip(tr,idx,i=>sd*(W(i)+1.9),i=>sd*(W(i)+1.95),0,fenceM,4,false); }
     const fp=[]; for(let i=0;i<N;i+=2) for(const sd of [1,-1]){ const p=P[i].clone().addScaledVector(NR[i],sd*(W(i)+1.9)); fp.push([p.x,Y[i]+3.2,p.z,0,1]); }
     /* 수직 철망 판 */ const pan=[]; for(let i=0;i<N;i+=1) for(const sd of [1,-1]){ const p=P[i].clone().addScaledVector(NR[i],sd*(W(i)+1.9)); pan.push([p.x,Y[i]+3.4,p.z,Math.atan2(T[i].x,T[i].z)+Math.PI/2,1]); }
     nmInst(tr,new THREE.PlaneGeometry(8.2,3.6),fenceM,pan); nmInst(tr,new THREE.CylinderGeometry(.09,.09,4.6,5),Lam(0x9aa0aa),fp); }
   /* 도심 차선(흐린 흰 점선) */
-  { const lnM=new THREE.MeshBasicMaterial({map:canvasTex(8,64,(x,w,h)=>{ x.clearRect(0,0,w,h); x.fillStyle="rgba(235,235,235,.55)"; x.fillRect(0,0,w,h*.5); },1,1),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3});
+  { const lnM=new THREE.MeshBasicMaterial({map:canvasTex(8,64,(x,w,h)=>{ x.clearRect(0,0,w,h); x.fillStyle="rgba(150,152,158,1)"; x.fillRect(0,0,w,h*.5); },1,1),alphaTest:.35,polygonOffset:true,polygonOffsetFactor:-3});
     const idx=[]; for(let i=0;i<=N;i++) idx.push(i%N); for(const f of [-.34,.34]) nmStrip(tr,idx,i=>f*W(i)-.18,i=>f*W(i)+.18,.04,lnM,1.6,false); }
   /* 레이싱 조명: 양쪽 높은 조명탑 (아주 밝은 흰 등) */
   { const poles=[], heads=[], halo=[]; for(let i=0;i<N;i+=9) for(const sd of [1,-1]){ if((i/9+(sd>0?0:1))%2) continue; const p=P[i].clone().addScaledVector(NR[i],sd*(W(i)+6)); if(tr.edgeDist(p.x,p.z)<4) continue; poles.push([p.x,Y[i]+9,p.z,0,1]);
