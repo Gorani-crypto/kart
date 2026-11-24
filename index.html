@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1124-1530</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1124-1535</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8336,10 +8336,17 @@ function ctxRank(){ try{ return (typeof MP!=="undefined"&&MP.racing?MP.lastRank:
 function sayCtx(tag,chance,force){ try{ if((!force&&state!=="race")||!SND.on) return false; const c=VO[CHAR.id]; if(!c) return false; const now=performance.now(); if(!force&&now-VOICE.t<VGAP) return false; if(chance!=null&&Math.random()>chance) return false;
   const fp=c.first.concat((typeof CARVO!=="undefined"&&CARVO[KART.id])||[]), all=[].concat(c.start||[],c.first||[],c.bad||[]), has=(t,g)=>(VTAG[t]||"").split(",").includes(g);
   let L=all.filter(t=>has(t,tag)); if(!L.length&&tag==="behind") L=all.filter(t=>has(t,"idle")); if(!L.length){ if(force) return false; L=(tag==="behind"||tag==="hit"||tag==="wall")?c.bad:c.first; } if(!L.length) return false;
-  let t=L[Math.floor(Math.random()*L.length)]; if(t===VOICE.last&&L.length>1) t=L[(L.indexOf(t)+1)%L.length];
+  /* 대사가 3개보다 적으면 비슷한 상황 대사를 섞어서 폭을 넓힘 */
+  if(L.length<3&&!force){ for(const g2 of (VSIM[tag]||[])){ for(const t2 of all) if(has(t2,g2)&&!L.includes(t2)) L.push(t2); if(L.length>=4) break; } }
+  const t=vBagPick(CHAR.id+"|"+tag,L);
   VOICE.t=now; VOICE.last=t; sayLine(t,c);
   if(typeof MP!=="undefined"&&MP&&MP.racing&&typeof mpSend==="function"){ const k=fp.indexOf(t)>=0?1:0, idx=k?fp.indexOf(t):c.bad.indexOf(t); if(idx>=0){ VOICE.seq++; mpSend({vo:[VOICE.seq,k,idx]}); } } return true; }catch(_){ return false; } }
 const VCX={hs:[],lastG:0,ph:null,bt:0};
+/* 비슷한 상황 (대사가 적을 때 빌려 씀) */
+var VSIM={corner:["speed","idle","pass"],speed:["boost","corner"],pass:["speed","idle"],idle:["speed","corner"],boost:["speed","pass"],lastlap:["idle","boost"],hit:["wall","behind"],wall:["hit","behind"],behind:["idle"],win:[]};
+/* 돌려 말하기: 상황마다 대사 주머니를 섞어 두고 다 쓸 때까지 같은 대사를 다시 안 꺼냄 */
+const VBAG={};
+function vBagPick(key,L){ let b=VBAG[key]; const sig=L.join("|"); if(!b||b.sig!==sig||!b.q.length){ const q=L.slice(); for(let i=q.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [q[i],q[j]]=[q[j],q[i]]; } if(q.length>1&&q[0]===VOICE.last) q.push(q.shift()); b=VBAG[key]={sig,q}; } return b.q.shift(); }
 var VGAP=10000; /* 내 대사 사이 최소 간격 (10초) */
 /* 부딪혔을 때: 다른 차에 받힘(hit) · 벽(wall) */
 function vcxHit(imp,car){ try{ if(state!=="race") return; if(imp*CONFIG.kmh<25) return; sayCtx(car?"hit":"wall",.7); }catch(_){} }
