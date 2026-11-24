@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1124-1535</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1124-1545</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8347,7 +8347,7 @@ var VSIM={corner:["speed","idle","pass"],speed:["boost","corner"],pass:["speed",
 /* 돌려 말하기: 상황마다 대사 주머니를 섞어 두고 다 쓸 때까지 같은 대사를 다시 안 꺼냄 */
 const VBAG={};
 function vBagPick(key,L){ let b=VBAG[key]; const sig=L.join("|"); if(!b||b.sig!==sig||!b.q.length){ const q=L.slice(); for(let i=q.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [q[i],q[j]]=[q[j],q[i]]; } if(q.length>1&&q[0]===VOICE.last) q.push(q.shift()); b=VBAG[key]={sig,q}; } return b.q.shift(); }
-var VGAP=10000; /* 내 대사 사이 최소 간격 (10초) */
+var VGAP=20000; /* 내 대사 사이 최소 간격 (20초) */
 /* 부딪혔을 때: 다른 차에 받힘(hit) · 벽(wall) */
 function vcxHit(imp,car){ try{ if(state!=="race") return; if(imp*CONFIG.kmh<25) return; sayCtx(car?"hit":"wall",.7); }catch(_){} }
 setInterval(()=>{ try{ if(state!=="race"){ VCX.hs.length=0; VCX.lastG=0; VCX.ph=null; return; } const now=performance.now();
