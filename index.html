@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1124-1520</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1124-1530</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8340,13 +8340,13 @@ function sayCtx(tag,chance,force){ try{ if((!force&&state!=="race")||!SND.on) re
   VOICE.t=now; VOICE.last=t; sayLine(t,c);
   if(typeof MP!=="undefined"&&MP&&MP.racing&&typeof mpSend==="function"){ const k=fp.indexOf(t)>=0?1:0, idx=k?fp.indexOf(t):c.bad.indexOf(t); if(idx>=0){ VOICE.seq++; mpSend({vo:[VOICE.seq,k,idx]}); } } return true; }catch(_){ return false; } }
 const VCX={hs:[],lastG:0,ph:null,bt:0};
-var VGAP=5000; /* 내 대사 사이 최소 간격 (5초) */
+var VGAP=10000; /* 내 대사 사이 최소 간격 (10초) */
 /* 부딪혔을 때: 다른 차에 받힘(hit) · 벽(wall) */
 function vcxHit(imp,car){ try{ if(state!=="race") return; if(imp*CONFIG.kmh<25) return; sayCtx(car?"hit":"wall",.7); }catch(_){} }
 setInterval(()=>{ try{ if(state!=="race"){ VCX.hs.length=0; VCX.lastG=0; VCX.ph=null; return; } const now=performance.now();
-  /* 30초 동안 아무 말도 안 했으면 한마디 (순위가 3등 아래면 뒤처진 대사) */
+  /* 40초 동안 아무 말도 안 했으면 한마디 (순위가 3등 아래면 뒤처진 대사) */
   /* 부스터를 켤 때 */ const bo=(S.boostT>0||S.instT>0)?1:0; if(bo&&!VCX.bt) sayCtx("boost",.45); VCX.bt=bo;
-  if((typeof raceT==="undefined"||raceT>8)&&now-VOICE.t>30000){ const r=ctxRank(); sayCtx(r>=3?"behind":"idle"); }
+  if((typeof raceT==="undefined"||raceT>8)&&now-VOICE.t>40000){ const r=ctxRank(); sayCtx(r>=3?"behind":"idle"); }
   /* 서킷카 8단·9단에 올라갔을 때 */
   const g=S.mg|0; if(FCAR()&&g>VCX.lastG&&(g===8||g===9)) sayCtx("speed",.8); VCX.lastG=g;
   /* 부딪히지 않고 큰 코너(3.5초 안에 70도 넘게 꺾음)를 시속 60km 넘게 돌았을 때 */
@@ -8380,7 +8380,7 @@ const VOICE_NEAR=40; // 이 거리(m) 안에 있는 상대 대사만 들림
 function voiceOther(ch,k,kind,idx,dist){ if(!SND.on||state==="menu"||dist>VOICE_NEAR) return; const now=performance.now(); if(now-VOICE.t<1500||now-(VOICE.ot||0)<1200) return;
   const c=VO[(CHARS[+ch]||CHARS[0]).id]; if(!c) return; const pool=kind?c.first.concat(CARVO[(KARTS[+k]||KARTS[0]).id]||[]):c.bad, text=pool[Math.max(0,Math.min(pool.length-1,+idx||0))]; if(!text) return;
   VOICE.ot=now; try{ if(SND.ctx&&SIG[c.id]&&dist<VOICE_NEAR*.6) SIG[c.id](); speakNow(text,c,clamp(1-dist/VOICE_NEAR,.25,1)); }catch(_){} }
-function botVoice(b,kind){ const now=performance.now(); if(now-(b.voT||0)<5000) return; b.voT=now; const c=VO[(CHARS[b.c.ch]||CHARS[0]).id]; if(!c) return;
+function botVoice(b,kind){ const now=performance.now(); if(now-(b.voT||0)<10000) return; b.voT=now; const c=VO[(CHARS[b.c.ch]||CHARS[0]).id]; if(!c) return;
   const pool=kind?c.first.concat(CARVO[(KARTS[b.c.k]||KARTS[0]).id]||[]):c.bad, idx=Math.floor(Math.random()*pool.length); b.voSeq=(b.voSeq||0)+1; b.vq=[b.voSeq,kind?1:0,idx];
   voiceOther(b.c.ch,b.c.k,kind,idx,Math.hypot(b.x-S.x,b.z-S.z)); }
 
