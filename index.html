@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0135</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0140</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7351,8 +7351,12 @@ function attGive(p,r){ if(r.m) p.money=(p.money|0)+r.m; if(r.cp){ p.cp=Object.as
   if(r.item){ p.own=Object.assign({},p.own||{}); if(p.own[r.item]){ p.cp=Object.assign({a:0,b:0,c:0},p.cp||{}); p.cp.a=(p.cp.a|0)+10; return "dup"; } p.own[r.item]=true; } return "ok"; }
 var ATT_BUSY=false;
 function attCheck(cb){ if(ATT_BUSY||!ACCT||!ACCT.user) return; ATT_BUSY=true; const today=kstDay(); let got=null;
-  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; const a=p.att||{}; if(a.last===today) return; const n=(a.n|0)>=28?1:(a.n|0)+1; const res=attGive(p,ATT[n-1]); p.att={n,last:today}; got={n,res}; return p; })
-    .then(r=>{ ATT_BUSY=false; if(r.committed&&got){ ACCT.prof=r.snapshot.val()||ACCT.prof; try{ chime(); }catch(_){} try{ shopRender(); }catch(_){} cb&&cb(got); } else cb&&cb(null); })
+  let fb=0; /* 매일 접속 보상: 하루 한 번 무료 랜덤 박스 1개 (prof.fbd = 받은 날) */
+  firebase.database().ref("kart/users/"+ACCT.user.uid).transaction(p=>{ if(!p) return p; got=null; fb=0; let ch=false; const a=p.att||{};
+      if(a.last!==today){ const n=(a.n|0)>=28?1:(a.n|0)+1; const res=attGive(p,ATT[n-1]); p.att={n,last:today}; got={n,res}; ch=true; }
+      if(p.fbd!==today){ p.bt=(p.bt|0)+1; p.fbd=today; fb=1; ch=true; }
+      if(!ch) return; return p; })
+    .then(r=>{ ATT_BUSY=false; if(r.committed&&(got||fb)){ ACCT.prof=r.snapshot.val()||ACCT.prof; if(fb) setTimeout(()=>{ try{ toast("🎁 오늘의 무료 랜덤 박스 1개 도착! · 상점 → 랜덤 박스에서 무료로 열어요","#ffcf2e"); }catch(_){} },got?1800:300); try{ chime(); }catch(_){} try{ shopRender(); }catch(_){} cb&&cb(got); } else cb&&cb(null); })
     .catch(e=>{ ATT_BUSY=false; console.warn(e); cb&&cb(null); }); }
 /* 들어오면 자동 출석 → 처음 출석한 날엔 이벤트 창(출석 탭)을 띄움 · 게스트는 하루 한 번 이벤트 창 */
 function noticeAuto(){ if(noticeAuto.on) return; noticeAuto.on=1; let tries=0;
@@ -7382,7 +7386,7 @@ function evOpen(tab,got){ shopCss(); EVTAB=tab||EVTAB; let o=document.getElement
     const head=!lg?`<div class="atHd gu">로그인하면 매일 들어올 때 자동으로 출석하고 보상을 받아요</div>`
       :got?`<div class="atHd ok"><b>${got.n}일차 출석 완료!</b> ${attIcon(ATT[got.n-1])} ${attTxt(ATT[got.n-1])} 받았어요${got.res==="dup"?" · 이미 가진 보상이라 경험치 쿠폰 10장으로 바꿔 줬어요":""}</div>`
       :`<div class="atHd">${A.today?`오늘 출석 완료 ✔ · 지금 <b>${A.n}일째</b>`:`지금 <b>${A.n}일째</b> · 들어오면 자동 출석`}</div>`;
-    body=`${head}<div class="atGrid">${cells}</div><div class="atNote">· 하루에 한 번, 게임에 들어오면 자동으로 출석돼요 (한국 시간 자정 기준)<br>· 7·14·21·28일차는 특별 보상 · 14일 <b>개근 월계관</b>, 21일 <b>개근 오라</b>(경험치 ×1.15), 28일 <b>개근 GT</b>(서킷카)는 출석으로만 얻을 수 있어요<br>· 28일을 다 채우면 1일차부터 다시 시작해요 · 이미 가진 출석 보상은 경험치 쿠폰 10장으로 바뀌어요<br>· 3·10·17·23·26일차엔 🃏 캐릭터 강화 카드도 함께 줘요 (마이페이지 → 🔨 쿠폰·강화)<br>· 랜덤 박스는 상점 → 🎁 랜덤 박스에서 무료로 열 수 있어요</div>`; }
+    body=`${head}<div class="atGrid">${cells}</div><div class="atNote">· 하루에 한 번, 게임에 들어오면 자동으로 출석돼요 (한국 시간 자정 기준)<br>· 7·14·21·28일차는 특별 보상 · 14일 <b>개근 월계관</b>, 21일 <b>개근 오라</b>(경험치 ×1.15), 28일 <b>개근 GT</b>(서킷카)는 출석으로만 얻을 수 있어요<br>· 28일을 다 채우면 1일차부터 다시 시작해요 · 이미 가진 출석 보상은 경험치 쿠폰 10장으로 바뀌어요<br>· 출석과 별개로 <b>매일 첫 접속마다 무료 랜덤 박스 1개</b>를 줘요<br>· 3·10·17·23·26일차엔 🃏 캐릭터 강화 카드도 함께 줘요 (마이페이지 → 🔨 쿠폰·강화)<br>· 랜덤 박스는 상점 → 🎁 랜덤 박스에서 무료로 열 수 있어요</div>`; }
   else if(EVTAB==="daily"){ body=dmBody(lg); }
   else if(EVTAB==="win"){ const W=winEvState(), left=WIN_EV.to-evNow(), dd=Math.max(0,Math.floor(left/864e5)), pc=W.n/WIN_EV.goal*100;
     const dots=Array.from({length:WIN_EV.goal},(_,i)=>`<span style="flex:1;height:34px;border-radius:9px;display:grid;place-items:center;font:900 15px sans-serif;${i<W.n?"background:linear-gradient(135deg,#ffcf2e,#ff7a1a);color:#1a1000;box-shadow:0 0 12px rgba(255,180,40,.45)":"background:#16171f;border:1px dashed rgba(255,255,255,.2);color:#555b6c"}">${i<W.n?"🏆":i+1}</span>`).join("");
