@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0145</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0150</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8443,7 +8443,16 @@ const VCX={hs:[],lastG:0,ph:null,bt:0};
 var VSIM={corner:["speed","idle","pass"],speed:["boost","corner"],pass:["speed","idle"],idle:["speed","corner"],boost:["speed","pass"],lastlap:["idle","boost"],hit:["wall","behind"],wall:["hit","behind"],behind:["idle"],win:[]};
 /* 돌려 말하기: 상황마다 대사 주머니를 섞어 두고 다 쓸 때까지 같은 대사를 다시 안 꺼냄 */
 const VBAG={};
-function vBagPick(key,L){ let b=VBAG[key]; const sig=L.join("|"); if(!b||b.sig!==sig||!b.q.length){ const q=L.slice(); for(let i=q.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [q[i],q[j]]=[q[j],q[i]]; } if(q.length>1&&q[0]===VOICE.last) q.push(q.shift()); b=VBAG[key]={sig,q}; } return b.q.shift(); }
+/* 캐릭터마다 최근에 한 대사 기억 → 상황이 달라도 최근 대사는 피해서 고름 (같은 말 반복 방지) */
+const VREC={};
+function vRecent(cid){ return VREC[cid]||(VREC[cid]=[]); }
+function vRemember(cid,t){ const r=vRecent(cid), c=VO[cid]||{}, tot=new Set([].concat(c.start||[],c.first||[],c.bad||[])).size; const keep=Math.max(2,Math.min(12,Math.floor(tot*.6))); const i=r.indexOf(t); if(i>=0) r.splice(i,1); r.push(t); while(r.length>keep) r.shift(); }
+function vBagPick(key,L){ const cid=key.split("|")[0], rec=vRecent(cid); let b=VBAG[key]; const sig=L.join("|");
+  if(!b||b.sig!==sig||!b.q.length){ const q=L.slice(); for(let i=q.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [q[i],q[j]]=[q[j],q[i]]; } b=VBAG[key]={sig,q}; }
+  /* 주머니에서 최근에 안 한 대사를 먼저 꺼냄 · 다 최근 거면 가장 오래전에 한 대사 */
+  let k=b.q.findIndex(t=>!rec.includes(t));
+  if(k<0){ const fresh=L.filter(t=>!rec.includes(t)); if(fresh.length){ const t=fresh[Math.floor(Math.random()*fresh.length)]; vRemember(cid,t); return t; } let best=0,bi=1e9; b.q.forEach((t,i)=>{ const ri=rec.indexOf(t); if(ri<bi){ bi=ri; best=i; } }); k=best; }
+  const t=b.q.splice(k,1)[0]; vRemember(cid,t); return t; }
 /* 녹음이 끝날 때까지는 다음 대사를 꺼내지 않음 (긴 녹음이 다음 대사에 잘리지 않게) */
 function vBusy(t,now){ const d=(typeof VCLIP_DUR!=="undefined"&&VCLIP_DUR[t])||0; VOICE.busy=d?now+d*1000+400:0; }
 var VGAP=20000; /* 내 대사 사이 최소 간격 (20초) */
