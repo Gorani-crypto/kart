@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0250</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0300</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7552,12 +7552,12 @@ var DM_DEF=[
   {k:"circ",e:"🏁",n:"서킷 카트로 완주하기",sub:"F1 서킷카로 끝까지",goal:1,rw:{m:500}},
   {k:"crash",e:"💥",n:"충돌 5회 하기",sub:"벽이나 다른 차에 쾅!",goal:5,rw:{m:500}},
   {k:"win",e:"🏆",n:"멀티플레이 1등하기",sub:"사람 2명 이상 · AI 없는 방",goal:1,rw:{ce:10}},
-  {k:"win3",e:"👑",n:"멀티플레이 1등 3번 하기",sub:"사람 2명 이상 · AI 없는 방",goal:3,rw:{ce:10}}];
+  {k:"win3",e:"👑",n:"멀티플레이 1등 3번 하기",sub:"사람 2명 이상 · AI 없는 방",goal:3,rw:{ce:10,cp:"a",k:5}}];
 var DM={crash:0,lastCrash:0};
 function dmProf(){ return (typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof)||null; }
 function dmToday(p){ const d=kstDay(), m=(p&&p.dm)||{}; return m.d===d?{d,c:Object.assign({},m.c||{}),g:Object.assign({},m.g||{})}:{d,c:{},g:{}}; }
 function dmProg(p,k){ if(k==="att") return (p&&p.att&&p.att.last===kstDay())?1:0; return (dmToday(p).c[k]|0); }
-function dmRwTxt(r){ return r.m?"💰 "+wonFmt(r.m):r.cp?CPG[r.cp].e+" "+CPG[r.cp].n+" "+r.k+"장":r.ce?"🃏 강화 카드 "+r.ce+"장":""; }
+function dmRwTxt(r){ const a=[]; if(r.m)a.push("💰 "+wonFmt(r.m)); if(r.ce)a.push("🃏 강화 카드 "+r.ce+"장"); if(r.cp)a.push(CPG[r.cp].e+" "+CPG[r.cp].n+" "+r.k+"장"); return a.join(" + "); }
 function dmReady(){ const p=dmProf(); if(!p) return 0; const t=dmToday(p); return DM_DEF.filter(m=>dmProg(p,m.k)>=m.goal&&!t.g[m.k]).length; }
 /* 충돌: 경주 중 시속 20km 이상으로 부딪히면 1회 (0.6초 안 연속 충돌은 한 번) */
 function dmCrash(imp){ if(state!=="race") return; if(imp*CONFIG.kmh<20) return; const now=performance.now(); if(now-DM.lastCrash<600) return; DM.lastCrash=now; DM.crash++; }
