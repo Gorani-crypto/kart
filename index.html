@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0130</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0135</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5501,8 +5501,8 @@ const CHARS=[
   {id:"sausage", xpm:1.1, name:"소세지 인간", desc:"통통한 소세지 몸, 구운 자국, 꼭지 매듭", helmet:0xd0644a, stripe:0x8a3a28, suit:0xd0644a, glove:0xd0644a, acc:"sausage"},
   {id:"granny", xpm:1.05, name:"할머니", desc:"하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny"},
   {id:"bigma", lock:1, xpm:1.1, name:"거대 할머니", desc:"스모 장사 태산만 한 덩치의 할머니 · 하얀 쪽머리, 동그란 안경, 보라색 가디건", helmet:0xe4e4e8, stripe:0xc9a2d8, suit:0x8e5a9e, glove:0xffd9b3, acc:"granny", big:3},
-  {id:"mech", lock:40, xpm:1.18, name:"메탈 가디언", desc:"회색 장갑에 주황 포인트, 가로로 빛나는 하늘색 바이저의 강철 로봇 · 덩치가 조금 큼", helmet:0x5a606c, stripe:0xffa020, suit:0x5a606c, glove:0x2a2e36, acc:"mech", big:1.5},
-  {id:"boss", lock:40, xpm:1.18, name:"깡패 두목 철구", desc:"차에 꽉 끼는 거대한 덩치 · 짧게 민 머리, 찌푸린 굵은 눈썹, 뺨의 흉터, 검은 정장에 금목걸이", helmet:0x141414, stripe:0x141414, suit:0x16171b, glove:0xd8a06e, acc:"boss", big:3.4},
+  {id:"mech", lock:40, xpm:1.15, name:"메탈 가디언", desc:"회색 장갑에 주황 포인트, 가로로 빛나는 하늘색 바이저의 강철 로봇 · 덩치가 조금 큼", helmet:0x5a606c, stripe:0xffa020, suit:0x5a606c, glove:0x2a2e36, acc:"mech", big:1.5},
+  {id:"boss", lock:40, xpm:1.15, name:"깡패 두목 철구", desc:"차에 꽉 끼는 거대한 덩치 · 짧게 민 머리, 찌푸린 굵은 눈썹, 뺨의 흉터, 검은 정장에 금목걸이", helmet:0x141414, stripe:0x141414, suit:0x16171b, glove:0xd8a06e, acc:"boss", big:3.4},
   {id:"grandpa", xpm:1.05, name:"할아버지", desc:"회색 납작모자, 하얀 콧수염과 눈썹, 동그란 안경, 갈색 조끼", helmet:0xf2c79a, stripe:0xf4f4f4, suit:0x8a5a34, glove:0xf2c79a, acc:"grandpa"},
   {id:"sumo", lock:10, xpm:1.07, name:"스모 장사 태산", desc:"일반 캐릭터보다 3배 큰 거구의 스모 선수 · 상투머리, 남색 샅바", helmet:0x1a1a1e, stripe:0x1f2f6b, suit:0xf0c49a, glove:0xf0c49a, acc:"sumo", big:3},
   {id:"neonr", name:"네온 라이더", desc:"빛나는 하늘색 바이저의 검은 헬멧 · 몸에 네온 줄 · 네온 링 바이크와 시너지 · 성장형: 이 캐릭터로 완주할 때마다 경험치 +0.1% (최대 +30%)", helmet:0x14161e, stripe:0x3ee6ff, suit:0x1c1f2a, glove:0x3ee6ff, acc:"neonr"},
@@ -5513,9 +5513,9 @@ const CHARS=[
   {id:"clown", lock:10, xpm:1.1, name:"광대 삐에로", desc:"하얀 얼굴에 빨간 코, 무지개 곱슬머리, 고깔모자 · 세발 자전거와 시너지", helmet:0xffffff, stripe:0xff3a3a, suit:0xffcf2e, glove:0xffffff, acc:"clown"},
   {id:"rapper", lock:40, xpm:1.15, name:"래퍼 MC 비트", desc:"거꾸로 쓴 빨간 캡, 검은 선글라스, 굵은 금목걸이, 보라색 후드티 · 마이크를 놓지 않는 래퍼", helmet:0xe0a878, stripe:0xe0a878, suit:0x3a2458, glove:0x141414, acc:"rapper"},
   {id:"emperor", lock:50, xpm:1.2, name:"태양 황제 라흐", desc:"사막 왕국의 황제 · 금·청 줄무늬 머리장식, 등 뒤의 빛나는 태양 원반, 금 목장식, 붉은 망토, 태양 홀", helmet:0xb97a4a, stripe:0xb97a4a, suit:0x2a1a12, glove:0xf0c23c, acc:"emperor", big:1.25},
-  {id:"philo", lock:30, xpm:1.1, name:"철학자 필로소", desc:"고대 광장의 철학자 · 반짝이는 대머리, 흰 곱슬 옆머리, 풍성한 흰 수염, 빨간 코, 남색 띠를 두른 하얀 토가, 두루마리 · 허리엔 포도주 항아리, 손엔 포도주 잔 · 술 한 잔에 질문이 술술 나오는 애주가 · 말이 엄청 많아서 한번 입을 열면 결승선까지 쉬지 않고 떠든다", helmet:0xe0a878, stripe:0xe0a878, suit:0xf4f1ea, glove:0xe0a878, acc:"philo"},
-  {id:"madam", lock:30, xpm:1.1, name:"마담 로즈", desc:"40대 베테랑 드라이버 · 와인빛 웨이브 머리에 올린 선글라스, 빨간 입술과 점, 진주 목걸이와 금 귀걸이, 흰 퍼 숄과 장미 한 송이 · \"누나 꽁무니 잘 따라올 수 있겠어?\" 여유 넘치는 미소로 동생들을 놀리는 화끈한 운전 실력파", helmet:0xf2c8a8, stripe:0x5a0f1e, suit:0x8a0f24, glove:0x1a1014, acc:"madam"},
-  {id:"bella", lock:30, xpm:1.1, name:"레이서 벨라", desc:"30대 초반 인기 레이서 · 밀크브라운 긴 생머리에 하트 머리핀, 반짝이는 큰 눈과 핑크 입술, 진주 귀걸이와 초커, 흰·핑크 레이싱 재킷 · 예쁜 얼굴에 실력까지 갖춘 장난기 많은 누나", helmet:0xf6d2bc, stripe:0x6e4a32, suit:0xfafafa, glove:0xff6fa8, acc:"bella"}
+  {id:"philo", lock:30, xpm:1.12, name:"철학자 필로소", desc:"고대 광장의 철학자 · 반짝이는 대머리, 흰 곱슬 옆머리, 풍성한 흰 수염, 빨간 코, 남색 띠를 두른 하얀 토가, 두루마리 · 허리엔 포도주 항아리, 손엔 포도주 잔 · 술 한 잔에 질문이 술술 나오는 애주가 · 말이 엄청 많아서 한번 입을 열면 결승선까지 쉬지 않고 떠든다", helmet:0xe0a878, stripe:0xe0a878, suit:0xf4f1ea, glove:0xe0a878, acc:"philo"},
+  {id:"madam", lock:30, xpm:1.12, name:"마담 로즈", desc:"40대 베테랑 드라이버 · 와인빛 웨이브 머리에 올린 선글라스, 빨간 입술과 점, 진주 목걸이와 금 귀걸이, 흰 퍼 숄과 장미 한 송이 · \"누나 꽁무니 잘 따라올 수 있겠어?\" 여유 넘치는 미소로 동생들을 놀리는 화끈한 운전 실력파", helmet:0xf2c8a8, stripe:0x5a0f1e, suit:0x8a0f24, glove:0x1a1014, acc:"madam"},
+  {id:"bella", lock:30, xpm:1.12, name:"레이서 벨라", desc:"30대 초반 인기 레이서 · 밀크브라운 긴 생머리에 하트 머리핀, 반짝이는 큰 눈과 핑크 입술, 진주 귀걸이와 초커, 흰·핑크 레이싱 재킷 · 예쁜 얼굴에 실력까지 갖춘 장난기 많은 누나", helmet:0xf6d2bc, stripe:0x6e4a32, suit:0xfafafa, glove:0xff6fa8, acc:"bella"}
 ];
 function buildRider(ch,pose){
   const dark=Lam(0x2b2f3a), skin=Lam(0xffd9b3), helmM=Lam(ch.helmet), suitM=Lam(ch.suit), gloveM=Lam(ch.glove), stripeM=Lam(ch.stripe);
