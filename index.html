@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0140</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0145</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -8369,8 +8369,8 @@ const VCLIP={buf:{},ld:{},src:null,tok:0};
   VO.emperor=Object.assign({},VO.emperor,{bad:P.e.bad.slice(),first:P.e.first.slice(),start:P.e.start.slice(),cr:1}); /* 태양 황제 라흐 */
   VO.philo=Object.assign({},VO.philo,{bad:P.p.bad.slice(),first:P.p.first.slice(),start:P.p.start.slice(),cr:1,gap:6000,idle:9000}); /* 철학자 필로소: 녹음 · 수다쟁이 (대사 간격 6초 · 9초 조용하면 또 말함) */
   VO.rapper=Object.assign({},VO.rapper,{bad:P.w.bad.slice(),first:P.w.first.slice(),start:P.w.start.slice(),cr:1}); /* 래퍼 MC 비트: 녹음 */
-  VO.madam=Object.assign({g:"f",p:.9,r:.95},VO.madam||{},{bad:P.y.bad.slice(),first:P.y.first.slice(),start:P.y.start.slice(),cr:1}); /* 마담 로즈: 녹음 */
-  VO.bella=Object.assign({g:"f",p:1.15,r:1},VO.bella||{},{bad:P.v.bad.slice(),first:P.v.first.slice(),start:P.v.start.slice(),cr:1}); /* 레이서 벨라: 녹음 */
+  VO.madam=Object.assign({g:"f",p:.9,r:.95},VO.madam||{},{bad:P.y.bad.slice(),first:P.y.first.slice(),start:P.y.start.slice(),cr:1,gap:10000,idle:16000}); /* 마담 로즈: 녹음 · 대사 간격 10초 · 16초 조용하면 말함 */
+  VO.bella=Object.assign({g:"f",p:1.15,r:1},VO.bella||{},{bad:P.v.bad.slice(),first:P.v.first.slice(),start:P.v.start.slice(),cr:1,gap:10000,idle:16000}); /* 레이서 벨라: 녹음 · 대사 간격 10초 · 16초 조용하면 말함 */
   VO.sausage=Object.assign({},VO.sausage||{g:"m",p:1,r:1},{bad:P.s.bad.slice(),first:P.s.first.slice(),start:P.s.start.slice(),cr:1}); /* 소세지 인간: 녹음 */
   VO.zero=Object.assign({},VO.zero,{bad:P.z.bad.slice(),first:P.z.first.slice(),start:P.z.start.slice(),cr:1}); /* 블랙 나이트 제로: 예전에 받은 녹음 (voice/zero) */
   VO.rider=Object.assign({},VO.rider,{bad:r.bad.slice(),first:r.first.slice(),start:r.start.slice(),cr:1});
