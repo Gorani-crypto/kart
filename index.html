@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0220</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0235</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -7547,6 +7547,7 @@ function cardBind(m){ m.querySelectorAll(".cdBuy").forEach(b=>b.onclick=()=>card
 var DM_DEF=[
   {k:"att",e:"📅",n:"출석하기",sub:"게임에 들어오면 자동 출석",goal:1,rw:{m:500}},
   {k:"mp",e:"🌐",n:"멀티플레이 1회 하기",sub:"온라인 대전 1판 · 혼자 들어가도 OK",goal:1,rw:{m:500}},
+  {k:"mp10",e:"🏁",n:"멀티플레이 10회 완주하기",sub:"온라인 대전을 끝까지 10판 · 혼자 들어가도 OK",goal:10,rw:{m:3000}},
   {k:"kart",e:"🏎️",n:"일반 카트로 완주하기",sub:"서킷카가 아닌 카트로 끝까지",goal:1,rw:{cp:"a",k:5}},
   {k:"circ",e:"🏁",n:"서킷 카트로 완주하기",sub:"F1 서킷카로 끝까지",goal:1,rw:{m:500}},
   {k:"crash",e:"💥",n:"충돌 5회 하기",sub:"벽이나 다른 차에 쾅!",goal:5,rw:{m:500}},
@@ -7562,6 +7563,7 @@ function dmCrash(imp){ if(state!=="race") return; if(imp*CONFIG.kmh<20) return; 
 /* 경주가 끝날 때 (acctRaceXP 트랜잭션 안에서) 진행도 기록 */
 function dmRace(p,dnf){ const t=dmToday(p), before={}; DM_DEF.forEach(m=>before[m.k]=dmProg(p,m.k)>=m.goal);
   if(typeof MP!=="undefined"&&MP.racing) t.c.mp=(t.c.mp|0)+1;
+  if(typeof MP!=="undefined"&&MP.racing&&!dnf) t.c.mp10=Math.min(99,(t.c.mp10|0)+1);
   if(!dnf){ const circ=(typeof CIRC_KARTS!=="undefined")&&KART&&CIRC_KARTS.includes(KART.id); if(circ) t.c.circ=(t.c.circ|0)+1; else t.c.kart=(t.c.kart|0)+1; if(WINX.win) t.c.win=(t.c.win|0)+1; }
   t.c.crash=Math.min(99,(t.c.crash|0)+DM.crash);
   p.dm=t; const done=DM_DEF.filter(m=>!before[m.k]&&dmProg(p,m.k)>=m.goal&&!t.g[m.k]); return done; }
