@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0125</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0130</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -6459,7 +6459,7 @@ requestAnimationFrame(auraTick);
 /* 돈: 경주마다 받은 경험치만큼 원(₩)을 받음 · 계정(kart/users/uid)의 money · own(산 물건) */
 var SHOP=[
   /* 캐릭터(레벨 해금 후 구매) · 경험치 능력 캐릭터 */
-  {id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:1500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:2000},{id:"neonr",t:"char",p:1000},{id:"mech",t:"char",p:5000},{id:"boss",t:"char",p:5000},{id:"rapper",t:"char",p:3000},{id:"emperor",t:"char",p:4000},{id:"philo",t:"char",p:2000},{id:"madam",t:"char",p:2000},{id:"bella",t:"char",p:2000},{id:"sausage",t:"char",p:1000},
+  {id:"dotori",t:"char",p:0,free:1},{id:"rider",t:"char",p:0,free:1},{id:"major",t:"char",p:0,free:1},{id:"kkami",t:"char",p:0,free:1},{id:"zero",t:"char",p:1000},{id:"foal",t:"char",p:500},{id:"lizard",t:"char",p:500},{id:"baby",t:"char",p:750},{id:"clown",t:"char",p:1500},{id:"sumo",t:"char",p:750},{id:"granny",t:"char",p:500},{id:"grandpa",t:"char",p:500},{id:"bigma",t:"char",p:2000},{id:"neonr",t:"char",p:1000},{id:"mech",t:"char",p:5000},{id:"boss",t:"char",p:5000},{id:"rapper",t:"char",p:3000},{id:"emperor",t:"char",p:4000},{id:"philo",t:"char",p:2000},{id:"madam",t:"char",p:2000},{id:"bella",t:"char",p:2000},{id:"sausage",t:"char",p:1000},
   /* 전설 카트 */
   {id:"tiger",t:"kart",p:100000},{id:"dragon",t:"kart",p:100000},{id:"griffin",t:"kart",p:100000},{id:"apex",t:"kart",p:30000},{id:"grn",t:"kart",p:30000},{id:"wgp",t:"kart",p:30000},{id:"egt",t:"kart",p:30000},{id:"tgp",t:"kart",p:100000},{id:"dgp",t:"kart",p:100000},{id:"ggp",t:"kart",p:100000},
   /* 특수 치장(레벨 해금) */
@@ -6477,7 +6477,7 @@ var SHOP=[
   {id:"s_chick",t:"skin",p:2500,n:"닭 무늬"},{id:"s_tiger",t:"skin",p:3000,n:"호랑이 무늬"},{id:"s_zebra",t:"skin",p:5000,n:"얼룩말 무늬"},{id:"s_emperor",t:"skin",p:5000,n:"황제 무늬",xp:1.02},{id:"s_amb",t:"skin",p:5000,n:"🚑 구급차",xp:1.02},{id:"s_cat",t:"skin",p:5000,n:"🐱 멍청한 고양이",xp:1.02}
 ];
 function shopItem(id){ return SHOP.find(x=>x.id===id); }
-function shopOwned(id){ const it=shopItem(id); if(!it) return true; return !!(typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof&&ACCT.prof.own&&ACCT.prof.own[id]); }
+function shopOwned(id){ const it=shopItem(id); if(!it||it.free) return true; return !!(typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof&&ACCT.prof.own&&ACCT.prof.own[id]); }
 function shopMoney(){ return (typeof ACCT!=="undefined"&&ACCT&&ACCT.user&&ACCT.prof&&(ACCT.prof.money|0))||0; }
 function wonFmt(n){ return (n|0).toLocaleString("ko-KR")+"원"; }
 var _LK=null;
@@ -6693,7 +6693,7 @@ function shopRender(){ const m=document.getElementById("shopModal"); if(!m||m.hi
     const can=logged&&money>=it.p;
     const btn=(it.box&&!own)?`<div class="rs-boxonly">🎁 랜덤 박스 전용</div>`:own?((it.t==="char"||it.t==="kart")?`<div class="rs-ownd">✔ OWNED</div>`:`<button type="button" class="shopEq rs-btn ${worn?"eqon":"eq"}" data-id="${it.id}">${worn?"착용 중 · 벗기":"착용하기"}</button>`)
       :`<button type="button" class="shopBuy rs-btn ${can?"buy":"off"}" data-id="${it.id}" ${can?"":"disabled"}>${!logged?"로그인 필요":can?"구매하기":"돈 부족"}</button>`;
-    return `<div class="rs-card ${worn?"on":own?"own":""}">${shopInfo(it)}<div class="pv">${shopPreview(it)}</div><div class="nm">${shopName(it)}</div>${it.box?gTierTag(it):`<div class="pr">${wonFmt(it.p)}</div>`}${btn}</div>`; };
+    return `<div class="rs-card ${worn?"on":own?"own":""}">${shopInfo(it)}<div class="pv">${shopPreview(it)}</div><div class="nm">${shopName(it)}</div>${it.box?gTierTag(it):`<div class="pr">${it.free?"기본 지급 · 무료":wonFmt(it.p)}</div>`}${btn}</div>`; };
   m.innerHTML=`<div class="rs" role="dialog" aria-label="상점"><div class="rs-streaks"><i></i><i></i><i></i></div>
     <header class="rs-hd">${(()=>{ const im=document.querySelector(".rlttl img"); return im&&im.src?`<img class="rs-logo" src="${im.src}" alt="REDLINE">`:`<b style="font:400 28px \"Black Han Sans\",sans-serif;font-style:italic;color:#ff2a2a">REDLINE</b>`; })()}<div class="rs-ttl"><b>SHOP</b><span>// GARAGE STORE — ${cur[2]}</span></div><div class="rs-sp"></div><div class="rs-money">${logged?`<small>BALANCE</small><b>${wonFmt(money)}</b>`:`<small>BALANCE</small><b class="off">로그인 필요</b>`}</div><button id="shopX" type="button" class="rs-x" aria-label="닫기">✕</button></header>
     <nav class="rs-tabs">${SHOP_TABS.map(([k,ic,n])=>`<button type="button" class="shopTab rs-tab ${k===SHOP_TAB?"on":""} ${k==="box"?"hot":""}" data-k="${k}"><span class="ic">${ic}</span><span>${n}</span></button>`).join("")}</nav>
