@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0025</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1126-0030</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -5513,7 +5513,7 @@ const CHARS=[
   {id:"clown", lock:10, xpm:1.1, name:"광대 삐에로", desc:"하얀 얼굴에 빨간 코, 무지개 곱슬머리, 고깔모자 · 세발 자전거와 시너지", helmet:0xffffff, stripe:0xff3a3a, suit:0xffcf2e, glove:0xffffff, acc:"clown"},
   {id:"rapper", lock:40, xpm:1.15, name:"래퍼 MC 비트", desc:"거꾸로 쓴 빨간 캡, 검은 선글라스, 굵은 금목걸이, 보라색 후드티 · 마이크를 놓지 않는 래퍼", helmet:0xe0a878, stripe:0xe0a878, suit:0x3a2458, glove:0x141414, acc:"rapper"},
   {id:"emperor", lock:50, xpm:1.2, name:"태양 황제 라흐", desc:"사막 왕국의 황제 · 금·청 줄무늬 머리장식, 등 뒤의 빛나는 태양 원반, 금 목장식, 붉은 망토, 태양 홀", helmet:0xb97a4a, stripe:0xb97a4a, suit:0x2a1a12, glove:0xf0c23c, acc:"emperor", big:1.25},
-  {id:"philo", lock:30, xpm:1.1, name:"철학자 필로소", desc:"고대 광장의 철학자 · 반짝이는 대머리, 흰 곱슬 옆머리, 풍성한 흰 수염, 빨간 코, 남색 띠를 두른 하얀 토가, 두루마리 · 허리엔 포도주 항아리, 손엔 포도주 잔 · 술 한 잔에 질문이 술술 나오는 애주가", helmet:0xe0a878, stripe:0xe0a878, suit:0xf4f1ea, glove:0xe0a878, acc:"philo"}
+  {id:"philo", lock:30, xpm:1.1, name:"철학자 필로소", desc:"고대 광장의 철학자 · 반짝이는 대머리, 흰 곱슬 옆머리, 풍성한 흰 수염, 빨간 코, 남색 띠를 두른 하얀 토가, 두루마리 · 허리엔 포도주 항아리, 손엔 포도주 잔 · 술 한 잔에 질문이 술술 나오는 애주가 · 말이 엄청 많아서 한번 입을 열면 결승선까지 쉬지 않고 떠든다", helmet:0xe0a878, stripe:0xe0a878, suit:0xf4f1ea, glove:0xe0a878, acc:"philo"}
 ];
 function buildRider(ch,pose){
   const dark=Lam(0x2b2f3a), skin=Lam(0xffd9b3), helmM=Lam(ch.helmet), suitM=Lam(ch.suit), gloveM=Lam(ch.glove), stripeM=Lam(ch.stripe);
