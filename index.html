@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2520</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2535</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2696,7 +2696,7 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     const [x,z,ry]=g.userData.at; const tent=new THREE.Group(); for(let k=0;k<3;k++){ const t=new THREE.Mesh(new THREE.ConeGeometry(5.6,4,4),LM(0x3a5ad8)); t.position.set(-12+k*12,5,46); t.rotation.y=Math.PI/4; tent.add(t); addBox(tent,8,3,8,LM(0xe8eaf8),-12+k*12,1.5,46); } g.add(tent); }
   /* ⑥ 공대·자연대: 메이커센터(나무 루버)+노란 카페, 자연대 강의동, 9층 연구동, 붉은 벽돌 4호관, 관리동 */
   { const mk=bld({px:[575,590],w:56,h:28,d:36,f:"terra",base:[6,"glass"],gap:12}); const [x,z]=mk.userData.at; const cf=addBox(mk,40,6,.6,LM(0xf2c618),0,3,18.4,0);
-    bld({px:[525,555],w:50,h:21,d:28,f:"white",sign:"자연대 2호관",sb:"#3a5a9a",sf:"#ffffff",sw:22,gap:14});
+    bld({px:[525,555],w:50,h:21,d:28,f:"dbrick",sign:"S1-2 자연대2호관",sb:"#4a2622",sf:"#ffffff",sw:14,gap:14});
     bld({px:[520,665],w:46,h:66,d:34,f:"pinkb",fh:7,sign:"자연과학 연구관",sb:"#dcc4bc",sf:"#2a4a6a",sw:30,gap:16});
     bld({px:[470,585],w:64,h:28,d:30,f:"brick",gap:12}); bld({px:[455,655],w:64,h:21,d:30,f:"brick",gap:14}); bld({px:[600,660],w:50,h:28,d:30,f:"white",gap:14});
     bld({px:[420,650],w:40,h:14,d:26,f:"white",gap:12}); /* 공사 가림막 · 라바콘 */ { const [cx,cz]=clearPos(...M(437,640),8); for(let k=0;k<5;k++){ const m=new THREE.Mesh(new THREE.PlaneGeometry(6,3.4),LM(0x2a6ad8)); m.position.set(cx+k*6,gh(cx,cz)+1.7,cz); add(m); } } }
@@ -2836,6 +2836,13 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
   /* 4→5 왼쪽 경사면: 건물·나무 */
   { const [a,b]=sec(4,.08,5,-.05); let k=0; for(const i of R(a,b)){ if((i-a+N)%N%U(12)) continue; const lx=T[i].z, lz=-T[i].x; for(let q=0;q<3;q++){ const off=W(i)+40+q*14+rnd()*8; tree(P[i].x+lx*off,P[i].z+lz*off,["pine","zelk","ginkgo"][(k++)%3],1.1); } }
     for(const f of [.25,.6]){ const [i]=sec(4,f,4,0); const lx=T[i].z, lz=-T[i].x, off=W(i)+95; const x=P[i].x+lx*off, z=P[i].z+lz*off; if(free(x,z,30)) bld({at:[x,z],fixed:true,w:80,h:28,d:40,f:"brick",ry:Math.atan2(-lx,-lz)}); } }
+  /* 5→6: 오른쪽 S1-3(베이지 콘크리트·가로 발코니 띠) 바짝, 왼쪽 S1-2(짙은 벽돌)+주차장, 메타세쿼이아·회양목 */
+  { const side=(i,sgn,off)=>{ const lx=T[i].z*sgn, lz=-T[i].x*sgn; return [P[i].x+lx*(W(i)+off),P[i].z+lz*(W(i)+off),Math.atan2(-lx,-lz)]; };
+    { const [i]=sec(5,.72,5,0); const [x,z,ry]=side(i,-1,24); const g=bld({at:[x,z],fixed:true,w:60,h:21,d:30,f:"beige",fh:7,ry,sign:"S1-3",sb:"rgba(0,0,0,0)",sf:"#1a3aa8",sw:14,sy:18}); for(let k=0;k<2;k++) addBox(g,52,1.6,4,LM(0xd8cdb4),0,7.5+k*7,16.5); g.userData.keepOpen=true;
+      const hd=[]; for(let k=0;k<8;k++) hd.push([x+Math.sin(ry)*18+Math.cos(ry)*(-24+k*7),gh(x,z)+1,z+Math.cos(ry)*18-Math.sin(ry)*(-24+k*7),0,1.6]); nmInst(tr,new THREE.SphereGeometry(1,8,6),LM(0x2f6a32),hd); }
+    { const [i]=sec(5,.68,5,0); const [x,z,ry]=side(i,1,40); const g=bld({at:[x,z],fixed:true,w:50,h:14,d:30,f:"dbrick",ry,sign:"S1-2",sb:"#4a2622",sf:"#ffffff",sw:12,sy:11}); g.userData.keepOpen=true;
+      for(let k=0;k<5;k++){ const px_=x+Math.sin(ry)*24+Math.cos(ry)*(-18+k*8), pz_=z+Math.cos(ry)*24-Math.sin(ry)*(-18+k*8); carAt(px_,gh(px_,pz_),pz_,ry+Math.PI/2); } }
+    const [a,b]=sec(5,.55,6,-.05); for(const i of R(a,b)){ if((i-a+N)%N%U(14)) continue; for(const sg of [1,-1]){ const lx=T[i].z*sg, lz=-T[i].x*sg, off=W(i)+5+rnd()*3; tree(P[i].x+lx*off,P[i].z+lz*off,rnd()<.5?"meta":"zelk",1.1); } } }
   forest();
   /* 나무 인스턴스 */
   nmInst(tr,new THREE.CylinderGeometry(.35,.55,1,6),LM(0x5a3e2a),TRK.filter((_,k)=>true));
