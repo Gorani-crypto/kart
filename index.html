@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2710</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2725</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2474,6 +2474,11 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
       const hit=roadAt(a.x,a.z)&&roadAt(b.x,b.z)&&roadAt(c.x,c.z)&&!(roadAt(b1.x,b1.z)&&roadAt(b2.x,b2.z)); if(hit){ if(!cur) cur={sd,a:i,b:i}; cur.b=i; } else if(cur){ const len=((cur.b-cur.a+N)%N)*SP+stp*SP; if(len>=4&&len<=46&&Math.min((wp[1]-(cur.a+cur.b)/2+N)%N,((cur.a+cur.b)/2-wp[1]+N)%N)*SP>70&&!OPN.some(q=>q.sd===sd&&Math.min((q.i-(cur.a+cur.b)/2+N)%N,((cur.a+cur.b)/2-q.i+N)%N)*SP<40)) OPN.push({i:(cur.a+Math.round(((cur.b-cur.a+N)%N)/2))%N,sd,w:Math.max(12,Math.min(34,len+8))}); cur=null; } } } }
   /* 2번 개신 오거리: 경로(북·서) 말고 나머지 세 갈래(동 모충로 · 남 순환로 · 남서) */
   const ARMS=[]; { const c=M(983,738); for(const [tx,ty,wd] of [[1160,727,30],[1022,800,30],[968,800,22]]){ const t=M(tx,ty); const dx=t[0]-c[0], dz=t[1]-c[1], L=Math.hypot(dx,dz); ARMS.push({x:c[0],z:c[1],dx:dx/L,dz:dz/L,w:wd}); } }
+  /* 19번 사창 교차로: 실제로는 직각 사거리 → 직진 도로 두 갈래를 깔고, 코스 곡선은 노란 임시 팻말로 */
+  const X19=(()=>{ const i=wp[18], a=(i-U(130)+N)%N, b=(i+U(130))%N; const din=[P[i].x-P[a].x,P[i].z-P[a].z], dout=[P[b].x-P[i].x,P[b].z-P[i].z]; const nl=v=>{ const L=Math.hypot(v[0],v[1]); return [v[0]/L,v[1]/L]; }; const u=nl(din), v=nl(dout);
+    const det=u[0]*(-v[1])-u[1]*(-v[0]); if(Math.abs(det)<.2) return null; const rx=P[b].x-P[a].x, rz=P[b].z-P[a].z; const t=(rx*(-v[1])-rz*(-v[0]))/det; const cx=P[a].x+u[0]*t, cz=P[a].z+u[1]*t;
+    return {i,cx,cz,u,v,wa:W(a)*2,wb:W(b)*2}; })();
+  if(X19){ ARMS.push({x:X19.cx,z:X19.cz,dx:X19.u[0],dz:X19.u[1],w:X19.wa}); ARMS.push({x:X19.cx,z:X19.cz,dx:-X19.v[0],dz:-X19.v[1],w:X19.wb}); }
   const addOpenCircles=()=>{ for(const o of OPN){ const i=o.i; for(let d=0;d<=60;d+=8){ const p=P[i].clone().addScaledVector(NR[i],o.sd*(W(i)+2+d)); OPC.push([p.x,p.z,o.w/2+3]); } }
     for(const a of ARMS) for(let d=0;d<=170;d+=8) OPC.push([a.x+a.dx*d,a.z+a.dz*d,a.w/2+4]); };
   /* 5번에서 직진 방향으로 계속 뻗는 배경 가로수길 (경로 아님) */
@@ -2891,19 +2896,20 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     /* 2→16 캠퍼스 구간: 펜스·벽·광고판·런오프 모두 치우고 인도로 (16→2 바깥 구간은 그대로) */
     const CA=wp[1], CB=wp[15], inCampR=i=>inR(i,CA,CB);
     const campAt=(x,z,yMin,lim,lo)=>{ const [ni,nd]=nearI(x,z); if(!inCampR(ni)) return false; if(nd<W(ni)+(lo!=null?lo:.4)||nd>W(ni)+lim) return false; return yMin==null||yMin>Y[ni]-.25; };
+    const zoneAt=(x,z,my)=>{ if(!X19) return false; if(Math.hypot(x-X19.cx,z-X19.cz)>Math.max(X19.wa,X19.wb)*1.6+20) return false; const [ni,nd]=nearI(x,z); return nd>W(ni)-1.9&&(my==null||my>Y[ni]+.004); };
     const kerbAt=(x,z,my)=>{ const [ni,nd]=nearI(x,z); return inCampR(ni)&&nd>W(ni)-1.9&&nd<W(ni)+.5&&my<Y[ni]+.45&&my>Y[ni]+.004; };
     const openAt0=openAt; const openAt2=(x,z,y,lim)=>openAt0(x,z,y)||campAt(x,z,y,lim);
     const killM=[], killG=[];    const kitSet=new Set(grp.children.slice(0,gK)); for(const c of grp.children){ const kit=kitSet.has(c); c.traverse(o=>{ if(!o.isMesh||o.userData.keepOpen||o.userData.keepOnRoad) return; let q=o; while(q&&q!==grp){ if(q.userData.keepOpen) return; q=q.parent; }
-      if(o.isInstancedMesh){ let ch=false; for(let k=0;k<o.count;k++){ o.getMatrixAt(k,m4); v.setFromMatrixPosition(m4).applyMatrix4(o.matrixWorld); if(m4.elements[0]===0&&m4.elements[5]===0) continue; const gp=o.geometry.parameters||{}; const small=o.geometry.type==='CylinderGeometry'&&(gp.radiusTop===.8||gp.radiusTop===.1); if(openAt0(v.x,v.z,v.y+.5)||(small&&campAt(v.x,v.z,v.y+.5,30))){ o.setMatrixAt(k,zero); ch=true; } } if(ch) o.instanceMatrix.needsUpdate=true; return; }
-      if(o.parent!==grp||o.geometry.type!=="BufferGeometry"){ if(o.geometry.type!=="BufferGeometry"){ o.getWorldPosition(v); if(openAt2(v.x,v.z,v.y+.5,kit?16:6)) killM.push(o); } return; }
+      if(o.isInstancedMesh){ let ch=false; for(let k=0;k<o.count;k++){ o.getMatrixAt(k,m4); v.setFromMatrixPosition(m4).applyMatrix4(o.matrixWorld); if(m4.elements[0]===0&&m4.elements[5]===0) continue; const gp=o.geometry.parameters||{}; const small=o.geometry.type==='CylinderGeometry'&&(gp.radiusTop===.8||gp.radiusTop===.1); if(openAt0(v.x,v.z,v.y+.5)||zoneAt(v.x,v.z,v.y+.5)||(small&&campAt(v.x,v.z,v.y+.5,30))){ o.setMatrixAt(k,zero); ch=true; } } if(ch) o.instanceMatrix.needsUpdate=true; return; }
+      if(o.parent!==grp||o.geometry.type!=="BufferGeometry"){ if(o.geometry.type!=="BufferGeometry"){ o.getWorldPosition(v); if(openAt2(v.x,v.z,v.y+.5,kit?16:6)||zoneAt(v.x,v.z,v.y+.5)) killM.push(o); } return; }
       const geo=o.geometry; if(geo.index||!geo.attributes.position) return; const pa=geo.attributes.position; let ch=false; o.updateMatrixWorld(true); const mw=o.matrixWorld, tv=new THREE.Vector3();
       tr.cbOpen=OPN.map(o=>[o.i,o.sd]);
-      for(let t=0;t+2<pa.count;t+=3){ let cx=0,cz=0,my=-1e9; for(let q2=0;q2<3;q2++){ tv.fromBufferAttribute(pa,t+q2).applyMatrix4(mw); cx+=tv.x/3; cz+=tv.z/3; my=Math.max(my,tv.y); } if(!(openAt0(cx,cz,my)||campAt(cx,cz,o.userData.onRoad?-1e9:my,o.userData.onRoad?30:6,o.userData.onRoad?-1.8:.4)||kerbAt(cx,cz,my))) continue; for(let q2=0;q2<3;q2++) pa.setXYZ(t+q2,0,-500,0); ch=true; }
+      for(let t=0;t+2<pa.count;t+=3){ let cx=0,cz=0,my=-1e9; for(let q2=0;q2<3;q2++){ tv.fromBufferAttribute(pa,t+q2).applyMatrix4(mw); cx+=tv.x/3; cz+=tv.z/3; my=Math.max(my,tv.y); } if(!(openAt0(cx,cz,my)||campAt(cx,cz,o.userData.onRoad?-1e9:my,o.userData.onRoad?30:6,o.userData.onRoad?-1.8:.4)||kerbAt(cx,cz,my)||zoneAt(cx,cz,my))) continue; for(let q2=0;q2<3;q2++) pa.setXYZ(t+q2,0,-500,0); ch=true; }
       if(ch){ pa.needsUpdate=true; geo.computeBoundingSphere(); } }); }
     for(const o of killM) if(o.parent) o.parent.remove(o);
     for(const c of grp.children.slice(gKs,gK)){ if(c.userData.keepOpen||c.isInstancedMesh) continue; bb.setFromObject(c); if(bb.isEmpty()) continue; bb.getCenter(v); if(bb.max.y-bb.min.y>3&&(campAt(v.x,v.z,null,260)||Math.hypot(v.x-P[wp[1]].x,v.z-P[wp[1]].z)<260)) killG.push(c); }
     for(const c of killG) grp.remove(c);
-    for(const c of grp.children.slice(g0)) if(c.isGroup&&!c.userData.keepOpen){ c.getWorldPosition(v); if(openAt2(v.x,v.z,null,kitSet.has(c)?18:7)||(kitSet.has(c)&&campAt(v.x,v.z,null,260))) grp.remove(c); }
+    for(const c of grp.children.slice(g0)) if(c.isGroup&&!c.userData.keepOpen){ c.getWorldPosition(v); if(openAt2(v.x,v.z,null,kitSet.has(c)?18:7)||zoneAt(v.x,v.z,null)||(kitSet.has(c)&&campAt(v.x,v.z,null,260))) grp.remove(c); }
     /* 캠퍼스 인도: 보도블록 + 낮은 경계석 (입구 자리는 비움) */
     { const pav=new THREE.MeshLambertMaterial({map:canvasTex(64,64,(x,w,h)=>{ x.fillStyle="#8a7f72"; x.fillRect(0,0,w,h); for(let r=0;r<4;r++) for(let c=0;c<4;c++){ x.fillStyle=["#a8968a","#9a8a7c","#b0a090","#94867a"][(r*3+c)%4]; x.fillRect(c*16+1,r*16+1,14,14); } })});
       const curb=new THREE.MeshLambertMaterial({color:0x6e6c68,side:THREE.DoubleSide}), SWW=4.6, SH=.28;
@@ -2951,6 +2957,9 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     if(0){ const d0=st+4, zs=[]; for(let k=-a.w/2+1.5;k<a.w/2-1;k+=2.6){ const x=a.x+a.dx*d0+px*k, z=a.z+a.dz*d0+pz*k; zs.push([x,gh(x,z)+.2,z,Math.atan2(a.dx,a.dz),1]); } const im=nmInst(tr,new THREE.BoxGeometry(1.3,.06,5),whi,zs); if(im) im.userData.keepOpen=true; }
     const gx=a.x+a.dx*(st+10), gz=a.z+a.dz*(st+10); yellowGate(gx,gh(gx,gz)+.1,gz,Math.atan2(-a.dx,-a.dz),a.w); }
   { const im=nmInst(tr,new THREE.ConeGeometry(.55,1.8,8),LM(0xff7a1a),conesL); if(im) im.userData.keepOpen=true; }
+  /* 19번 곡선: 바깥쪽을 노란 임시 팻말로 쭉 둘러 코스를 만듦 */
+  if(X19){ const i=X19.i, tsg=turn(i)>0?1:-1, sd=tsg; const span=U(Math.max(X19.wa,X19.wb)*1.2+20);
+    for(let k=-span;k<=span;k+=U(9)){ const j=(i+k+N)%N; const p=P[j].clone().addScaledVector(NR[j],sd*(W(j)+1.5)); yellowGate(p.x,Y[j],p.z,Math.atan2(-sd*NR[j].x,-sd*NR[j].z),10); } }
   /* 오거리 이름판 */ { const i=wp[1], c=cell("개신 오거리","#1a5ad8","#ffffff",{fs:42}); if(c){ const p=P[i].clone().addScaledVector(NR[i],-(W(i)+8)); const g=new THREE.Group(); g.position.set(p.x,Y[i],p.z); g.rotation.y=Math.atan2(T[i].x,T[i].z)+Math.PI; addBox(g,.4,9,.4,LM(0x8a9099),0,4.5,0); const sg=new THREE.Mesh(planeUV(14,3.5,c),atlasM); sg.position.set(0,9.6,0); g.add(sg); g.userData.keepOpen=true; add(g); } }
   atlasTex.needsUpdate=true;
   cbnuMerge(tr,g0,1300);
