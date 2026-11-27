@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2130</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2205</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2797,17 +2797,42 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
       if(c.isLineSegments) continue; c.getWorldPosition(v); if(inOpen(v.x,v.z)){ dead.push(c); continue; }
       if(c.isGroup){ bb.setFromObject(c); if(bb.isEmpty()) continue; const sx=bb.max.x-bb.min.x, sz=bb.max.z-bb.min.z; if(Math.max(sx,sz)>260) continue; let hit=false; for(let a=0;a<=4&&!hit;a++) for(let b=0;b<=4&&!hit;b++) if(inOpen(bb.min.x+sx*a/4,bb.min.z+sz*b/4)) hit=true; if(hit) dead.push(c); } }
     for(const c of dead) grp.remove(c);
-    /* 서킷 벽(하얀 방호벽)도 입구 자리만 뜯어냄 — 대신 팻말 뒤로 막힘(물리 벽은 그대로) */
-    for(const c of grp.children.slice(0,g0)){ c.traverse(o=>{ if(!o.isMesh||o.isInstancedMesh||!o.geometry||o.geometry.index) return; const pa=o.geometry.attributes.position; if(!pa||pa.count<300) return; let ch=false;
-      for(let t=0;t+2<pa.count;t+=3){ const cx=(pa.getX(t)+pa.getX(t+1)+pa.getX(t+2))/3, cz=(pa.getZ(t)+pa.getZ(t+1)+pa.getZ(t+2))/3; if(!inOpen(cx,cz)) continue; const [ni,nd]=nearI(cx,cz); if(nd<W(ni)+.6) continue; const my=Math.max(pa.getY(t),pa.getY(t+1),pa.getY(t+2)); if(my<Y[ni]+.35) continue;
-        for(let q=0;q<3;q++) pa.setXYZ(t+q,0,-500,0); ch=true }
-      if(ch){ pa.needsUpdate=true; o.geometry.computeBoundingSphere(); } }); } }
+    /* 입구 자리(트랙 점·방향 단위)는 벽·펜스·광고판·연석 위 구조물을 모두 걷어냄 → 노란 팻말만 보이게 (물리 벽은 그대로) */
+    const OS=[new Set(),new Set()], mark=(i,sd,half)=>{ const n=Math.ceil(half/SP); for(let k=-n;k<=n;k++) OS[sd>0?0:1].add((i+k+N)%N); };
+    for(const o of OPN) mark(o.i,o.sd,o.w/2+10); for(const sd of [1,-1]) mark(wp[1],sd,60);
+    const openAt=(x,z,yMin)=>{ const [ni,nd]=nearI(x,z); if(nd<W(ni)+.4||nd>W(ni)+48) return false; const sd=((x-P[ni].x)*NR[ni].x+(z-P[ni].z)*NR[ni].z)>0?0:1; if(!OS[sd].has(ni)) return false; return yMin==null||yMin>Y[ni]+.3; };
+    /* 2→16 캠퍼스 구간: 펜스·벽·광고판·런오프 모두 치우고 인도로 (16→2 바깥 구간은 그대로) */
+    const CA=wp[1], CB=wp[15], inCampR=i=>inR(i,CA,CB);
+    const campAt=(x,z,yMin,lim,lo)=>{ const [ni,nd]=nearI(x,z); if(!inCampR(ni)) return false; if(nd<W(ni)+(lo!=null?lo:.4)||nd>W(ni)+lim) return false; return yMin==null||yMin>Y[ni]-.25; };
+    const kerbAt=(x,z,my)=>{ const [ni,nd]=nearI(x,z); return inCampR(ni)&&nd>W(ni)-1.7&&nd<W(ni)+.3&&my<Y[ni]+.4&&my>Y[ni]+.03; };
+    const openAt0=openAt; const openAt2=(x,z,y,lim)=>openAt0(x,z,y)||campAt(x,z,y,lim);
+    for(const c of grp.children){ c.traverse(o=>{ if(!o.isMesh||o.userData.keepOpen||o.userData.keepOnRoad) return; let q=o; while(q&&q!==grp){ if(q.userData.keepOpen) return; q=q.parent; }
+      if(o.isInstancedMesh){ let ch=false; for(let k=0;k<o.count;k++){ o.getMatrixAt(k,m4); v.setFromMatrixPosition(m4).applyMatrix4(o.matrixWorld); if(m4.elements[0]===0&&m4.elements[5]===0) continue; const gp=o.geometry.parameters||{}; const small=o.geometry.type==='CylinderGeometry'&&(gp.radiusTop===.8||gp.radiusTop===.1); if(openAt0(v.x,v.z,v.y+.5)||(small&&campAt(v.x,v.z,v.y+.5,30))){ o.setMatrixAt(k,zero); ch=true; } } if(ch) o.instanceMatrix.needsUpdate=true; return; }
+      if(o.parent!==grp||o.geometry.type!=="BufferGeometry"){ if(o.geometry.type!=="BufferGeometry"){ o.getWorldPosition(v); if(openAt2(v.x,v.z,v.y+.5,6)) o.visible=false; } return; }
+      const geo=o.geometry; if(geo.index||!geo.attributes.position) return; const pa=geo.attributes.position; let ch=false; o.updateMatrixWorld(true); const mw=o.matrixWorld, tv=new THREE.Vector3();
+      tr.cbOpen=OPN.map(o=>[o.i,o.sd]);
+      for(let t=0;t+2<pa.count;t+=3){ let cx=0,cz=0,my=-1e9; for(let q2=0;q2<3;q2++){ tv.fromBufferAttribute(pa,t+q2).applyMatrix4(mw); cx+=tv.x/3; cz+=tv.z/3; my=Math.max(my,tv.y); } if(!(openAt0(cx,cz,my)||campAt(cx,cz,o.userData.onRoad?-1e9:my,o.userData.onRoad?30:6,o.userData.onRoad?-1.8:.4)||kerbAt(cx,cz,my))) continue; for(let q2=0;q2<3;q2++) pa.setXYZ(t+q2,0,-500,0); ch=true; }
+      if(ch){ pa.needsUpdate=true; geo.computeBoundingSphere(); } }); }
+    for(const c of grp.children.slice(g0)) if(c.isGroup&&!c.userData.keepOpen){ c.getWorldPosition(v); if(openAt2(v.x,v.z,null,7)) grp.remove(c); }
+    /* 캠퍼스 인도: 보도블록 + 낮은 경계석 (입구 자리는 비움) */
+    { const pav=new THREE.MeshLambertMaterial({map:canvasTex(64,64,(x,w,h)=>{ x.fillStyle="#8a7f72"; x.fillRect(0,0,w,h); for(let r=0;r<4;r++) for(let c=0;c<4;c++){ x.fillStyle=["#a8968a","#9a8a7c","#b0a090","#94867a"][(r*3+c)%4]; x.fillRect(c*16+1,r*16+1,14,14); } })});
+      const curb=new THREE.MeshLambertMaterial({color:0xb8b6b0,side:THREE.DoubleSide}), SWW=4.6, SH=.28;
+      for(const sd of [1,-1]){ const runs=[]; let cur=[]; for(const i of R(CA,CB)){ if(OS[sd>0?0:1].has(i)){ if(cur.length>1) runs.push(cur); cur=[]; } else cur.push(i); } if(cur.length>1) runs.push(cur);
+        for(const r of runs){ const m=nmStrip(tr,r,i=>sd*(W(i)-.05),i=>sd*(W(i)+.2+SWW),SH,pav,4,false); m.material.side=THREE.DoubleSide; m.userData.keepOpen=true; m.userData.onRoad=false;
+          const pos=[]; for(let k=0;k<r.length-1;k++){ const i=r[k], j=r[k+1], a=P[i].clone().addScaledVector(NR[i],sd*(W(i)+.2)), b2=P[j].clone().addScaledVector(NR[j],sd*(W(j)+.2)); pos.push(a.x,Y[i]+SH,a.z, b2.x,Y[j]+SH,b2.z, b2.x,Y[j]-.1,b2.z, a.x,Y[i]+SH,a.z, b2.x,Y[j]-.1,b2.z, a.x,Y[i]-.1,a.z); }
+          const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3)); g.computeVertexNormals(); const cm=new THREE.Mesh(g,curb); cm.userData.keepOpen=true; add(cm); } } } }
   /* ===== 노란 진입금지 팻말 (임시로 막은 느낌: A형 받침 + 노란 판 + 라바콘) ===== */
   const yc=cell("진입금지","#f2c218","#1a1a1a",{fs:46}); const yc2=cell("진입금지 · 레이스 코스 아님","#f2c218","#1a1a1a",{fs:28}), conesL=[], legsL=[];
   const yellowGate=(x,y,z,ry,bw)=>{ const g=new THREE.Group(); g.position.set(x,y,z); g.rotation.y=ry; const c=bw>18?yc2:yc; const n=Math.max(1,Math.round(bw/12)), seg=bw/n;
     for(let k=0;k<n;k++){ const cx=-bw/2+seg*(k+.5); if(c){ const bd=new THREE.Mesh(planeUV(seg-.8,(seg-.8)/4.2,c),atlasM); bd.position.set(cx,2.4,0); g.add(bd); } const st=new THREE.Mesh(new THREE.PlaneGeometry(seg-.8,.5),BM(0x1a1a1a)); st.position.set(cx,1.1,0); g.add(st);
       for(const q of [-1,1]){ const lg=new THREE.Mesh(new THREE.BoxGeometry(.25,3.6,.25),LM(0xf2c218)); lg.position.set(cx+q*(seg/2-.9),1.6,.5); lg.rotation.x=.28; g.add(lg); const lg2=lg.clone(); lg2.position.z=-.5; lg2.rotation.x=-.28; g.add(lg2); } }
     g.userData.keepOpen=true; add(g); const cr=Math.cos(ry), sr=Math.sin(ry); for(let k=0;k<=n*2;k++){ const lx=-bw/2+bw*k/(n*2); conesL.push([x+cr*lx+sr*(-2.4),y+.9,z-sr*lx+cr*(-2.4),0,1]); } };
+  { const asp=new THREE.MeshLambertMaterial({color:0x44474e,side:THREE.DoubleSide}), lnM=new THREE.MeshBasicMaterial({color:0xf2c230,side:THREE.DoubleSide}); const pos=[], ln=[];
+    for(const o of OPN){ const i=o.i, sd=o.sd, n=NR[i].clone().multiplyScalar(sd), t=new THREE.Vector3(-n.z,0,n.x), hw=o.w/2-1;
+      for(let d=-1;d<70;d+=5){ const a=P[i].clone().addScaledVector(n,W(i)+d), b=P[i].clone().addScaledVector(n,W(i)+d+5), ya=d<6?Y[i]+.04:Math.max(gh(a.x,a.z)+.15,Y[i]+.04-(d-6)*.03), yb=Math.max(gh(b.x,b.z)+.15,Y[i]+.04-(d-1)*.03);
+        for(const [v,y,q] of [[a,ya,hw],[b,yb,hw],[b,yb,-hw],[a,ya,hw],[b,yb,-hw],[a,ya,-hw]]) pos.push(v.x+t.x*q,y,v.z+t.z*q);
+        if(d>8&&((d/5)|0)%2) for(const [v,y,q] of [[a,ya+.03,.3],[b,yb+.03,.3],[b,yb+.03,-.3],[a,ya+.03,.3],[b,yb+.03,-.3],[a,ya+.03,-.3]]) ln.push(v.x+t.x*q,y,v.z+t.z*q); } }
+    for(const [arr,mt] of [[pos,asp],[ln,lnM]]){ const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(arr,3)); g.computeVertexNormals(); const m=new THREE.Mesh(g,mt); m.userData.keepOpen=true; add(m); } }
   for(const o of OPN){ const i=o.i, sd=o.sd, p=P[i].clone().addScaledVector(NR[i],sd*(W(i)+4)); yellowGate(p.x,Math.max(Y[i],gh(p.x,p.z)),p.z,Math.atan2(-sd*NR[i].x,-sd*NR[i].z)+Math.PI,o.w); }
   /* 오거리 세 갈래: 실제 도로(아스팔트·중앙선·횡단보도) + 막음 */
   for(const a of ARMS){ const pos=[], ln=[], cw=[]; const px=-a.dz, pz=a.dx; let st=0; for(let d=0;d<=170;d+=4){ const x=a.x+a.dx*d, z=a.z+a.dz*d; if(edge(x,z)>1&&!st) st=d; }
