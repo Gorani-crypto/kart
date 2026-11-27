@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2630</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2645</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2476,6 +2476,9 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
   const ARMS=[]; { const c=M(983,738); for(const [tx,ty,wd] of [[1160,727,30],[1022,800,30],[968,800,22]]){ const t=M(tx,ty); const dx=t[0]-c[0], dz=t[1]-c[1], L=Math.hypot(dx,dz); ARMS.push({x:c[0],z:c[1],dx:dx/L,dz:dz/L,w:wd}); } }
   const addOpenCircles=()=>{ for(const o of OPN){ const i=o.i; for(let d=0;d<=60;d+=8){ const p=P[i].clone().addScaledVector(NR[i],o.sd*(W(i)+2+d)); OPC.push([p.x,p.z,o.w/2+3]); } }
     for(const a of ARMS) for(let d=0;d<=170;d+=8) OPC.push([a.x+a.dx*d,a.z+a.dz*d,a.w/2+4]); };
+  /* 5번에서 직진 방향으로 계속 뻗는 배경 가로수길 (경로 아님) */
+  const AVE=(()=>{ const i5=wp[4], b=(i5-U(90)+N)%N; let dx=P[i5].x-P[b].x, dz=P[i5].z-P[b].z; const L=Math.hypot(dx,dz); dx/=L; dz/=L; return {x:P[i5].x,z:P[i5].z,y:Y[i5],dx,dz,i:i5,len:480,w:16}; })();
+  for(let d=0;d<=AVE.len;d+=10) OPC.push([AVE.x+AVE.dx*d,AVE.z+AVE.dz*d,AVE.w/2+9]);
   addOpenCircles(); const inOpen=(x,z)=>OPC.some(c=>(c[0]-x)**2+(c[1]-z)**2<c[2]*c[2]);
   /* 대운동장 자리(분지): 주변 도로보다 낮게 */
   const STAD=(()=>{ const [cx0,cz0]=M(872,652); let rx=210, rz=135; const ang=-.55, TW=30; const ok=(rx,rz)=>{ for(let k=0;k<48;k++){ const a=k/48*Math.PI*2, x=cx0+Math.cos(a)*(rx+TW+8)*Math.cos(ang)-Math.sin(a)*(rz+TW+8)*Math.sin(ang), z=cz0+Math.cos(a)*(rx+TW+8)*Math.sin(ang)+Math.sin(a)*(rz+TW+8)*Math.cos(ang); if(edge(x,z)<6) return false; } return true; };
@@ -2708,7 +2711,7 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     for(let r=0;r<5;r++){ const s=new THREE.Mesh(new THREE.CylinderGeometry(20+r*5,20+r*5,.8+r*.8,24,1,false,Math.PI*.15,Math.PI*.7),concrete); s.position.set(0,(.8+r*.8)/2,-18-r); g.add(s); }
     add(g); occ.push([x,z,30]); const az=[]; const [a,b]=sec(7,.15,7,.85); for(const i of R(a,b)) if(i%U(7)===0){ const p=P[i].clone().addScaledVector(NR[i],-(W(i)+5)); az.push([p.x,gh(p.x,p.z)+.8,p.z,rnd()*3,1.6+rnd()*.5]); } nmInst(tr,new THREE.SphereGeometry(1,8,6),LM(0xd8408a),az); }
   /* ⑧ 제2학생회관 (S14 흰 기둥 + 주황 테라코타) · 박물관 */
-  { bld({px:[402,505],w:70,h:28,d:34,f:"terra",sign:"S14 제2학생회관",sb:"#f0efea",sf:"#1a4aa8",sw:36,gap:16}); bld({px:[440,520],w:46,h:12,d:30,f:"gray",sign:"박물관",sb:"#9ba0a8",sf:"#ffffff",sw:18,gap:20}); }
+  { bld({px:[372,492],w:70,h:28,d:34,f:"terra",sign:"S14 제2학생회관",sb:"#f0efea",sf:"#1a4aa8",sw:36,gap:16}); bld({px:[440,520],w:46,h:12,d:30,f:"gray",sign:"박물관",sb:"#9ba0a8",sf:"#ffffff",sw:18,gap:20}); }
   /* ⑨ 양성재 (고층 기숙사 + 청록 유리 계단실) */
   { for(const [px,py,h] of [[262,492,84],[270,430,70],[240,550,56]]){ const g=bld({px:[px,py],w:44,h,d:30,f:"villa",sign:px===262?"양성재":null,sb:"#2a5a9a",sf:"#ffffff",sw:20,sy:h-6,gap:14}); const st=addBox(g,9,h+4,31,LM(0x3a8a8a),0,(h+4)/2,0,0); addBox(g,14,6,14,LM(0xd8d8d0),8,h+3,0); } }
   /* ⑩~⑪ 잔디밭 · 솔못 · N2 (청록 유리띠 곡면 건물) · 테니스장 */
@@ -2901,6 +2904,20 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
           const m=nmStrip(tr,r,i=>sd*(W(i)+2.6),i=>sd*(W(i)+2.6+SWW),SH,pav,4,false); m.material.side=THREE.DoubleSide; m.userData.keepOpen=true; m.userData.onRoad=false;
           const pos=[]; for(let k=0;k<r.length-1;k++){ const i=r[k], j=r[k+1], a=P[i].clone().addScaledVector(NR[i],sd*(W(i)-.35)), b2=P[j].clone().addScaledVector(NR[j],sd*(W(j)-.35)); pos.push(a.x,Y[i]+SH+.06,a.z, b2.x,Y[j]+SH+.06,b2.z, b2.x,Y[j]-.1,b2.z, a.x,Y[i]+SH+.06,a.z, b2.x,Y[j]-.1,b2.z, a.x,Y[i]-.1,a.z); }
           const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3)); g.computeVertexNormals(); const cm=new THREE.Mesh(g,curb); cm.userData.keepOpen=true; add(cm); } } } }
+  /* 배경 가로수길 그리기: 아스팔트 + 노란 중앙선 + 연석 + 보도 + 가로수 + 붉은 철쭉 띠 + 가로등 */
+  { const A=AVE, px=-A.dz, pz=A.dx; let st=0; for(let d=0;d<=80;d+=2){ if(edge(A.x+A.dx*d,A.z+A.dz*d)>0.5){ st=d; break; } }
+    const quad=(arr,x0,z0,x1,z1,o0,o1,y0,y1)=>{ for(const [x,z,o,y] of [[x0,z0,o0,y0],[x1,z1,o0,y1],[x1,z1,o1,y1],[x0,z0,o0,y0],[x1,z1,o1,y1],[x0,z0,o1,y0]]) arr.push(x+px*o,y,z+pz*o); };
+    const asp=[], yl=[], cb=[], pv=[], fl=[]; const hw=A.w/2; const yAt=(x,z,d)=>Math.max(gh(x,z)+.12, A.y+.04-Math.max(0,d-st)*.0);
+    for(let d=Math.max(0,st-3);d<A.len;d+=6){ const x0=A.x+A.dx*d, z0=A.z+A.dz*d, x1=A.x+A.dx*(d+6), z1=A.z+A.dz*(d+6), y0=gh(x0,z0)+.14, y1=gh(x1,z1)+.14;
+      quad(asp,x0,z0,x1,z1,-hw,hw,y0,y1); if(d>st+6){ quad(yl,x0,z0,x1,z1,-.35,-.1,y0+.03,y1+.03); quad(yl,x0,z0,x1,z1,.1,.35,y0+.03,y1+.03); }
+      if(d>st+4) for(const s2 of [1,-1]){ quad(cb,x0,z0,x1,z1,s2*hw,s2*(hw+.5),y0+.22,y1+.22); quad(pv,x0,z0,x1,z1,s2*(hw+.5),s2*(hw+5.5),y0+.2,y1+.2); }
+      if(d>st+10) quad(fl,x0,z0,x1,z1,hw+6,hw+8.5,y0+.6,y1+.6); }
+    const mk=(arr,mat)=>{ const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(arr,3)); g.computeVertexNormals(); const m=new THREE.Mesh(g,mat); m.material.side=THREE.DoubleSide; m.userData.keepOpen=true; add(m); };
+    mk(asp,LM(0x55575e)); mk(yl,LM(0xf2c230)); mk(cb,LM(0x8f8d88)); mk(pv,LM(0xa99a8c)); mk(fl,LM(0xd8303a));
+    const tk=[], cr=[], lp=[], lh=[]; for(let d=st+14;d<A.len;d+=13) for(const s2 of [1,-1]){ const x=A.x+A.dx*d+px*s2*(hw+3), z=A.z+A.dz*d+pz*s2*(hw+3), y=gh(x,z); const h=9+rnd()*3; tk.push([x,y+h/2,z,rnd()*6,1,0,0,h]); cr.push([x,y+h+2.5,z,rnd()*6,4.6+rnd()*1.2]); if(((d/13)|0)%3===0){ lp.push([x+A.dx*6,y+3.2,z+A.dz*6,0,1,0,0,6.4]); lh.push([x+A.dx*6,y+6,z+A.dz*6,0,1]); } }
+    for(const [geo,mat,arr] of [[new THREE.CylinderGeometry(.35,.55,1,6),LM(0x5a3e2a),tk],[new THREE.IcosahedronGeometry(1,0),LM(0x6aa83a),cr],[new THREE.CylinderGeometry(.14,.2,1,6),LM(0x1e5a4a),lp],[new THREE.SphereGeometry(.55,6,4),BM(0xfff4d8),lh]]){ const im=nmInst(tr,geo,mat,arr); if(im) im.userData.keepOpen=true; }
+    /* 입구: 횡단보도 + 노란 팻말 */ const zs=[]; for(let k=-hw+1.2;k<hw-.8;k+=2.4){ const d=st+3, x=A.x+A.dx*d+px*k, z=A.z+A.dz*d+pz*k; zs.push([x,gh(x,z)+.2,z,Math.atan2(A.dx,A.dz)+Math.PI/2,1]); } { const im=nmInst(tr,new THREE.BoxGeometry(4,.05,1.2),whi,zs); if(im) im.userData.keepOpen=true; }
+    tr.cbAveGate=[A.x+A.dx*(st+8),A.z+A.dz*(st+8),Math.atan2(-A.dx,-A.dz),A.w]; }
   /* ===== 노란 진입금지 팻말 (임시로 막은 느낌: A형 받침 + 노란 판 + 라바콘) ===== */
   const yc=cell("진입금지","#f2c218","#1a1a1a",{fs:46}); const yc2=cell("진입금지 · 레이스 코스 아님","#f2c218","#1a1a1a",{fs:28}), conesL=[], legsL=[];
   const yellowGate=(x,y,z,ry,bw)=>{ const g=new THREE.Group(); g.position.set(x,y,z); g.rotation.y=ry; const c=bw>18?yc2:yc; const n=Math.max(1,Math.round(bw/12)), seg=bw/n;
@@ -2914,6 +2931,7 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
         if(d>8&&((d/5)|0)%2) for(const [v,y,q] of [[a,ya+.03,.3],[b,yb+.03,.3],[b,yb+.03,-.3],[a,ya+.03,.3],[b,yb+.03,-.3],[a,ya+.03,-.3]]) ln.push(v.x+t.x*q,y,v.z+t.z*q); } }
     for(const [arr,mt] of [[pos,asp],[ln,lnM]]){ const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(arr,3)); g.computeVertexNormals(); const m=new THREE.Mesh(g,mt); m.userData.keepOpen=true; add(m); } }
   for(const o of OPN){ const i=o.i, sd=o.sd, p=P[i].clone().addScaledVector(NR[i],sd*(W(i)+4)); yellowGate(p.x,Math.max(Y[i],gh(p.x,p.z)),p.z,Math.atan2(-sd*NR[i].x,-sd*NR[i].z),o.w); }
+  { const g_=tr.cbAveGate; if(g_) yellowGate(g_[0],gh(g_[0],g_[1])+.15,g_[1],g_[2],g_[3]); }
   /* 오거리 세 갈래: 실제 도로(아스팔트·중앙선·횡단보도) + 막음 */
   for(const a of ARMS){ const pos=[], ln=[], cw=[]; const px=-a.dz, pz=a.dx; let st=0; for(let d=0;d<=170;d+=4){ const x=a.x+a.dx*d, z=a.z+a.dz*d; if(edge(x,z)>1&&!st) st=d; }
     for(let d=Math.max(0,st-6);d<170;d+=6){ const x0=a.x+a.dx*d, z0=a.z+a.dz*d, x1=a.x+a.dx*(d+6), z1=a.z+a.dz*(d+6), y0=gh(x0,z0)+.12, y1=gh(x1,z1)+.12, h=a.w/2;
