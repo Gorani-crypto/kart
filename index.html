@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2645</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2650</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2489,7 +2489,7 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
   { const sp=[]; for(let i=0;i<N;i+=4) sp.push(i); let ysum=0; for(let i=0;i<N;i++) ysum+=Y[i]; const yavg=ysum/N;
     for(let a=0;a<GW;a++) for(let b=0;b<GD;b++){ const x=gx0+a*GC, z=gz0+b*GC; const [ni,nd]=nearI(x,z);
       let h; if(nd<W(ni)+30) h=Y[ni]-.45; else { let sw=0, sy=0; for(const i of sp){ const d2=(P[i].x-x)**2+(P[i].z-z)**2, w=1/(d2*d2+1e6); sw+=w; sy+=w*Y[i]; } const far=Math.min(1,Math.max(0,(nd-200)/900)); h=(sy/sw)*(1-far)+yavg*.5*far; const t=Math.min(1,(nd-W(ni)-30)/60); h=(Y[ni]-.45)*(1-t)+Math.min(h,Y[ni]+28)*t; }
-      h=Math.max(-.3,h); { const [s45,e45]=sec(4,.05,5,.06); if(inR(ni,s45,e45)){ const lx=T[ni].z, lz=-T[ni].x, sdl=((x-P[ni].x)*lx+(z-P[ni].z)*lz)>0; const ex=nd-W(ni)-36; if(sdl&&ex>0) h=Math.max(h,Y[ni]-.45+Math.min(18,ex*.3)); } } const q=stadQ(x,z); if(q<1.9&&nd>W(ni)+14){ const t=q<1?0:Math.min(1,(q-1)/.5), sm=t*t*(3-2*t); const rim=STAD.floor+7.7+.1; h=(q<1?STAD.floor:rim)*(1-sm)+Math.max(h,q<1?h:rim)*sm; } HG[a*GD+b]=h; } }
+      h=Math.max(-.3,h); { const [s45,e45]=sec(4,.05,5,.06); if(inR(ni,s45,e45)){ const lx=T[ni].z, lz=-T[ni].x, sdl=((x-P[ni].x)*lx+(z-P[ni].z)*lz)>0; const ex=nd-W(ni)-36; if(sdl&&ex>0) h=Math.max(h,Y[ni]-.45+Math.min(18,ex*.3)); } } { const [s9,e9]=sec(8,.7,10,0); if(inR(ni,s9,e9)){ const lx=T[ni].z, lz=-T[ni].x, sdr=((x-P[ni].x)*lx+(z-P[ni].z)*lz)<0; const ex=nd-W(ni)-12; if(sdr&&ex>0) h=Math.max(h,Y[ni]-.45+Math.min(22,ex*.32)); } } const q=stadQ(x,z); if(q<1.9&&nd>W(ni)+14){ const t=q<1?0:Math.min(1,(q-1)/.5), sm=t*t*(3-2*t); const rim=STAD.floor+7.7+.1; h=(q<1?STAD.floor:rim)*(1-sm)+Math.max(h,q<1?h:rim)*sm; } HG[a*GD+b]=h; } }
   const gh=(x,z)=>{ const fx=Math.max(0,Math.min(GW-1.001,(x-gx0)/GC)), fz=Math.max(0,Math.min(GD-1.001,(z-gz0)/GC)), a=Math.floor(fx), b=Math.floor(fz), u=fx-a, v=fz-b;
     return HG[a*GD+b]*(1-u)*(1-v)+HG[(a+1)*GD+b]*u*(1-v)+HG[a*GD+b+1]*(1-u)*v+HG[(a+1)*GD+b+1]*u*v; };
   tr.hillH=(x,z)=>gh(x,z);
@@ -2861,6 +2861,9 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     const pk=new THREE.Mesh(new THREE.PlaneGeometry(14,10),LM(0x2a6ac8)); pk.rotation.x=-Math.PI/2; pk.position.set(18,.25,22); g.add(pk);
     const bo=[]; const [a,b2]=sec(6,.22,6,.42); for(const j of R(a,b2)){ if((j-a+N)%N%U(4)) continue; const p=P[j].clone().addScaledVector(new THREE.Vector3(-T[j].z,0,T[j].x),W(j)+1.2); bo.push([p.x,Y[j]+.6,p.z,Math.atan2(T[j].x,T[j].z),1]); } nmInst(tr,new THREE.BoxGeometry(1,1.2,1.4),LM(0xb8b6b0),bo);
     const [c,d2]=sec(6,.1,6,.6); for(const j of R(c,d2)){ if((j-c+N)%N%U(16)) continue; const off=W(j)+6+rnd()*4; tree(P[j].x+T[j].z*off,P[j].z-T[j].x*off,rnd()<.6?"pine":"ginkgo",1.4); } }
+  /* 9 코너 바깥~9→10 오른쪽: 언덕 숲 (플라타너스·소나무·느티나무 빽빽, 산책로) */
+  { const [a,b]=sec(8,.75,10,-.02); for(const i of R(a,b)){ if((i-a+N)%N%U(6)) continue; const rx=-T[i].z, rz=T[i].x; for(let k=0;k<6;k++){ const off=W(i)+8+k*9+rnd()*6; tree(P[i].x+rx*off+T[i].x*(rnd()-.5)*6,P[i].z+rz*off+T[i].z*(rnd()-.5)*6,["plane","pine","zelk","pine"][(rnd()*4)|0],1.15+rnd()*.35); } }
+    const az=[]; for(const i of R(a,b)){ if((i-a+N)%N%U(20)) continue; const rx=-T[i].z, rz=T[i].x, off=W(i)+16+rnd()*20; const x=P[i].x+rx*off, z=P[i].z+rz*off; az.push([x,gh(x,z)+.5,z,rnd()*3,1.8]); } nmInst(tr,new THREE.SphereGeometry(1,8,6),LM(0xd8306a),az); }
   forest();
   /* 나무 인스턴스 */
   nmInst(tr,new THREE.CylinderGeometry(.35,.55,1,6),LM(0x5a3e2a),TRK.filter((_,k)=>true));
