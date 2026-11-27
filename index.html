@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2535</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2540</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2697,7 +2697,7 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
   /* ⑥ 공대·자연대: 메이커센터(나무 루버)+노란 카페, 자연대 강의동, 9층 연구동, 붉은 벽돌 4호관, 관리동 */
   { const mk=bld({px:[575,590],w:56,h:28,d:36,f:"terra",base:[6,"glass"],gap:12}); const [x,z]=mk.userData.at; const cf=addBox(mk,40,6,.6,LM(0xf2c618),0,3,18.4,0);
     bld({px:[525,555],w:50,h:21,d:28,f:"dbrick",sign:"S1-2 자연대2호관",sb:"#4a2622",sf:"#ffffff",sw:14,gap:14});
-    bld({px:[520,665],w:46,h:66,d:34,f:"pinkb",fh:7,sign:"자연과학 연구관",sb:"#dcc4bc",sf:"#2a4a6a",sw:30,gap:16});
+    bld({px:[505,690],noBig:true,w:60,h:56,d:40,f:"pinkb",fh:7,sign:"학연산 공동기술연구원",sb:"#dcc4bc",sf:"#2a4a6a",sw:36,gap:60});
     bld({px:[470,585],w:64,h:28,d:30,f:"brick",gap:12}); bld({px:[455,655],w:64,h:21,d:30,f:"brick",gap:14}); bld({px:[600,660],w:50,h:28,d:30,f:"white",gap:14});
     bld({px:[420,650],w:40,h:14,d:26,f:"white",gap:12}); /* 공사 가림막 · 라바콘 */ { const [cx,cz]=clearPos(...M(437,640),8); for(let k=0;k<5;k++){ const m=new THREE.Mesh(new THREE.PlaneGeometry(6,3.4),LM(0x2a6ad8)); m.position.set(cx+k*6,gh(cx,cz)+1.7,cz); add(m); } } }
   /* ⑦ 야외무대 (흰 기둥 + 분홍 반원판 + 트러스 지붕) · 계단 객석 */
@@ -2843,6 +2843,10 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     { const [i]=sec(5,.68,5,0); const [x,z,ry]=side(i,1,40); const g=bld({at:[x,z],fixed:true,w:50,h:14,d:30,f:"dbrick",ry,sign:"S1-2",sb:"#4a2622",sf:"#ffffff",sw:12,sy:11}); g.userData.keepOpen=true;
       for(let k=0;k<5;k++){ const px_=x+Math.sin(ry)*24+Math.cos(ry)*(-18+k*8), pz_=z+Math.cos(ry)*24-Math.sin(ry)*(-18+k*8); carAt(px_,gh(px_,pz_),pz_,ry+Math.PI/2); } }
     const [a,b]=sec(5,.55,6,-.05); for(const i of R(a,b)){ if((i-a+N)%N%U(14)) continue; for(const sg of [1,-1]){ const lx=T[i].z*sg, lz=-T[i].x*sg, off=W(i)+5+rnd()*3; tree(P[i].x+lx*off,P[i].z+lz*off,rnd()<.5?"meta":"zelk",1.1); } } }
+  /* 6번 코너: 소나무 무리 + 왼쪽 짙은 벽돌 E8-7 + 오른쪽 돌 축대 */
+  { const i6=wp[5]; for(let k=0;k<26;k++){ const a2=rnd()*Math.PI*2, r=W(i6)+12+rnd()*45; tree(P[i6].x+Math.cos(a2)*r,P[i6].z+Math.sin(a2)*r,"pine",1.2+rnd()*.4); }
+    const [i]=sec(5,.92,5,0), lx=T[i].z, lz=-T[i].x; const x=P[i].x+lx*(W(i)+34), z=P[i].z+lz*(W(i)+34); const g=bld({at:[x,z],fixed:true,w:60,h:21,d:30,f:"dbrick",ry:Math.atan2(-lx,-lz),sign:"E8-7 전자정보1관",sb:"#3e201c",sf:"#ffffff",sw:22,sy:18}); g.userData.keepOpen=true;
+    const rk=[]; for(let k=0;k<12;k++){ const [j]=sec(6,.02+k*.012,6,0); const p=P[j].clone().addScaledVector(new THREE.Vector3(-T[j].z,0,T[j].x),W(j)+6); rk.push([p.x,gh(p.x,p.z)+.8,p.z,rnd()*3,1.4+rnd()*.8]); } nmInst(tr,new THREE.DodecahedronGeometry(1,0),LM(0x9a958c),rk); }
   forest();
   /* 나무 인스턴스 */
   nmInst(tr,new THREE.CylinderGeometry(.35,.55,1,6),LM(0x5a3e2a),TRK.filter((_,k)=>true));
