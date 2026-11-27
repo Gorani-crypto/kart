@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2110</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2130</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2478,15 +2478,15 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     for(const a of ARMS) for(let d=0;d<=170;d+=8) OPC.push([a.x+a.dx*d,a.z+a.dz*d,a.w/2+4]); };
   addOpenCircles(); const inOpen=(x,z)=>OPC.some(c=>(c[0]-x)**2+(c[1]-z)**2<c[2]*c[2]);
   /* 대운동장 자리(분지): 주변 도로보다 낮게 */
-  const STAD=(()=>{ const [cx0,cz0]=M(866,634); let rx=118, rz=74; const ang=-.55; const ok=(rx,rz)=>{ for(let k=0;k<32;k++){ const a=k/32*Math.PI*2, x=cx0+Math.cos(a)*(rx+26)*Math.cos(ang)-Math.sin(a)*(rz+26)*Math.sin(ang), z=cz0+Math.cos(a)*(rx+26)*Math.sin(ang)+Math.sin(a)*(rz+26)*Math.cos(ang); if(edge(x,z)<12) return false; } return true; };
-    while(!ok(rx,rz)&&rx>50){ rx*=.94; rz*=.94; } let ymin=1e9; for(let i=0;i<N;i+=6){ const d=Math.hypot(P[i].x-cx0,P[i].z-cz0); if(d<rx+260) ymin=Math.min(ymin,Y[i]); } return {cx:cx0,cz:cz0,rx,rz,ang,floor:(ymin<1e8?ymin:0)-10}; })();
-  const stadQ=(x,z)=>{ const dx=x-STAD.cx, dz=z-STAD.cz, c=Math.cos(STAD.ang), s_=Math.sin(STAD.ang), u=dx*c+dz*s_, v=-dx*s_+dz*c; return Math.hypot(u/(STAD.rx+14),v/(STAD.rz+14)); };
+  const STAD=(()=>{ const [cx0,cz0]=M(866,634); let rx=210, rz=135; const ang=-.55, TW=30; const ok=(rx,rz)=>{ for(let k=0;k<48;k++){ const a=k/48*Math.PI*2, x=cx0+Math.cos(a)*(rx+TW+8)*Math.cos(ang)-Math.sin(a)*(rz+TW+8)*Math.sin(ang), z=cz0+Math.cos(a)*(rx+TW+8)*Math.sin(ang)+Math.sin(a)*(rz+TW+8)*Math.cos(ang); if(edge(x,z)<6) return false; } return true; };
+    while(!ok(rx,rz)&&rx>60){ rx*=.96; rz*=.96; } let ymin=1e9; for(let i=0;i<N;i+=6){ const d=Math.hypot(P[i].x-cx0,P[i].z-cz0); if(d<rx+260) ymin=Math.min(ymin,Y[i]); } return {cx:cx0,cz:cz0,rx,rz,ang,TW,floor:(ymin<1e8?ymin:0)-10}; })();
+  const stadQ=(x,z)=>{ const dx=x-STAD.cx, dz=z-STAD.cz, c=Math.cos(STAD.ang), s_=Math.sin(STAD.ang), u=dx*c+dz*s_, v=-dx*s_+dz*c; return Math.hypot(u/(STAD.rx+STAD.TW+6),v/(STAD.rz+STAD.TW+6)); };
   /* --- 지형 높이: 도로 높이를 부드럽게 퍼뜨린 언덕 (도로 옆은 도로보다 살짝 낮게) --- */
   const PAD=900, gx0=B.bx0-PAD, gz0=B.bz0-PAD, GC=32, GW=Math.ceil((B.W+2*PAD)/GC)+1, GD=Math.ceil((B.D+2*PAD)/GC)+1, HG=new Float32Array(GW*GD);
   { const sp=[]; for(let i=0;i<N;i+=4) sp.push(i); let ysum=0; for(let i=0;i<N;i++) ysum+=Y[i]; const yavg=ysum/N;
     for(let a=0;a<GW;a++) for(let b=0;b<GD;b++){ const x=gx0+a*GC, z=gz0+b*GC; const [ni,nd]=nearI(x,z);
       let h; if(nd<W(ni)+30) h=Y[ni]-.45; else { let sw=0, sy=0; for(const i of sp){ const d2=(P[i].x-x)**2+(P[i].z-z)**2, w=1/(d2*d2+1e6); sw+=w; sy+=w*Y[i]; } const far=Math.min(1,Math.max(0,(nd-200)/900)); h=(sy/sw)*(1-far)+yavg*.5*far; const t=Math.min(1,(nd-W(ni)-30)/60); h=(Y[ni]-.45)*(1-t)+Math.min(h,Y[ni]+28)*t; }
-      h=Math.max(-.3,h); const q=stadQ(x,z); if(q<1.9&&nd>W(ni)+14){ const t=q<1?0:Math.min(1,(q-1)/.9), sm=t*t*(3-2*t); h=STAD.floor*(1-sm)+h*sm; } HG[a*GD+b]=h; } }
+      h=Math.max(-.3,h); const q=stadQ(x,z); if(q<1.9&&nd>W(ni)+14){ const t=q<1?0:Math.min(1,(q-1)/.5), sm=t*t*(3-2*t); const rim=STAD.floor+9.6; h=(q<1?STAD.floor:rim)*(1-sm)+Math.max(h,q<1?h:rim)*sm; } HG[a*GD+b]=h; } }
   const gh=(x,z)=>{ const fx=Math.max(0,Math.min(GW-1.001,(x-gx0)/GC)), fz=Math.max(0,Math.min(GD-1.001,(z-gz0)/GC)), a=Math.floor(fx), b=Math.floor(fz), u=fx-a, v=fz-b;
     return HG[a*GD+b]*(1-u)*(1-v)+HG[(a+1)*GD+b]*u*(1-v)+HG[a*GD+b+1]*(1-u)*v+HG[(a+1)*GD+b+1]*u*v; };
   tr.hillH=(x,z)=>gh(x,z);
@@ -2637,7 +2637,16 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     const fm=new THREE.Mesh(new THREE.ShapeGeometry(el(rx-14,rz-14),40).rotateX(-Math.PI/2),LM(0x3f9a4a)); fm.position.y=.2; g.add(fm);
     for(let q=1;q<4;q++){ const ln=new THREE.Mesh(new THREE.RingGeometry(1,1.02,64).rotateX(-Math.PI/2),whi); ln.scale.set(rx-q*3.5,1,rz-q*3.5); ln.position.y=.22; g.add(ln); }
     const fp=[]; for(let k=0;k<72;k++){ const a=k/72*Math.PI*2; const x=Math.cos(a)*(rx+4), z=Math.sin(a)*(rz+4); addBox(g,.5,2.4,.5,k%2?red:white,x,1.2,z,0); if(k%2===0){ const a2=(k+1)/72*Math.PI*2, x2=Math.cos(a2)*(rx+4), z2=Math.sin(a2)*(rz+4); const L=Math.hypot(x2-x,z2-z)*2, m=addBox(g,L,1.2,.2,k%4?red:white,(x+x2)/2,1.4,(z+z2)/2,-Math.atan2(z2-z,x2-x)); } }
-    const st=new THREE.Group(); for(let r=0;r<4;r++) addBox(st,rx*.9,1.6+r*1.6,3.4,LM(r%2?0x8f96a3:0xb8bec8),0,(1.6+r*1.6)/2,r*3.4); addBox(st,rx*.9+2,.8,16,LM(0x8a1a3a),0,10,5); st.position.set(0,0,-rz-12); g.add(st);
+    /* 운동장 둘레: 도로에서 내려오는 회색 콘크리트 계단식 스탠드(앉을 수 있는 단) */
+    { const K=8, sh=1.2, sd=STAD.TW/K, seg=96, pos=[], col=[], cA=new THREE.Color(0xa9aaa8), cB=new THREE.Color(0x8e8f8d), cR=new THREE.Color(0x777876);
+      const E=(a,r0x,r0z)=>[Math.cos(a)*r0x,Math.sin(a)*r0z];
+      for(let k=0;k<K;k++){ const ix=rx+6+k*sd, iz=rz+6+k*sd, ox=ix+sd, oz=iz+sd, y0=k*sh, y1=(k+1)*sh, ct=k%2?cA:cB;
+        for(let q=0;q<seg;q++){ const a0=q/seg*Math.PI*2, a1=(q+1)/seg*Math.PI*2; const [p0x,p0z]=E(a0,ix,iz), [p1x,p1z]=E(a1,ix,iz), [q0x,q0z]=E(a0,ox,oz), [q1x,q1z]=E(a1,ox,oz);
+          for(const [x,y,z,c] of [[p0x,y1,p0z,ct],[q0x,y1,q0z,ct],[q1x,y1,q1z,ct],[p0x,y1,p0z,ct],[q1x,y1,q1z,ct],[p1x,y1,p1z,ct], [p0x,y0,p0z,cR],[p0x,y1,p0z,cR],[p1x,y1,p1z,cR],[p0x,y0,p0z,cR],[p1x,y1,p1z,cR],[p1x,y0,p1z,cR]]){ pos.push(x,y,z); col.push(c.r,c.g,c.b); } } }
+      const gg=new THREE.BufferGeometry(); gg.setAttribute("position",new THREE.Float32BufferAttribute(pos,3)); gg.setAttribute("color",new THREE.Float32BufferAttribute(col,3)); gg.computeVertexNormals();
+      const tm2=new THREE.Mesh(gg,TOON({vertexColors:true,side:THREE.DoubleSide})); g.add(tm2);
+      /* 계단을 오르내리는 통로(흰 줄) */ for(let q=0;q<12;q++){ const a=q/12*Math.PI*2; for(let k=0;k<K;k++){ const r1x=rx+6+(k+.5)*sd, r1z=rz+6+(k+.5)*sd; const m=addBox(g,1.6,.1,sd,LM(0xd8d8d4),Math.cos(a)*r1x,(k+1)*sh+.05,Math.sin(a)*r1z,-a+Math.PI/2); } }
+      /* 꼭대기 난간 */ const rail=[]; for(let q=0;q<seg;q+=2){ const a=q/seg*Math.PI*2; rail.push([Math.cos(a)*(rx+6+STAD.TW),K*sh+.6,Math.sin(a)*(rz+6+STAD.TW)]); } for(const [x,y,z] of rail) addBox(g,.3,1.2,.3,LM(0x8a9099),x,y,z); }
     add(g); occ.push([cx0,cz0,Math.max(rx,rz)+10]);
     /* 정면 붉은 벽돌 7층 (병원 교육동) · 아치 차단기 게이트 */ bld({px:[790,700],w:70,h:48,d:40,f:"brick",base:[7,"glass"],gap:10});
     const [ga,gb]=sec(3,.55,3,0); const i=ga, gg=new THREE.Group(); gg.position.set(P[i].x,Y[i],P[i].z); gg.rotation.y=Math.atan2(T[i].x,T[i].z);
