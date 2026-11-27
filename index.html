@@ -338,7 +338,7 @@ body.touch #hud-bottom{bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 </div>
 <div class="overlay" id="menu" hidden>
   <div class="card">
-    <div class="eyebrow">트랙과 카트 선택 · 버전 1127-2730</div>
+    <div class="eyebrow">트랙과 카트 선택 · 버전 1128-0025</div>
     <h1>REDLINE</h1>
     <div class="mp-room solo-room">
       <div class="mp-sec">혼자 달리기 · 참가자 <span id="soCount"></span></div>
@@ -2798,7 +2798,12 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     r=sec(19,.03,20,.2); shopRow(r[0],r[1],-1,{step:4,fl:[3,5]}); r=sec(20,.25,20,.6); shopRow(r[0],r[1],1,{step:4,fl:[4,5]}); r=sec(20,.75,1,0); shopRow(r[0],r[1],1,{step:4,fl:[3,4]}); shopRow(r[0],r[1],-1,{step:4,fl:[4,5]});
     r=sec(1,.05,1,.85); shopRow(r[0],r[1],1,{step:4,fl:[2,4]}); r=sec(1,.85,2,.0); shopRow(r[0],r[1],1,{step:4,fl:[3,5]}); }
   /* 19 롯데리아 교차로 모퉁이 (층층이 간판 상가 · 모퉁이 햄버거집) */
-  if(X19){ for(const [sd,qu,qv] of [[1,-1,1],[-1,-1,-1]]){ const D=34; const x=X19.cx+X19.u[0]*qu*(X19.wa/2+D)+X19.v[0]*qv*(X19.wb/2+D), z=X19.cz+X19.u[1]*qu*(X19.wa/2+D)+X19.v[1]*qv*(X19.wb/2+D); const g=new THREE.Group(); g.userData.keepOpen=true; g.position.set(x,gh(x,z)-.3,z); g.rotation.y=Math.atan2(X19.cx-x,X19.cz-z);
+  if(X19){ /* 안쪽 모퉁이에 바짝: 버거집 상가 (간판이 코스를 봄) */ const i=X19.i, tsg=turn(i)>0?1:-1, isd=-tsg; const p0=P[i].clone().addScaledVector(NR[i],isd*(W(i)+26)); const q=snap(p0.x,p0.z,5,34,34);
+    const g=new THREE.Group(); g.userData.keepOpen=true; g.position.set(q[0],gh(q[0],q[1])-.3,q[1]); g.rotation.y=q[2]; const body=new THREE.Mesh(boxF(34,32,34,6,6.5),fac("gray")); body.position.y=16; g.add(body); addBox(g,34.6,5,34.6,LM(0xd8282a),0,2.5,0);
+    [["레드버거","#d8282a","#ffffff"],["코인노래","#f2c230","#d8282a"],["STYLE","#3a3e44","#ffffff"],["PC방","#1a1a1a","#f2c230"]].forEach((r,k)=>{ const c=cell(r[0],r[1],r[2]); if(c){ const sg=new THREE.Mesh(planeUV(30,6,c),atlasM); sg.position.set(0,4+k*7.2,17.3); g.add(sg); } }); add(g); occ.push([q[0],q[1],26]);
+    /* 안쪽 모퉁이 인도 */ const pv=[]; const span=U(60); for(let k=-span;k<span;k+=U(2)){ const j=(i+k+N)%N, j2=(j+U(2))%N; const a1=P[j].clone().addScaledVector(NR[j],isd*(W(j)+.3)), a2=P[j].clone().addScaledVector(NR[j],isd*(W(j)+5)), b1=P[j2].clone().addScaledVector(NR[j2],isd*(W(j2)+.3)), b2=P[j2].clone().addScaledVector(NR[j2],isd*(W(j2)+5)); for(const [v,yy] of [[a1,Y[j]],[b1,Y[j2]],[b2,Y[j2]],[a1,Y[j]],[b2,Y[j2]],[a2,Y[j]]]) pv.push(v.x,yy+.25,v.z); }
+    { const gg=new THREE.BufferGeometry(); gg.setAttribute("position",new THREE.Float32BufferAttribute(pv,3)); gg.computeVertexNormals(); const m=new THREE.Mesh(gg,new THREE.MeshLambertMaterial({color:0x9a9590,side:THREE.DoubleSide})); m.userData.keepOpen=true; add(m); } }
+  if(X19){ for(const [sd,qu,qv] of [[-1,-1,-1]]){ let D=26, x=0, z=0; for(let it=0;it<40;it++){ x=X19.cx+X19.u[0]*qu*(X19.wa/2+D)+X19.v[0]*qv*(X19.wb/2+D); z=X19.cz+X19.u[1]*qu*(X19.wa/2+D)+X19.v[1]*qv*(X19.wb/2+D); let ok=true; for(const [a2,b2] of [[-24,-24],[24,-24],[-24,24],[24,24],[0,0],[0,-24],[0,24],[-24,0],[24,0]]){ if(edge(x+a2,z+b2)<6||roadAt(x+a2,z+b2)&&edge(x+a2,z+b2)<20){ ok=false; break; } } if(ok) break; D+=4; } const g=new THREE.Group(); g.userData.keepOpen=true; g.position.set(x,gh(x,z)-.3,z); g.rotation.y=Math.atan2(X19.cx-x,X19.cz-z);
       const body=new THREE.Mesh(boxF(40,32,40,6,6.5),fac("gray")); body.position.y=16; g.add(body);
       const rows=sd>0?[["레드버거","#d8282a","#ffffff"],["코인노래","#f2c230","#d8282a"],["STYLE","#3a3e44","#ffffff"],["PC방","#1a1a1a","#f2c230"]]:[["라면연구소","#e8408a","#ffffff"],["휴대폰","#7a2ad8","#ffffff"],["스터디카페","#1a3a8a","#ffffff"],["24시","#2a8a4a","#ffffff"]];
       rows.forEach((q,k)=>{ const c=cell(q[0],q[1],q[2]); if(c){ const sg=new THREE.Mesh(planeUV(34,6,c),atlasM); sg.position.set(0,4+k*7.2,20.3); g.add(sg); } }); if(sd>0){ addBox(g,40.6,5,40.6,LM(0xd8282a),0,2.5,0); } add(g); occ.push([x,z,28]); } }
@@ -2896,18 +2901,18 @@ function decorateCBNU(tr){ seed=8801; const {P,NR,T,Y,N,HW}=tr, D=tr.def, B=nmB(
     /* 2→16 캠퍼스 구간: 펜스·벽·광고판·런오프 모두 치우고 인도로 (16→2 바깥 구간은 그대로) */
     const CA=wp[1], CB=wp[15], inCampR=i=>inR(i,CA,CB);
     const campAt=(x,z,yMin,lim,lo)=>{ const [ni,nd]=nearI(x,z); if(!inCampR(ni)) return false; if(nd<W(ni)+(lo!=null?lo:.4)||nd>W(ni)+lim) return false; return yMin==null||yMin>Y[ni]-.25; };
-    const zoneAt=(x,z,my)=>{ if(!X19) return false; if(Math.hypot(x-X19.cx,z-X19.cz)>Math.max(X19.wa,X19.wb)*1.6+20) return false; const [ni,nd]=nearI(x,z); return nd>W(ni)-1.9&&(my==null||my>Y[ni]+.004); };
+    const zoneAt=(x,z,my)=>{ if(!X19) return false; if(Math.hypot(x-X19.cx,z-X19.cz)>Math.max(X19.wa,X19.wb)*1.6+20) return false; const [ni,nd]=nearI(x,z); return nd>W(ni)-1.9&&nd<W(ni)+14&&(my==null||my>Y[ni]+.004); };
     const kerbAt=(x,z,my)=>{ const [ni,nd]=nearI(x,z); return inCampR(ni)&&nd>W(ni)-1.9&&nd<W(ni)+.5&&my<Y[ni]+.45&&my>Y[ni]+.004; };
     const openAt0=openAt; const openAt2=(x,z,y,lim)=>openAt0(x,z,y)||campAt(x,z,y,lim);
     const killM=[], killG=[];    const kitSet=new Set(grp.children.slice(0,gK)); for(const c of grp.children){ const kit=kitSet.has(c); c.traverse(o=>{ if(!o.isMesh||o.userData.keepOpen||o.userData.keepOnRoad) return; let q=o; while(q&&q!==grp){ if(q.userData.keepOpen) return; q=q.parent; }
-      if(o.isInstancedMesh){ let ch=false; for(let k=0;k<o.count;k++){ o.getMatrixAt(k,m4); v.setFromMatrixPosition(m4).applyMatrix4(o.matrixWorld); if(m4.elements[0]===0&&m4.elements[5]===0) continue; const gp=o.geometry.parameters||{}; const small=o.geometry.type==='CylinderGeometry'&&(gp.radiusTop===.8||gp.radiusTop===.1); if(openAt0(v.x,v.z,v.y+.5)||zoneAt(v.x,v.z,v.y+.5)||(small&&campAt(v.x,v.z,v.y+.5,30))){ o.setMatrixAt(k,zero); ch=true; } } if(ch) o.instanceMatrix.needsUpdate=true; return; }
+      if(o.isInstancedMesh){ let ch=false; for(let k=0;k<o.count;k++){ o.getMatrixAt(k,m4); v.setFromMatrixPosition(m4).applyMatrix4(o.matrixWorld); if(m4.elements[0]===0&&m4.elements[5]===0) continue; const gp=o.geometry.parameters||{}; const small=o.geometry.type==='CylinderGeometry'&&(gp.radiusTop===.8||gp.radiusTop===.1); if(openAt0(v.x,v.z,v.y+.5)||zoneAt(v.x,v.z,v.y+.5)||(kit&&X19&&Math.hypot(v.x-X19.cx,v.z-X19.cz)<200&&nearI(v.x,v.z)[1]>W(nearI(v.x,v.z)[0])+1)||(small&&campAt(v.x,v.z,v.y+.5,30))){ o.setMatrixAt(k,zero); ch=true; } } if(ch) o.instanceMatrix.needsUpdate=true; return; }
       if(o.parent!==grp||o.geometry.type!=="BufferGeometry"){ if(o.geometry.type!=="BufferGeometry"){ o.getWorldPosition(v); if(openAt2(v.x,v.z,v.y+.5,kit?16:6)||zoneAt(v.x,v.z,v.y+.5)) killM.push(o); } return; }
       const geo=o.geometry; if(geo.index||!geo.attributes.position) return; const pa=geo.attributes.position; let ch=false; o.updateMatrixWorld(true); const mw=o.matrixWorld, tv=new THREE.Vector3();
       tr.cbOpen=OPN.map(o=>[o.i,o.sd]);
-      for(let t=0;t+2<pa.count;t+=3){ let cx=0,cz=0,my=-1e9; for(let q2=0;q2<3;q2++){ tv.fromBufferAttribute(pa,t+q2).applyMatrix4(mw); cx+=tv.x/3; cz+=tv.z/3; my=Math.max(my,tv.y); } if(!(openAt0(cx,cz,my)||campAt(cx,cz,o.userData.onRoad?-1e9:my,o.userData.onRoad?30:6,o.userData.onRoad?-1.8:.4)||kerbAt(cx,cz,my)||zoneAt(cx,cz,my))) continue; for(let q2=0;q2<3;q2++) pa.setXYZ(t+q2,0,-500,0); ch=true; }
+      for(let t=0;t+2<pa.count;t+=3){ let cx=0,cz=0,my=-1e9; for(let q2=0;q2<3;q2++){ tv.fromBufferAttribute(pa,t+q2).applyMatrix4(mw); cx+=tv.x/3; cz+=tv.z/3; my=Math.max(my,tv.y); } if(!(openAt0(cx,cz,my)||campAt(cx,cz,o.userData.onRoad?-1e9:my,o.userData.onRoad?30:6,o.userData.onRoad?-1.8:.4)||kerbAt(cx,cz,my)||zoneAt(cx,cz,my)||(kit&&X19&&my>Y[nearI(cx,cz)[0]]+1.2&&nearI(cx,cz)[1]>W(nearI(cx,cz)[0])+1&&Math.hypot(cx-X19.cx,cz-X19.cz)<200))) continue; for(let q2=0;q2<3;q2++) pa.setXYZ(t+q2,0,-500,0); ch=true; }
       if(ch){ pa.needsUpdate=true; geo.computeBoundingSphere(); } }); }
     for(const o of killM) if(o.parent) o.parent.remove(o);
-    for(const c of grp.children.slice(gKs,gK)){ if(c.userData.keepOpen||c.isInstancedMesh) continue; bb.setFromObject(c); if(bb.isEmpty()) continue; bb.getCenter(v); if(bb.max.y-bb.min.y>3&&(campAt(v.x,v.z,null,260)||Math.hypot(v.x-P[wp[1]].x,v.z-P[wp[1]].z)<260)) killG.push(c); }
+    for(const c of grp.children.slice(gKs,gK)){ if(c.userData.keepOpen||c.isInstancedMesh) continue; bb.setFromObject(c); if(bb.isEmpty()) continue; bb.getCenter(v); if(bb.max.y-bb.min.y>3&&(campAt(v.x,v.z,null,260)||Math.hypot(v.x-P[wp[1]].x,v.z-P[wp[1]].z)<260||(X19&&Math.hypot(v.x-X19.cx,v.z-X19.cz)<200))) killG.push(c); }
     for(const c of killG) grp.remove(c);
     for(const c of grp.children.slice(g0)) if(c.isGroup&&!c.userData.keepOpen){ c.getWorldPosition(v); if(openAt2(v.x,v.z,null,kitSet.has(c)?18:7)||zoneAt(v.x,v.z,null)||(kitSet.has(c)&&campAt(v.x,v.z,null,260))) grp.remove(c); }
     /* 캠퍼스 인도: 보도블록 + 낮은 경계석 (입구 자리는 비움) */
